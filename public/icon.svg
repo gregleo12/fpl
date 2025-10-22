@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#37003c"/>
+
+  <!-- FPL Text -->
+  <text x="256" y="200" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="#00ff87" text-anchor="middle">
+    FPL
+  </text>
+
+  <!-- H2H Text -->
+  <text x="256" y="320" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="#ff2882" text-anchor="middle">
+    H2H
+  </text>
+
+  <!-- Decorative elements -->
+  <circle cx="256" cy="400" r="40" fill="none" stroke="#00ff87" stroke-width="4"/>
+  <circle cx="256" cy="400" r="30" fill="none" stroke="#ff2882" stroke-width="3"/>
+</svg>

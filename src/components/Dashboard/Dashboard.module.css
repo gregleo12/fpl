@@ -1,0 +1,325 @@
+.leagueTab,
+.myTeamTab {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.sectionTitle {
+  color: #00ff87;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.1rem;
+}
+
+/* Table Styles */
+.table {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(15, 15, 35, 0.5);
+}
+
+.table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th,
+.table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+}
+
+.table th {
+  background: rgba(40, 30, 70, 0.7);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.table td {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.table td strong {
+  color: #00ff87;
+  font-weight: 800;
+  font-size: 1.1em;
+}
+
+/* My Team Row Highlight */
+.myTeamRow {
+  background: rgba(0, 255, 135, 0.1) !important;
+  border-left: 4px solid #00ff87;
+}
+
+.myTeamRow td {
+  color: #00ff87 !important;
+  font-weight: 700;
+}
+
+/* Differential */
+.differential {
+  font-weight: 700;
+}
+
+.positive {
+  color: #00ff87;
+}
+
+.negative {
+  color: #ff2882;
+}
+
+.neutral {
+  color: #999;
+}
+
+/* My Team Tab */
+.teamHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.managerName {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.teamNameSubtitle {
+  font-size: 1.1rem;
+  color: #00ff87;
+  margin: 0.5rem 0 0 0;
+  font-weight: 600;
+}
+
+.rankBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 255, 135, 0.15);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid rgba(0, 255, 135, 0.3);
+}
+
+.rankNumber {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #00ff87;
+  line-height: 1;
+}
+
+.rankLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
+/* Form Indicators */
+.formRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.formIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.formWin {
+  background: #00ff87;
+  color: #37003c;
+}
+
+.formDraw {
+  background: #f9a825;
+  color: white;
+}
+
+.formLoss {
+  background: #ff2882;
+  color: white;
+}
+
+/* View Profile Button */
+.viewProfileButton {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: rgba(0, 255, 135, 0.15);
+  color: #00ff87;
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 1rem;
+}
+
+.viewProfileButton:hover {
+  background: rgba(0, 255, 135, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 255, 135, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+  .section {
+    padding: 1.5rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+
+  .teamHeader {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .managerName {
+    font-size: 1.5rem;
+  }
+
+  .teamNameSubtitle {
+    font-size: 1rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .rankNumber {
+    font-size: 2rem;
+  }
+
+  .formIndicator {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
