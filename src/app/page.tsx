@@ -1,237 +1,135 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import BottomNav from '@/components/BottomNav';
-import styles from './page.module.css';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from './landing.module.css';
 
-export default function Home() {
+export default function Landing() {
+  const router = useRouter();
   const [leagueId, setLeagueId] = useState('');
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
-  const [currentGW, setCurrentGW] = useState<number | null>(null);
-  const [maxGW, setMaxGW] = useState<number | null>(null);
+  const [recentLeagues, setRecentLeagues] = useState<string[]>([]);
 
-  const fetchLeagueData = async (gw?: number) => {
+  useEffect(() => {
+    // Load recent leagues from localStorage
+    const recent = localStorage.getItem('recentLeagues');
+    if (recent) {
+      setRecentLeagues(JSON.parse(recent));
+    }
+
+    // Auto-redirect to last viewed league
+    const lastLeague = localStorage.getItem('lastLeagueId');
+    if (lastLeague) {
+      // Optionally auto-redirect after a short delay
+      // setTimeout(() => router.push(`/league/${lastLeague}`), 1000);
+    }
+  }, []);
+
+  const saveToRecent = (id: string) => {
+    const recent = Array.from(new Set([id, ...recentLeagues])).slice(0, 3);
+    setRecentLeagues(recent);
+    localStorage.setItem('recentLeagues', JSON.stringify(recent));
+    localStorage.setItem('lastLeagueId', id);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!leagueId) return;
 
     setLoading(true);
     setError('');
 
     try {
-      // First, fetch and store data from FPL API
+      // Fetch league data to validate it exists
       const response = await fetch(`/api/league/${leagueId}`);
-      if (!response.ok) throw new Error('Failed to fetch league data');
+      if (!response.ok) throw new Error('League not found or invalid ID');
 
-      // Then fetch stats from our database
-      const gwParam = gw ? `?gw=${gw}` : '';
-      const statsResponse = await fetch(`/api/league/${leagueId}/stats${gwParam}`);
-      if (!statsResponse.ok) throw new Error('Failed to fetch league stats');
+      // Save to recent
+      saveToRecent(leagueId);
 
-      const statsData = await statsResponse.json();
-      setData(statsData);
-
-      // Set GW info
-      if (statsData.currentGW) {
-        setCurrentGW(statsData.currentGW);
-        setMaxGW(statsData.maxGW);
-      }
+      // Navigate to league page
+      router.push(`/league/${leagueId}`);
     } catch (err: any) {
-      setError(err.message);
-    } finally {
+      setError(err.message || 'Failed to load league');
       setLoading(false);
     }
   };
 
-  const navigateGW = (direction: 'prev' | 'next' | 'latest') => {
-    if (!currentGW || !maxGW) return;
+  const handleRecentClick = (id: string) => {
+    setLeagueId(id);
+    saveToRecent(id);
+    router.push(`/league/${id}`);
+  };
 
-    let newGW = currentGW;
-    if (direction === 'prev' && currentGW > 1) {
-      newGW = currentGW - 1;
-    } else if (direction === 'next' && currentGW < maxGW) {
-      newGW = currentGW + 1;
-    } else if (direction === 'latest') {
-      newGW = maxGW;
-    }
-
-    if (newGW !== currentGW) {
-      fetchLeagueData(newGW);
-    }
+  const handleTestLeague = () => {
+    setLeagueId('804742');
+    saveToRecent('804742');
+    router.push(`/league/804742`);
   };
 
   return (
     <div className={styles.container}>
       <main className={styles.main}>
-        <h1 className={styles.title}>FPL H2H League Analytics</h1>
+        <h1 className={styles.title}>FPL H2H Analytics</h1>
+        <p className={styles.subtitle}>Track your Head-to-Head league performance</p>
 
-        <div className={styles.search}>
-          <input
-            type="text"
-            placeholder="Enter League ID"
-            value={leagueId}
-            onChange={(e) => setLeagueId(e.target.value)}
-            className={styles.input}
-          />
-          <button
-            onClick={() => fetchLeagueData()}
-            disabled={loading || !leagueId}
-            className={styles.button}
-          >
-            {loading ? 'Loading...' : 'Fetch H2H League Data'}
-          </button>
-          <button
-            onClick={() => {
-              setLeagueId('804742');
-              setTimeout(() => fetchLeagueData(), 100);
-            }}
-            disabled={loading}
-            className={`${styles.button} ${styles.testButton}`}
-          >
-            Dedoume
-          </button>
-        </div>
+        <div className={styles.searchCard}>
+          {error && <div className={styles.error}>{error}</div>}
 
-        {error && <div className={styles.error}>{error}</div>}
+          <form onSubmit={handleSubmit} className={styles.searchForm}>
+            <input
+              type="text"
+              placeholder="Enter League ID"
+              value={leagueId}
+              onChange={(e) => setLeagueId(e.target.value)}
+              className={styles.input}
+              disabled={loading}
+              autoFocus
+            />
 
-        {data && (
-          <>
-            <section className={styles.section}>
-              <div className={styles.sectionHeader}>
-                <h2>{data.league?.name || 'League Standings'}</h2>
-                {currentGW && maxGW && (
-                  <div className={styles.gwControls}>
-                    <button
-                      onClick={() => navigateGW('prev')}
-                      disabled={currentGW <= 1 || loading}
-                      className={styles.gwButton}
-                    >
-                      ← GW {currentGW - 1}
-                    </button>
-                    <span className={styles.gwDisplay}>
-                      Gameweek {currentGW}
-                      {currentGW === maxGW && ' (Latest)'}
-                    </span>
-                    <button
-                      onClick={() => navigateGW('next')}
-                      disabled={currentGW >= maxGW || loading}
-                      className={styles.gwButton}
-                    >
-                      GW {currentGW + 1} →
-                    </button>
-                    {currentGW < maxGW && (
-                      <button
-                        onClick={() => navigateGW('latest')}
-                        disabled={loading}
-                        className={`${styles.gwButton} ${styles.gwLatest}`}
-                      >
-                        Latest (GW {maxGW})
-                      </button>
-                    )}
-                  </div>
+            <div className={styles.buttonGroup}>
+              <button
+                type="submit"
+                disabled={loading || !leagueId}
+                className={styles.button}
+              >
+                {loading ? (
+                  <span className={styles.loading}>Loading...</span>
+                ) : (
+                  'View League'
                 )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTestLeague}
+                disabled={loading}
+                className={`${styles.button} ${styles.testButton}`}
+              >
+                Dedoume
+              </button>
+            </div>
+          </form>
+
+          {recentLeagues.length > 0 && (
+            <div className={styles.recentLeagues}>
+              <div className={styles.recentTitle}>Recent Leagues</div>
+              <div className={styles.recentList}>
+                {recentLeagues.map((id) => (
+                  <div
+                    key={id}
+                    onClick={() => handleRecentClick(id)}
+                    className={styles.recentItem}
+                  >
+                    League {id}
+                  </div>
+                ))}
               </div>
-              <div className={styles.table}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Last GW</th>
-                      <th>Manager</th>
-                      <th>Team</th>
-                      <th>Played</th>
-                      <th>W</th>
-                      <th>D</th>
-                      <th>L</th>
-                      <th>Form</th>
-                      <th>Streak</th>
-                      <th>PF</th>
-                      <th>+/-</th>
-                      <th>Pts</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.standings?.map((standing: any) => (
-                      <tr key={standing.entry_id}>
-                        <td>{standing.rank}</td>
-                        <td>
-                          {standing.rankChange !== undefined && (
-                            <span
-                              className={`${styles.rankChange} ${
-                                standing.rankChange > 0 ? styles.rankUp :
-                                standing.rankChange < 0 ? styles.rankDown :
-                                styles.rankSame
-                              }`}
-                            >
-                              {standing.rankChange > 0 ? `↑ ${standing.rankChange}` :
-                               standing.rankChange < 0 ? `↓ ${Math.abs(standing.rankChange)}` :
-                               '→'}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <Link href={`/player/${standing.entry_id}`} className={styles.playerLink}>
-                            {standing.player_name}
-                          </Link>
-                        </td>
-                        <td>{standing.team_name}</td>
-                        <td>{standing.matches_played}</td>
-                        <td>{standing.matches_won}</td>
-                        <td>{standing.matches_drawn}</td>
-                        <td>{standing.matches_lost}</td>
-                        <td>
-                          <div className={styles.form}>
-                            {standing.formArray?.map((result: string, idx: number) => (
-                              <span
-                                key={idx}
-                                className={`${styles.formIndicator} ${
-                                  result === 'W' ? styles.formWin :
-                                  result === 'D' ? styles.formDraw :
-                                  styles.formLoss
-                                }`}
-                              >
-                                {result}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                        <td>
-                          {standing.streak && (
-                            <span
-                              className={`${styles.streak} ${
-                                standing.streak.startsWith('W') ? styles.streakWin :
-                                standing.streak.startsWith('D') ? styles.streakDraw :
-                                styles.streakLoss
-                              }`}
-                            >
-                              {standing.streak}
-                            </span>
-                          )}
-                        </td>
-                        <td>{standing.points_for}</td>
-                        <td>
-                          <span className={`${styles.differential} ${
-                            standing.points_for - standing.points_against > 0 ? styles.diffPositive :
-                            standing.points_for - standing.points_against < 0 ? styles.diffNegative :
-                            styles.diffNeutral
-                          }`}>
-                            {standing.points_for - standing.points_against > 0
-                              ? `+${standing.points_for - standing.points_against}`
-                              : standing.points_for - standing.points_against}
-                          </span>
-                        </td>
-                        <td><strong>{standing.total}</strong></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          </>
-        )}
+            </div>
+          )}
+        </div>
       </main>
-      <BottomNav />
     </div>
   );
 }

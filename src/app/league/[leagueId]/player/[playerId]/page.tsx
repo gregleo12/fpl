@@ -8,22 +8,25 @@ import styles from './player.module.css';
 export default function PlayerProfile() {
   const params = useParams();
   const router = useRouter();
+  const playerId = params.playerId as string;
+  const leagueId = params.leagueId as string;
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (params.id) {
+    if (playerId) {
       fetchPlayerData();
     }
-  }, [params.id]);
+  }, [playerId]);
 
   const fetchPlayerData = async () => {
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch(`/api/player/${params.id}`);
+      const response = await fetch(`/api/player/${playerId}`);
       if (!response.ok) throw new Error('Failed to fetch player data');
 
       const playerData = await response.json();
