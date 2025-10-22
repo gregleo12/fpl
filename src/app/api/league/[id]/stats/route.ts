@@ -91,13 +91,13 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
 
   const lastGw = lastGwResult.rows[0]?.last_gw;
 
-  if (!lastGw) {
+  if (!lastGw || lastGw === null) {
     return { rankChange: 0, previousRank: currentRank };
   }
 
   // Get all standings data
   const allStandingsResult = await db.query(`
-    SELECT entry_id, total, matches_won, matches_drawn, matches_lost, points_for
+    SELECT entry_id, total, points_for
     FROM league_standings
     WHERE league_id = $1
   `, [leagueId]);
@@ -115,48 +115,46 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
 
   // Calculate standings before last gameweek
   const previousStandings = allStandings.map((standing: any) => {
-    let adjustedTotal = parseInt(standing.total);
-    let adjustedWins = parseInt(standing.matches_won);
-    let adjustedDraws = parseInt(standing.matches_drawn);
-    let adjustedLosses = parseInt(standing.matches_lost);
-    let adjustedPointsFor = parseInt(standing.points_for);
+    // Convert to numbers (PostgreSQL BIGINT comes as string)
+    const standingEntryId = Number(standing.entry_id);
+    let adjustedTotal = Number(standing.total);
+    let adjustedPointsFor = Number(standing.points_for);
 
-    // Find matches for this entry in last GW
+    // Find this team's match in the last gameweek
     for (const match of lastGwMatches) {
-      const entry1Id = parseInt(match.entry_1_id);
-      const entry2Id = parseInt(match.entry_2_id);
-      const winner = match.winner ? parseInt(match.winner) : null;
-      const entryIdNum = parseInt(standing.entry_id);
+      const entry1Id = Number(match.entry_1_id);
+      const entry2Id = Number(match.entry_2_id);
+      const winner = match.winner ? Number(match.winner) : null;
 
-      if (entry1Id === entryIdNum) {
-        // This entry was entry_1
-        adjustedPointsFor -= parseInt(match.entry_1_points);
-        if (winner === entryIdNum) {
-          adjustedTotal -= 3;
-          adjustedWins -= 1;
+      if (entry1Id === standingEntryId) {
+        // This team was entry_1 - subtract their points scored
+        adjustedPointsFor -= Number(match.entry_1_points);
+
+        // Subtract league points earned
+        if (winner === standingEntryId) {
+          adjustedTotal -= 3; // Win
         } else if (winner === null) {
-          adjustedTotal -= 1;
-          adjustedDraws -= 1;
-        } else {
-          adjustedLosses -= 1;
+          adjustedTotal -= 1; // Draw
         }
-      } else if (entry2Id === entryIdNum) {
-        // This entry was entry_2
-        adjustedPointsFor -= parseInt(match.entry_2_points);
-        if (winner === entryIdNum) {
-          adjustedTotal -= 3;
-          adjustedWins -= 1;
+        // Loss = 0 points, so no subtraction needed
+        break; // Found their match, stop looking
+      } else if (entry2Id === standingEntryId) {
+        // This team was entry_2 - subtract their points scored
+        adjustedPointsFor -= Number(match.entry_2_points);
+
+        // Subtract league points earned
+        if (winner === standingEntryId) {
+          adjustedTotal -= 3; // Win
         } else if (winner === null) {
-          adjustedTotal -= 1;
-          adjustedDraws -= 1;
-        } else {
-          adjustedLosses -= 1;
+          adjustedTotal -= 1; // Draw
         }
+        // Loss = 0 points, so no subtraction needed
+        break; // Found their match, stop looking
       }
     }
 
     return {
-      entry_id: standing.entry_id,
+      entry_id: standingEntryId, // Store as number for comparison
       adjustedTotal,
       adjustedPointsFor
     };
@@ -170,8 +168,15 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
     return b.adjustedPointsFor - a.adjustedPointsFor;
   });
 
-  // Find previous rank
-  const previousRank = previousStandings.findIndex((s: any) => parseInt(s.entry_id) === entryId) + 1;
+  // Find previous rank (entry_id is now stored as number)
+  const previousRank = previousStandings.findIndex((s: any) => s.entry_id === entryId) + 1;
+
+  if (previousRank === 0) {
+    // Not found - shouldn't happen, but return safe default
+    console.warn(`Could not find previous rank for entryId ${entryId}`);
+    return { rankChange: 0, previousRank: currentRank };
+  }
+
   const rankChange = previousRank - currentRank; // Positive = moved up, negative = moved down
 
   return { rankChange, previousRank };
