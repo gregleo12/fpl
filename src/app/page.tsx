@@ -66,6 +66,7 @@ export default function Home() {
                   <thead>
                     <tr>
                       <th>Rank</th>
+                      <th>Last GW</th>
                       <th>Manager</th>
                       <th>Team</th>
                       <th>Played</th>
@@ -83,6 +84,21 @@ export default function Home() {
                     {data.standings?.map((standing: any) => (
                       <tr key={standing.entry_id}>
                         <td>{standing.rank}</td>
+                        <td>
+                          {standing.rankChange !== undefined && (
+                            <span
+                              className={`${styles.rankChange} ${
+                                standing.rankChange > 0 ? styles.rankUp :
+                                standing.rankChange < 0 ? styles.rankDown :
+                                styles.rankSame
+                              }`}
+                            >
+                              {standing.rankChange > 0 ? `↑ ${standing.rankChange}` :
+                               standing.rankChange < 0 ? `↓ ${Math.abs(standing.rankChange)}` :
+                               '→'}
+                            </span>
+                          )}
+                        </td>
                         <td>{standing.player_name}</td>
                         <td>{standing.team_name}</td>
                         <td>{standing.matches_played}</td>
@@ -125,28 +141,6 @@ export default function Home() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h2>Recent Matches</h2>
-              <div className={styles.matches}>
-                {data.recentMatches?.map((match: any) => (
-                  <div key={match.id} className={styles.match}>
-                    <div className={styles.matchEvent}>GW {match.event}</div>
-                    <div className={styles.matchDetails}>
-                      <div className={match.winner === match.entry_1_id ? styles.winner : ''}>
-                        {match.entry_1_player} ({match.entry_1_team})
-                        <span className={styles.score}>{match.entry_1_points}</span>
-                      </div>
-                      <div className={styles.vs}>vs</div>
-                      <div className={match.winner === match.entry_2_id ? styles.winner : ''}>
-                        {match.entry_2_player} ({match.entry_2_team})
-                        <span className={styles.score}>{match.entry_2_points}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
               </div>
             </section>
           </>

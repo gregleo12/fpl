@@ -80,6 +80,103 @@ async function calculateFormAndStreak(entryId: number, leagueId: number, db: any
   };
 }
 
+async function calculateRankChange(entryId: number, leagueId: number, currentRank: number, db: any) {
+  // Get the most recent completed gameweek
+  const lastGwResult = await db.query(`
+    SELECT MAX(event) as last_gw
+    FROM h2h_matches
+    WHERE league_id = $1
+      AND (entry_1_points > 0 OR entry_2_points > 0)
+  `, [leagueId]);
+
+  const lastGw = lastGwResult.rows[0]?.last_gw;
+
+  if (!lastGw) {
+    return { rankChange: 0, previousRank: currentRank };
+  }
+
+  // Get all standings data
+  const allStandingsResult = await db.query(`
+    SELECT entry_id, total, matches_won, matches_drawn, matches_lost, points_for
+    FROM league_standings
+    WHERE league_id = $1
+  `, [leagueId]);
+
+  const allStandings = allStandingsResult.rows;
+
+  // Get last gameweek matches
+  const lastGwMatchesResult = await db.query(`
+    SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, winner
+    FROM h2h_matches
+    WHERE league_id = $1 AND event = $2
+  `, [leagueId, lastGw]);
+
+  const lastGwMatches = lastGwMatchesResult.rows;
+
+  // Calculate standings before last gameweek
+  const previousStandings = allStandings.map((standing: any) => {
+    let adjustedTotal = parseInt(standing.total);
+    let adjustedWins = parseInt(standing.matches_won);
+    let adjustedDraws = parseInt(standing.matches_drawn);
+    let adjustedLosses = parseInt(standing.matches_lost);
+    let adjustedPointsFor = parseInt(standing.points_for);
+
+    // Find matches for this entry in last GW
+    for (const match of lastGwMatches) {
+      const entry1Id = parseInt(match.entry_1_id);
+      const entry2Id = parseInt(match.entry_2_id);
+      const winner = match.winner ? parseInt(match.winner) : null;
+      const entryIdNum = parseInt(standing.entry_id);
+
+      if (entry1Id === entryIdNum) {
+        // This entry was entry_1
+        adjustedPointsFor -= parseInt(match.entry_1_points);
+        if (winner === entryIdNum) {
+          adjustedTotal -= 3;
+          adjustedWins -= 1;
+        } else if (winner === null) {
+          adjustedTotal -= 1;
+          adjustedDraws -= 1;
+        } else {
+          adjustedLosses -= 1;
+        }
+      } else if (entry2Id === entryIdNum) {
+        // This entry was entry_2
+        adjustedPointsFor -= parseInt(match.entry_2_points);
+        if (winner === entryIdNum) {
+          adjustedTotal -= 3;
+          adjustedWins -= 1;
+        } else if (winner === null) {
+          adjustedTotal -= 1;
+          adjustedDraws -= 1;
+        } else {
+          adjustedLosses -= 1;
+        }
+      }
+    }
+
+    return {
+      entry_id: standing.entry_id,
+      adjustedTotal,
+      adjustedPointsFor
+    };
+  });
+
+  // Sort by adjusted total (desc), then by adjusted points for (desc)
+  previousStandings.sort((a: any, b: any) => {
+    if (b.adjustedTotal !== a.adjustedTotal) {
+      return b.adjustedTotal - a.adjustedTotal;
+    }
+    return b.adjustedPointsFor - a.adjustedPointsFor;
+  });
+
+  // Find previous rank
+  const previousRank = previousStandings.findIndex((s: any) => parseInt(s.entry_id) === entryId) + 1;
+  const rankChange = previousRank - currentRank; // Positive = moved up, negative = moved down
+
+  return { rankChange, previousRank };
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -107,13 +204,15 @@ export async function GET(
 
     const standings = standingsResult.rows;
 
-    // Calculate form and streak for each manager
+    // Calculate form, streak, and rank change for each manager
     const standingsWithForm = await Promise.all(
       standings.map(async (standing: any) => {
         const formData = await calculateFormAndStreak(standing.entry_id, leagueId, db);
+        const rankData = await calculateRankChange(standing.entry_id, leagueId, standing.rank, db);
         return {
           ...standing,
-          ...formData
+          ...formData,
+          ...rankData
         };
       })
     );

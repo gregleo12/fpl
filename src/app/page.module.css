@@ -213,3 +213,25 @@
   background: #d32f2f;
   color: white;
 }
+
+/* Rank change indicators */
+.rankChange {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.875rem;
+  min-width: 32px;
+}
+
+.rankUp {
+  color: #00ff87;
+}
+
+.rankDown {
+  color: #ff2882;
+}
+
+.rankSame {
+  color: #999;
+}
