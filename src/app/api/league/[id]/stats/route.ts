@@ -91,7 +91,10 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
 
   const lastGw = lastGwResult.rows[0]?.last_gw;
 
+  console.log(`[DEBUG] League ${leagueId} - Last completed GW: ${lastGw}`);
+
   if (!lastGw || lastGw === null) {
+    console.log(`[DEBUG] No completed gameweeks found for league ${leagueId}`);
     return { rankChange: 0, previousRank: currentRank };
   }
 
@@ -112,6 +115,8 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   `, [leagueId, lastGw]);
 
   const lastGwMatches = lastGwMatchesResult.rows;
+
+  console.log(`[DEBUG] Found ${lastGwMatches.length} matches in GW${lastGw} for league ${leagueId}`);
 
   // Calculate standings before last gameweek
   const previousStandings = allStandings.map((standing: any) => {
