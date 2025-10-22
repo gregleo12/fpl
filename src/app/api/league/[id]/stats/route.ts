@@ -206,6 +206,11 @@ function rebuildStandingsFromMatches(matches: any[], managers: any[], upToGW: nu
     const entry2Points = Number(match.entry_2_points);
     const winner = match.winner ? Number(match.winner) : null;
 
+    // Debug logging for first few matches
+    if (match.event <= 2) {
+      console.log(`GW${match.event}: ${entry1} (${entry1Points}) vs ${entry2} (${entry2Points}) - winner raw: ${match.winner} (type: ${typeof match.winner}), converted: ${winner}`);
+    }
+
     if (!standings[entry1] || !standings[entry2]) return;
 
     // Update matches played and points
