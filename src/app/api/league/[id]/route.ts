@@ -66,6 +66,15 @@ export async function GET(
 
     // Store matches
     for (const match of matches) {
+      // Calculate winner based on points (don't trust API's winner field)
+      let winner = null;
+      if (match.entry_1_points > match.entry_2_points) {
+        winner = match.entry_1_entry;
+      } else if (match.entry_2_points > match.entry_1_points) {
+        winner = match.entry_2_entry;
+      }
+      // If points are equal, winner stays null (draw)
+
       await db.query(`
         INSERT INTO h2h_matches
         (league_id, event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner)
@@ -81,7 +90,7 @@ export async function GET(
         match.entry_1_points,
         match.entry_2_entry,
         match.entry_2_points,
-        match.winner
+        winner
       ]);
     }
 
