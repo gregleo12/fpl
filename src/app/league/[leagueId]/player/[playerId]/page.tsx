@@ -6,6 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import BottomNav from '@/components/BottomNav';
 import styles from './player.module.css';
 
+// Force route generation
+export const dynamic = 'force-dynamic';
+
 export default function PlayerProfile() {
   const params = useParams();
   const router = useRouter();
