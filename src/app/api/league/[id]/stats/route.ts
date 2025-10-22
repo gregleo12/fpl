@@ -179,6 +179,8 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   if (previousRank === 0) {
     // Not found - shouldn't happen, but return safe default
     console.warn(`Could not find previous rank for entryId ${entryId}`);
+    console.warn(`Looking for: ${entryId} (type: ${typeof entryId})`);
+    console.warn(`First 3 entries in previousStandings:`, previousStandings.slice(0, 3).map((s: any) => `${s.entry_id} (type: ${typeof s.entry_id})`));
     return { rankChange: 0, previousRank: currentRank };
   }
 
