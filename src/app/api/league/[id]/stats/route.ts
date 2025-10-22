@@ -81,6 +81,9 @@ async function calculateFormAndStreak(entryId: number, leagueId: number, db: any
 }
 
 async function calculateRankChange(entryId: number, leagueId: number, currentRank: number, db: any) {
+  // Convert entryId to number in case it comes as string from PostgreSQL BIGINT
+  const entryIdNum = Number(entryId);
+
   // Get the most recent completed gameweek
   const lastGwResult = await db.query(`
     SELECT MAX(event) as last_gw
@@ -91,10 +94,7 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
 
   const lastGw = lastGwResult.rows[0]?.last_gw;
 
-  console.log(`[DEBUG] League ${leagueId} - Last completed GW: ${lastGw}`);
-
   if (!lastGw || lastGw === null) {
-    console.log(`[DEBUG] No completed gameweeks found for league ${leagueId}`);
     return { rankChange: 0, previousRank: currentRank };
   }
 
@@ -174,13 +174,11 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   });
 
   // Find previous rank (entry_id is now stored as number)
-  const previousRank = previousStandings.findIndex((s: any) => s.entry_id === entryId) + 1;
+  const previousRank = previousStandings.findIndex((s: any) => s.entry_id === entryIdNum) + 1;
 
   if (previousRank === 0) {
     // Not found - shouldn't happen, but return safe default
-    console.warn(`Could not find previous rank for entryId ${entryId}`);
-    console.warn(`Looking for: ${entryId} (type: ${typeof entryId})`);
-    console.warn(`First 3 entries in previousStandings:`, previousStandings.slice(0, 3).map((s: any) => `${s.entry_id} (type: ${typeof s.entry_id})`));
+    console.warn(`Could not find previous rank for entryId ${entryIdNum}`);
     return { rankChange: 0, previousRank: currentRank };
   }
 
