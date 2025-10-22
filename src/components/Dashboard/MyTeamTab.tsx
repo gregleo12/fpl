@@ -11,6 +11,19 @@ interface Props {
   leagueId: string;
 }
 
+// Helper to get chip abbreviation
+function getChipAbbreviation(chipName: string): string {
+  const chipMap: { [key: string]: string } = {
+    'wildcard': 'WC',
+    'bboost': 'BB',
+    '3xc': 'TC',
+    'freehit': 'FH'
+  };
+
+  const normalized = chipName.toLowerCase().replace(/\s+/g, '');
+  return chipMap[normalized] || chipName;
+}
+
 export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName }: Props) {
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No team data available</div>;
@@ -159,7 +172,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                   const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
                   return (
                     <tr key={chip.event}>
-                      <td><span className={styles.chipBadge}>{chip.name}</span></td>
+                      <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.name)}</span></td>
                       <td>GW{chip.event}</td>
                       <td>{match?.opponentName || '-'}</td>
                       <td>
@@ -218,7 +231,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                     <tr key={idx}>
                       <td>GW{chip.event}</td>
                       <td>{chip.opponentName}</td>
-                      <td><span className={styles.chipBadge}>{chip.chipName}</span></td>
+                      <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.chipName)}</span></td>
                       <td>{chip.opponentPoints}</td>
                       <td>
                         <span className={`${styles.resultBadge} ${
@@ -271,12 +284,12 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                       <div className={styles.chipsCell}>
                         {yourChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
-                            You: {yourChip.name}
+                            You: {getChipAbbreviation(yourChip.name)}
                           </span>
                         )}
                         {oppChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
-                            Opp: {oppChip.chipName}
+                            Opp: {getChipAbbreviation(oppChip.chipName)}
                           </span>
                         )}
                         {!yourChip && !oppChip && (

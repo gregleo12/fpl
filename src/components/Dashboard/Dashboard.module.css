@@ -159,8 +159,14 @@
 /* Stats Grid */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .statCard {
@@ -203,14 +209,20 @@
   flex-wrap: wrap;
 }
 
+.form {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
 .formIndicator {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  font-size: 1rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: 800;
   color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -390,6 +402,17 @@
     padding: 0.75rem 0.5rem;
     font-size: 0.85rem;
   }
+
+  .formIndicator {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+  }
+
+  .streak {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -417,6 +440,11 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .statCard {
+    padding: 1rem;
   }
 
   .statValue {
@@ -428,9 +456,9 @@
   }
 
   .formIndicator {
-    width: 32px;
-    height: 32px;
-    font-size: 0.9rem;
+    width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
   }
 
   .table {
@@ -449,6 +477,26 @@
 
   .chipsCell {
     gap: 0.25rem;
+  }
+
+  /* Hide non-essential columns on mobile portrait */
+  .teamCol,
+  .formCol,
+  .streakCol,
+  .pfCol,
+  .diffCol {
+    display: none;
+  }
+
+  /* Ensure manager column shows both name and team */
+  .managerCol {
+    min-width: 120px;
+  }
+
+  /* Compact record columns */
+  .recordCol {
+    padding: 0.5rem 0.25rem;
+    text-align: center;
   }
 }
 

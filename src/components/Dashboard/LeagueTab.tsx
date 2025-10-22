@@ -24,17 +24,17 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
           <table>
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Manager</th>
-                <th>Team</th>
-                <th>W</th>
-                <th>D</th>
-                <th>L</th>
-                <th>Form</th>
-                <th>Streak</th>
-                <th>PF</th>
-                <th>+/-</th>
-                <th>Pts</th>
+                <th className={styles.rankCol}>Rank</th>
+                <th className={styles.managerCol}>Manager</th>
+                <th className={styles.teamCol}>Team</th>
+                <th className={styles.recordCol}>W</th>
+                <th className={styles.recordCol}>D</th>
+                <th className={styles.recordCol}>L</th>
+                <th className={styles.formCol}>Form</th>
+                <th className={styles.streakCol}>Streak</th>
+                <th className={styles.pfCol}>PF</th>
+                <th className={styles.diffCol}>+/-</th>
+                <th className={styles.ptsCol}>Pts</th>
               </tr>
             </thead>
             <tbody>
@@ -48,13 +48,18 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                     className={isMyTeam ? styles.myTeamRow : ''}
                     onClick={() => router.push(`/league/${leagueId}/player/${team.entry_id}`)}
                   >
-                    <td>{team.rank}</td>
-                    <td>{team.player_name}</td>
-                    <td>{team.team_name}</td>
-                    <td>{team.matches_won}</td>
-                    <td>{team.matches_drawn}</td>
-                    <td>{team.matches_lost}</td>
-                    <td>
+                    <td className={styles.rankCol}>{team.rank}</td>
+                    <td className={styles.managerCol}>
+                      <div>
+                        <div style={{ fontWeight: 600 }}>{team.player_name}</div>
+                        <div style={{ fontSize: '0.85em', color: 'rgba(255, 255, 255, 0.6)' }}>{team.team_name}</div>
+                      </div>
+                    </td>
+                    <td className={styles.teamCol}>{team.team_name}</td>
+                    <td className={styles.recordCol}>{team.matches_won}</td>
+                    <td className={styles.recordCol}>{team.matches_drawn}</td>
+                    <td className={styles.recordCol}>{team.matches_lost}</td>
+                    <td className={styles.formCol}>
                       <div className={styles.form}>
                         {team.formArray?.map((result: string, idx: number) => (
                           <span
@@ -70,7 +75,7 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                         ))}
                       </div>
                     </td>
-                    <td>
+                    <td className={styles.streakCol}>
                       {team.streak && (
                         <span
                           className={`${styles.streak} ${
@@ -83,8 +88,8 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                         </span>
                       )}
                     </td>
-                    <td>{team.points_for}</td>
-                    <td>
+                    <td className={styles.pfCol}>{team.points_for}</td>
+                    <td className={styles.diffCol}>
                       <span className={`${styles.differential} ${
                         differential > 0 ? styles.positive :
                         differential < 0 ? styles.negative :
@@ -93,7 +98,7 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                         {differential > 0 ? `+${differential}` : differential}
                       </span>
                     </td>
-                    <td><strong>{team.total}</strong></td>
+                    <td className={styles.ptsCol}><strong>{team.total}</strong></td>
                   </tr>
                 );
               })}
