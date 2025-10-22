@@ -6,9 +6,9 @@ interface MatchResult {
   event: number;
 }
 
-function calculateFormAndStreak(entryId: number, leagueId: number, db: any) {
+async function calculateFormAndStreak(entryId: number, leagueId: number, db: any) {
   // Get all completed matches for this manager, ordered by event DESC (most recent first)
-  const matches = db.prepare(`
+  const result = await db.query(`
     SELECT
       event,
       entry_1_id,
@@ -17,11 +17,13 @@ function calculateFormAndStreak(entryId: number, leagueId: number, db: any) {
       entry_2_points,
       winner
     FROM h2h_matches
-    WHERE league_id = ?
-      AND (entry_1_id = ? OR entry_2_id = ?)
+    WHERE league_id = $1
+      AND (entry_1_id = $2 OR entry_2_id = $2)
       AND (entry_1_points > 0 OR entry_2_points > 0)
     ORDER BY event DESC
-  `).all(leagueId, entryId, entryId);
+  `, [leagueId, entryId]);
+
+  const matches = result.rows;
 
   if (matches.length === 0) {
     return {
@@ -86,31 +88,35 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // Get current standings
-    const standings = db.prepare(`
+    const standingsResult = await db.query(`
       SELECT
         ls.*,
         m.player_name,
         m.team_name
       FROM league_standings ls
       JOIN managers m ON ls.entry_id = m.entry_id
-      WHERE ls.league_id = ?
+      WHERE ls.league_id = $1
       ORDER BY ls.rank ASC
-    `).all(leagueId);
+    `, [leagueId]);
+
+    const standings = standingsResult.rows;
 
     // Calculate form and streak for each manager
-    const standingsWithForm = standings.map((standing: any) => {
-      const formData = calculateFormAndStreak(standing.entry_id, leagueId, db);
-      return {
-        ...standing,
-        ...formData
-      };
-    });
+    const standingsWithForm = await Promise.all(
+      standings.map(async (standing: any) => {
+        const formData = await calculateFormAndStreak(standing.entry_id, leagueId, db);
+        return {
+          ...standing,
+          ...formData
+        };
+      })
+    );
 
     // Get recent matches (only show completed matches where points were scored)
-    const recentMatches = db.prepare(`
+    const recentMatchesResult = await db.query(`
       SELECT
         hm.*,
         m1.player_name as entry_1_player,
@@ -120,14 +126,17 @@ export async function GET(
       FROM h2h_matches hm
       JOIN managers m1 ON hm.entry_1_id = m1.entry_id
       JOIN managers m2 ON hm.entry_2_id = m2.entry_id
-      WHERE hm.league_id = ?
+      WHERE hm.league_id = $1
         AND (hm.entry_1_points > 0 OR hm.entry_2_points > 0)
       ORDER BY hm.event DESC
       LIMIT 20
-    `).all(leagueId);
+    `, [leagueId]);
+
+    const recentMatches = recentMatchesResult.rows;
 
     // Get league info
-    const league = db.prepare('SELECT * FROM leagues WHERE id = ?').get(leagueId);
+    const leagueResult = await db.query('SELECT * FROM leagues WHERE id = $1', [leagueId]);
+    const league = leagueResult.rows[0];
 
     return NextResponse.json({
       league,

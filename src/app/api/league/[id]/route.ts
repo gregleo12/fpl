@@ -16,31 +16,41 @@ export async function GET(
     const league = await fplApi.getH2HLeague(leagueId);
     const matches = await fplApi.getAllH2HMatches(leagueId);
 
-    const db = getDatabase();
+    const db = await getDatabase();
 
     // Store league info
-    db.prepare(`
-      INSERT OR REPLACE INTO leagues (id, name, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-    `).run(league.league.id, league.league.name);
+    await db.query(`
+      INSERT INTO leagues (id, name, updated_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (id) DO UPDATE SET name = $2, updated_at = CURRENT_TIMESTAMP
+    `, [league.league.id, league.league.name]);
 
-    // Store standings
-    const standingsStmt = db.prepare(`
-      INSERT OR REPLACE INTO league_standings
-      (league_id, entry_id, rank, matches_played, matches_won, matches_drawn,
-       matches_lost, points_for, points_against, total, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    `);
-
+    // Store standings and managers
     for (const standing of league.standings.results) {
       // Store manager info
-      db.prepare(`
-        INSERT OR IGNORE INTO managers (entry_id, player_name, team_name)
-        VALUES (?, ?, ?)
-      `).run(standing.entry, standing.player_name, standing.entry_name);
+      await db.query(`
+        INSERT INTO managers (entry_id, player_name, team_name)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (entry_id) DO UPDATE SET player_name = $2, team_name = $3
+      `, [standing.entry, standing.player_name, standing.entry_name]);
 
       // Store standing
-      standingsStmt.run(
+      await db.query(`
+        INSERT INTO league_standings
+        (league_id, entry_id, rank, matches_played, matches_won, matches_drawn,
+         matches_lost, points_for, points_against, total, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
+        ON CONFLICT (league_id, entry_id) DO UPDATE SET
+          rank = $3,
+          matches_played = $4,
+          matches_won = $5,
+          matches_drawn = $6,
+          matches_lost = $7,
+          points_for = $8,
+          points_against = $9,
+          total = $10,
+          updated_at = CURRENT_TIMESTAMP
+      `, [
         leagueId,
         standing.entry,
         standing.rank,
@@ -51,18 +61,20 @@ export async function GET(
         standing.points_for,
         standing.points_against,
         standing.total
-      );
+      ]);
     }
 
     // Store matches
-    const matchStmt = db.prepare(`
-      INSERT OR REPLACE INTO h2h_matches
-      (league_id, event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
-
     for (const match of matches) {
-      matchStmt.run(
+      await db.query(`
+        INSERT INTO h2h_matches
+        (league_id, event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (league_id, event, entry_1_id, entry_2_id) DO UPDATE SET
+          entry_1_points = $4,
+          entry_2_points = $6,
+          winner = $7
+      `, [
         leagueId,
         match.event,
         match.entry_1_entry,
@@ -70,7 +82,7 @@ export async function GET(
         match.entry_2_entry,
         match.entry_2_points,
         match.winner
-      );
+      ]);
     }
 
     return NextResponse.json({

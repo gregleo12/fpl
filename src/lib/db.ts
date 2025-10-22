@@ -1,55 +1,48 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import { Pool, QueryResult } from 'pg';
 
-const dbPath = process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'fpl.db');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
-let db: Database.Database | null = null;
+let initialized = false;
 
-export function getDatabase(): Database.Database {
-  if (!db) {
-    db = new Database(dbPath);
-    db.pragma('journal_mode = WAL');
-    initializeDatabase(db);
-  }
-  return db;
-}
+async function initializeDatabase() {
+  if (initialized) return;
 
-function initializeDatabase(database: Database.Database) {
-  database.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS leagues (
-      id INTEGER PRIMARY KEY,
+      id BIGINT PRIMARY KEY,
       name TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS managers (
-      id INTEGER PRIMARY KEY,
-      entry_id INTEGER UNIQUE NOT NULL,
+      id SERIAL PRIMARY KEY,
+      entry_id BIGINT UNIQUE NOT NULL,
       player_name TEXT NOT NULL,
       team_name TEXT NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS h2h_matches (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      league_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      league_id BIGINT NOT NULL,
       event INTEGER NOT NULL,
-      entry_1_id INTEGER NOT NULL,
+      entry_1_id BIGINT NOT NULL,
       entry_1_points INTEGER NOT NULL,
-      entry_2_id INTEGER NOT NULL,
+      entry_2_id BIGINT NOT NULL,
       entry_2_points INTEGER NOT NULL,
-      winner INTEGER,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (league_id) REFERENCES leagues(id),
-      FOREIGN KEY (entry_1_id) REFERENCES managers(entry_id),
-      FOREIGN KEY (entry_2_id) REFERENCES managers(entry_id)
+      winner BIGINT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(league_id, event, entry_1_id, entry_2_id)
     );
 
     CREATE TABLE IF NOT EXISTS league_standings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      league_id INTEGER NOT NULL,
-      entry_id INTEGER NOT NULL,
+      id SERIAL PRIMARY KEY,
+      league_id BIGINT NOT NULL,
+      entry_id BIGINT NOT NULL,
       rank INTEGER NOT NULL,
       matches_played INTEGER DEFAULT 0,
       matches_won INTEGER DEFAULT 0,
@@ -58,9 +51,7 @@ function initializeDatabase(database: Database.Database) {
       points_for INTEGER DEFAULT 0,
       points_against INTEGER DEFAULT 0,
       total INTEGER DEFAULT 0,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (league_id) REFERENCES leagues(id),
-      FOREIGN KEY (entry_id) REFERENCES managers(entry_id),
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(league_id, entry_id)
     );
 
@@ -68,11 +59,15 @@ function initializeDatabase(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_h2h_matches_event ON h2h_matches(event);
     CREATE INDEX IF NOT EXISTS idx_standings_league ON league_standings(league_id);
   `);
+
+  initialized = true;
 }
 
-export function closeDatabase() {
-  if (db) {
-    db.close();
-    db = null;
-  }
+export async function getDatabase() {
+  await initializeDatabase();
+  return pool;
+}
+
+export async function closeDatabase() {
+  await pool.end();
 }
