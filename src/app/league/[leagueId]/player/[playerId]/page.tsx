@@ -1,5 +1,6 @@
 'use client';
 
+// Player profile page
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import BottomNav from '@/components/BottomNav';
