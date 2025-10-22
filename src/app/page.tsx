@@ -145,7 +145,7 @@ export default function Home() {
                       <th>Form</th>
                       <th>Streak</th>
                       <th>PF</th>
-                      <th>PA</th>
+                      <th>+/-</th>
                       <th>Pts</th>
                     </tr>
                   </thead>
@@ -204,7 +204,17 @@ export default function Home() {
                           )}
                         </td>
                         <td>{standing.points_for}</td>
-                        <td>{standing.points_against}</td>
+                        <td>
+                          <span className={`${styles.differential} ${
+                            standing.points_for - standing.points_against > 0 ? styles.diffPositive :
+                            standing.points_for - standing.points_against < 0 ? styles.diffNegative :
+                            styles.diffNeutral
+                          }`}>
+                            {standing.points_for - standing.points_against > 0
+                              ? `+${standing.points_for - standing.points_against}`
+                              : standing.points_for - standing.points_against}
+                          </span>
+                        </td>
                         <td><strong>{standing.total}</strong></td>
                       </tr>
                     ))}
