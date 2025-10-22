@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import BottomNav from '@/components/BottomNav';
 import styles from './player.module.css';
 
 export default function PlayerProfile() {
@@ -274,6 +275,7 @@ export default function PlayerProfile() {
           </div>
         </section>
       </main>
+      <BottomNav />
     </div>
   );
 }

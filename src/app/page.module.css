@@ -528,6 +528,10 @@
 }
 
 @media (max-width: 768px) {
+  .main {
+    margin-bottom: 5rem; /* Space for bottom nav */
+  }
+
   .search {
     flex-direction: column;
   }

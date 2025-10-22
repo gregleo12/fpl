@@ -299,9 +299,25 @@
 }
 
 /* Mobile Responsive */
+@media (max-width: 1024px) {
+  .overviewCard,
+  .section {
+    padding: 2rem;
+  }
+
+  .table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
+  }
+
+  .main {
+    margin-bottom: 5rem; /* Space for bottom nav */
   }
 
   .playerName {
@@ -314,10 +330,21 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
+  .overviewCard,
   .section {
     padding: 1.5rem;
+  }
+
+  .section h2 {
+    font-size: 1.25rem;
+  }
+
+  .table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .table th,
@@ -326,12 +353,28 @@
     font-size: 0.85rem;
   }
 
+  .table th {
+    font-size: 0.7rem;
+  }
+
+  /* Hide opponent column in chips tables on mobile */
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    display: none;
+  }
+
   .statsRow {
     grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
   .statCardValue {
     font-size: 2rem;
+  }
+
+  .chipsSummary {
+    font-size: 0.9rem;
+    padding: 0.75rem;
   }
 }
 
@@ -349,7 +392,52 @@
     grid-template-columns: 1fr;
   }
 
+  .statBox {
+    padding: 1rem;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
   .statsRow {
     grid-template-columns: 1fr;
+  }
+
+  .statCardValue {
+    font-size: 1.75rem;
+  }
+
+  .overviewCard,
+  .section {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .backButton {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  /* Further simplify tables on very small screens */
+  .table th,
+  .table td {
+    padding: 0.5rem 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .chipBadge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .result {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .chipsSummary {
+    font-size: 0.85rem;
   }
 }
