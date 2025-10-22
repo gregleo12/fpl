@@ -1,21 +1,23 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import styles from './Dashboard.module.css';
 
 interface Props {
   data: any;
+  playerData: any;
   myTeamId: string;
   myManagerName: string;
   myTeamName: string;
   leagueId: string;
 }
 
-export default function MyTeamTab({ data, myTeamId, myManagerName, myTeamName, leagueId }: Props) {
-  const router = useRouter();
-
+export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName }: Props) {
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No team data available</div>;
+  }
+
+  if (!playerData) {
+    return <div className={styles.emptyState}>Loading your profile...</div>;
   }
 
   const myTeam = data.standings.find((team: any) => team.entry_id.toString() === myTeamId);
@@ -24,7 +26,8 @@ export default function MyTeamTab({ data, myTeamId, myManagerName, myTeamName, l
     return <div className={styles.emptyState}>Team not found in league</div>;
   }
 
-  const differential = myTeam.points_for - myTeam.points_against;
+  const differential = playerData.stats.totalPointsFor -
+    playerData.matchHistory.reduce((sum: number, m: any) => sum + m.opponentPoints, 0);
 
   return (
     <div className={styles.myTeamTab}>
@@ -45,30 +48,14 @@ export default function MyTeamTab({ data, myTeamId, myManagerName, myTeamName, l
       {/* Stats Grid */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <span className={styles.statValue}>{myTeam.matches_played}</span>
-          <span className={styles.statLabel}>Matches Played</span>
+          <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
+          <span className={styles.statLabel}>Played</span>
         </div>
         <div className={styles.statCard}>
-          <span className={styles.statValue}>{myTeam.matches_won}</span>
-          <span className={styles.statLabel}>Wins</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{myTeam.matches_drawn}</span>
-          <span className={styles.statLabel}>Draws</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{myTeam.matches_lost}</span>
-          <span className={styles.statLabel}>Losses</span>
-        </div>
-      </div>
-
-      {/* Points */}
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{myTeam.points_for}</span>
+          <span className={styles.statValue}>{playerData.stats.totalPointsFor}</span>
           <span className={styles.statLabel}>Points For</span>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard}`}>
           <span className={`${styles.statValue} ${
             differential > 0 ? styles.positive :
             differential < 0 ? styles.negative :
@@ -76,11 +63,31 @@ export default function MyTeamTab({ data, myTeamId, myManagerName, myTeamName, l
           }`}>
             {differential > 0 ? `+${differential}` : differential}
           </span>
-          <span className={styles.statLabel}>Differential</span>
+          <span className={styles.statLabel}>+/-</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
+          <span className={styles.statLabel}>Avg/GW</span>
+        </div>
+      </div>
+
+      {/* Record */}
+      <div className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <span className={styles.statValue}>{playerData.stats.wins}</span>
+          <span className={styles.statLabel}>Wins</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statValue}>{playerData.stats.draws}</span>
+          <span className={styles.statLabel}>Draws</span>
+        </div>
+        <div className={styles.statCard}>
+          <span className={styles.statValue}>{playerData.stats.losses}</span>
+          <span className={styles.statLabel}>Losses</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{myTeam.total}</span>
-          <span className={styles.statLabel}>Total Points</span>
+          <span className={styles.statLabel}>Total Pts</span>
         </div>
       </div>
 
@@ -105,13 +112,178 @@ export default function MyTeamTab({ data, myTeamId, myManagerName, myTeamName, l
         </div>
       )}
 
-      {/* View Full Profile */}
-      <button
-        onClick={() => router.push(`/league/${leagueId}/player/${myTeamId}`)}
-        className={styles.viewProfileButton}
-      >
-        View Full Profile →
-      </button>
+      {/* Season Stats */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Season Stats</h3>
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.highestScore}</span>
+            <span className={styles.statLabel}>Highest Score</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.lowestScore}</span>
+            <span className={styles.statLabel}>Lowest Score</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={`${styles.statValue} ${styles.positive}`}>
+              +{playerData.stats.biggestWin}
+            </span>
+            <span className={styles.statLabel}>Biggest Win</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={`${styles.statValue} ${styles.negative}`}>
+              {playerData.stats.biggestLoss}
+            </span>
+            <span className={styles.statLabel}>Biggest Loss</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Chips Played */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Chips Played</h3>
+        {playerData.chipsPlayed.length > 0 ? (
+          <div className={styles.table}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Chip</th>
+                  <th>GW</th>
+                  <th>Opponent</th>
+                  <th>Score</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {playerData.chipsPlayed.map((chip: any) => {
+                  const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
+                  return (
+                    <tr key={chip.event}>
+                      <td><span className={styles.chipBadge}>{chip.name}</span></td>
+                      <td>GW{chip.event}</td>
+                      <td>{match?.opponentName || '-'}</td>
+                      <td>
+                        {match ? `${match.playerPoints}-${match.opponentPoints}` : '-'}
+                      </td>
+                      <td>
+                        {match && (
+                          <span className={`${styles.resultBadge} ${
+                            match.result === 'W' ? styles.resultWin :
+                            match.result === 'D' ? styles.resultDraw :
+                            styles.resultLoss
+                          }`}>
+                            {match.result}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className={styles.emptyState}>No chips played yet</p>
+        )}
+      </div>
+
+      {/* Chips Faced */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Chips Faced Against</h3>
+        {playerData.chipsFaced.length > 0 ? (
+          <>
+            <div className={styles.chipsSummary}>
+              <span>Faced <strong>{playerData.chipsFaced.length}</strong> chips total - </span>
+              <span className={styles.positive}>
+                Won {playerData.chipsFaced.filter((c: any) => c.result === 'W').length}
+              </span>
+              <span> / </span>
+              <span className={styles.negative}>
+                Lost {playerData.chipsFaced.filter((c: any) => c.result === 'L').length}
+              </span>
+            </div>
+            <div className={styles.table}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>GW</th>
+                    <th>Opponent</th>
+                    <th>Chip Used</th>
+                    <th>Their Score</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playerData.chipsFaced.map((chip: any, idx: number) => (
+                    <tr key={idx}>
+                      <td>GW{chip.event}</td>
+                      <td>{chip.opponentName}</td>
+                      <td><span className={styles.chipBadge}>{chip.chipName}</span></td>
+                      <td>{chip.opponentPoints}</td>
+                      <td>
+                        <span className={`${styles.resultBadge} ${
+                          chip.result === 'W' ? styles.resultWin :
+                          chip.result === 'D' ? styles.resultDraw :
+                          styles.resultLoss
+                        }`}>
+                          {chip.result}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <p className={styles.emptyState}>No chips faced yet</p>
+        )}
+      </div>
+
+      {/* Match History */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Match History</h3>
+        <div className={styles.table}>
+          <table>
+            <thead>
+              <tr>
+                <th>GW</th>
+                <th>Opponent</th>
+                <th>Score</th>
+                <th>Margin</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {playerData.matchHistory.slice().reverse().map((match: any) => (
+                <tr key={match.event}>
+                  <td>GW{match.event}</td>
+                  <td>{match.opponentName}</td>
+                  <td>{match.playerPoints}-{match.opponentPoints}</td>
+                  <td>
+                    <span className={
+                      match.margin > 0 ? styles.positive :
+                      match.margin < 0 ? styles.negative :
+                      ''
+                    }>
+                      {match.margin > 0 ? `+${match.margin}` : match.margin}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`${styles.resultBadge} ${
+                      match.result === 'W' ? styles.resultWin :
+                      match.result === 'D' ? styles.resultDraw :
+                      styles.resultLoss
+                    }`}>
+                      {match.result}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

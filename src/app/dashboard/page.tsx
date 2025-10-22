@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [state, setState] = useState<SavedState | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('league');
   const [leagueData, setLeagueData] = useState<any>(null);
+  const [playerData, setPlayerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -28,26 +29,36 @@ export default function DashboardPage() {
     }
 
     setState(savedState);
-    fetchLeagueData(savedState.leagueId);
+    fetchAllData(savedState.leagueId, savedState.myTeamId);
   }, [router]);
 
-  async function fetchLeagueData(leagueId: string) {
+  async function fetchAllData(leagueId: string, playerId: string) {
     setIsLoading(true);
     setError('');
 
     try {
-      // Fetch league standings
-      const response = await fetch(`/api/league/${leagueId}/stats`);
+      // Fetch league standings and player profile in parallel
+      const [leagueResponse, playerResponse] = await Promise.all([
+        fetch(`/api/league/${leagueId}/stats`),
+        fetch(`/api/player/${playerId}`)
+      ]);
 
-      if (!response.ok) {
+      if (!leagueResponse.ok) {
         throw new Error('Failed to fetch league data');
       }
 
-      const data = await response.json();
-      setLeagueData(data);
+      if (!playerResponse.ok) {
+        throw new Error('Failed to fetch player data');
+      }
+
+      const leagueData = await leagueResponse.json();
+      const playerData = await playerResponse.json();
+
+      setLeagueData(leagueData);
+      setPlayerData(playerData);
       updateLastFetched();
     } catch (err: any) {
-      setError(err.message || 'Failed to load league data');
+      setError(err.message || 'Failed to load data');
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +66,7 @@ export default function DashboardPage() {
 
   async function handleRefresh() {
     if (!state) return;
-    await fetchLeagueData(state.leagueId);
+    await fetchAllData(state.leagueId, state.myTeamId);
   }
 
   if (isLoading && !leagueData) {
@@ -107,6 +118,7 @@ export default function DashboardPage() {
         {activeTab === 'myteam' && (
           <MyTeamTab
             data={leagueData}
+            playerData={playerData}
             myTeamId={state.myTeamId}
             myManagerName={state.myManagerName}
             myTeamName={state.myTeamName}

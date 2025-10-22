@@ -30,6 +30,8 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                 <th>W</th>
                 <th>D</th>
                 <th>L</th>
+                <th>Form</th>
+                <th>Streak</th>
                 <th>PF</th>
                 <th>+/-</th>
                 <th>Pts</th>
@@ -52,6 +54,35 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                     <td>{team.matches_won}</td>
                     <td>{team.matches_drawn}</td>
                     <td>{team.matches_lost}</td>
+                    <td>
+                      <div className={styles.form}>
+                        {team.formArray?.map((result: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className={`${styles.formIndicator} ${
+                              result === 'W' ? styles.formWin :
+                              result === 'D' ? styles.formDraw :
+                              styles.formLoss
+                            }`}
+                          >
+                            {result}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td>
+                      {team.streak && (
+                        <span
+                          className={`${styles.streak} ${
+                            team.streak.startsWith('W') ? styles.streakWin :
+                            team.streak.startsWith('D') ? styles.streakDraw :
+                            styles.streakLoss
+                          }`}
+                        >
+                          {team.streak}
+                        </span>
+                      )}
+                    </td>
                     <td>{team.points_for}</td>
                     <td>
                       <span className={`${styles.differential} ${
