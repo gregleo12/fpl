@@ -84,8 +84,6 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   // Convert entryId to number in case it comes as string from PostgreSQL BIGINT
   const entryIdNum = Number(entryId);
 
-  console.log(`[RANK DEBUG] Called with entryId: ${entryId} (type: ${typeof entryId}), converted to: ${entryIdNum} (type: ${typeof entryIdNum})`);
-
   // Get the most recent completed gameweek
   const lastGwResult = await db.query(`
     SELECT MAX(event) as last_gw
@@ -117,8 +115,6 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   `, [leagueId, lastGw]);
 
   const lastGwMatches = lastGwMatchesResult.rows;
-
-  console.log(`[DEBUG] Found ${lastGwMatches.length} matches in GW${lastGw} for league ${leagueId}`);
 
   // Calculate standings before last gameweek
   const previousStandings = allStandings.map((standing: any) => {
@@ -176,16 +172,10 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   });
 
   // Find previous rank (entry_id is now stored as number)
-  console.log(`[RANK DEBUG] Looking for ${entryIdNum} in previousStandings. First entry: ${previousStandings[0]?.entry_id} (type: ${typeof previousStandings[0]?.entry_id})`);
-  console.log(`[RANK DEBUG] Comparison check: ${previousStandings[0]?.entry_id} === ${entryIdNum} ? ${previousStandings[0]?.entry_id === entryIdNum}`);
-
   const previousRank = previousStandings.findIndex((s: any) => s.entry_id === entryIdNum) + 1;
-
-  console.log(`[RANK DEBUG] Found previousRank: ${previousRank}, currentRank: ${currentRank}, rankChange: ${previousRank - currentRank}`);
 
   if (previousRank === 0) {
     // Not found - shouldn't happen, but return safe default
-    console.warn(`Could not find previous rank for entryId ${entryIdNum}`);
     return { rankChange: 0, previousRank: currentRank };
   }
 
@@ -207,7 +197,7 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // Get current standings
+    // Get current standings - MUST sort by total DESC, then points_for DESC for tiebreaker
     const standingsResult = await db.query(`
       SELECT
         ls.*,
@@ -216,10 +206,15 @@ export async function GET(
       FROM league_standings ls
       JOIN managers m ON ls.entry_id = m.entry_id
       WHERE ls.league_id = $1
-      ORDER BY ls.rank ASC
+      ORDER BY ls.total DESC, ls.points_for DESC
     `, [leagueId]);
 
     const standings = standingsResult.rows;
+
+    // Recalculate ranks based on proper sort order
+    standings.forEach((standing, index) => {
+      standing.rank = index + 1;
+    });
 
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = await Promise.all(
