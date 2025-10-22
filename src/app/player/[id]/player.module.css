@@ -1,0 +1,355 @@
+.container {
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #37003c 0%, #0f0f23 50%, #1a1a2e 100%);
+  color: #ffffff;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+.backButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  margin-bottom: 2rem;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(0, 255, 135, 0.4);
+  transform: translateX(-3px);
+}
+
+/* Overview Card */
+.overviewCard {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2.5rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.playerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.playerName {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.teamName {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0.5rem 0 0 0;
+}
+
+.recordBadge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 255, 135, 0.1);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 12px;
+}
+
+.record {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #00ff87;
+}
+
+.recordLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.25rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1.5rem;
+}
+
+.statBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
+/* Sections */
+.section {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2.5rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.section h2 {
+  color: #00ff87;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Tables */
+.table {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(15, 15, 35, 0.5);
+}
+
+.table table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table th,
+.table td {
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(42, 42, 74, 0.5);
+}
+
+.table th {
+  background: rgba(40, 30, 70, 0.7);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.table td {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Chip Badge */
+.chipBadge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 40, 130, 0.2);
+  color: #ff2882;
+  border: 1px solid rgba(255, 40, 130, 0.4);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Result Badges */
+.result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.resultWin {
+  background: #00ff87;
+  color: #37003c;
+}
+
+.resultDraw {
+  background: #f9a825;
+  color: white;
+}
+
+.resultLoss {
+  background: #ff2882;
+  color: white;
+}
+
+/* Color Helpers */
+.positive {
+  color: #00ff87;
+}
+
+.negative {
+  color: #ff2882;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+/* Chips Summary */
+.chipsSummary {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.chipsSummary strong {
+  color: #00ff87;
+  font-weight: 800;
+}
+
+/* Season Stats Row */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.statCardLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.statCardValue {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .playerName {
+    font-size: 1.75rem;
+  }
+
+  .teamName {
+    font-size: 1rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section {
+    padding: 1.5rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .statCardValue {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .playerHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .recordBadge {
+    align-self: flex-start;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+}

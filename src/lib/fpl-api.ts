@@ -119,6 +119,16 @@ export class FPLApiClient {
     const response = await axios.get(`${this.baseUrl}/entry/${entryId}/`);
     return response.data;
   }
+
+  async getEntryHistory(entryId: number): Promise<any> {
+    const response = await axios.get(`${this.baseUrl}/entry/${entryId}/history/`);
+    return response.data;
+  }
+
+  async getEntryPicks(entryId: number, eventId: number): Promise<any> {
+    const response = await axios.get(`${this.baseUrl}/entry/${entryId}/event/${eventId}/picks/`);
+    return response.data;
+  }
 }
 
 export const fplApi = new FPLApiClient();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function Home() {
@@ -168,7 +169,11 @@ export default function Home() {
                             </span>
                           )}
                         </td>
-                        <td>{standing.player_name}</td>
+                        <td>
+                          <Link href={`/player/${standing.entry_id}`} className={styles.playerLink}>
+                            {standing.player_name}
+                          </Link>
+                        </td>
                         <td>{standing.team_name}</td>
                         <td>{standing.matches_played}</td>
                         <td>{standing.matches_won}</td>

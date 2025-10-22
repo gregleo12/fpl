@@ -445,6 +445,34 @@
   color: #999;
 }
 
+/* Player Link */
+.playerLink {
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.playerLink::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background: #00ff87;
+  transition: width 0.3s ease;
+}
+
+.playerLink:hover {
+  color: #00ff87;
+}
+
+.playerLink:hover::after {
+  width: 100%;
+}
+
 /* Mobile Responsive Design */
 @media (max-width: 1024px) {
   .container {
