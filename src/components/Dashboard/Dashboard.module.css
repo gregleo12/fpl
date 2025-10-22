@@ -343,6 +343,42 @@
   color: white;
 }
 
+/* Chips in Match History */
+.chipsCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+
+.chipBadgeSmall {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+}
+
+.yourChip {
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border: 1px solid rgba(0, 255, 135, 0.4);
+}
+
+.oppChip {
+  background: rgba(255, 40, 130, 0.2);
+  color: #ff2882;
+  border: 1px solid rgba(255, 40, 130, 0.4);
+}
+
+.noChip {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.9rem;
+}
+
 /* Mobile Responsive */
 @media (max-width: 1024px) {
   .section {
@@ -404,6 +440,15 @@
   .table th,
   .table td {
     padding: 0.5rem 0.35rem;
+  }
+
+  .chipBadgeSmall {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .chipsCell {
+    gap: 0.25rem;
   }
 }
 

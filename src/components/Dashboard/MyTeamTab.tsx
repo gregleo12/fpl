@@ -250,36 +250,61 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                 <th>GW</th>
                 <th>Opponent</th>
                 <th>Score</th>
+                <th>Chips</th>
                 <th>Margin</th>
                 <th>Result</th>
               </tr>
             </thead>
             <tbody>
-              {playerData.matchHistory.slice().reverse().map((match: any) => (
-                <tr key={match.event}>
-                  <td>GW{match.event}</td>
-                  <td>{match.opponentName}</td>
-                  <td>{match.playerPoints}-{match.opponentPoints}</td>
-                  <td>
-                    <span className={
-                      match.margin > 0 ? styles.positive :
-                      match.margin < 0 ? styles.negative :
-                      ''
-                    }>
-                      {match.margin > 0 ? `+${match.margin}` : match.margin}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`${styles.resultBadge} ${
-                      match.result === 'W' ? styles.resultWin :
-                      match.result === 'D' ? styles.resultDraw :
-                      styles.resultLoss
-                    }`}>
-                      {match.result}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {playerData.matchHistory.slice().reverse().map((match: any) => {
+                // Check if you played a chip in this GW
+                const yourChip = playerData.chipsPlayed.find((c: any) => c.event === match.event);
+                // Check if opponent played a chip in this GW
+                const oppChip = playerData.chipsFaced.find((c: any) => c.event === match.event);
+
+                return (
+                  <tr key={match.event}>
+                    <td>GW{match.event}</td>
+                    <td>{match.opponentName}</td>
+                    <td>{match.playerPoints}-{match.opponentPoints}</td>
+                    <td>
+                      <div className={styles.chipsCell}>
+                        {yourChip && (
+                          <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
+                            You: {yourChip.name}
+                          </span>
+                        )}
+                        {oppChip && (
+                          <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
+                            Opp: {oppChip.chipName}
+                          </span>
+                        )}
+                        {!yourChip && !oppChip && (
+                          <span className={styles.noChip}>-</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={
+                        match.margin > 0 ? styles.positive :
+                        match.margin < 0 ? styles.negative :
+                        ''
+                      }>
+                        {match.margin > 0 ? `+${match.margin}` : match.margin}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`${styles.resultBadge} ${
+                        match.result === 'W' ? styles.resultWin :
+                        match.result === 'D' ? styles.resultDraw :
+                        styles.resultLoss
+                      }`}>
+                        {match.result}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
