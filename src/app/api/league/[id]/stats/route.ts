@@ -37,9 +37,12 @@ async function calculateFormAndStreak(entryId: number, leagueId: number, db: any
   const results: MatchResult[] = matches.map((match: any) => {
     let result: 'W' | 'D' | 'L';
 
-    if (match.winner === null) {
+    // Convert winner to number for comparison (PostgreSQL returns BIGINT as string)
+    const winner = match.winner ? parseInt(match.winner) : null;
+
+    if (winner === null) {
       result = 'D';
-    } else if (match.winner === entryId) {
+    } else if (winner === entryId) {
       result = 'W';
     } else {
       result = 'L';
