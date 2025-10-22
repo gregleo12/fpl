@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  fpl-app:
+    build: .
+    container_name: fpl-h2h-analytics
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_PATH=/app/data/fpl.db
+      - FPL_API_BASE_URL=https://fantasy.premierleague.com/api
+    networks:
+      - fpl-network
+
+networks:
+  fpl-network:
+    driver: bridge
