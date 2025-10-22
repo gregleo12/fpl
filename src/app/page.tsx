@@ -77,7 +77,7 @@ export default function Home() {
             disabled={loading || !leagueId}
             className={styles.button}
           >
-            {loading ? 'Loading...' : 'Fetch League Data'}
+            {loading ? 'Loading...' : 'Fetch H2H League Data'}
           </button>
           <button
             onClick={() => {
@@ -87,7 +87,7 @@ export default function Home() {
             disabled={loading}
             className={`${styles.button} ${styles.testButton}`}
           >
-            Test League 804742
+            Dedoume
           </button>
         </div>
 

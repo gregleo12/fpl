@@ -1,7 +1,8 @@
 .container {
   min-height: 100vh;
   padding: 2rem;
-  background: #f5f5f5;
+  background: #0f0f23;
+  color: #e0e0e0;
 }
 
 .main {
@@ -13,7 +14,8 @@
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 2rem;
-  color: #37003c;
+  color: #00ff87;
+  text-shadow: 0 0 20px rgba(0, 255, 135, 0.3);
 }
 
 .search {
@@ -26,47 +28,60 @@
 .input {
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  border: 2px solid #ddd;
+  border: 2px solid #2a2a4a;
+  background: #1a1a2e;
+  color: #e0e0e0;
   border-radius: 4px;
   min-width: 250px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #00ff87;
+  box-shadow: 0 0 0 2px rgba(0, 255, 135, 0.1);
 }
 
 .button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   background: #37003c;
-  color: white;
-  border: none;
+  color: #00ff87;
+  border: 1px solid #00ff87;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
+  transition: all 0.3s;
 }
 
 .button:hover:not(:disabled) {
   background: #00ff87;
   color: #37003c;
+  box-shadow: 0 0 15px rgba(0, 255, 135, 0.4);
 }
 
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
+  border-color: #555;
 }
 
 .error {
-  background: #ffebee;
-  color: #c62828;
+  background: #2d1515;
+  color: #ff6b6b;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 1rem;
   text-align: center;
+  border: 1px solid #ff6b6b;
 }
 
 .section {
-  background: white;
+  background: #1a1a2e;
   padding: 2rem;
   border-radius: 8px;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  border: 1px solid #2a2a4a;
 }
 
 .sectionHeader {
@@ -79,7 +94,7 @@
 }
 
 .section h2 {
-  color: #37003c;
+  color: #00ff87;
   margin: 0;
 }
 
@@ -93,9 +108,9 @@
 .gwButton {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  background: #37003c;
-  color: white;
-  border: none;
+  background: #2a2a4a;
+  color: #00ff87;
+  border: 1px solid #00ff87;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
@@ -104,21 +119,31 @@
 
 .gwButton:hover:not(:disabled) {
   background: #00ff87;
-  color: #37003c;
+  color: #0f0f23;
+  box-shadow: 0 0 10px rgba(0, 255, 135, 0.3);
 }
 
 .gwButton:disabled {
-  opacity: 0.3;
+  opacity: 0.2;
   cursor: not-allowed;
+  border-color: #555;
 }
 
 .gwLatest {
+  background: #37003c;
+  border-color: #ff2882;
+  color: #ff2882;
+}
+
+.gwLatest:hover:not(:disabled) {
   background: #ff2882;
+  color: #0f0f23;
+  box-shadow: 0 0 10px rgba(255, 40, 130, 0.3);
 }
 
 .gwDisplay {
   font-weight: bold;
-  color: #37003c;
+  color: #00ff87;
   padding: 0 0.5rem;
   font-size: 1rem;
 }
@@ -136,17 +161,24 @@
 .table :global(td) {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #2a2a4a;
 }
 
 .table :global(th) {
-  background: #f9f9f9;
+  background: #0f0f23;
   font-weight: bold;
-  color: #37003c;
+  color: #00ff87;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.5px;
 }
 
 .table :global(tr:hover) {
-  background: #f9f9f9;
+  background: #252540;
+}
+
+.table :global(td) {
+  color: #e0e0e0;
 }
 
 .matches {
@@ -156,14 +188,15 @@
 }
 
 .match {
-  border: 1px solid #eee;
+  border: 1px solid #2a2a4a;
   border-radius: 4px;
   padding: 1rem;
+  background: #1a1a2e;
 }
 
 .matchEvent {
   font-size: 0.875rem;
-  color: #666;
+  color: #00ff87;
   margin-bottom: 0.5rem;
   font-weight: bold;
 }
@@ -182,13 +215,13 @@
 }
 
 .vs {
-  color: #999;
+  color: #666;
   font-weight: bold;
 }
 
 .score {
   font-weight: bold;
-  color: #37003c;
+  color: #00ff87;
   margin-left: auto;
 }
 
