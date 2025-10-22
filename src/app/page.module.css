@@ -235,3 +235,13 @@
 .rankSame {
   color: #999;
 }
+
+/* Test button */
+.testButton {
+  background: #ff2882;
+}
+
+.testButton:hover:not(:disabled) {
+  background: #00ff87;
+  color: #37003c;
+}

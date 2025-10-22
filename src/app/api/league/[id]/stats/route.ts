@@ -84,6 +84,8 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   // Convert entryId to number in case it comes as string from PostgreSQL BIGINT
   const entryIdNum = Number(entryId);
 
+  console.log(`[RANK DEBUG] Called with entryId: ${entryId} (type: ${typeof entryId}), converted to: ${entryIdNum} (type: ${typeof entryIdNum})`);
+
   // Get the most recent completed gameweek
   const lastGwResult = await db.query(`
     SELECT MAX(event) as last_gw
@@ -174,7 +176,12 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   });
 
   // Find previous rank (entry_id is now stored as number)
+  console.log(`[RANK DEBUG] Looking for ${entryIdNum} in previousStandings. First entry: ${previousStandings[0]?.entry_id} (type: ${typeof previousStandings[0]?.entry_id})`);
+  console.log(`[RANK DEBUG] Comparison check: ${previousStandings[0]?.entry_id} === ${entryIdNum} ? ${previousStandings[0]?.entry_id === entryIdNum}`);
+
   const previousRank = previousStandings.findIndex((s: any) => s.entry_id === entryIdNum) + 1;
+
+  console.log(`[RANK DEBUG] Found previousRank: ${previousRank}, currentRank: ${currentRank}, rankChange: ${previousRank - currentRank}`);
 
   if (previousRank === 0) {
     // Not found - shouldn't happen, but return safe default

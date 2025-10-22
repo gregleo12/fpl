@@ -53,6 +53,16 @@ export default function Home() {
           >
             {loading ? 'Loading...' : 'Fetch League Data'}
           </button>
+          <button
+            onClick={() => {
+              setLeagueId('804742');
+              setTimeout(() => fetchLeagueData(), 100);
+            }}
+            disabled={loading}
+            className={`${styles.button} ${styles.testButton}`}
+          >
+            Test League 804742
+          </button>
         </div>
 
         {error && <div className={styles.error}>{error}</div>}
