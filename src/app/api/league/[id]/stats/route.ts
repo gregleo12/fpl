@@ -6,26 +6,17 @@ interface MatchResult {
   event: number;
 }
 
-async function calculateFormAndStreak(entryId: number, leagueId: number, db: any) {
-  // Get all completed matches for this manager, ordered by event DESC (most recent first)
-  const result = await db.query(`
-    SELECT
-      event,
-      entry_1_id,
-      entry_1_points,
-      entry_2_id,
-      entry_2_points,
-      winner
-    FROM h2h_matches
-    WHERE league_id = $1
-      AND (entry_1_id = $2 OR entry_2_id = $2)
-      AND (entry_1_points > 0 OR entry_2_points > 0)
-    ORDER BY event DESC
-  `, [leagueId, entryId]);
+function calculateFormAndStreakFromMatches(entryId: number, matches: any[], upToGW: number) {
+  // Filter matches for this manager up to the specified GW
+  const managerMatches = matches
+    .filter((match: any) => {
+      const entry1 = Number(match.entry_1_id);
+      const entry2 = Number(match.entry_2_id);
+      return (entry1 === entryId || entry2 === entryId) && Number(match.event) <= upToGW;
+    })
+    .sort((a: any, b: any) => Number(b.event) - Number(a.event)); // Most recent first
 
-  const matches = result.rows;
-
-  if (matches.length === 0) {
+  if (managerMatches.length === 0) {
     return {
       form: '',
       formArray: [],
@@ -34,7 +25,7 @@ async function calculateFormAndStreak(entryId: number, leagueId: number, db: any
   }
 
   // Calculate result for each match from manager's perspective
-  const results: MatchResult[] = matches.map((match: any) => {
+  const results: MatchResult[] = managerMatches.map((match: any) => {
     let result: 'W' | 'D' | 'L';
 
     // Convert winner to number for comparison (PostgreSQL returns BIGINT as string)
@@ -184,6 +175,81 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   return { rankChange, previousRank };
 }
 
+function rebuildStandingsFromMatches(matches: any[], managers: any[], upToGW: number) {
+  // Build standings from scratch using match results
+  const standings: any = {};
+
+  // Initialize all managers
+  managers.forEach((manager: any) => {
+    const entryId = Number(manager.entry_id);
+    standings[entryId] = {
+      entry_id: entryId,
+      player_name: manager.player_name,
+      team_name: manager.team_name,
+      matches_played: 0,
+      matches_won: 0,
+      matches_drawn: 0,
+      matches_lost: 0,
+      points_for: 0,
+      points_against: 0,
+      total: 0
+    };
+  });
+
+  // Process all matches up to the specified GW
+  matches.forEach((match: any) => {
+    if (match.event > upToGW) return;
+
+    const entry1 = Number(match.entry_1_id);
+    const entry2 = Number(match.entry_2_id);
+    const entry1Points = Number(match.entry_1_points);
+    const entry2Points = Number(match.entry_2_points);
+    const winner = match.winner ? Number(match.winner) : null;
+
+    if (!standings[entry1] || !standings[entry2]) return;
+
+    // Update matches played and points
+    standings[entry1].matches_played++;
+    standings[entry2].matches_played++;
+    standings[entry1].points_for += entry1Points;
+    standings[entry2].points_for += entry2Points;
+    standings[entry1].points_against += entry2Points;
+    standings[entry2].points_against += entry1Points;
+
+    // Update win/draw/loss and total points
+    if (winner === entry1) {
+      standings[entry1].matches_won++;
+      standings[entry1].total += 3;
+      standings[entry2].matches_lost++;
+    } else if (winner === entry2) {
+      standings[entry2].matches_won++;
+      standings[entry2].total += 3;
+      standings[entry1].matches_lost++;
+    } else {
+      standings[entry1].matches_drawn++;
+      standings[entry2].matches_drawn++;
+      standings[entry1].total += 1;
+      standings[entry2].total += 1;
+    }
+  });
+
+  // Convert to array and sort by total DESC, then points_for DESC
+  const standingsArray = Object.values(standings);
+  standingsArray.sort((a: any, b: any) => {
+    if (b.total !== a.total) {
+      return b.total - a.total;
+    }
+    return b.points_for - a.points_for;
+  });
+
+  // Add ranks
+  standingsArray.forEach((standing: any, index) => {
+    standing.rank = index + 1;
+  });
+
+  return standingsArray;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -195,39 +261,71 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
+    // Get GW parameter from query string
+    const { searchParams } = new URL(request.url);
+    const gwParam = searchParams.get('gw');
+
     const db = await getDatabase();
 
-    // Get current standings - MUST sort by total DESC, then points_for DESC for tiebreaker
-    const standingsResult = await db.query(`
-      SELECT
-        ls.*,
-        m.player_name,
-        m.team_name
-      FROM league_standings ls
-      JOIN managers m ON ls.entry_id = m.entry_id
-      WHERE ls.league_id = $1
-      ORDER BY ls.total DESC, ls.points_for DESC
+    // Get all managers in this league
+    const managersResult = await db.query(`
+      SELECT DISTINCT entry_id, player_name, team_name
+      FROM managers m
+      WHERE EXISTS (
+        SELECT 1 FROM h2h_matches hm
+        WHERE (hm.entry_1_id = m.entry_id OR hm.entry_2_id = m.entry_id)
+        AND hm.league_id = $1
+      )
     `, [leagueId]);
 
-    const standings = standingsResult.rows;
+    const managers = managersResult.rows;
 
-    // Recalculate ranks based on proper sort order
-    standings.forEach((standing, index) => {
-      standing.rank = index + 1;
-    });
+    // Get ALL matches for this league
+    const allMatchesResult = await db.query(`
+      SELECT event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner
+      FROM h2h_matches
+      WHERE league_id = $1
+        AND (entry_1_points > 0 OR entry_2_points > 0)
+      ORDER BY event ASC
+    `, [leagueId]);
+
+    const allMatches = allMatchesResult.rows;
+
+    // Find max completed GW
+    const maxGW = allMatches.length > 0
+      ? Math.max(...allMatches.map((m: any) => Number(m.event)))
+      : 0;
+
+    if (maxGW === 0) {
+      return NextResponse.json({ error: 'No completed matches found' }, { status: 404 });
+    }
+
+    // Determine which GW to show
+    const requestedGW = gwParam ? parseInt(gwParam) : maxGW;
+    const currentGW = Math.min(Math.max(1, requestedGW), maxGW);
+
+    // Rebuild standings for the current GW
+    const standings = rebuildStandingsFromMatches(allMatches, managers, currentGW);
 
     // Calculate form, streak, and rank change for each manager
-    const standingsWithForm = await Promise.all(
-      standings.map(async (standing: any) => {
-        const formData = await calculateFormAndStreak(standing.entry_id, leagueId, db);
-        const rankData = await calculateRankChange(standing.entry_id, leagueId, standing.rank, db);
-        return {
-          ...standing,
-          ...formData,
-          ...rankData
-        };
-      })
-    );
+    const standingsWithForm = standings.map((standing: any) => {
+      const formData = calculateFormAndStreakFromMatches(standing.entry_id, allMatches, currentGW);
+
+      // Calculate rank change from previous GW
+      let rankChange = 0;
+      if (currentGW > 1) {
+        const prevStandings = rebuildStandingsFromMatches(allMatches, managers, currentGW - 1);
+        const prevRank = prevStandings.findIndex((s: any) => s.entry_id === standing.entry_id) + 1;
+        rankChange = prevRank - standing.rank;
+      }
+
+      return {
+        ...standing,
+        ...formData,
+        rankChange,
+        previousRank: standing.rank - rankChange
+      };
+    });
 
     // Get recent matches (only show completed matches where points were scored)
     const recentMatchesResult = await db.query(`
@@ -255,7 +353,9 @@ export async function GET(
     return NextResponse.json({
       league,
       standings: standingsWithForm,
-      recentMatches
+      recentMatches,
+      currentGW,
+      maxGW
     });
   } catch (error: any) {
     console.error('Error fetching league stats:', error);

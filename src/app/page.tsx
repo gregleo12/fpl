@@ -8,8 +8,10 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState('');
+  const [currentGW, setCurrentGW] = useState<number | null>(null);
+  const [maxGW, setMaxGW] = useState<number | null>(null);
 
-  const fetchLeagueData = async () => {
+  const fetchLeagueData = async (gw?: number) => {
     if (!leagueId) return;
 
     setLoading(true);
@@ -21,15 +23,39 @@ export default function Home() {
       if (!response.ok) throw new Error('Failed to fetch league data');
 
       // Then fetch stats from our database
-      const statsResponse = await fetch(`/api/league/${leagueId}/stats`);
+      const gwParam = gw ? `?gw=${gw}` : '';
+      const statsResponse = await fetch(`/api/league/${leagueId}/stats${gwParam}`);
       if (!statsResponse.ok) throw new Error('Failed to fetch league stats');
 
       const statsData = await statsResponse.json();
       setData(statsData);
+
+      // Set GW info
+      if (statsData.currentGW) {
+        setCurrentGW(statsData.currentGW);
+        setMaxGW(statsData.maxGW);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const navigateGW = (direction: 'prev' | 'next' | 'latest') => {
+    if (!currentGW || !maxGW) return;
+
+    let newGW = currentGW;
+    if (direction === 'prev' && currentGW > 1) {
+      newGW = currentGW - 1;
+    } else if (direction === 'next' && currentGW < maxGW) {
+      newGW = currentGW + 1;
+    } else if (direction === 'latest') {
+      newGW = maxGW;
+    }
+
+    if (newGW !== currentGW) {
+      fetchLeagueData(newGW);
     }
   };
 
@@ -47,7 +73,7 @@ export default function Home() {
             className={styles.input}
           />
           <button
-            onClick={fetchLeagueData}
+            onClick={() => fetchLeagueData()}
             disabled={loading || !leagueId}
             className={styles.button}
           >
@@ -70,7 +96,40 @@ export default function Home() {
         {data && (
           <>
             <section className={styles.section}>
-              <h2>{data.league?.name || 'League Standings'}</h2>
+              <div className={styles.sectionHeader}>
+                <h2>{data.league?.name || 'League Standings'}</h2>
+                {currentGW && maxGW && (
+                  <div className={styles.gwControls}>
+                    <button
+                      onClick={() => navigateGW('prev')}
+                      disabled={currentGW <= 1 || loading}
+                      className={styles.gwButton}
+                    >
+                      ← GW {currentGW - 1}
+                    </button>
+                    <span className={styles.gwDisplay}>
+                      Gameweek {currentGW}
+                      {currentGW === maxGW && ' (Latest)'}
+                    </span>
+                    <button
+                      onClick={() => navigateGW('next')}
+                      disabled={currentGW >= maxGW || loading}
+                      className={styles.gwButton}
+                    >
+                      GW {currentGW + 1} →
+                    </button>
+                    {currentGW < maxGW && (
+                      <button
+                        onClick={() => navigateGW('latest')}
+                        disabled={loading}
+                        className={`${styles.gwButton} ${styles.gwLatest}`}
+                      >
+                        Latest (GW {maxGW})
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className={styles.table}>
                 <table>
                   <thead>
