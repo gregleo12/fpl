@@ -100,7 +100,12 @@
 .managerName {
   font-weight: 400;
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.01em;
+}
+
+.teamCell:hover .managerName {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* My Team Row Highlight */

@@ -24,6 +24,9 @@ export default function PlayerProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Check if viewing self or another player
+  const isViewingSelf = state?.myTeamId === playerId;
+
   useEffect(() => {
     if (!state) {
       // No saved state, redirect to setup
@@ -110,20 +113,36 @@ export default function PlayerProfilePage() {
           className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
           onClick={() => setActiveTab('league')}
         >
-          📊 League Standings
+          <span className={styles.tabIcon}>📊</span>
+          <span className={styles.tabLabel}>Standings</span>
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
           onClick={() => setActiveTab('fixtures')}
         >
-          🎯 Fixtures
+          <span className={styles.tabIcon}>🎯</span>
+          <span className={styles.tabLabel}>Fixtures</span>
         </button>
         <button
-          className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
-          onClick={() => setActiveTab('player')}
+          className={`${styles.tab} ${activeTab === 'player' && isViewingSelf ? styles.active : ''}`}
+          onClick={() => {
+            if (state?.myTeamId) {
+              router.push(`/league/${leagueId}/player/${state.myTeamId}`);
+            }
+          }}
         >
-          🏆 {playerName}
+          <span className={styles.tabIcon}>🏆</span>
+          <span className={styles.tabLabel}>{state?.myTeamName || 'My Team'}</span>
         </button>
+        {!isViewingSelf && (
+          <button
+            className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
+            onClick={() => setActiveTab('player')}
+          >
+            <span className={styles.tabIcon}>👤</span>
+            <span className={styles.tabLabel}>{playerName}</span>
+          </button>
+        )}
       </nav>
 
       <main className={styles.content}>
