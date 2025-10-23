@@ -1,6 +1,7 @@
 'use client';
 
 import styles from './Dashboard.module.css';
+import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
 
 interface Props {
   data: any;
@@ -48,8 +49,8 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
       <div className={styles.section}>
         <div className={styles.teamHeader}>
           <div>
-            <h2 className={styles.managerName}>{myManagerName}</h2>
-            <p className={styles.teamNameSubtitle}>{myTeamName}</p>
+            <h2 className={styles.managerName}>{shortenManagerName(myManagerName)}</h2>
+            <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
           </div>
           <div className={styles.rankBadge}>
             <span className={styles.rankNumber}>{myTeam.rank}</span>
@@ -176,7 +177,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                     <tr key={chip.event}>
                       <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.name)}</span></td>
                       <td>GW{chip.event}</td>
-                      <td>{match?.opponentName || '-'}</td>
+                      <td>{match?.opponentName ? shortenManagerName(match.opponentName) : '-'}</td>
                       <td>
                         {match ? `${match.playerPoints}-${match.opponentPoints}` : '-'}
                       </td>
@@ -236,7 +237,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                       <tr key={idx}>
                         <td><span className={styles.oppChip}>{getChipAbbreviation(chip.chipName)}</span></td>
                         <td>GW{chip.event}</td>
-                        <td>{chip.opponentName}</td>
+                        <td>{shortenManagerName(chip.opponentName)}</td>
                         <td>{yourScore}-{chip.opponentPoints}</td>
                         <td>
                           <span className={`${styles.resultBadge} ${
@@ -284,7 +285,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                 return (
                   <tr key={match.event}>
                     <td>GW{match.event}</td>
-                    <td>{match.opponentName}</td>
+                    <td>{shortenManagerName(match.opponentName)}</td>
                     <td>{match.playerPoints}-{match.opponentPoints}</td>
                     <td>
                       <div className={styles.chipsCell}>

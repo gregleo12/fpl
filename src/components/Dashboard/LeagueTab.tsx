@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import styles from './Dashboard.module.css';
+import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
 
 interface Props {
   data: any;
@@ -71,8 +72,8 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
                     </td>
                     <td className={styles.teamCol}>
                       <div className={styles.teamCell}>
-                        <span className={styles.teamName}>{team.team_name}</span>
-                        <span className={styles.managerName}>{team.player_name}</span>
+                        <span className={styles.teamName}>{shortenTeamName(team.team_name)}</span>
+                        <span className={styles.managerName}>{shortenManagerName(team.player_name)}</span>
                       </div>
                     </td>
                     <td className={styles.recordCol}>{team.matches_won}</td>
