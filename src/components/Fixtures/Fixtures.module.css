@@ -1,0 +1,412 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+/* Gameweek Navigator */
+.navigator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 255, 135, 0.15);
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  color: #00ff87;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover:not(:disabled) {
+  background: rgba(0, 255, 135, 0.25);
+  transform: scale(1.1);
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gwInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gwNumber {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.gwStatus {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Opponent Insights Card */
+.insightsCard {
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 255, 135, 0.2);
+}
+
+.insightsTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #00ff87;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.opponentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.opponentName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.opponentTeam {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+.rankBadge {
+  padding: 0.75rem 1.5rem;
+  background: rgba(0, 255, 135, 0.2);
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  border-radius: 12px;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.insightsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.insightBox {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.insightLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.formBadges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.formBadge {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.formWin {
+  background: #00ff87;
+  color: #37003c;
+}
+
+.formDraw {
+  background: #f9a825;
+  color: white;
+}
+
+.formLoss {
+  background: #ff2882;
+  color: white;
+}
+
+.comparison {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.divider {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+}
+
+.chipsComparison {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.chipsComparison strong {
+  color: #00ff87;
+}
+
+.momentum {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ff2882;
+}
+
+.h2hRecord {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.lastMeeting {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+/* Matches */
+.matchesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.matchCard {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.matchCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.7);
+}
+
+.myMatch {
+  border: 2px solid rgba(0, 255, 135, 0.5);
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.1) 0%, rgba(26, 26, 46, 0.95) 100%);
+}
+
+.matchHeader {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 2rem;
+}
+
+.team {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.team:last-child {
+  align-items: flex-end;
+}
+
+.playerName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.teamName {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.chipBadge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.25rem;
+}
+
+.scoreBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.margin {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.positive {
+  color: #00ff87;
+}
+
+.negative {
+  color: #ff2882;
+}
+
+.result {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .navigator {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .navButton {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .gwNumber {
+    font-size: 1.5rem;
+  }
+
+  .insightsCard {
+    padding: 1.5rem;
+  }
+
+  .insightsTitle {
+    font-size: 1.25rem;
+  }
+
+  .opponentHeader {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .opponentName {
+    font-size: 1.25rem;
+  }
+
+  .insightsGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .matchCard {
+    padding: 1.5rem;
+  }
+
+  .matchHeader {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .team:last-child {
+    align-items: center;
+  }
+
+  .scoreBox {
+    order: 0;
+  }
+
+  .score {
+    font-size: 2rem;
+    padding: 0.75rem 1.5rem;
+  }
+
+  .playerName {
+    font-size: 1rem;
+  }
+
+  .teamName {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .insightsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .score {
+    font-size: 1.75rem;
+  }
+}

@@ -6,9 +6,10 @@ import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import Header from '@/components/Layout/Header';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
+import FixturesTab from '@/components/Fixtures/FixturesTab';
 import styles from './dashboard.module.css';
 
-type TabType = 'league' | 'myteam';
+type TabType = 'league' | 'fixtures' | 'myteam';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -98,6 +99,12 @@ export default function DashboardPage() {
           📊 League Standings
         </button>
         <button
+          className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
+          onClick={() => setActiveTab('fixtures')}
+        >
+          🎯 Fixtures
+        </button>
+        <button
           className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
           onClick={() => setActiveTab('myteam')}
         >
@@ -113,6 +120,13 @@ export default function DashboardPage() {
             data={leagueData}
             myTeamId={state.myTeamId}
             leagueId={state.leagueId}
+          />
+        )}
+        {activeTab === 'fixtures' && leagueData && (
+          <FixturesTab
+            leagueId={state.leagueId}
+            myTeamId={state.myTeamId}
+            maxGW={leagueData.maxGW || 1}
           />
         )}
         {activeTab === 'myteam' && (

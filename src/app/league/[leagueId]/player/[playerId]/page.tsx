@@ -6,9 +6,10 @@ import { loadState, updateLastFetched } from '@/lib/storage';
 import Header from '@/components/Layout/Header';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
+import FixturesTab from '@/components/Fixtures/FixturesTab';
 import styles from './player.module.css';
 
-type TabType = 'league' | 'player';
+type TabType = 'league' | 'fixtures' | 'player';
 
 export default function PlayerProfilePage() {
   const params = useParams();
@@ -112,6 +113,12 @@ export default function PlayerProfilePage() {
           📊 League Standings
         </button>
         <button
+          className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
+          onClick={() => setActiveTab('fixtures')}
+        >
+          🎯 Fixtures
+        </button>
+        <button
           className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
           onClick={() => setActiveTab('player')}
         >
@@ -127,6 +134,13 @@ export default function PlayerProfilePage() {
             data={leagueData}
             myTeamId={playerId}
             leagueId={leagueId}
+          />
+        )}
+        {activeTab === 'fixtures' && leagueData && (
+          <FixturesTab
+            leagueId={leagueId}
+            myTeamId={playerId}
+            maxGW={leagueData.maxGW || 1}
           />
         )}
         {activeTab === 'player' && (
