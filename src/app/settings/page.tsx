@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadState, clearState, getRecentLeagues, clearRecentLeagues } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
+import { InstallButton } from '@/components/InstallButton/InstallButton';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
@@ -163,6 +164,14 @@ export default function SettingsPage() {
               {isCheckingUpdate ? 'Checking...' : 'Check for Updates'}
             </button>
           )}
+        </section>
+
+        <section className={styles.section}>
+          <h2>App Installation</h2>
+          <p className={styles.aboutText}>
+            Install FPL H2H on your device for quick access, offline support, and a native app experience.
+          </p>
+          <InstallButton />
         </section>
 
         <section className={styles.section}>
