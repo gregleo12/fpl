@@ -155,20 +155,21 @@
   border-left: 4px solid #00ff87;
 }
 
+/* Keep text styling same as other rows */
 .myTeamRow td {
-  color: #00ff87 !important;
+  color: inherit;
 }
 
 .myTeamRow .teamName {
   font-weight: 700 !important;
   font-size: 1.125rem !important;
-  color: #00ff87 !important;
+  color: #ffffff !important;
 }
 
 .myTeamRow .managerName {
   font-weight: 400 !important;
   font-size: 0.75rem !important;
-  color: rgba(0, 255, 135, 0.6) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* Differential */
