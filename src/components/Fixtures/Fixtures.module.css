@@ -333,6 +333,10 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  .matchesContainer {
+    gap: 0.5rem;
+  }
+
   .navigator {
     padding: 1rem;
     gap: 1rem;
@@ -372,8 +376,9 @@
   }
 
   .matchCard {
-    padding: 1rem;
-    margin-bottom: 0.75rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    min-height: auto;
   }
 
   .matchHeader {
