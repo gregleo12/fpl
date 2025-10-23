@@ -600,29 +600,31 @@
   }
 
   .teamHeader {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
     gap: 1rem;
-    text-align: center;
   }
 
   .managerName {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .teamNameSubtitle {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 
   .rankBadge {
-    padding: 6px 12px;
+    padding: 6px 10px;
+    flex-shrink: 0;
   }
 
   .rankNumber {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
   }
 
   .rankLabel {
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
   }
 
   .formGrid {
