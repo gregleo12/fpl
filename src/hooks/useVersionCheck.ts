@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 const CHECK_INTERVAL = 10 * 60 * 1000; // Check every 10 minutes
+const UPDATE_STORAGE_KEY = 'fpl-pending-update';
 
 export function useVersionCheck() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -14,6 +15,23 @@ export function useVersionCheck() {
     const packageJson = require('../../package.json');
     const CURRENT_VERSION = packageJson.version;
     setCurrentVersion(CURRENT_VERSION);
+
+    // Check if there's a pending update in localStorage
+    const pendingUpdate = localStorage.getItem(UPDATE_STORAGE_KEY);
+    if (pendingUpdate) {
+      const { version: pendingVersion } = JSON.parse(pendingUpdate);
+
+      // If we're still on the old version, show the update banner
+      if (pendingVersion !== CURRENT_VERSION) {
+        console.log(`Pending update restored: ${pendingVersion} (current: ${CURRENT_VERSION})`);
+        setNewVersion(pendingVersion);
+        setUpdateAvailable(true);
+      } else {
+        // We've successfully updated, clear the pending flag
+        console.log('Update successfully applied, clearing pending flag');
+        localStorage.removeItem(UPDATE_STORAGE_KEY);
+      }
+    }
 
     async function checkVersion() {
       try {
@@ -37,6 +55,12 @@ export function useVersionCheck() {
           console.log(`New version available: ${data.version} (current: ${CURRENT_VERSION})`);
           setNewVersion(data.version);
           setUpdateAvailable(true);
+
+          // Persist the pending update to localStorage
+          localStorage.setItem(UPDATE_STORAGE_KEY, JSON.stringify({
+            version: data.version,
+            detectedAt: Date.now()
+          }));
         }
       } catch (error) {
         console.error('Version check error:', error);

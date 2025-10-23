@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadState, clearState, getRecentLeagues, clearRecentLeagues } from '@/lib/storage';
+import { useVersionCheck } from '@/hooks/useVersionCheck';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
   const router = useRouter();
   const [state, setState] = useState(loadState());
   const [recentLeagues, setRecentLeagues] = useState(getRecentLeagues());
+  const { updateAvailable, newVersion, currentVersion, applyUpdate } = useVersionCheck();
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
 
   useEffect(() => {
     if (!state) {
@@ -50,6 +53,18 @@ export default function SettingsPage() {
     if (confirm('Clear recent leagues history?')) {
       clearRecentLeagues();
       setRecentLeagues([]);
+    }
+  }
+
+  async function handleCheckUpdates() {
+    setIsCheckingUpdate(true);
+    try {
+      // Force a version check
+      window.location.reload();
+    } catch (error) {
+      console.error('Update check failed:', error);
+    } finally {
+      setIsCheckingUpdate(false);
     }
   }
 
@@ -122,12 +137,40 @@ export default function SettingsPage() {
         )}
 
         <section className={styles.section}>
+          <h2>App Updates</h2>
+          <div className={styles.infoCard}>
+            <div className={styles.infoLabel}>Current Version</div>
+            <div className={styles.infoValue}>v{currentVersion}</div>
+            {updateAvailable && (
+              <>
+                <div className={styles.infoLabel}>New Version Available</div>
+                <div className={`${styles.infoValue} ${styles.updateAvailable}`}>
+                  v{newVersion} 🎉
+                </div>
+              </>
+            )}
+          </div>
+          {updateAvailable ? (
+            <button onClick={applyUpdate} className={styles.updateButton}>
+              Update to v{newVersion} Now
+            </button>
+          ) : (
+            <button
+              onClick={handleCheckUpdates}
+              className={styles.secondaryButton}
+              disabled={isCheckingUpdate}
+            >
+              {isCheckingUpdate ? 'Checking...' : 'Check for Updates'}
+            </button>
+          )}
+        </section>
+
+        <section className={styles.section}>
           <h2>About</h2>
           <p className={styles.aboutText}>
             FPL H2H Analytics helps you track your Fantasy Premier League
             Head-to-Head league performance. Data is stored locally on your device.
           </p>
-          <p className={styles.version}>Version {require('../../../package.json').version}</p>
         </section>
 
         <button onClick={handleChangeLeague} className={styles.dangerButton}>
