@@ -87,7 +87,7 @@ export default function LeaguePage() {
           <>
             <section className={styles.section}>
               <div className={styles.sectionHeader}>
-                <h2>{data.league?.name || 'League Standings'}</h2>
+                <h2>{data.league?.name || 'League Rankings'}</h2>
                 {currentGW && maxGW && (
                   <div className={styles.gwControls}>
                     <button

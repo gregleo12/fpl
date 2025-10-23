@@ -28,7 +28,7 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
   return (
     <div className={styles.leagueTab}>
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Current Standings</h2>
+        <h2 className={styles.sectionTitle}>Current Rank</h2>
         <div className={styles.table}>
           <table>
             <thead>

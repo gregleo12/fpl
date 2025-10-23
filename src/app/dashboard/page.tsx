@@ -99,7 +99,7 @@ export default function DashboardPage() {
           onClick={() => setActiveTab('league')}
         >
           <span className={styles.tabIcon}>📊</span>
-          <span className={styles.tabLabel}>Standings</span>
+          <span className={styles.tabLabel}>Rank</span>
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
