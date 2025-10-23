@@ -14,15 +14,25 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+.tabsWrapper {
+  padding: 0 12px;
+  margin-top: 1rem;
+}
+
 .tabs {
   display: flex;
   justify-content: space-around;
   align-items: stretch;
   background: rgba(26, 13, 46, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   padding: 8px 0;
   gap: 4px;
-  margin-top: 1rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .tab {
@@ -90,6 +100,14 @@
 }
 
 @media (max-width: 768px) {
+  .tabsWrapper {
+    padding: 0 8px;
+  }
+
+  .tabs {
+    border-radius: 12px;
+  }
+
   .tabIcon {
     font-size: 1.25rem;
   }

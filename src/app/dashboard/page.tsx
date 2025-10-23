@@ -93,29 +93,31 @@ export default function DashboardPage() {
         isRefreshing={isLoading}
       />
 
-      <nav className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
-          onClick={() => setActiveTab('league')}
-        >
-          <span className={styles.tabIcon}>📊</span>
-          <span className={styles.tabLabel}>Rankings</span>
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
-          onClick={() => setActiveTab('fixtures')}
-        >
-          <span className={styles.tabIcon}>🎯</span>
-          <span className={styles.tabLabel}>Fixtures</span>
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
-          onClick={() => setActiveTab('myteam')}
-        >
-          <span className={styles.tabIcon}>🏆</span>
-          <span className={styles.tabLabel}>My Team</span>
-        </button>
-      </nav>
+      <div className={styles.tabsWrapper}>
+        <nav className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
+            onClick={() => setActiveTab('league')}
+          >
+            <span className={styles.tabIcon}>📊</span>
+            <span className={styles.tabLabel}>Rankings</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
+            onClick={() => setActiveTab('fixtures')}
+          >
+            <span className={styles.tabIcon}>🎯</span>
+            <span className={styles.tabLabel}>Fixtures</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
+            onClick={() => setActiveTab('myteam')}
+          >
+            <span className={styles.tabIcon}>🏆</span>
+            <span className={styles.tabLabel}>My Team</span>
+          </button>
+        </nav>
+      </div>
 
       <main className={styles.content}>
         {error && <div className={styles.error}>{error}</div>}
