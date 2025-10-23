@@ -17,6 +17,15 @@
 }
 
 /* Gameweek Navigator */
+.navigatorWrapper {
+  position: sticky;
+  top: 90px;
+  background: #1a0d2e;
+  z-index: 50;
+  padding: 16px 0;
+  margin: -2rem 0 1rem 0;
+}
+
 .navigator {
   display: flex;
   align-items: center;
@@ -27,6 +36,8 @@
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .navButton {
@@ -68,10 +79,95 @@
 }
 
 .gwStatus {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.gwStatus.completed {
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.gwStatus.in_progress {
+  color: #00ff87;
+  background: rgba(0, 255, 135, 0.1);
+  animation: pulse 2s infinite;
+}
+
+.gwStatus.upcoming {
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  gap: 8px;
+  padding: 12px 8px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 135, 0.3) rgba(255, 255, 255, 0.05);
+  margin-top: 12px;
+}
+
+.timeline::-webkit-scrollbar {
+  height: 4px;
+}
+
+.timeline::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+}
+
+.timeline::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 135, 0.3);
+  border-radius: 2px;
+}
+
+.timeline::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 135, 0.5);
+}
+
+.gwDot {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gwDot:hover:not(.active) {
+  background: rgba(0, 255, 135, 0.1);
+  border-color: rgba(0, 255, 135, 0.3);
+  color: #00ff87;
+  transform: scale(1.05);
+}
+
+.gwDot.active {
+  background: #00ff87;
+  border-color: #00ff87;
+  color: #1a0d2e;
+  font-weight: 700;
+  transform: scale(1.15);
+  box-shadow: 0 2px 12px rgba(0, 255, 135, 0.4);
 }
 
 /* Opponent Insights Card */
@@ -353,6 +449,26 @@
     font-size: 1.5rem;
   }
 
+  .navigatorWrapper {
+    top: 70px;
+    padding: 12px 0;
+  }
+
+  .timeline {
+    gap: 6px;
+    padding: 10px 6px;
+  }
+
+  .gwDot {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.6875rem;
+  }
+
+  .gwStatus {
+    font-size: 0.6875rem;
+  }
+
   .insightsCard {
     padding: 1.5rem;
   }
@@ -477,5 +593,21 @@
 
   .score {
     font-size: 1.75rem;
+  }
+
+  .navButton {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .gwNumber {
+    font-size: 1.25rem;
+  }
+
+  .gwDot {
+    min-width: 28px;
+    height: 28px;
+    font-size: 0.625rem;
   }
 }

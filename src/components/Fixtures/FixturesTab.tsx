@@ -156,25 +156,46 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
   return (
     <div className={styles.container}>
       {/* Gameweek Navigator */}
-      <div className={styles.navigator}>
-        <button
-          className={styles.navButton}
-          onClick={handlePrevGW}
-          disabled={currentGW <= 1}
-        >
-          ◄
-        </button>
-        <div className={styles.gwInfo}>
-          <span className={styles.gwNumber}>GW {currentGW}</span>
-          <span className={styles.gwStatus}>{statusText}</span>
+      <div className={styles.navigatorWrapper}>
+        <div className={styles.navigator}>
+          <button
+            className={styles.navButton}
+            onClick={handlePrevGW}
+            disabled={currentGW <= 1}
+            aria-label="Previous gameweek"
+          >
+            ◄
+          </button>
+          <div className={styles.gwInfo}>
+            <span className={styles.gwNumber}>GW {currentGW}</span>
+            <span className={`${styles.gwStatus} ${styles[fixturesData.status]}`}>
+              {statusText}
+            </span>
+          </div>
+          <button
+            className={styles.navButton}
+            onClick={handleNextGW}
+            disabled={currentGW >= maxGW}
+            aria-label="Next gameweek"
+          >
+            ►
+          </button>
         </div>
-        <button
-          className={styles.navButton}
-          onClick={handleNextGW}
-          disabled={currentGW >= maxGW}
-        >
-          ►
-        </button>
+
+        {/* Timeline */}
+        <div className={styles.timeline}>
+          {Array.from({ length: maxGW }, (_, i) => i + 1).map(gw => (
+            <button
+              key={gw}
+              onClick={() => setCurrentGW(gw)}
+              className={`${styles.gwDot} ${gw === currentGW ? styles.active : ''}`}
+              aria-label={`Go to gameweek ${gw}`}
+              title={`GW${gw}`}
+            >
+              {gw}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Opponent Insights for Upcoming GWs */}
