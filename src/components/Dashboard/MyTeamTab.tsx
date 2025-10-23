@@ -65,11 +65,11 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
-          <span className={styles.statLabel}>Played</span>
+          <span className={styles.statLabel}>PLY</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.totalPointsFor}</span>
-          <span className={styles.statLabel}>Points For</span>
+          <span className={styles.statLabel}>PTS</span>
         </div>
         <div className={`${styles.statCard}`}>
           <span className={`${styles.statValue} ${
@@ -83,26 +83,26 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         </div>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
-          <span className={styles.statLabel}>Avg/GW</span>
+          <span className={styles.statLabel}>AVG</span>
         </div>
       </div>
 
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.wins}</span>
-          <span className={styles.statLabel}>Wins</span>
+          <span className={styles.statLabel}>WIN</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.draws}</span>
-          <span className={styles.statLabel}>Draws</span>
+          <span className={styles.statLabel}>DRW</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.losses}</span>
-          <span className={styles.statLabel}>Losses</span>
+          <span className={styles.statLabel}>LSS</span>
         </div>
-        <div className={styles.statCard}>
+        <div className={`${styles.statCard} ${styles.highlight}`}>
           <span className={styles.statValue}>{myTeam.total}</span>
-          <span className={styles.statLabel}>Total Pts</span>
+          <span className={styles.statLabel}>TOT</span>
         </div>
       </div>
       </div>
