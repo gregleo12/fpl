@@ -127,7 +127,7 @@ export default function SettingsPage() {
             FPL H2H Analytics helps you track your Fantasy Premier League
             Head-to-Head league performance. Data is stored locally on your device.
           </p>
-          <p className={styles.version}>Version 2.0.0</p>
+          <p className={styles.version}>Version {require('../../../package.json').version}</p>
         </section>
 
         <button onClick={handleChangeLeague} className={styles.dangerButton}>

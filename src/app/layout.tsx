@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
+import { UpdateBanner } from '@/components/UpdateBanner/UpdateBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -38,6 +39,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body>
+        <UpdateBanner />
         {children}
         <Script id="register-sw" strategy="afterInteractive">
           {`
