@@ -45,25 +45,23 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
 
   return (
     <div className={styles.myTeamTab}>
-      {/* Team Overview */}
+      {/* Team Overview with Rank */}
       <div className={styles.section}>
         <div className={styles.teamHeader}>
           <div>
             <h2 className={styles.managerName}>{shortenManagerName(myManagerName)}</h2>
             <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
           </div>
-        </div>
-      </div>
-
-      {/* Performance Stats with Integrated Rank */}
-      <div className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h3 className={styles.sectionTitle}>Performance</h3>
           <div className={styles.rankBadge}>
             <span className={styles.rankNumber}>{myTeam.rank}</span>
             <span className={styles.rankLabel}>Rank</span>
           </div>
         </div>
+      </div>
+
+      {/* Performance Stats */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Performance</h3>
         <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
