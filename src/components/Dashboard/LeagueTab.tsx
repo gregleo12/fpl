@@ -25,7 +25,6 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
             <thead>
               <tr>
                 <th className={styles.rankCol}>Rank</th>
-                <th className={styles.managerCol}>Manager</th>
                 <th className={styles.teamCol}>Team</th>
                 <th className={styles.recordCol}>W</th>
                 <th className={styles.recordCol}>D</th>
@@ -49,13 +48,12 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                     onClick={() => router.push(`/league/${leagueId}/player/${team.entry_id}`)}
                   >
                     <td className={styles.rankCol}>{team.rank}</td>
-                    <td className={styles.managerCol}>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{team.player_name}</div>
-                        <div style={{ fontSize: '0.85em', color: 'rgba(255, 255, 255, 0.6)' }}>{team.team_name}</div>
+                    <td className={styles.teamCol}>
+                      <div className={styles.teamCell}>
+                        <span className={styles.teamName}>{team.team_name}</span>
+                        <span className={styles.managerName}>{team.player_name}</span>
                       </div>
                     </td>
-                    <td className={styles.teamCol}>{team.team_name}</td>
                     <td className={styles.recordCol}>{team.matches_won}</td>
                     <td className={styles.recordCol}>{team.matches_drawn}</td>
                     <td className={styles.recordCol}>{team.matches_lost}</td>

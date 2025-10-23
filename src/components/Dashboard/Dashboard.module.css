@@ -82,6 +82,26 @@
   font-size: 1.1em;
 }
 
+/* Team/Manager Column */
+.teamCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+}
+
+.teamName {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: #ffffff;
+}
+
+.managerName {
+  font-weight: 400;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
 /* My Team Row Highlight */
 .myTeamRow {
   background: rgba(0, 255, 135, 0.1) !important;
@@ -91,6 +111,14 @@
 .myTeamRow td {
   color: #00ff87 !important;
   font-weight: 700;
+}
+
+.myTeamRow .teamName {
+  color: #00ff87 !important;
+}
+
+.myTeamRow .managerName {
+  color: rgba(0, 255, 135, 0.8) !important;
 }
 
 /* Differential */
@@ -480,7 +508,6 @@
   }
 
   /* Hide non-essential columns on mobile portrait */
-  .teamCol,
   .formCol,
   .streakCol,
   .pfCol,
@@ -488,9 +515,17 @@
     display: none;
   }
 
-  /* Ensure manager column shows both name and team */
-  .managerCol {
-    min-width: 120px;
+  /* Ensure team column shows both team and manager */
+  .teamCol {
+    min-width: 140px;
+  }
+
+  .teamName {
+    font-size: 0.875rem;
+  }
+
+  .managerName {
+    font-size: 0.75rem;
   }
 
   /* Compact record columns */

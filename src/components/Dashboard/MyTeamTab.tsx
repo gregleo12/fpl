@@ -219,31 +219,35 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
               <table>
                 <thead>
                   <tr>
+                    <th>Chip</th>
                     <th>GW</th>
                     <th>Opponent</th>
-                    <th>Chip Used</th>
-                    <th>Their Score</th>
+                    <th>Score</th>
                     <th>Result</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {playerData.chipsFaced.map((chip: any, idx: number) => (
-                    <tr key={idx}>
-                      <td>GW{chip.event}</td>
-                      <td>{chip.opponentName}</td>
-                      <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.chipName)}</span></td>
-                      <td>{chip.opponentPoints}</td>
-                      <td>
-                        <span className={`${styles.resultBadge} ${
-                          chip.result === 'W' ? styles.resultWin :
-                          chip.result === 'D' ? styles.resultDraw :
-                          styles.resultLoss
-                        }`}>
-                          {chip.result}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {playerData.chipsFaced.map((chip: any, idx: number) => {
+                    const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
+                    const yourScore = match?.playerPoints || 0;
+                    return (
+                      <tr key={idx}>
+                        <td><span className={styles.oppChip}>{getChipAbbreviation(chip.chipName)}</span></td>
+                        <td>GW{chip.event}</td>
+                        <td>{chip.opponentName}</td>
+                        <td>{yourScore}-{chip.opponentPoints}</td>
+                        <td>
+                          <span className={`${styles.resultBadge} ${
+                            chip.result === 'W' ? styles.resultWin :
+                            chip.result === 'D' ? styles.resultDraw :
+                            styles.resultLoss
+                          }`}>
+                            {chip.result}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -284,12 +288,12 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
                       <div className={styles.chipsCell}>
                         {yourChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
-                            You: {getChipAbbreviation(yourChip.name)}
+                            {getChipAbbreviation(yourChip.name)}
                           </span>
                         )}
                         {oppChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
-                            Opp: {getChipAbbreviation(oppChip.chipName)}
+                            {getChipAbbreviation(oppChip.chipName)}
                           </span>
                         )}
                         {!yourChip && !oppChip && (
