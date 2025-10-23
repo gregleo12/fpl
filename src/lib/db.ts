@@ -39,6 +39,28 @@ async function initializeDatabase() {
       UNIQUE(league_id, event, entry_1_id, entry_2_id)
     );
 
+    -- Add chip columns if they don't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='h2h_matches' AND column_name='active_chip_1') THEN
+        ALTER TABLE h2h_matches ADD COLUMN active_chip_1 VARCHAR(20);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='h2h_matches' AND column_name='active_chip_2') THEN
+        ALTER TABLE h2h_matches ADD COLUMN active_chip_2 VARCHAR(20);
+      END IF;
+    END $$;
+
+    CREATE TABLE IF NOT EXISTS entry_captains (
+      id SERIAL PRIMARY KEY,
+      entry_id BIGINT NOT NULL,
+      event INTEGER NOT NULL,
+      captain_element_id INTEGER NOT NULL,
+      captain_name VARCHAR(255),
+      captain_points INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(entry_id, event)
+    );
+
     CREATE TABLE IF NOT EXISTS league_standings (
       id SERIAL PRIMARY KEY,
       league_id BIGINT NOT NULL,
@@ -58,6 +80,8 @@ async function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_h2h_matches_league ON h2h_matches(league_id);
     CREATE INDEX IF NOT EXISTS idx_h2h_matches_event ON h2h_matches(event);
     CREATE INDEX IF NOT EXISTS idx_standings_league ON league_standings(league_id);
+    CREATE INDEX IF NOT EXISTS idx_captains_entry ON entry_captains(entry_id);
+    CREATE INDEX IF NOT EXISTS idx_captains_event ON entry_captains(event);
   `);
 
   initialized = true;

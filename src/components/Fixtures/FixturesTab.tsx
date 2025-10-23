@@ -12,6 +12,7 @@ interface Match {
     team_name: string;
     score: number;
     chip: string | null;
+    captain: string | null;
   };
   entry_2: {
     id: number;
@@ -19,6 +20,7 @@ interface Match {
     team_name: string;
     score: number;
     chip: string | null;
+    captain: string | null;
   };
   winner: number | null;
 }
@@ -274,6 +276,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
                     {match.entry_1.player_name}
                   </div>
                   <div className={styles.teamName}>{match.entry_1.team_name}</div>
+                  {match.entry_1.captain && (
+                    <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
+                  )}
                   {match.entry_1.chip && (
                     <span className={styles.chipBadge}>
                       {getChipAbbreviation(match.entry_1.chip)}
@@ -292,6 +297,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
                     {match.entry_2.player_name}
                   </div>
                   <div className={styles.teamName}>{match.entry_2.team_name}</div>
+                  {match.entry_2.captain && (
+                    <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
+                  )}
                   {match.entry_2.chip && (
                     <span className={styles.chipBadge}>
                       {getChipAbbreviation(match.entry_2.chip)}
