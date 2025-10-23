@@ -58,8 +58,10 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className={styles.statsGrid}>
+      {/* Performance Stats */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Performance</h3>
+        <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
           <span className={styles.statLabel}>Played</span>
@@ -84,7 +86,6 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         </div>
       </div>
 
-      {/* Record */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.wins}</span>
@@ -102,6 +103,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
           <span className={styles.statValue}>{myTeam.total}</span>
           <span className={styles.statLabel}>Total Pts</span>
         </div>
+      </div>
       </div>
 
       {/* Form */}
