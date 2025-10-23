@@ -16,22 +16,30 @@
 
 .tabs {
   display: flex;
-  gap: 0.5rem;
-  padding: 0 2rem;
+  justify-content: space-around;
+  align-items: stretch;
+  background: rgba(26, 13, 46, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 0;
+  gap: 4px;
   margin-top: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tab {
-  padding: 1rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1;
+  padding: 8px 4px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
   border: none;
-  border-bottom: 3px solid transparent;
+  border-top: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
+  min-width: 0;
 }
 
 .tab:hover {
@@ -41,7 +49,27 @@
 
 .tab.active {
   color: #00ff87;
-  border-bottom-color: #00ff87;
+  border-top-color: #00ff87;
+  background: rgba(0, 255, 135, 0.08);
+}
+
+.tab.active .tabIcon {
+  text-shadow: 0 0 8px rgba(0, 255, 135, 0.6);
+}
+
+.tabIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tabLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .content {
@@ -62,13 +90,12 @@
 }
 
 @media (max-width: 768px) {
-  .tabs {
-    padding: 0 1rem;
+  .tabIcon {
+    font-size: 1.25rem;
   }
 
-  .tab {
-    padding: 0.875rem 1rem;
-    font-size: 0.9rem;
+  .tabLabel {
+    font-size: 0.6875rem;
   }
 
   .content {

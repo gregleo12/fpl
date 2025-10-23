@@ -51,6 +51,24 @@
   font-weight: 500;
 }
 
+.teamNameButton {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.teamNameButton:hover {
+  color: #00ff87;
+  text-decoration: underline;
+}
+
 .actions {
   display: flex;
   gap: 0.75rem;
@@ -119,7 +137,8 @@
 
 @media (max-width: 480px) {
   .leagueName,
-  .teamName {
+  .teamName,
+  .teamNameButton {
     max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;

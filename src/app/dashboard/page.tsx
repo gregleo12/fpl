@@ -87,6 +87,8 @@ export default function DashboardPage() {
       <Header
         leagueName={state.leagueName}
         myTeamName={state.myTeamName}
+        leagueId={state.leagueId}
+        myTeamId={state.myTeamId}
         onRefresh={handleRefresh}
         isRefreshing={isLoading}
       />
@@ -96,19 +98,22 @@ export default function DashboardPage() {
           className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
           onClick={() => setActiveTab('league')}
         >
-          📊 League Standings
+          <span className={styles.tabIcon}>📊</span>
+          <span className={styles.tabLabel}>Standings</span>
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
           onClick={() => setActiveTab('fixtures')}
         >
-          🎯 Fixtures
+          <span className={styles.tabIcon}>🎯</span>
+          <span className={styles.tabLabel}>Fixtures</span>
         </button>
         <button
           className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
           onClick={() => setActiveTab('myteam')}
         >
-          🏆 My Team
+          <span className={styles.tabIcon}>🏆</span>
+          <span className={styles.tabLabel}>My Team</span>
         </button>
       </nav>
 

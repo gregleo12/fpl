@@ -103,7 +103,9 @@ export default function PlayerProfilePage() {
     <div className={styles.container}>
       <Header
         leagueName={leagueData?.league?.name || state.leagueName}
-        myTeamName={teamName}
+        myTeamName={state?.myTeamName || 'My Team'}
+        leagueId={leagueId}
+        myTeamId={state?.myTeamId}
         onRefresh={handleRefresh}
         isRefreshing={isLoading}
       />
@@ -124,25 +126,20 @@ export default function PlayerProfilePage() {
           <span className={styles.tabLabel}>Fixtures</span>
         </button>
         <button
-          className={`${styles.tab} ${activeTab === 'player' && isViewingSelf ? styles.active : ''}`}
+          className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
           onClick={() => {
-            if (state?.myTeamId) {
+            if (isViewingSelf) {
+              // Already viewing self, just switch tab
+              setActiveTab('player');
+            } else if (state?.myTeamId) {
+              // Viewing someone else, navigate to your team
               router.push(`/league/${leagueId}/player/${state.myTeamId}`);
             }
           }}
         >
           <span className={styles.tabIcon}>🏆</span>
-          <span className={styles.tabLabel}>{state?.myTeamName || 'My Team'}</span>
+          <span className={styles.tabLabel}>My Team</span>
         </button>
-        {!isViewingSelf && (
-          <button
-            className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
-            onClick={() => setActiveTab('player')}
-          >
-            <span className={styles.tabIcon}>👤</span>
-            <span className={styles.tabLabel}>{playerName}</span>
-          </button>
-        )}
       </nav>
 
       <main className={styles.content}>
@@ -153,6 +150,15 @@ export default function PlayerProfilePage() {
             data={leagueData}
             myTeamId={state?.myTeamId || playerId}
             leagueId={leagueId}
+            onPlayerClick={(clickedPlayerId) => {
+              if (clickedPlayerId === playerId) {
+                // Clicked the current player, just switch to their tab
+                setActiveTab('player');
+              } else {
+                // Clicked a different player, navigate to their profile
+                router.push(`/league/${leagueId}/player/${clickedPlayerId}`);
+              }
+            }}
           />
         )}
         {activeTab === 'fixtures' && leagueData && (

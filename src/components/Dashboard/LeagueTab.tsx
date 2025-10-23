@@ -7,10 +7,19 @@ interface Props {
   data: any;
   myTeamId: string;
   leagueId: string;
+  onPlayerClick?: (playerId: string) => void;
 }
 
-export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
+export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: Props) {
   const router = useRouter();
+
+  const handlePlayerClick = (playerId: string) => {
+    if (onPlayerClick) {
+      onPlayerClick(playerId);
+    } else {
+      router.push(`/league/${leagueId}/player/${playerId}`);
+    }
+  };
 
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No league data available</div>;
@@ -45,7 +54,7 @@ export default function LeagueTab({ data, myTeamId, leagueId }: Props) {
                   <tr
                     key={team.entry_id}
                     className={isMyTeam ? styles.myTeamRow : ''}
-                    onClick={() => router.push(`/league/${leagueId}/player/${team.entry_id}`)}
+                    onClick={() => handlePlayerClick(team.entry_id.toString())}
                   >
                     <td className={styles.rankCol}>{team.rank}</td>
                     <td className={styles.teamCol}>

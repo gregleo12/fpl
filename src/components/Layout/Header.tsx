@@ -6,12 +6,20 @@ import styles from './Header.module.css';
 interface HeaderProps {
   leagueName: string;
   myTeamName: string;
+  leagueId?: string;
+  myTeamId?: string;
   onRefresh: () => void;
   isRefreshing: boolean;
 }
 
-export default function Header({ leagueName, myTeamName, onRefresh, isRefreshing }: HeaderProps) {
+export default function Header({ leagueName, myTeamName, leagueId, myTeamId, onRefresh, isRefreshing }: HeaderProps) {
   const router = useRouter();
+
+  const handleTeamNameClick = () => {
+    if (leagueId && myTeamId) {
+      router.push(`/league/${leagueId}/player/${myTeamId}`);
+    }
+  };
 
   return (
     <header className={styles.header}>
@@ -21,7 +29,13 @@ export default function Header({ leagueName, myTeamName, onRefresh, isRefreshing
           <div className={styles.info}>
             <span className={styles.leagueName}>{leagueName}</span>
             <span className={styles.divider}>|</span>
-            <span className={styles.teamName}>{myTeamName}</span>
+            {leagueId && myTeamId ? (
+              <button onClick={handleTeamNameClick} className={styles.teamNameButton}>
+                {myTeamName}
+              </button>
+            ) : (
+              <span className={styles.teamName}>{myTeamName}</span>
+            )}
           </div>
         </div>
 

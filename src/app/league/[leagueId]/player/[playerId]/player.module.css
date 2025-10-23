@@ -50,6 +50,19 @@
 .tab.active {
   color: #00ff87;
   border-top-color: #00ff87;
+  background: rgba(0, 255, 135, 0.08);
+}
+
+.tab.active .tabIcon {
+  text-shadow: 0 0 8px rgba(0, 255, 135, 0.6);
+}
+
+.playerTab {
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.playerTab:not(.active) .tabIcon {
+  opacity: 0.7;
 }
 
 .tabIcon {
