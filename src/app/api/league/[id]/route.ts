@@ -71,60 +71,79 @@ export async function GET(
       ]);
     }
 
-    // Store matches and fetch captain/chip data
+    // Check which captain data we already have
+    const existingCaptains = await db.query(`
+      SELECT entry_id, event FROM entry_captains
+    `);
+    const captainCache = new Set(
+      existingCaptains.rows.map((r: any) => `${r.entry_id}_${r.event}`)
+    );
+
+    // Collect all picks we need to fetch (in parallel)
+    const picksToFetch: Array<{entryId: number, event: number}> = [];
     for (const match of matches) {
-      // Calculate winner based on points (don't trust API's winner field)
+      const key1 = `${match.entry_1_entry}_${match.event}`;
+      const key2 = `${match.entry_2_entry}_${match.event}`;
+
+      if (!captainCache.has(key1)) {
+        picksToFetch.push({ entryId: match.entry_1_entry, event: match.event });
+      }
+      if (!captainCache.has(key2)) {
+        picksToFetch.push({ entryId: match.entry_2_entry, event: match.event });
+      }
+    }
+
+    // Fetch all picks in parallel (much faster!)
+    console.log(`Fetching ${picksToFetch.length} picks in parallel...`);
+    const picksResults = await Promise.allSettled(
+      picksToFetch.map(({entryId, event}) =>
+        fplApi.getEntryPicks(entryId, event)
+          .then(data => ({ entryId, event, data }))
+      )
+    );
+
+    // Store captain data from successful picks
+    const captainInserts: Array<any> = [];
+    for (const result of picksResults) {
+      if (result.status === 'fulfilled') {
+        const { entryId, event, data } = result.value;
+        const captain = data.picks.find((p: any) => p.is_captain);
+        if (captain) {
+          const captainName = playerMap.get(captain.element) || 'Unknown';
+          captainInserts.push([entryId, event, captain.element, captainName]);
+        }
+      }
+    }
+
+    // Batch insert captains
+    for (const [entryId, event, captainElementId, captainName] of captainInserts) {
+      await db.query(`
+        INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (entry_id, event) DO NOTHING
+      `, [entryId, event, captainElementId, captainName]);
+    }
+
+    // Store matches (with chips from picks data)
+    const chipsMap = new Map<string, string | null>();
+    for (const result of picksResults) {
+      if (result.status === 'fulfilled') {
+        const { entryId, event, data } = result.value;
+        chipsMap.set(`${entryId}_${event}`, data.active_chip || null);
+      }
+    }
+
+    for (const match of matches) {
+      // Calculate winner based on points
       let winner = null;
       if (match.entry_1_points > match.entry_2_points) {
         winner = match.entry_1_entry;
       } else if (match.entry_2_points > match.entry_1_points) {
         winner = match.entry_2_entry;
       }
-      // If points are equal, winner stays null (draw)
 
-      // Fetch picks for both entries to get captain and chip data
-      let activeChip1 = null;
-      let activeChip2 = null;
-
-      try {
-        const picks1 = await fplApi.getEntryPicks(match.entry_1_entry, match.event);
-        activeChip1 = picks1.active_chip || null;
-
-        // Find captain
-        const captain1 = picks1.picks.find((p: any) => p.is_captain);
-        if (captain1) {
-          const captainName = playerMap.get(captain1.element) || 'Unknown';
-          await db.query(`
-            INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (entry_id, event) DO UPDATE SET
-              captain_element_id = $3,
-              captain_name = $4
-          `, [match.entry_1_entry, match.event, captain1.element, captainName]);
-        }
-      } catch (err) {
-        console.error(`Failed to fetch picks for entry ${match.entry_1_entry}, event ${match.event}:`, err);
-      }
-
-      try {
-        const picks2 = await fplApi.getEntryPicks(match.entry_2_entry, match.event);
-        activeChip2 = picks2.active_chip || null;
-
-        // Find captain
-        const captain2 = picks2.picks.find((p: any) => p.is_captain);
-        if (captain2) {
-          const captainName = playerMap.get(captain2.element) || 'Unknown';
-          await db.query(`
-            INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (entry_id, event) DO UPDATE SET
-              captain_element_id = $3,
-              captain_name = $4
-          `, [match.entry_2_entry, match.event, captain2.element, captainName]);
-        }
-      } catch (err) {
-        console.error(`Failed to fetch picks for entry ${match.entry_2_entry}, event ${match.event}:`, err);
-      }
+      const activeChip1 = chipsMap.get(`${match.entry_1_entry}_${match.event}`) || null;
+      const activeChip2 = chipsMap.get(`${match.entry_2_entry}_${match.event}`) || null;
 
       await db.query(`
         INSERT INTO h2h_matches
