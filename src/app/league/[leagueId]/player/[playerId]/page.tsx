@@ -132,14 +132,14 @@ export default function PlayerProfilePage() {
         {activeTab === 'league' && (
           <LeagueTab
             data={leagueData}
-            myTeamId={playerId}
+            myTeamId={state?.myTeamId || playerId}
             leagueId={leagueId}
           />
         )}
         {activeTab === 'fixtures' && leagueData && (
           <FixturesTab
             leagueId={leagueId}
-            myTeamId={playerId}
+            myTeamId={state?.myTeamId || playerId}
             maxGW={leagueData.maxGW || 1}
           />
         )}
@@ -147,7 +147,7 @@ export default function PlayerProfilePage() {
           <MyTeamTab
             data={leagueData}
             playerData={playerData}
-            myTeamId={playerId}
+            myTeamId={state?.myTeamId || playerId}
             myManagerName={playerName}
             myTeamName={teamName}
             leagueId={leagueId}

@@ -92,14 +92,15 @@
 
 .teamName {
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 1.125rem;
   color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .managerName {
   font-weight: 400;
   font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* My Team Row Highlight */
