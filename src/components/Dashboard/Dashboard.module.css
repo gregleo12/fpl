@@ -14,13 +14,29 @@
   backdrop-filter: blur(10px);
 }
 
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
 .sectionTitle {
   color: #00ff87;
-  margin: 0 0 1.5rem 0;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  margin-left: 8px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .emptyState {
@@ -210,27 +226,28 @@
 
 .rankBadge {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  background: rgba(0, 255, 135, 0.15);
-  padding: 1rem 1.5rem;
+  gap: 8px;
+  background: rgba(0, 255, 135, 0.1);
+  padding: 8px 16px;
   border-radius: 12px;
-  border: 2px solid rgba(0, 255, 135, 0.3);
+  border: 2px solid #00ff87;
 }
 
 .rankNumber {
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: #00ff87;
   line-height: 1;
 }
 
 .rankLabel {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-top: 0.25rem;
+  line-height: 1;
 }
 
 /* Stats Grid */
@@ -290,6 +307,62 @@
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.formItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.formCircle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.formCircle:hover {
+  transform: scale(1.1);
+}
+
+.formCircle.formWin {
+  background: #00ff87;
+  color: #1a0d2e;
+  box-shadow: 0 2px 12px rgba(0, 255, 135, 0.3);
+}
+
+.formCircle.formLoss {
+  background: #ff0066;
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(255, 0, 102, 0.3);
+}
+
+.formCircle.formDraw {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.gameweekLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .formIndicator {
@@ -513,8 +586,17 @@
     padding: 1rem;
   }
 
+  .sectionHeader {
+    margin-bottom: 1rem;
+  }
+
   .sectionTitle {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    margin-left: 6px;
   }
 
   .teamHeader {
@@ -529,6 +611,32 @@
 
   .teamNameSubtitle {
     font-size: 1rem;
+  }
+
+  .rankBadge {
+    padding: 6px 12px;
+  }
+
+  .rankNumber {
+    font-size: 1.5rem;
+  }
+
+  .rankLabel {
+    font-size: 0.6875rem;
+  }
+
+  .formGrid {
+    gap: 8px;
+  }
+
+  .formCircle {
+    width: 48px;
+    height: 48px;
+    font-size: 1.125rem;
+  }
+
+  .gameweekLabel {
+    font-size: 0.6875rem;
   }
 
   .statsGrid {
@@ -679,5 +787,19 @@
 
   .statLabel {
     font-size: 0.5625rem;
+  }
+
+  .formGrid {
+    gap: 6px;
+  }
+
+  .formCircle {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+
+  .gameweekLabel {
+    font-size: 0.625rem;
   }
 }

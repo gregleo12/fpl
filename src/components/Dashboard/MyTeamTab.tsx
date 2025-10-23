@@ -52,16 +52,18 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
             <h2 className={styles.managerName}>{shortenManagerName(myManagerName)}</h2>
             <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
           </div>
+        </div>
+      </div>
+
+      {/* Performance Stats with Integrated Rank */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h3 className={styles.sectionTitle}>Performance</h3>
           <div className={styles.rankBadge}>
             <span className={styles.rankNumber}>{myTeam.rank}</span>
             <span className={styles.rankLabel}>Rank</span>
           </div>
         </div>
-      </div>
-
-      {/* Performance Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Performance</h3>
         <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
@@ -107,22 +109,27 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
       </div>
       </div>
 
-      {/* Form */}
-      {myTeam.formArray && myTeam.formArray.length > 0 && (
+      {/* Recent Form */}
+      {playerData.matchHistory && playerData.matchHistory.length > 0 && (
         <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>Recent Form</h3>
-          <div className={styles.formRow}>
-            {myTeam.formArray.map((result: string, idx: number) => (
-              <span
-                key={idx}
-                className={`${styles.formIndicator} ${
-                  result === 'W' ? styles.formWin :
-                  result === 'D' ? styles.formDraw :
-                  styles.formLoss
-                }`}
-              >
-                {result}
-              </span>
+          <h3 className={styles.sectionTitle}>
+            Recent Form <span className={styles.subtitle}>(Last 5)</span>
+          </h3>
+          <div className={styles.formGrid}>
+            {playerData.matchHistory.slice().reverse().slice(0, 5).map((match: any) => (
+              <div key={match.event} className={styles.formItem}>
+                <div
+                  className={`${styles.formCircle} ${
+                    match.result === 'W' ? styles.formWin :
+                    match.result === 'D' ? styles.formDraw :
+                    styles.formLoss
+                  }`}
+                  title={`GW${match.event}: ${shortenManagerName(match.opponentName)} (${match.playerPoints}-${match.opponentPoints})`}
+                >
+                  {match.result}
+                </div>
+                <div className={styles.gameweekLabel}>GW{match.event}</div>
+              </div>
             ))}
           </div>
         </div>
