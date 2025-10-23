@@ -9,17 +9,14 @@
 }
 
 .floatingHeader {
-  background: rgba(26, 13, 46, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 16px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -92,10 +89,9 @@
 }
 
 .iconButton:hover:not(:disabled) {
-  background: rgba(0, 255, 135, 0.1);
+  background: rgba(0, 255, 135, 0.15);
   border-color: rgba(0, 255, 135, 0.3);
   color: #00ff87;
-  transform: translateY(-2px);
 }
 
 .iconButton:active {

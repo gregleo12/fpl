@@ -23,14 +23,12 @@
   display: flex;
   justify-content: space-around;
   align-items: stretch;
-  background: rgba(26, 13, 46, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 8px 0;
   gap: 4px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -54,7 +52,6 @@
 
 .tab:hover {
   color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab.active {
