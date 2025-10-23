@@ -423,8 +423,8 @@
     font-weight: 700;
   }
 
-  /* Match standings table font sizes */
-  .playerName {
+  /* Match standings table font sizes - swapped order */
+  .teamName {
     font-size: 0.75rem;
     line-height: 1.1;
     font-weight: 700;
@@ -434,7 +434,7 @@
     text-overflow: ellipsis;
   }
 
-  .teamName {
+  .playerName {
     font-size: 0.625rem;
     line-height: 1.1;
     margin: 0;

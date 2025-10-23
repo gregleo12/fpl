@@ -272,10 +272,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
             >
               <div className={styles.matchHeader}>
                 <div className={styles.team}>
+                  <div className={styles.teamName}>{match.entry_1.team_name}</div>
                   <div className={`${styles.playerName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
                     {match.entry_1.player_name}
                   </div>
-                  <div className={styles.teamName}>{match.entry_1.team_name}</div>
                   {match.entry_1.captain && (
                     <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
                   )}
@@ -293,10 +293,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
                 </div>
 
                 <div className={styles.team}>
+                  <div className={styles.teamName}>{match.entry_2.team_name}</div>
                   <div className={`${styles.playerName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
                     {match.entry_2.player_name}
                   </div>
-                  <div className={styles.teamName}>{match.entry_2.team_name}</div>
                   {match.entry_2.captain && (
                     <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
                   )}
