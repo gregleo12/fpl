@@ -302,7 +302,7 @@
   background: rgba(0, 255, 135, 0.2);
   color: #00ff87;
   border: 1px solid rgba(0, 255, 135, 0.4);
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;

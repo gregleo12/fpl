@@ -49,6 +49,7 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
               {data.standings.map((team: any) => {
                 const isMyTeam = team.entry_id.toString() === myTeamId;
                 const differential = team.points_for - team.points_against;
+                const rankChange = team.rankChange || 0;
 
                 return (
                   <tr
@@ -56,7 +57,18 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
                     className={isMyTeam ? styles.myTeamRow : ''}
                     onClick={() => handlePlayerClick(team.entry_id.toString())}
                   >
-                    <td className={styles.rankCol}>{team.rank}</td>
+                    <td className={styles.rankCol}>
+                      <div className={styles.rankCell}>
+                        <span className={styles.currentRank}>{team.rank}</span>
+                        {rankChange !== 0 && (
+                          <span className={`${styles.rankChangeIndicator} ${
+                            rankChange > 0 ? styles.rankUp : styles.rankDown
+                          }`}>
+                            {rankChange > 0 ? '▲' : '▼'}{Math.abs(rankChange)}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className={styles.teamCol}>
                       <div className={styles.teamCell}>
                         <span className={styles.teamName}>{team.team_name}</span>
