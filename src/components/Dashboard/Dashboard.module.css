@@ -91,21 +91,26 @@
 }
 
 .teamName {
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: #ffffff;
-  letter-spacing: -0.01em;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
+  color: #ffffff !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.2 !important;
+  display: block !important;
 }
 
 .managerName {
-  font-weight: 400;
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.01em;
+  font-weight: 400 !important;
+  font-size: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  margin-top: 2px !important;
 }
 
 .teamCell:hover .managerName {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* My Team Row Highlight */
@@ -116,15 +121,18 @@
 
 .myTeamRow td {
   color: #00ff87 !important;
-  font-weight: 700;
 }
 
 .myTeamRow .teamName {
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
   color: #00ff87 !important;
 }
 
 .myTeamRow .managerName {
-  color: rgba(0, 255, 135, 0.8) !important;
+  font-weight: 400 !important;
+  font-size: 0.75rem !important;
+  color: rgba(0, 255, 135, 0.6) !important;
 }
 
 /* Differential */
@@ -527,11 +535,13 @@
   }
 
   .teamName {
-    font-size: 0.875rem;
+    font-weight: 700 !important;
+    font-size: 0.9375rem !important;
   }
 
   .managerName {
-    font-size: 0.75rem;
+    font-weight: 400 !important;
+    font-size: 0.6875rem !important;
   }
 
   /* Compact record columns */
