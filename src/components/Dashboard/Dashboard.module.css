@@ -538,11 +538,16 @@
   }
 
   .statCard {
-    padding: 1rem;
+    padding: 1.25rem 1rem;
   }
 
   .statValue {
-    font-size: 1.5rem;
+    font-size: 2rem;
+  }
+
+  .statLabel {
+    font-size: 0.75rem;
+    margin-top: 0.375rem;
   }
 
   .rankNumber {

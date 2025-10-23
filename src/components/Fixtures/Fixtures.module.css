@@ -372,13 +372,18 @@
   }
 
   .matchCard {
-    padding: 1.5rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
   }
 
   .matchHeader {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 0.75rem;
     text-align: center;
+  }
+
+  .team {
+    gap: 0.25rem;
   }
 
   .team:last-child {
@@ -387,19 +392,33 @@
 
   .scoreBox {
     order: 0;
+    gap: 0.25rem;
   }
 
   .score {
-    font-size: 2rem;
-    padding: 0.75rem 1.5rem;
+    font-size: 1.75rem;
+    padding: 0.5rem 1rem;
   }
 
   .playerName {
-    font-size: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.2;
   }
 
   .teamName {
-    font-size: 0.85rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+  }
+
+  .captainInfo {
+    font-size: 0.75rem;
+    margin-top: 0;
+  }
+
+  .chipBadge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    margin-top: 0.25rem;
   }
 }
 
