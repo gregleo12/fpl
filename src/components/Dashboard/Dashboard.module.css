@@ -533,9 +533,9 @@
   }
 
   .statsGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
     padding: 16px;
   }
 
@@ -647,11 +647,5 @@
     padding: 0.5rem 0.3rem !important;
     text-align: center;
     font-weight: 700;
-  }
-}
-
-@media (max-width: 480px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
   }
 }
