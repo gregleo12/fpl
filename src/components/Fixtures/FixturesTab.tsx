@@ -259,7 +259,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
       <div className={styles.matchesContainer}>
         {fixturesData.matches.map((match) => {
           const isMyMatch = match.entry_1.id.toString() === myTeamId || match.entry_2.id.toString() === myTeamId;
-          const margin = match.entry_1.score - match.entry_2.score;
+          const isCompleted = fixturesData.status === 'completed';
+          const entry1Won = isCompleted && match.entry_1.score > match.entry_2.score;
+          const entry2Won = isCompleted && match.entry_2.score > match.entry_1.score;
 
           return (
             <div
@@ -268,7 +270,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
             >
               <div className={styles.matchHeader}>
                 <div className={styles.team}>
-                  <div className={styles.playerName}>{match.entry_1.player_name}</div>
+                  <div className={`${styles.playerName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
+                    {match.entry_1.player_name}
+                  </div>
                   <div className={styles.teamName}>{match.entry_1.team_name}</div>
                   {match.entry_1.chip && (
                     <span className={styles.chipBadge}>
@@ -281,15 +285,12 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
                   <div className={styles.score}>
                     {match.entry_1.score} - {match.entry_2.score}
                   </div>
-                  {fixturesData.status === 'completed' && margin !== 0 && (
-                    <div className={`${styles.margin} ${margin > 0 ? styles.positive : styles.negative}`}>
-                      {margin > 0 ? `+${margin}` : margin}
-                    </div>
-                  )}
                 </div>
 
                 <div className={styles.team}>
-                  <div className={styles.playerName}>{match.entry_2.player_name}</div>
+                  <div className={`${styles.playerName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
+                    {match.entry_2.player_name}
+                  </div>
                   <div className={styles.teamName}>{match.entry_2.team_name}</div>
                   {match.entry_2.chip && (
                     <span className={styles.chipBadge}>
@@ -298,12 +299,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
                   )}
                 </div>
               </div>
-
-              {match.winner && (
-                <div className={styles.result}>
-                  Winner: {match.winner === match.entry_1.id ? match.entry_1.player_name : match.entry_2.player_name}
-                </div>
-              )}
             </div>
           );
         })}

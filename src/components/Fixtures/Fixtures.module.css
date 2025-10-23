@@ -263,6 +263,15 @@
   font-size: 1.1rem;
   font-weight: 700;
   color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.playerName.winner {
+  color: #00ff87;
+}
+
+.playerName.loser {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .teamName {
@@ -300,28 +309,6 @@
   background: rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.margin {
-  font-size: 1rem;
-  font-weight: 700;
-}
-
-.positive {
-  color: #00ff87;
-}
-
-.negative {
-  color: #ff2882;
-}
-
-.result {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.95rem;
 }
 
 /* Mobile Responsive */
