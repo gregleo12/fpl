@@ -220,6 +220,7 @@
   display: grid;
   gap: 12px;
   margin-top: 20px;
+  width: 100%;
 }
 
 /* Desktop Wide: 4 columns */
@@ -272,6 +273,8 @@
   .insightBox {
     padding: 12px;
     min-height: 140px;
+    margin: 0;
+    width: 100%;
   }
 
   /* Smaller FT number on mobile */
@@ -348,6 +351,8 @@
   display: flex;
   flex-direction: column;
   min-height: 180px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* Box Header */
