@@ -20,15 +20,15 @@
   left: 0;
   right: 0;
   z-index: 90; /* Below header (100), above content */
-  padding: 6px 18px; /* Inner padding for the container + outer margin */
-  margin: 0 12px 12px 12px;
+  padding: 6px 2rem; /* Match content horizontal padding */
+  margin: 0 2rem 12px 2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   display: flex;
   gap: 8px;
-  max-width: calc(1400px - 24px);
+  max-width: calc(1400px - 4rem); /* Subtract horizontal padding */
   margin-left: auto;
   margin-right: auto;
 }
@@ -398,8 +398,8 @@
 
 @media (max-width: 768px) {
   .tabs {
-    padding: 4px 14px;
-    margin: 0 8px 12px 8px;
+    padding: 4px 1rem;
+    margin: 0 1rem 12px 1rem;
     border-radius: 12px;
     gap: 6px;
     top: 60px; /* Smaller header on mobile */

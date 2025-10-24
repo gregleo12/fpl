@@ -20,7 +20,7 @@
   left: 0;
   right: 0;
   z-index: 90; /* Below header (100), above content */
-  padding: 0 12px;
+  padding: 0 2rem; /* Match content horizontal padding */
   margin-top: 0;
   background: transparent;
 }
@@ -32,7 +32,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  max-width: 1400px;
+  max-width: calc(1400px - 4rem); /* Subtract horizontal padding */
   margin: 0 auto 12px auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
@@ -138,7 +138,7 @@
 
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: 0 8px;
+    padding: 0 1rem; /* Match mobile content padding */
     top: 60px; /* Smaller header on mobile */
   }
 

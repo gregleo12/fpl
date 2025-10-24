@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 12px;
+  padding: 12px 2rem; /* Match content horizontal padding */
   background: transparent;
 }
 
@@ -17,7 +17,7 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  max-width: 1400px;
+  max-width: calc(1400px - 4rem); /* Subtract horizontal padding */
   margin: 0 auto;
 }
 
@@ -116,7 +116,7 @@
 /* Mobile optimizations */
 @media (max-width: 767px) {
   .headerWrapper {
-    padding: 8px;
+    padding: 8px 1rem; /* Match mobile content padding */
   }
 
   .floatingHeader {
