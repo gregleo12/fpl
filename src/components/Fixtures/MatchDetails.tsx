@@ -1,4 +1,36 @@
 import styles from './MatchDetails.module.css';
+import { StrategicIntel } from './StrategicIntel';
+
+interface CaptainPick {
+  playerName: string;
+  count: number;
+}
+
+interface BenchPoints {
+  total: number;
+  average: number;
+  breakdown: number[];
+}
+
+interface HitsTaken {
+  total: number;
+  count: number;
+  breakdown: Array<{ gameweek: number; cost: number }>;
+}
+
+interface CommonPlayers {
+  count: number;
+  percentage: number;
+  players: string[];
+}
+
+interface StrategicIntelData {
+  captainHistory: CaptainPick[];
+  benchPoints: BenchPoints;
+  teamValue: number;
+  hitsTaken: HitsTaken;
+  commonPlayers: CommonPlayers;
+}
 
 interface PlayerStats {
   id: number;
@@ -8,6 +40,7 @@ interface PlayerStats {
   avg_points_last_5: string;
   chips_remaining: string[];
   free_transfers: number;
+  strategicIntel: StrategicIntelData;
 }
 
 interface H2HRecord {
@@ -154,6 +187,18 @@ export function MatchDetails({ entry1, entry2, headToHead }: MatchDetailsProps) 
           </div>
         </div>
       </div>
+
+      {/* Strategic Intel */}
+      <StrategicIntel
+        entry1={{
+          player_name: entry1.player_name,
+          strategicIntel: entry1.strategicIntel
+        }}
+        entry2={{
+          player_name: entry2.player_name,
+          strategicIntel: entry2.strategicIntel
+        }}
+      />
 
       {/* H2H History (if available) */}
       {headToHead && headToHead.total_meetings > 0 && (

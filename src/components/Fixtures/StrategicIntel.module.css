@@ -1,0 +1,283 @@
+.strategicIntel {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Section Header */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.emoji {
+  font-size: 1.25rem;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Intel Grid - Two Columns */
+.intelGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.playerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Left column - left aligned */
+.playerColumn:first-child {
+  align-items: flex-start;
+}
+
+/* Right column - right aligned */
+.playerColumn:last-child {
+  align-items: flex-end;
+}
+
+/* Intel Section */
+.intelSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+/* Left column sections - left aligned */
+.playerColumn:first-child .intelSection {
+  align-items: flex-start;
+}
+
+/* Right column sections - right aligned */
+.playerColumn:last-child .intelSection {
+  align-items: flex-end;
+}
+
+.intelLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Captain Picks */
+.captainList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.captainItem {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.8125rem;
+}
+
+.captainName {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.captainCount {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.noData {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Bench Points */
+.benchStats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.benchTotal {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff0066;
+}
+
+.benchAvg {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Team Value */
+.teamValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+/* Hits Taken */
+.hitsStats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hitsTotal {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff0066;
+}
+
+.hitsCount {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.noHits {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Common Players Section */
+.commonPlayersSection {
+  padding: 16px;
+  background: rgba(0, 255, 135, 0.05);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  border-radius: 8px;
+}
+
+.commonPlayersHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.commonPlayersEmoji {
+  font-size: 1.125rem;
+}
+
+.commonPlayersTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.commonPlayersList {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.commonPlayer {
+  white-space: nowrap;
+}
+
+/* Right-align content in right column */
+.playerColumn:last-child .captainList,
+.playerColumn:last-child .benchStats,
+.playerColumn:last-child .hitsStats {
+  align-items: flex-end;
+}
+
+.playerColumn:last-child .captainItem {
+  flex-direction: row-reverse;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 767px) {
+  .intelGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* Reset alignment on mobile */
+  .playerColumn:first-child,
+  .playerColumn:last-child {
+    align-items: flex-start;
+  }
+
+  .playerColumn:first-child .intelSection,
+  .playerColumn:last-child .intelSection {
+    align-items: flex-start;
+  }
+
+  .playerColumn:last-child .captainList,
+  .playerColumn:last-child .benchStats,
+  .playerColumn:last-child .hitsStats {
+    align-items: flex-start;
+  }
+
+  .playerColumn:last-child .captainItem {
+    flex-direction: row;
+  }
+
+  /* Add visual separation on mobile */
+  .playerColumn {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+  }
+
+  .commonPlayersTitle {
+    font-size: 0.6875rem;
+  }
+
+  .commonPlayersList {
+    font-size: 0.75rem;
+  }
+}
+
+/* Small phones */
+@media (max-width: 375px) {
+  .strategicIntel {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .intelGrid {
+    gap: 16px;
+  }
+
+  .playerColumn {
+    gap: 14px;
+    padding: 10px;
+  }
+
+  .captainName {
+    font-size: 0.75rem;
+  }
+
+  .benchTotal,
+  .teamValue,
+  .hitsTotal {
+    font-size: 1.125rem;
+  }
+
+  .commonPlayersSection {
+    padding: 12px;
+  }
+}

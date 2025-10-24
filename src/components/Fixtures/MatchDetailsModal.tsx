@@ -12,6 +12,25 @@ interface PlayerStats {
   avg_points_last_5: string;
   chips_remaining: string[];
   free_transfers: number;
+  strategicIntel: {
+    captainHistory: Array<{ playerName: string; count: number }>;
+    benchPoints: {
+      total: number;
+      average: number;
+      breakdown: number[];
+    };
+    teamValue: number;
+    hitsTaken: {
+      total: number;
+      count: number;
+      breakdown: Array<{ gameweek: number; cost: number }>;
+    };
+    commonPlayers: {
+      count: number;
+      percentage: number;
+      players: string[];
+    };
+  };
 }
 
 interface H2HRecord {
