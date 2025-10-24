@@ -173,7 +173,7 @@ export default function PlayerProfilePage() {
           <MyTeamTab
             data={leagueData}
             playerData={playerData}
-            myTeamId={state?.myTeamId || playerId}
+            myTeamId={playerId}
             myManagerName={playerName}
             myTeamName={teamName}
             leagueId={leagueId}
