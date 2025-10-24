@@ -1,175 +1,102 @@
 # FPL H2H Analytics
 
-A Next.js web application for analyzing Fantasy Premier League Head-to-Head league statistics, deployed on Synology NAS using Docker.
+A modern Next.js web application for analyzing Fantasy Premier League Head-to-Head league statistics.
 
-## Features
+## ✨ Features
 
-- Fetch and display H2H league standings
-- View match history and results
-- Track league statistics over time
-- SQLite database for data persistence
-- Automatic deployment via git push
+- 📊 Real-time H2H league standings and match results
+- 🎯 Individual player profiles with detailed statistics
+- 📈 Match history tracking and performance analytics
+- 🏆 Recent form indicators with win/draw/loss streaks
+- 🔮 Future opponent insights for upcoming gameweeks
+- 📱 Fully responsive mobile-first design
+- ⚡ Fast, optimized, and modern UI
 
-## Tech Stack
+## 🚀 Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript
-- **Database**: SQLite (better-sqlite3)
+- **Frontend/Backend**: Next.js 14 (App Router), React, TypeScript
+- **Database**: PostgreSQL
+- **Styling**: CSS Modules with custom design system
 - **API**: FPL Official API
-- **Deployment**: Docker, Docker Compose
-- **Infrastructure**: Synology NAS
+- **Deployment**: Railway (automatic deployments)
+- **Hosting**: Railway
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 fpl/
 ├── src/
 │   ├── app/
-│   │   ├── api/
-│   │   │   └── league/
-│   │   │       └── [id]/
-│   │   │           ├── route.ts        # Fetch and store league data
-│   │   │           └── stats/
-│   │   │               └── route.ts    # Get league statistics
-│   │   ├── layout.tsx
-│   │   ├── page.tsx                    # Main UI
-│   │   ├── page.module.css
-│   │   └── globals.css
+│   │   ├── api/                    # API routes
+│   │   │   ├── league/[id]/        # League data endpoints
+│   │   │   ├── player/[id]/        # Player data endpoints
+│   │   │   └── version/            # Version endpoint
+│   │   ├── dashboard/              # Main dashboard page
+│   │   ├── league/[leagueId]/      # League views
+│   │   ├── settings/               # Settings page
+│   │   └── setup/                  # Initial setup
+│   ├── components/
+│   │   ├── Dashboard/              # Dashboard components
+│   │   ├── Fixtures/               # Fixtures & gameweek nav
+│   │   ├── Layout/                 # Header & layout
+│   │   └── League/                 # League table
 │   └── lib/
-│       ├── db.ts                       # SQLite database setup
-│       └── fpl-api.ts                  # FPL API client
-├── scripts/
-│   ├── setup-nas.sh                    # Initial NAS setup
-│   ├── deploy.sh                       # One-command deployment
-│   ├── status.sh                       # Check deployment status
-│   └── logs.sh                         # View application logs
-├── Dockerfile
-├── docker-compose.yml
+│       ├── db.ts                   # PostgreSQL database
+│       ├── fpl-api.ts              # FPL API client
+│       └── nameUtils.ts            # Name formatting utils
+├── public/                         # Static assets
 ├── package.json
 └── README.md
 ```
 
-## Deployment Setup
+## 🏗️ Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment documentation.
+
+**Quick summary:**
+- Deployed on **Railway** with automatic deployments
+- Push to GitHub main branch → Railway auto-deploys
+- PostgreSQL database hosted on Railway
+
+## 💻 Local Development
 
 ### Prerequisites
 
-- Synology NAS with Docker installed
-- SSH access to NAS enabled
-- SSH key authentication configured (recommended)
+- Node.js 20+
+- PostgreSQL database (or use Railway's local development)
 
-### Step 1: Initial NAS Setup
+### Setup
 
-Run the setup script to create directories and configure git repository on your NAS:
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd fpl
+   ```
 
-```bash
-./scripts/setup-nas.sh
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-This script will:
-- Create `/volume1/docker/fpl/` directory for the application
-- Create `/volume1/git/fpl.git` bare repository
-- Set up a post-receive git hook for automatic deployment
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
 
-### Step 2: Deploy Application
+   Add your database connection:
+   ```env
+   DATABASE_URL=postgresql://...
+   ```
 
-Use the one-command deployment script:
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
 
-```bash
-./scripts/deploy.sh "Initial deployment"
-```
-
-Or deploy manually:
-
-```bash
-# Initialize git (if not already done)
-git init
-git branch -M main
-
-# Add NAS as remote
-git remote add nas ssh://gregleo@192.168.1.49/volume1/git/fpl.git
-
-# Commit and push
-git add .
-git commit -m "Initial deployment"
-git push nas main
-```
-
-The deployment script will:
-1. Initialize git repository (if needed)
-2. Add NAS remote (if needed)
-3. Commit any changes
-4. Push to NAS
-5. Trigger automatic Docker deployment
-
-### Step 3: Access Application
-
-Once deployed, access the application at:
-
-```
-http://192.168.1.49:3000
-```
-
-## Usage
-
-### Viewing League Statistics
-
-1. Open the application in your browser
-2. Enter your FPL H2H League ID
-3. Click "Fetch League Data"
-4. View standings and match history
-
-### Finding Your League ID
-
-1. Go to the FPL website
-2. Navigate to your H2H league
-3. The league ID is in the URL: `https://fantasy.premierleague.com/leagues/LEAGUE_ID/...`
-
-## Management Scripts
-
-### Check Deployment Status
-
-```bash
-./scripts/status.sh
-```
-
-Shows running containers and recent logs.
-
-### View Live Logs
-
-```bash
-./scripts/logs.sh
-```
-
-Stream application logs in real-time (Ctrl+C to exit).
-
-### Deploy Updates
-
-```bash
-./scripts/deploy.sh "Your commit message"
-```
-
-Commits changes and deploys to NAS.
-
-## Local Development
-
-### Install Dependencies
-
-```bash
-npm install
-```
-
-### Create Environment File
-
-```bash
-cp .env.example .env
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. **Open in browser**
+   ```
+   http://localhost:3000
+   ```
 
 ### Build for Production
 
@@ -178,109 +105,139 @@ npm run build
 npm start
 ```
 
-## Database
+## 🗄️ Database
 
-The application uses SQLite for data persistence. The database file is stored at `/volume1/docker/fpl/data/fpl.db` on the NAS.
+The application uses **PostgreSQL** for data persistence.
 
 ### Database Schema
 
 - **leagues**: League information
-- **managers**: Manager/team information
-- **h2h_matches**: Match results
-- **league_standings**: Current league standings
+- **managers**: Manager/team information and statistics
+- **h2h_matches**: Match results and history
+- **league_standings**: Current league standings and rankings
+- **match_history**: Historical match data for analytics
 
-## Docker Configuration
+## 📱 Usage
 
-### Dockerfile
+### Initial Setup
 
-Multi-stage build for optimized production image:
-- Stage 1: Install dependencies
-- Stage 2: Build application
-- Stage 3: Production runtime
+1. Open the application
+2. Navigate to Settings
+3. Enter your FPL Team ID
+4. Enter your H2H League ID
+5. Save settings
 
-### docker-compose.yml
+### Finding Your IDs
 
-- Port 3000 exposed
-- Data volume mounted for SQLite persistence
-- Automatic restart policy
+**Team ID:**
+- Go to FPL website → Points tab
+- URL contains your team ID: `fantasy.premierleague.com/entry/YOUR_TEAM_ID/event/...`
 
-## Troubleshooting
+**League ID:**
+- Go to your H2H league on FPL website
+- URL contains league ID: `fantasy.premierleague.com/leagues/LEAGUE_ID/...`
 
-### SSH Connection Issues
+### Viewing Statistics
 
-Ensure SSH key is added to NAS:
+- **My Team Tab**: Your performance, stats, and recent form
+- **League Tab**: Full league standings and rankings
+- **Fixtures Tab**: Gameweek-by-gameweek match results with opponent insights
 
-```bash
-ssh-copy-id gregleo@192.168.1.49
-```
+## 🎨 Design System
 
-### Container Not Starting
+The app features a custom Premier League-inspired design:
+- **Primary Color**: FPL Purple (#37003c)
+- **Accent Color**: Neon Green (#00ff87)
+- **Dark Theme**: Optimized for reduced eye strain
+- **Responsive**: Mobile-first design with touch-friendly interactions
+- **Modern**: Floating cards, smooth animations, gradient backgrounds
 
-Check logs:
+## 🔧 Development
 
-```bash
-./scripts/logs.sh
-```
-
-Or SSH into NAS:
-
-```bash
-ssh gregleo@192.168.1.49
-cd /volume1/docker/fpl
-docker-compose logs
-```
-
-### Port Already in Use
-
-Change port in `docker-compose.yml`:
-
-```yaml
-ports:
-  - "3001:3000"  # Change 3001 to any available port
-```
-
-### Database Locked
-
-Stop all containers:
+### Version Bumping
 
 ```bash
-ssh gregleo@192.168.1.49 "cd /volume1/docker/fpl && docker-compose down"
+npm version patch  # 1.1.25 → 1.1.26
+npm version minor  # 1.1.25 → 1.2.0
+npm version major  # 1.1.25 → 2.0.0
 ```
 
-Then redeploy.
+### Deployment Workflow
 
-## API Endpoints
+```bash
+# 1. Make changes
+# 2. Build and test
+npm run build
+
+# 3. Bump version
+npm version patch --no-git-tag-version
+
+# 4. Commit and push
+git add .
+git commit -m "Description of changes"
+git push
+
+# Railway automatically deploys!
+```
+
+## 🐛 Troubleshooting
+
+### Build Errors
+
+Check that all environment variables are set:
+```bash
+echo $DATABASE_URL
+```
+
+### Database Connection Issues
+
+Verify your PostgreSQL connection string format:
+```
+postgresql://user:password@host:port/database
+```
+
+### App Not Updating
+
+1. Verify git push succeeded: `git log --oneline -1`
+2. Check Railway dashboard for deployment status
+3. Review Railway build logs if deployment failed
+
+## 📡 API Endpoints
 
 ### GET /api/league/[id]
-
 Fetches league data from FPL API and stores in database.
 
-**Response:**
-```json
-{
-  "league": { "id": 123, "name": "League Name" },
-  "standings": [...],
-  "matches": [...]
-}
-```
-
 ### GET /api/league/[id]/stats
+Retrieves league statistics.
 
-Retrieves league statistics from local database.
+### GET /api/league/[id]/fixtures/[gw]
+Gets fixtures and results for a specific gameweek.
 
-**Response:**
-```json
-{
-  "league": { "id": 123, "name": "League Name" },
-  "standings": [...],
-  "recentMatches": [...]
-}
-```
+### GET /api/league/[id]/insights/[entryId]
+Gets opponent insights and head-to-head statistics.
 
-## License
+### GET /api/player/[id]
+Fetches detailed player/team statistics.
+
+### GET /api/version
+Returns current app version.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
 
 MIT
 
-## Support
+## 🙋 Support
 
 For issues or questions, please open an issue on GitHub.
+
+---
+
+**Current Version:** v1.1.25

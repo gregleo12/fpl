@@ -1,206 +1,117 @@
-# Quick Deployment Guide
+# Deployment Guide - Railway
 
-## TL;DR - One Command Deployment
+## 🚂 Current Deployment Method: Railway
 
-```bash
-# First time only
-./scripts/setup-nas.sh
+This project is deployed on **Railway** with automatic deployments from GitHub.
 
-# Deploy (every time)
-./scripts/deploy.sh "Your commit message"
-```
+**Database:** PostgreSQL (hosted on Railway)
 
-## Detailed Steps
+---
 
-### 1. First Time Setup (5 minutes)
+## 📋 For AI Assistants / Claude Code
 
-Run the NAS setup script:
+### CRITICAL: Deployment Workflow
 
-```bash
-./scripts/setup-nas.sh
-```
+**✅ CORRECT WORKFLOW:**
+1. Make code changes locally
+2. Build and test locally: `npm run build`
+3. Bump version: `npm version patch --no-git-tag-version`
+4. Commit changes: `git add . && git commit -m "..."`
+5. Push to GitHub: `git push`
+6. Railway automatically detects the push and deploys
 
-This creates:
-- Docker directory: `/volume1/docker/fpl/`
-- Git repository: `/volume1/git/fpl.git`
-- Automatic deployment hook
+**❌ DO NOT:**
+- Run any deployment scripts (none exist)
+- Attempt to SSH into servers
+- Use rsync, scp, or any file transfer tools
+- Look for NAS, Docker, or manual deployment methods
+- Deploy anywhere except via `git push`
 
-### 2. Deploy Your Application
+### Quick Reference
+- **Deploy:** `git push` (Railway auto-deploys from main branch)
+- **Check status:** Check Railway dashboard (user will provide link if needed)
+- **Database:** PostgreSQL connection string in Railway environment variables
+- **Environment:** All env vars managed in Railway dashboard
 
-```bash
-./scripts/deploy.sh "Initial deployment"
-```
+---
 
-What happens:
-1. Initializes git repository
-2. Adds NAS as remote
-3. Commits your code
-4. Pushes to NAS
-5. NAS automatically:
-   - Checks out code
-   - Builds Docker image
-   - Starts containers
-   - Makes app available at http://192.168.1.49:3000
+## 🔍 How to Identify This is Railway
 
-### 3. Make Changes & Redeploy
+If you're an AI assistant unsure about deployment:
+1. Check `git remote -v` - will show GitHub remote
+2. No `scripts/` directory exists
+3. No Docker files exist
+4. Database is PostgreSQL (not SQLite)
+5. This file says "Railway" at the top 😊
 
-Edit your code, then:
+---
 
-```bash
-./scripts/deploy.sh "Added new feature"
-```
+## 🚀 Deployment Checklist
 
-That's it! The app automatically rebuilds and restarts.
+When deploying a new version:
 
-## Useful Commands
+- [ ] Code changes complete
+- [ ] Local build successful (`npm run build`)
+- [ ] Version bumped in package.json
+- [ ] Changes committed with clear message
+- [ ] Pushed to GitHub (`git push`)
+- [ ] Railway automatically picks up changes and deploys
+- [ ] Verify deployment in Railway dashboard (if needed)
 
-```bash
-# Check if app is running
-./scripts/status.sh
+---
 
-# View live logs
-./scripts/logs.sh
+## 📊 Tech Stack
 
-# SSH into NAS
-ssh gregleo@192.168.1.49
+- **Frontend/Backend:** Next.js 14 (App Router)
+- **Database:** PostgreSQL (Railway)
+- **Hosting:** Railway
+- **Deployment:** Git push → Railway auto-deploy
+- **CI/CD:** Railway automatic deployments
 
-# Manual Docker commands on NAS
-ssh gregleo@192.168.1.49
-cd /volume1/docker/fpl
-docker-compose ps
-docker-compose logs
-docker-compose restart
-docker-compose down
-docker-compose up -d --build
-```
+---
 
-## Architecture
+## 🔑 Environment Variables
 
-```
-Your Machine                    Synology NAS (192.168.1.49)
-─────────────                   ──────────────────────────────
+All environment variables are managed in Railway dashboard:
+- `DATABASE_URL` - PostgreSQL connection string
+- `NODE_ENV` - Set to `production`
+- Any FPL API related variables
 
-   Code                         /volume1/git/fpl.git
-     │                                  │
-     │ git push nas main                │
-     └──────────────────────────────────┤
-                                        │ post-receive hook
-                                        ▼
-                              /volume1/docker/fpl/
-                                        │
-                                        │ docker-compose up --build
-                                        ▼
-                                   Docker Container
-                                        │
-                                        └─► http://192.168.1.49:3000
+**Never commit .env files to git**
 
-                              SQLite DB: /volume1/docker/fpl/data/fpl.db
-```
+---
 
-## Workflow
+## 🐛 Troubleshooting
 
-```bash
-# Normal workflow
-1. Make changes to code
-2. ./scripts/deploy.sh "Description of changes"
-3. Open http://192.168.1.49:3000
+### Build fails on Railway
+- Check Railway build logs in dashboard
+- Ensure all dependencies are in package.json
+- Verify Next.js build succeeds locally
 
-# Check everything is working
-./scripts/status.sh
+### Database connection issues
+- Check DATABASE_URL is set in Railway
+- Verify PostgreSQL service is running
+- Check connection string format
 
-# Debug issues
-./scripts/logs.sh
-```
+### App not reflecting changes
+- Confirm git push succeeded: `git log --oneline -1`
+- Check Railway deployment status
+- May need to trigger manual redeploy in Railway dashboard
 
-## Network Configuration
+---
 
-- **App URL**: http://192.168.1.49:3000
-- **NAS IP**: 192.168.1.49
-- **SSH User**: gregleo
-- **Container Port**: 3000
+## 📝 Version History
 
-To access from other devices on your network, use the same URL: `http://192.168.1.49:3000`
+- **v1.1.25** - Current version
+- See git commit history for full changelog
 
-## File Locations on NAS
+---
 
-```
-/volume1/
-├── docker/
-│   └── fpl/
-│       ├── data/
-│       │   └── fpl.db          # SQLite database
-│       ├── .next/              # Built Next.js app
-│       ├── node_modules/
-│       ├── src/
-│       ├── docker-compose.yml
-│       └── Dockerfile
-└── git/
-    └── fpl.git/                # Bare git repository
-        └── hooks/
-            └── post-receive    # Auto-deployment script
-```
+## 🚨 IMPORTANT REMINDERS
 
-## Troubleshooting
+1. **Git is the ONLY deployment method**
+2. **No manual file copying or server access**
+3. **Railway handles everything after `git push`**
+4. **Database is PostgreSQL, not SQLite**
 
-### "Permission denied" when running scripts
-
-```bash
-chmod +x scripts/*.sh
-```
-
-### "Could not resolve hostname"
-
-Check SSH access:
-```bash
-ssh gregleo@192.168.1.49
-```
-
-If this fails, verify:
-- NAS is powered on
-- IP address is correct (192.168.1.49)
-- SSH service is enabled on NAS
-- You can ping the NAS: `ping 192.168.1.49`
-
-### "Port 3000 already in use"
-
-Change port in `docker-compose.yml`:
-```yaml
-ports:
-  - "3001:3000"  # Change 3001 to your preferred port
-```
-
-Then redeploy:
-```bash
-./scripts/deploy.sh "Changed port"
-```
-
-### Application not loading
-
-1. Check container status:
-```bash
-./scripts/status.sh
-```
-
-2. View logs:
-```bash
-./scripts/logs.sh
-```
-
-3. Restart manually:
-```bash
-ssh gregleo@192.168.1.49
-cd /volume1/docker/fpl
-docker-compose restart
-```
-
-## Tips
-
-1. **Fast deployments**: The deployment uses Docker layer caching, so subsequent builds are much faster.
-
-2. **Database persistence**: Your SQLite database is stored in `/volume1/docker/fpl/data/` and persists across deployments.
-
-3. **View in browser**: Bookmark `http://192.168.1.49:3000` for quick access.
-
-4. **Multiple leagues**: You can query different league IDs without redeploying - just enter a new ID in the UI.
-
-5. **Automatic restart**: The container has `restart: unless-stopped` policy, so it survives NAS reboots.
+If you see any legacy deployment scripts, Docker files, or NAS references - **IGNORE THEM**. They are outdated.
