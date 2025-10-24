@@ -259,19 +259,48 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 )}
               </div>
 
-              <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>Chips Remaining & Free Transfers</div>
-                <div className={styles.chipsComparison}>
-                  <div>
-                    <strong>You:</strong> {insights.chips_remaining.yours.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
-                    {insights.free_transfers !== undefined && (
-                      <span className={styles.ftBadge}> • {insights.free_transfers}FT</span>
+              {/* Split into two side-by-side sections - OPPONENT ONLY */}
+              <div className={styles.sideBySideContainer}>
+                {/* LEFT: Opponent's Chips */}
+                <div className={styles.insightBox}>
+                  <div className={styles.insightLabel}>
+                    <span className={styles.emoji}>🎮</span> Chips Remaining
+                  </div>
+                  <div className={styles.chipsDisplay}>
+                    {insights.chips_remaining.theirs.length > 0 ? (
+                      insights.chips_remaining.theirs.map((chip, idx) => (
+                        <span key={idx} className={styles.chipBadge}>
+                          {getChipAbbreviation(chip)}
+                        </span>
+                      ))
+                    ) : (
+                      <div className={styles.noChips}>
+                        <span className={styles.noChipsIcon}>🚫</span>
+                        <span className={styles.noChipsText}>All chips used</span>
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <strong>Him:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
-                  </div>
                 </div>
+
+                {/* RIGHT: Opponent's Free Transfers */}
+                {insights.free_transfers !== undefined && (
+                  <div className={styles.insightBox}>
+                    <div className={styles.insightLabel}>
+                      <span className={styles.emoji}>🔄</span> Free Transfers
+                    </div>
+                    <div className={styles.freeTransfersDisplay}>
+                      <div className={styles.ftBadgeLarge}>
+                        <span className={styles.ftNumber}>{insights.free_transfers}</span>
+                        <span className={styles.ftLabel}>FT</span>
+                      </div>
+                      {insights.free_transfers >= 2 && (
+                        <div className={styles.ftNote}>
+                          Can make 2+ transfers
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {hasHotStreak && (

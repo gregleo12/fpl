@@ -305,6 +305,117 @@
   color: #00ff87;
 }
 
+/* Side-by-side container */
+.sideBySideContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.sideBySideContainer .insightBox {
+  margin-bottom: 0;
+}
+
+/* Emoji in labels */
+.emoji {
+  display: inline-block;
+  margin-right: 6px;
+}
+
+/* Chips Display - Simple horizontal layout */
+.chipsDisplay {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 0;
+  justify-content: center;
+}
+
+.chipBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border: 2px solid rgba(0, 255, 135, 0.4);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 42px;
+}
+
+/* No chips state */
+.noChips {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  opacity: 0.5;
+}
+
+.noChipsIcon {
+  font-size: 2rem;
+}
+
+.noChipsText {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Free Transfers Display */
+.freeTransfersDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.ftBadgeLarge {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 16px 24px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 135, 0.15),
+    rgba(0, 212, 255, 0.15)
+  );
+  border: 2px solid rgba(0, 255, 135, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 255, 135, 0.2);
+}
+
+.ftNumber {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #00ff87;
+  line-height: 1;
+}
+
+.ftLabel {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ftNote {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  font-weight: 500;
+}
+
 .ftBadge {
   color: #00ff87;
   font-weight: 700;
@@ -574,6 +685,28 @@
     justify-content: center;
   }
 
+  /* Mobile: Stack side-by-side vertically */
+  .sideBySideContainer {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chipsDisplay {
+    padding: 8px 0;
+  }
+
+  .ftBadgeLarge {
+    padding: 12px 20px;
+  }
+
+  .ftNumber {
+    font-size: 2rem;
+  }
+
+  .ftLabel {
+    font-size: 1rem;
+  }
+
   /* Compact horizontal match cards - like standings table */
   .matchCard {
     padding: 0.5rem 0.65rem;
@@ -691,5 +824,28 @@
     min-width: 28px;
     height: 28px;
     font-size: 0.625rem;
+  }
+
+  /* Small phone: Smaller chips and FT */
+  .chipsDisplay {
+    gap: 6px;
+  }
+
+  .chipBadge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    min-width: 36px;
+  }
+
+  .ftBadgeLarge {
+    padding: 10px 16px;
+  }
+
+  .ftNumber {
+    font-size: 1.75rem;
+  }
+
+  .ftLabel {
+    font-size: 0.9375rem;
   }
 }
