@@ -63,6 +63,7 @@ interface OpponentInsights {
       margin: number;
     } | null;
   };
+  free_transfers?: number;
 }
 
 interface Props {
@@ -264,12 +265,12 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     <strong>You:</strong> {insights.chips_remaining.yours.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
                   </div>
                   <div>
-                    <strong>Them:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
+                    <strong>Him:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
                   </div>
                 </div>
                 {chipAdvantage > 0 && (
                   <div className={styles.warning}>
-                    ⚠️ They have {chipAdvantage} more chip{chipAdvantage > 1 ? 's' : ''}
+                    ⚠️ He has {chipAdvantage} more chip{chipAdvantage > 1 ? 's' : ''}
                   </div>
                 )}
                 {chipAdvantage < 0 && (
@@ -278,6 +279,15 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                   </div>
                 )}
               </div>
+
+              {insights.free_transfers !== undefined && (
+                <div className={styles.insightBox}>
+                  <div className={styles.insightLabel}>Free Transfers Available</div>
+                  <div className={styles.comparison}>
+                    <span className={styles.ftCount}>{insights.free_transfers} FT</span>
+                  </div>
+                </div>
+              )}
 
               {hasHotStreak && (
                 <div className={styles.insightBox}>

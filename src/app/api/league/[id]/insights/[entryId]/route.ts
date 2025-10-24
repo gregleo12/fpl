@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { fplApi } from '@/lib/fpl-api';
 
 export async function GET(
   request: NextRequest,
@@ -93,11 +94,33 @@ export async function GET(
     };
 
     // Calculate chips remaining
-    const allChips = ['wildcard', 'bboost', '3xc', 'freehit'];
+    // FPL chips and their usage limits:
+    // - wildcard: can be used 2 times (once in first half, once in second half)
+    // - bboost: can be used 1 time
+    // - 3xc: can be used 1 time
+    // - freehit: can be used 1 time (or 2 in some seasons, but we'll assume 1)
+    const chipLimits: { [key: string]: number } = {
+      'wildcard': 2,
+      'bboost': 1,
+      '3xc': 1,
+      'freehit': 1
+    };
+
+    // Count how many times opponent has used each chip
     const opponentChipsUsed = opponentMatches
       .filter((m: any) => m.chip_used)
       .map((m: any) => m.chip_used);
-    const opponentChipsRemaining = allChips.filter(chip => !opponentChipsUsed.includes(chip));
+
+    const opponentChipCounts: { [key: string]: number } = {};
+    opponentChipsUsed.forEach(chip => {
+      opponentChipCounts[chip] = (opponentChipCounts[chip] || 0) + 1;
+    });
+
+    // Calculate remaining chips for opponent
+    const opponentChipsRemaining = Object.keys(chipLimits).filter(chip => {
+      const used = opponentChipCounts[chip] || 0;
+      return used < chipLimits[chip];
+    });
 
     // Get my chips used
     const myChipsResult = await db.query(`
@@ -116,7 +139,18 @@ export async function GET(
     `, [myId, leagueId]);
 
     const myChipsUsed = myChipsResult.rows.map((r: any) => r.chip_used);
-    const myChipsRemaining = allChips.filter(chip => !myChipsUsed.includes(chip));
+
+    // Count my chip usage
+    const myChipCounts: { [key: string]: number } = {};
+    myChipsUsed.forEach(chip => {
+      myChipCounts[chip] = (myChipCounts[chip] || 0) + 1;
+    });
+
+    // Calculate remaining chips for me
+    const myChipsRemaining = Object.keys(chipLimits).filter(chip => {
+      const used = myChipCounts[chip] || 0;
+      return used < chipLimits[chip];
+    });
 
     const chipsRemaining = {
       yours: myChipsRemaining,
@@ -193,6 +227,48 @@ export async function GET(
 
     const opponentRank = rankResult.rows.find((r: any) => parseInt(r.entry_id) === targetEntryId)?.rank || 0;
 
+    // Fetch Free Transfers data from FPL API
+    let freeTransfers: number | undefined = undefined;
+    try {
+      const historyData = await fplApi.getEntryHistory(targetEntryId);
+      if (historyData && historyData.current && historyData.current.length > 0) {
+        // Get the most recent completed gameweek
+        const lastGW = historyData.current[historyData.current.length - 1];
+
+        // Calculate FT for next gameweek
+        // Logic:
+        // - Start each GW with 1 FT
+        // - If previous GW had 0 transfers and 1+ FT available, bank it (max 2 FT)
+        // - If chip was used (wildcard, freehit), FT resets based on chip type
+
+        const lastGWTransfers = lastGW.event_transfers || 0;
+        const lastGWTransferCost = lastGW.event_transfers_cost || 0;
+
+        // Calculate how many FT they had last week
+        // If transfer_cost is 0, they used their FT(s)
+        // If transfer_cost > 0, they took hits (4 points per extra transfer)
+        let lastWeekFT = 1; // Default assumption
+        if (lastGWTransferCost === 0 && lastGWTransfers === 0) {
+          lastWeekFT = 1; // Had 1 FT, didn't use it
+        }
+
+        // Calculate current FT
+        // If they made 0 transfers last week, they bank the FT (max 2)
+        if (lastGWTransfers === 0) {
+          freeTransfers = Math.min(2, lastWeekFT + 1);
+        } else {
+          // They made transfers, so they start fresh with 1 FT
+          freeTransfers = 1;
+        }
+
+        // Note: This is a simplified calculation and may not account for all edge cases
+        // like wildcards or free hits which reset the FT count
+      }
+    } catch (error) {
+      console.log('Could not fetch free transfers data:', error);
+      // FT data not critical, continue without it
+    }
+
     return NextResponse.json({
       opponent_id: opponent.entry_id,
       opponent_name: opponent.player_name,
@@ -202,7 +278,8 @@ export async function GET(
       your_stats: myStats,
       chips_remaining: chipsRemaining,
       momentum,
-      head_to_head: headToHead
+      head_to_head: headToHead,
+      free_transfers: freeTransfers
     });
   } catch (error: any) {
     console.error('Error fetching opponent insights:', error);
