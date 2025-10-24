@@ -215,17 +215,185 @@
   color: #00ff87;
 }
 
+/* Insights Grid - Responsive */
 .insightsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+  gap: 12px;
+  margin-top: 20px;
 }
 
+/* Desktop Wide: 4 columns */
+@media (min-width: 1200px) {
+  .insightsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Desktop Narrow / Tablet: 2x2 grid */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .insightsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile: Full width except chips+FT side-by-side */
+@media (max-width: 767px) {
+  .insightsGrid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .insightBox:nth-child(1),  /* Recent Form */
+  .insightBox:nth-child(2) { /* Avg Points */
+    grid-column: 1 / -1;  /* Span both columns */
+  }
+
+  .insightBox:nth-child(3) {  /* Chips */
+    grid-column: 1;
+  }
+
+  .insightBox:nth-child(4) { /* FT */
+    grid-column: 2;
+  }
+}
+
+/* Insight Box - All Same Height */
 .insightBox {
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+/* Box Header */
+.boxHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.boxTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.boxSubtitle {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+/* Form Display */
+.formDisplay {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+}
+
+.formItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.formCircle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.formWin {
+  background: #00ff87;
+  color: #1a0d2e;
+}
+
+.formLoss {
+  background: #ff0066;
+  color: #ffffff;
+}
+
+.formDraw {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.gwLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Average Points Display */
+.avgPointsDisplay {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.comparisonRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.statValue {
+  color: #ffffff;
+}
+
+.vs {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8125rem;
+}
+
+/* Free Transfers Display - SIMPLIFIED */
+.ftDisplay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.ftValue {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ftNumber {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #00ff87;
+  line-height: 1;
+}
+
+.ftLabel {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
 }
 
 .insightLabel {

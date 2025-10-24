@@ -220,88 +220,95 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               </div>
             </div>
 
+            {/* NEW: Responsive Grid for All Insights */}
             <div className={styles.insightsGrid}>
+              {/* 1. Recent Form */}
               <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>Recent Form (Last 5)</div>
-                <div className={styles.formBadges}>
+                <div className={styles.boxHeader}>
+                  <span className={styles.emoji}>📊</span>
+                  <span className={styles.boxTitle}>Recent Form</span>
+                  <span className={styles.boxSubtitle}>(Last 5)</span>
+                </div>
+                <div className={styles.formDisplay}>
                   {insights.recent_form.last_5_results.map((item, idx) => (
-                    <div key={idx} className={styles.formBadgeWrapper}>
-                      <span
-                        className={`${styles.formBadge} ${
+                    <div key={idx} className={styles.formItem}>
+                      <div
+                        className={`${styles.formCircle} ${
                           item.result === 'W' ? styles.formWin :
                           item.result === 'D' ? styles.formDraw :
                           styles.formLoss
                         }`}
                       >
                         {item.result}
-                      </span>
-                      <span className={styles.formGW}>GW{item.event}</span>
+                      </div>
+                      <div className={styles.gwLabel}>GW{item.event}</div>
                     </div>
                   ))}
                 </div>
               </div>
 
+              {/* 2. Average Points */}
               <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>Average Points (Last 5 GWs)</div>
-                <div className={styles.comparison}>
-                  <span>You: {insights.your_stats.avg_points_last_5}</span>
-                  <span className={styles.divider}>vs</span>
-                  <span>Them: {insights.recent_form.avg_points_last_5}</span>
+                <div className={styles.boxHeader}>
+                  <span className={styles.emoji}>🎯</span>
+                  <span className={styles.boxTitle}>Average Points</span>
+                  <span className={styles.boxSubtitle}>(Last 5 GWs)</span>
                 </div>
-                {Math.abs(avgDiff) >= 2 && (
-                  <div className={`${styles.warning} ${avgDiff > 0 ? styles.negative : styles.positive}`}>
-                    {avgDiff > 0 ? '⚠️' : '✅'}
-                    {avgDiff > 0
-                      ? ` They score ~${avgDiff.toFixed(1)} more pts/GW`
-                      : ` You score ~${Math.abs(avgDiff).toFixed(1)} more pts/GW`
-                    }
+                <div className={styles.avgPointsDisplay}>
+                  <div className={styles.comparisonRow}>
+                    <span className={styles.statValue}>You: {insights.your_stats.avg_points_last_5}</span>
+                    <span className={styles.vs}>vs</span>
+                    <span className={styles.statValue}>Them: {insights.recent_form.avg_points_last_5}</span>
                   </div>
-                )}
+                  {Math.abs(avgDiff) >= 2 && (
+                    <div className={avgDiff > 0 ? styles.negative : styles.positive}>
+                      {avgDiff > 0 ? '⚠️' : '✅'}
+                      {avgDiff > 0
+                        ? ` They score ~${avgDiff.toFixed(1)} more pts/GW`
+                        : ` You score ~${Math.abs(avgDiff).toFixed(1)} more pts/GW`
+                      }
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Split into two side-by-side sections - OPPONENT ONLY */}
-              <div className={styles.sideBySideContainer}>
-                {/* LEFT: Opponent's Chips */}
+              {/* 3. Chips Remaining */}
+              <div className={styles.insightBox}>
+                <div className={styles.boxHeader}>
+                  <span className={styles.emoji}>🎮</span>
+                  <span className={styles.boxTitle}>Chips Remaining</span>
+                </div>
+                <div className={styles.chipsDisplay}>
+                  {insights.chips_remaining.theirs.length > 0 ? (
+                    insights.chips_remaining.theirs.map((chip, idx) => (
+                      <span key={idx} className={styles.chipBadge}>
+                        {getChipAbbreviation(chip)}
+                      </span>
+                    ))
+                  ) : (
+                    <div className={styles.noChips}>
+                      <span className={styles.noChipsIcon}>🚫</span>
+                      <span className={styles.noChipsText}>All used</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Free Transfers - SIMPLIFIED */}
+              {insights.free_transfers !== undefined && (
                 <div className={styles.insightBox}>
-                  <div className={styles.insightLabel}>
-                    <span className={styles.emoji}>🎮</span> Chips Remaining
+                  <div className={styles.boxHeader}>
+                    <span className={styles.emoji}>🔄</span>
+                    <span className={styles.boxTitle}>Free Transfers</span>
                   </div>
-                  <div className={styles.chipsDisplay}>
-                    {insights.chips_remaining.theirs.length > 0 ? (
-                      insights.chips_remaining.theirs.map((chip, idx) => (
-                        <span key={idx} className={styles.chipBadge}>
-                          {getChipAbbreviation(chip)}
-                        </span>
-                      ))
-                    ) : (
-                      <div className={styles.noChips}>
-                        <span className={styles.noChipsIcon}>🚫</span>
-                        <span className={styles.noChipsText}>All chips used</span>
-                      </div>
-                    )}
+                  <div className={styles.ftDisplay}>
+                    <div className={styles.ftValue}>
+                      <span className={styles.ftNumber}>{insights.free_transfers}</span>
+                      <span className={styles.ftLabel}>FT</span>
+                    </div>
                   </div>
                 </div>
-
-                {/* RIGHT: Opponent's Free Transfers */}
-                {insights.free_transfers !== undefined && (
-                  <div className={styles.insightBox}>
-                    <div className={styles.insightLabel}>
-                      <span className={styles.emoji}>🔄</span> Free Transfers
-                    </div>
-                    <div className={styles.freeTransfersDisplay}>
-                      <div className={styles.ftBadgeLarge}>
-                        <span className={styles.ftNumber}>{insights.free_transfers}</span>
-                        <span className={styles.ftLabel}>FT</span>
-                      </div>
-                      {insights.free_transfers >= 2 && (
-                        <div className={styles.ftNote}>
-                          Can make 2+ transfers
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              )}
 
               {hasHotStreak && (
                 <div className={styles.insightBox}>
