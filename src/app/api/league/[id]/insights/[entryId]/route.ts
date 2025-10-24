@@ -93,59 +93,63 @@ export async function GET(
         : '0.0'
     };
 
-    // Calculate chips remaining from database
+    // Calculate chips remaining from FPL API
     // All FPL chips (note: wildcards can be used twice - once per half)
     const allChips = ['wildcard', 'bboost', '3xc', 'freehit'];
 
-    // Get opponent's chips used from matches
-    const opponentChipsUsed = opponentMatches
-      .filter((m: any) => m.chip_used)
-      .map((m: any) => m.chip_used);
+    // Get opponent's chip usage from FPL API
+    let opponentChipsRemaining = [...allChips];
+    try {
+      const opponentHistoryData = await fplApi.getEntryHistory(targetEntryId);
+      if (opponentHistoryData && opponentHistoryData.chips && Array.isArray(opponentHistoryData.chips)) {
+        // Count how many times each chip was used
+        const opponentChipCounts: { [key: string]: number } = {};
+        opponentHistoryData.chips.forEach((chip: any) => {
+          const chipName = chip.name;
+          opponentChipCounts[chipName] = (opponentChipCounts[chipName] || 0) + 1;
+        });
 
-    // Count chip usage (wildcards can be used twice)
-    const opponentChipCounts: { [key: string]: number } = {};
-    opponentChipsUsed.forEach(chip => {
-      opponentChipCounts[chip] = (opponentChipCounts[chip] || 0) + 1;
-    });
-
-    // For wildcards, check how many times used
-    // If used once, still have one left. If used twice, none left
-    const opponentChipsRemaining = allChips.filter(chip => {
-      if (chip === 'wildcard') {
-        return (opponentChipCounts[chip] || 0) < 2;
+        // Filter remaining chips
+        opponentChipsRemaining = allChips.filter(chip => {
+          if (chip === 'wildcard') {
+            // Wildcards can be used twice (once per half)
+            return (opponentChipCounts[chip] || 0) < 2;
+          }
+          // Other chips can only be used once
+          return !opponentChipCounts[chip];
+        });
       }
-      return !opponentChipCounts[chip];
-    });
+    } catch (error) {
+      console.log('Could not fetch opponent chip data:', error);
+      // If API fails, show all chips as available
+    }
 
-    // Get my chips used
-    const myChipsResult = await db.query(`
-      SELECT
-        CASE
-          WHEN entry_1_id = $1 THEN active_chip_1
-          ELSE active_chip_2
-        END as chip_used
-      FROM h2h_matches
-      WHERE league_id = $2
-        AND (entry_1_id = $1 OR entry_2_id = $1)
-        AND (
-          (entry_1_id = $1 AND active_chip_1 IS NOT NULL) OR
-          (entry_2_id = $1 AND active_chip_2 IS NOT NULL)
-        )
-    `, [myId, leagueId]);
+    // Get my chip usage from FPL API
+    let myChipsRemaining = [...allChips];
+    try {
+      const myHistoryData = await fplApi.getEntryHistory(myId);
+      if (myHistoryData && myHistoryData.chips && Array.isArray(myHistoryData.chips)) {
+        // Count how many times each chip was used
+        const myChipCounts: { [key: string]: number } = {};
+        myHistoryData.chips.forEach((chip: any) => {
+          const chipName = chip.name;
+          myChipCounts[chipName] = (myChipCounts[chipName] || 0) + 1;
+        });
 
-    const myChipsUsed = myChipsResult.rows.map((r: any) => r.chip_used);
-
-    const myChipCounts: { [key: string]: number } = {};
-    myChipsUsed.forEach(chip => {
-      myChipCounts[chip] = (myChipCounts[chip] || 0) + 1;
-    });
-
-    const myChipsRemaining = allChips.filter(chip => {
-      if (chip === 'wildcard') {
-        return (myChipCounts[chip] || 0) < 2;
+        // Filter remaining chips
+        myChipsRemaining = allChips.filter(chip => {
+          if (chip === 'wildcard') {
+            // Wildcards can be used twice (once per half)
+            return (myChipCounts[chip] || 0) < 2;
+          }
+          // Other chips can only be used once
+          return !myChipCounts[chip];
+        });
       }
-      return !myChipCounts[chip];
-    });
+    } catch (error) {
+      console.log('Could not fetch my chip data:', error);
+      // If API fails, show all chips as available
+    }
 
     const chipsRemaining = {
       yours: myChipsRemaining,
