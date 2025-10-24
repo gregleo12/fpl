@@ -218,17 +218,20 @@
   .playerColumn:first-child,
   .playerColumn:last-child {
     align-items: flex-start;
+    text-align: left;
   }
 
   .playerColumn:first-child .intelSection,
   .playerColumn:last-child .intelSection {
     align-items: flex-start;
+    text-align: left;
   }
 
   .playerColumn:last-child .captainList,
   .playerColumn:last-child .benchStats,
   .playerColumn:last-child .hitsStats {
     align-items: flex-start;
+    text-align: left;
   }
 
   .playerColumn:last-child .captainItem {

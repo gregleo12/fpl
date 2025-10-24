@@ -55,22 +55,6 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
       <div className={styles.intelGrid}>
         {/* LEFT COLUMN - Player 1 */}
         <div className={styles.playerColumn}>
-          {/* Captain Picks */}
-          <div className={styles.intelSection}>
-            <div className={styles.intelLabel}>CAPTAIN PICKS (LAST 5 GWs)</div>
-            <div className={styles.captainList}>
-              {entry1.strategicIntel.captainHistory.slice(0, 3).map((cap, i) => (
-                <div key={i} className={styles.captainItem}>
-                  <span className={styles.captainName}>{cap.playerName}</span>
-                  <span className={styles.captainCount}>({cap.count}x)</span>
-                </div>
-              ))}
-              {entry1.strategicIntel.captainHistory.length === 0 && (
-                <div className={styles.noData}>No data</div>
-              )}
-            </div>
-          </div>
-
           {/* Bench Points */}
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>BENCH POINTS (LAST 5 GWs)</div>
@@ -110,26 +94,26 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
               )}
             </div>
           </div>
-        </div>
 
-        {/* RIGHT COLUMN - Player 2 */}
-        <div className={styles.playerColumn}>
           {/* Captain Picks */}
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>CAPTAIN PICKS (LAST 5 GWs)</div>
             <div className={styles.captainList}>
-              {entry2.strategicIntel.captainHistory.slice(0, 3).map((cap, i) => (
+              {entry1.strategicIntel.captainHistory.slice(0, 3).map((cap, i) => (
                 <div key={i} className={styles.captainItem}>
                   <span className={styles.captainName}>{cap.playerName}</span>
                   <span className={styles.captainCount}>({cap.count}x)</span>
                 </div>
               ))}
-              {entry2.strategicIntel.captainHistory.length === 0 && (
+              {entry1.strategicIntel.captainHistory.length === 0 && (
                 <div className={styles.noData}>No data</div>
               )}
             </div>
           </div>
+        </div>
 
+        {/* RIGHT COLUMN - Player 2 */}
+        <div className={styles.playerColumn}>
           {/* Bench Points */}
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>BENCH POINTS (LAST 5 GWs)</div>
@@ -166,6 +150,22 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
                 </>
               ) : (
                 <div className={styles.noHits}>No hits</div>
+              )}
+            </div>
+          </div>
+
+          {/* Captain Picks */}
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>CAPTAIN PICKS (LAST 5 GWs)</div>
+            <div className={styles.captainList}>
+              {entry2.strategicIntel.captainHistory.slice(0, 3).map((cap, i) => (
+                <div key={i} className={styles.captainItem}>
+                  <span className={styles.captainName}>{cap.playerName}</span>
+                  <span className={styles.captainCount}>({cap.count}x)</span>
+                </div>
+              ))}
+              {entry2.strategicIntel.captainHistory.length === 0 && (
+                <div className={styles.noData}>No data</div>
               )}
             </div>
           </div>
