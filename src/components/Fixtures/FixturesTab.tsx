@@ -37,7 +37,7 @@ interface OpponentInsights {
   opponent_team: string;
   opponent_rank: number;
   recent_form: {
-    last_5_results: string[];
+    last_5_results: Array<{ result: string; event: number }>;
     avg_points_last_5: string;
   };
   your_stats: {
@@ -205,7 +205,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         const yourAvg = parseFloat(insights.your_stats.avg_points_last_5);
         const theirAvg = parseFloat(insights.recent_form.avg_points_last_5);
         const avgDiff = theirAvg - yourAvg;
-        const chipAdvantage = insights.chips_remaining.theirs.length - insights.chips_remaining.yours.length;
         const hasHotStreak = insights.momentum.streak_type === 'win' && insights.momentum.current_streak >= 3;
 
         return (
@@ -225,17 +224,19 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               <div className={styles.insightBox}>
                 <div className={styles.insightLabel}>Recent Form (Last 5)</div>
                 <div className={styles.formBadges}>
-                  {insights.recent_form.last_5_results.map((result, idx) => (
-                    <span
-                      key={idx}
-                      className={`${styles.formBadge} ${
-                        result === 'W' ? styles.formWin :
-                        result === 'D' ? styles.formDraw :
-                        styles.formLoss
-                      }`}
-                    >
-                      {result}
-                    </span>
+                  {insights.recent_form.last_5_results.map((item, idx) => (
+                    <div key={idx} className={styles.formBadgeWrapper}>
+                      <span
+                        className={`${styles.formBadge} ${
+                          item.result === 'W' ? styles.formWin :
+                          item.result === 'D' ? styles.formDraw :
+                          styles.formLoss
+                        }`}
+                      >
+                        {item.result}
+                      </span>
+                      <span className={styles.formGW}>GW{item.event}</span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -259,35 +260,19 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               </div>
 
               <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>Chips Remaining</div>
+                <div className={styles.insightLabel}>Chips Remaining & Free Transfers</div>
                 <div className={styles.chipsComparison}>
                   <div>
                     <strong>You:</strong> {insights.chips_remaining.yours.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
+                    {insights.free_transfers !== undefined && (
+                      <span className={styles.ftBadge}> • {insights.free_transfers}FT</span>
+                    )}
                   </div>
                   <div>
                     <strong>Him:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
                   </div>
                 </div>
-                {chipAdvantage > 0 && (
-                  <div className={styles.warning}>
-                    ⚠️ He has {chipAdvantage} more chip{chipAdvantage > 1 ? 's' : ''}
-                  </div>
-                )}
-                {chipAdvantage < 0 && (
-                  <div className={`${styles.warning} ${styles.positive}`}>
-                    ✅ You have {Math.abs(chipAdvantage)} more chip{Math.abs(chipAdvantage) > 1 ? 's' : ''}
-                  </div>
-                )}
               </div>
-
-              {insights.free_transfers !== undefined && (
-                <div className={styles.insightBox}>
-                  <div className={styles.insightLabel}>Free Transfers Available</div>
-                  <div className={styles.comparison}>
-                    <span className={styles.ftCount}>{insights.free_transfers} FT</span>
-                  </div>
-                </div>
-              )}
 
               {hasHotStreak && (
                 <div className={styles.insightBox}>
@@ -312,28 +297,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Key Insight */}
-            <div className={styles.keyInsight}>
-              <div className={styles.insightIcon}>💡</div>
-              <div className={styles.insightText}>
-                {(() => {
-                  if (hasHotStreak && chipAdvantage > 0) {
-                    return `${insights.opponent_name} is in excellent form with more chips remaining. Consider using your best chip if you have strong captain picks this week.`;
-                  }
-                  if (avgDiff > 5) {
-                    return `They've been averaging significantly more points. Make sure your team is optimized and consider using a chip strategically.`;
-                  }
-                  if (chipAdvantage < 0) {
-                    return `You have a chip advantage! Use it wisely to maximize your points this gameweek.`;
-                  }
-                  if (insights.head_to_head.their_wins > insights.head_to_head.your_wins) {
-                    return `They lead the H2H record. Focus on differential picks to gain an advantage.`;
-                  }
-                  return `Plan your team carefully and good luck!`;
-                })()}
-              </div>
             </div>
           </div>
         );
