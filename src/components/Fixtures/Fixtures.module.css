@@ -1099,3 +1099,87 @@
     font-size: 0.9375rem;
   }
 }
+
+/* === Expandable Match Cards === */
+
+/* Make match cards interactive */
+.matchCard {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.matchCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.matchCard:active {
+  transform: scale(0.98);
+}
+
+/* Expansion indicator */
+.expandIndicator {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s ease, color 0.3s ease;
+  pointer-events: none;
+}
+
+.matchCard.expanded .expandIndicator {
+  transform: rotate(180deg);
+  color: #00ff87;
+}
+
+.matchCard:hover .expandIndicator {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Loading state */
+.detailsLoading {
+  padding: 16px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 12px;
+}
+
+/* Details Panel (Inline Expansion) */
+.detailsPanel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideDown 0.3s ease;
+  overflow: hidden;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 800px;
+    transform: translateY(0);
+  }
+}
+
+/* Desktop only: Show expansion */
+@media (min-width: 768px) {
+  .matchCard.expanded {
+    padding-bottom: 16px;
+  }
+}
+
+/* Mobile: Hide inline expansion */
+@media (max-width: 767px) {
+  .detailsPanel {
+    display: none;
+  }
+}

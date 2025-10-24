@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import styles from './Fixtures.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
+import { MatchDetails } from './MatchDetails';
+import { MatchDetailsModal } from './MatchDetailsModal';
 
 interface Match {
   id: number;
@@ -66,6 +68,39 @@ interface OpponentInsights {
   free_transfers?: number;
 }
 
+interface MatchDetailsData {
+  match_id: number;
+  entry_1: {
+    id: number;
+    player_name: string;
+    team_name: string;
+    recent_form: Array<{ result: string; event: number }>;
+    avg_points_last_5: string;
+    chips_remaining: string[];
+    free_transfers: number;
+  };
+  entry_2: {
+    id: number;
+    player_name: string;
+    team_name: string;
+    recent_form: Array<{ result: string; event: number }>;
+    avg_points_last_5: string;
+    chips_remaining: string[];
+    free_transfers: number;
+  };
+  head_to_head: {
+    total_meetings: number;
+    entry_1_wins: number;
+    entry_2_wins: number;
+    draws: number;
+    last_meeting: {
+      event: number;
+      entry_1_score: number;
+      entry_2_score: number;
+    } | null;
+  };
+}
+
 interface Props {
   leagueId: string;
   myTeamId: string;
@@ -89,6 +124,11 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [fixturesData, setFixturesData] = useState<FixturesData | null>(null);
   const [insights, setInsights] = useState<OpponentInsights | null>(null);
   const [loading, setLoading] = useState(true);
+  const [expandedMatchId, setExpandedMatchId] = useState<number | null>(null);
+  const [matchDetails, setMatchDetails] = useState<{ [key: number]: MatchDetailsData }>({});
+  const [showModal, setShowModal] = useState(false);
+  const [modalData, setModalData] = useState<MatchDetailsData | null>(null);
+  const [loadingDetails, setLoadingDetails] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     fetchFixtures();
@@ -139,6 +179,50 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   function handleNextGW() {
     if (currentGW < maxGW) setCurrentGW(currentGW + 1);
+  }
+
+  async function fetchMatchDetails(matchId: number) {
+    if (matchDetails[matchId]) {
+      return matchDetails[matchId]; // Already cached
+    }
+
+    setLoadingDetails({ ...loadingDetails, [matchId]: true });
+
+    try {
+      const response = await fetch(`/api/league/${leagueId}/matches/${matchId}`);
+      if (!response.ok) throw new Error('Failed to fetch match details');
+
+      const data: MatchDetailsData = await response.json();
+      setMatchDetails({ ...matchDetails, [matchId]: data });
+      setLoadingDetails({ ...loadingDetails, [matchId]: false });
+      return data;
+    } catch (error) {
+      console.error('Error fetching match details:', error);
+      setLoadingDetails({ ...loadingDetails, [matchId]: false });
+      return null;
+    }
+  }
+
+  async function handleCardClick(matchId: number) {
+    // Check if mobile
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Fetch match details
+    const details = await fetchMatchDetails(matchId);
+    if (!details) return;
+
+    if (isMobile) {
+      // Show modal on mobile
+      setModalData(details);
+      setShowModal(true);
+    } else {
+      // Toggle inline expansion on desktop
+      if (expandedMatchId === matchId) {
+        setExpandedMatchId(null);
+      } else {
+        setExpandedMatchId(matchId);
+      }
+    }
   }
 
   if (loading && !fixturesData) {
@@ -345,11 +429,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           const isCompleted = fixturesData.status === 'completed';
           const entry1Won = isCompleted && match.entry_1.score > match.entry_2.score;
           const entry2Won = isCompleted && match.entry_2.score > match.entry_1.score;
+          const isExpanded = expandedMatchId === match.id;
+          const details = matchDetails[match.id];
+          const isLoading = loadingDetails[match.id];
 
           return (
             <div
               key={match.id}
-              className={`${styles.matchCard} ${isMyMatch ? styles.myMatch : ''}`}
+              className={`${styles.matchCard} ${isMyMatch ? styles.myMatch : ''} ${isExpanded ? styles.expanded : ''}`}
+              onClick={() => handleCardClick(match.id)}
+              style={{ cursor: 'pointer' }}
             >
               <div className={styles.matchHeader}>
                 <div className={styles.team}>
@@ -392,10 +481,43 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                   )}
                 </div>
               </div>
+
+              {/* Expansion indicator */}
+              <div className={styles.expandIndicator}>
+                {isExpanded ? '▲' : '▼'}
+              </div>
+
+              {/* Loading state */}
+              {isLoading && (
+                <div className={styles.detailsLoading}>
+                  Loading details...
+                </div>
+              )}
+
+              {/* INLINE EXPANSION (Desktop/Tablet) */}
+              {isExpanded && details && !isLoading && (
+                <div className={styles.detailsPanel}>
+                  <MatchDetails
+                    entry1={details.entry_1}
+                    entry2={details.entry_2}
+                    headToHead={details.head_to_head}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
       </div>
+
+      {/* MODAL (Mobile) */}
+      {showModal && modalData && (
+        <MatchDetailsModal
+          entry1={modalData.entry_1}
+          entry2={modalData.entry_2}
+          headToHead={modalData.head_to_head}
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1,0 +1,196 @@
+.detailsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.playerName {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vsLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+/* Stats Grid - 2 Columns */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+}
+
+.playerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.divider {
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Stat Row */
+.statRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.statLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+/* Form Display */
+.formDisplay {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.formItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.formBadge {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.formBadge.w {
+  background: #00ff87;
+  color: #1a0d2e;
+}
+
+.formBadge.l {
+  background: #ff0066;
+  color: #ffffff;
+}
+
+.formBadge.d {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.gwLabel {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Chips Display */
+.chipsDisplay {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.chipBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 32px;
+}
+
+.noChips {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* H2H Section */
+.h2hSection {
+  padding: 12px;
+  background: rgba(0, 255, 135, 0.05);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.h2hTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.h2hRecord {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.lastMeeting {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 6px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .playerColumn {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+  }
+
+  .detailsHeader {
+    font-size: 0.875rem;
+  }
+
+  .playerName {
+    font-size: 0.875rem;
+  }
+}
