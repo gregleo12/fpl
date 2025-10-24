@@ -69,6 +69,7 @@ interface Props {
   leagueId: string;
   myTeamId: string;
   maxGW: number;
+  defaultGW: number;
 }
 
 function getChipAbbreviation(chip: string | null): string {
@@ -82,8 +83,8 @@ function getChipAbbreviation(chip: string | null): string {
   return chipMap[chip.toLowerCase()] || chip;
 }
 
-export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
-  const [currentGW, setCurrentGW] = useState(maxGW);
+export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Props) {
+  const [currentGW, setCurrentGW] = useState(defaultGW);
   const [fixturesData, setFixturesData] = useState<FixturesData | null>(null);
   const [insights, setInsights] = useState<OpponentInsights | null>(null);
   const [loading, setLoading] = useState(true);

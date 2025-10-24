@@ -134,6 +134,7 @@ export default function DashboardPage() {
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
             maxGW={leagueData.maxGW || 1}
+            defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
           />
         )}
         {activeTab === 'myteam' && (

@@ -354,12 +354,17 @@ export async function GET(
     const leagueResult = await db.query('SELECT * FROM leagues WHERE id = $1', [leagueId]);
     const league = leagueResult.rows[0];
 
+    // Determine the "active" GW (current or next upcoming)
+    // This is what Fixtures should default to
+    const activeGW = Math.min(maxCompletedGW + 1, maxGW);
+
     return NextResponse.json({
       league,
       standings: standingsWithForm,
       recentMatches,
       currentGW,
-      maxGW
+      maxGW,
+      activeGW
     });
   } catch (error: any) {
     console.error('Error fetching league stats:', error);

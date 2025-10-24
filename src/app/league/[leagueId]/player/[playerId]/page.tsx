@@ -166,6 +166,7 @@ export default function PlayerProfilePage() {
             leagueId={leagueId}
             myTeamId={state?.myTeamId || playerId}
             maxGW={leagueData.maxGW || 1}
+            defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
           />
         )}
         {activeTab === 'player' && (
