@@ -93,39 +93,45 @@ export async function GET(
         : '0.0'
     };
 
+    // Get current gameweek to determine chip renewals
+    const bootstrapData = await fplApi.getBootstrapData();
+    const currentEvent = bootstrapData.events.find(e => e.is_current || e.is_next);
+    const currentGW = currentEvent?.id || 1;
+
     // Calculate chips remaining from FPL API
-    // Build remaining chips array based on actual usage
-    const calculateRemainingChips = (chipsUsed: any[]): string[] => {
+    // Chips renew in GW19 if used before GW19, but don't stack (max 1 of each)
+    const calculateRemainingChips = (chipsUsed: any[], currentGW: number): string[] => {
       const remaining: string[] = [];
+      const allChipTypes = ['wildcard', 'bboost', '3xc', 'freehit'];
 
-      // Count chip usage
-      const chipCounts: { [key: string]: number } = {};
-      chipsUsed.forEach((chip: any) => {
-        const chipName = chip.name;
-        chipCounts[chipName] = (chipCounts[chipName] || 0) + 1;
+      allChipTypes.forEach(chipType => {
+        // Find all uses of this chip
+        const uses = chipsUsed.filter((chip: any) => chip.name === chipType);
+
+        if (uses.length === 0) {
+          // Never used - still available
+          remaining.push(chipType);
+        } else {
+          // Check if any use was after GW19
+          const usedAfterGW19 = uses.some((use: any) => use.event >= 19);
+
+          if (!usedAfterGW19 && currentGW >= 19) {
+            // Only used before GW19 and we're past GW19 - chip has renewed
+            remaining.push(chipType);
+          }
+          // If used after GW19, chip is not available (already used this half)
+        }
       });
-
-      // Wildcards: You get 2 per season (one per half)
-      const wildcardsUsed = chipCounts['wildcard'] || 0;
-      const wildcardsRemaining = 2 - wildcardsUsed;
-      for (let i = 0; i < wildcardsRemaining; i++) {
-        remaining.push('wildcard');
-      }
-
-      // Other chips: You get 1 of each
-      if (!chipCounts['bboost']) remaining.push('bboost');
-      if (!chipCounts['3xc']) remaining.push('3xc');
-      if (!chipCounts['freehit']) remaining.push('freehit');
 
       return remaining;
     };
 
     // Get opponent's chip usage from FPL API
-    let opponentChipsRemaining: string[] = ['wildcard', 'wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
+    let opponentChipsRemaining: string[] = ['wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
     try {
       const opponentHistoryData = await fplApi.getEntryHistory(targetEntryId);
       if (opponentHistoryData && opponentHistoryData.chips && Array.isArray(opponentHistoryData.chips)) {
-        opponentChipsRemaining = calculateRemainingChips(opponentHistoryData.chips);
+        opponentChipsRemaining = calculateRemainingChips(opponentHistoryData.chips, currentGW);
       }
     } catch (error) {
       console.log('Could not fetch opponent chip data:', error);
@@ -133,11 +139,11 @@ export async function GET(
     }
 
     // Get my chip usage from FPL API
-    let myChipsRemaining: string[] = ['wildcard', 'wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
+    let myChipsRemaining: string[] = ['wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
     try {
       const myHistoryData = await fplApi.getEntryHistory(myId);
       if (myHistoryData && myHistoryData.chips && Array.isArray(myHistoryData.chips)) {
-        myChipsRemaining = calculateRemainingChips(myHistoryData.chips);
+        myChipsRemaining = calculateRemainingChips(myHistoryData.chips, currentGW);
       }
     } catch (error) {
       console.log('Could not fetch my chip data:', error);
