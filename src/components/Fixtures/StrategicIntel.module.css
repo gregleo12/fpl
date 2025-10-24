@@ -72,6 +72,9 @@
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  min-height: 1.2em;
+  display: flex;
+  align-items: center;
 }
 
 /* Captain Picks */
@@ -169,6 +172,7 @@
 .commonPlayersHeader {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -190,6 +194,7 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
+  text-align: center;
 }
 
 .commonPlayer {

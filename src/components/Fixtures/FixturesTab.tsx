@@ -322,147 +322,18 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         </div>
       </div>
 
-      {/* Opponent Insights for Upcoming GWs */}
-      {fixturesData.status === 'upcoming' && insights && (() => {
-        const yourAvg = parseFloat(insights.your_stats.avg_points_last_5);
-        const theirAvg = parseFloat(insights.recent_form.avg_points_last_5);
-        const avgDiff = theirAvg - yourAvg;
-        const hasHotStreak = insights.momentum.streak_type === 'win' && insights.momentum.current_streak >= 3;
-
-        return (
-          <div className={styles.insightsCard}>
-            <h3 className={styles.insightsTitle}>🎯 Your Next Opponent</h3>
-            <div className={styles.opponentHeader}>
-              <div>
-                <div className={styles.opponentName}>{insights.opponent_name}</div>
-                <div className={styles.opponentTeam}>{insights.opponent_team}</div>
-              </div>
-              <div className={styles.rankBadge}>
-                Rank: {insights.opponent_rank}
-              </div>
-            </div>
-
-            {/* NEW: Responsive Grid for All Insights */}
-            <div className={styles.insightsGrid}>
-              {/* 1. Recent Form */}
-              <div className={styles.insightBox}>
-                <div className={styles.boxHeader}>
-                  <span className={styles.emoji}>📊</span>
-                  <span className={styles.boxTitle}>Recent Form</span>
-                  <span className={styles.boxSubtitle}>(Last 5)</span>
-                </div>
-                <div className={styles.formDisplay}>
-                  {insights.recent_form.last_5_results.map((item, idx) => (
-                    <div key={idx} className={styles.formItem}>
-                      <div
-                        className={`${styles.formCircle} ${
-                          item.result === 'W' ? styles.formWin :
-                          item.result === 'D' ? styles.formDraw :
-                          styles.formLoss
-                        }`}
-                      >
-                        {item.result}
-                      </div>
-                      <div className={styles.gwLabel}>GW{item.event}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* 2. Average Points */}
-              <div className={styles.insightBox}>
-                <div className={styles.boxHeader}>
-                  <span className={styles.emoji}>🎯</span>
-                  <span className={styles.boxTitle}>Average Points</span>
-                  <span className={styles.boxSubtitle}>(Last 5 GWs)</span>
-                </div>
-                <div className={styles.avgPointsDisplay}>
-                  <div className={styles.comparisonRow}>
-                    <span className={styles.statValue}>You: {insights.your_stats.avg_points_last_5}</span>
-                    <span className={styles.vs}>vs</span>
-                    <span className={styles.statValue}>Them: {insights.recent_form.avg_points_last_5}</span>
-                  </div>
-                  {Math.abs(avgDiff) >= 2 && (
-                    <div className={avgDiff > 0 ? styles.negative : styles.positive}>
-                      {avgDiff > 0 ? '⚠️' : '✅'}
-                      {avgDiff > 0
-                        ? ` They score ~${avgDiff.toFixed(1)} more pts/GW`
-                        : ` You score ~${Math.abs(avgDiff).toFixed(1)} more pts/GW`
-                      }
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 3. Chips Remaining */}
-              <div className={styles.insightBox}>
-                <div className={styles.boxHeader}>
-                  <span className={styles.emoji}>🎮</span>
-                  <span className={styles.boxTitle}>Chips Remaining</span>
-                </div>
-                <div className={styles.chipsDisplay}>
-                  {insights.chips_remaining.theirs.length > 0 ? (
-                    insights.chips_remaining.theirs.map((chip, idx) => (
-                      <span key={idx} className={styles.chipBadge}>
-                        {getChipAbbreviation(chip)}
-                      </span>
-                    ))
-                  ) : (
-                    <div className={styles.noChips}>
-                      <span className={styles.noChipsIcon}>🚫</span>
-                      <span className={styles.noChipsText}>All used</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 4. Free Transfers - SIMPLIFIED */}
-              {insights.free_transfers !== undefined && (
-                <div className={styles.insightBox}>
-                  <div className={styles.boxHeader}>
-                    <span className={styles.emoji}>🔄</span>
-                    <span className={styles.boxTitle}>Free Transfers</span>
-                  </div>
-                  <div className={styles.ftDisplay}>
-                    <div className={styles.ftValue}>
-                      <span className={styles.ftNumber}>{insights.free_transfers}</span>
-                      <span className={styles.ftLabel}>FT</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {hasHotStreak && (
-                <div className={styles.insightBox}>
-                  <div className={styles.insightLabel}>🔥 Hot Streak Alert!</div>
-                  <div className={styles.hotStreak}>
-                    On a {insights.momentum.current_streak}-game winning streak!
-                  </div>
-                </div>
-              )}
-
-              {insights.head_to_head.total_meetings > 0 && (
-                <div className={styles.insightBox}>
-                  <div className={styles.insightLabel}>Head-to-Head Record</div>
-                  <div className={styles.h2hRecord}>
-                    <span>Total: {insights.head_to_head.your_wins}-{insights.head_to_head.their_wins}</span>
-                    {insights.head_to_head.last_meeting && (
-                      <span className={styles.lastMeeting}>
-                        Last: GW{insights.head_to_head.last_meeting.event}
-                        ({insights.head_to_head.last_meeting.your_score}-{insights.head_to_head.last_meeting.their_score})
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      })()}
-
       {/* Matches */}
       <div className={styles.matchesContainer}>
-        {fixturesData.matches.map((match) => {
+        {fixturesData.matches
+          .sort((a, b) => {
+            // Sort user's match to the top
+            const aIsUserMatch = a.entry_1.id.toString() === myTeamId || a.entry_2.id.toString() === myTeamId;
+            const bIsUserMatch = b.entry_1.id.toString() === myTeamId || b.entry_2.id.toString() === myTeamId;
+            if (aIsUserMatch && !bIsUserMatch) return -1;
+            if (!aIsUserMatch && bIsUserMatch) return 1;
+            return 0;
+          })
+          .map((match) => {
           const isMyMatch = match.entry_1.id.toString() === myTeamId || match.entry_2.id.toString() === myTeamId;
           const isCompleted = fixturesData.status === 'completed';
           const entry1Won = isCompleted && match.entry_1.score > match.entry_2.score;
