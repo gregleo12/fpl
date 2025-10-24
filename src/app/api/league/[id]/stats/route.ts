@@ -292,17 +292,21 @@ export async function GET(
     const allMatches = allMatchesResult.rows;
 
     // Find max completed GW
-    const maxGW = allMatches.length > 0
+    const maxCompletedGW = allMatches.length > 0
       ? Math.max(...allMatches.map((m: any) => Number(m.event)))
       : 0;
 
-    if (maxGW === 0) {
+    if (maxCompletedGW === 0) {
       return NextResponse.json({ error: 'No completed matches found' }, { status: 404 });
     }
 
-    // Determine which GW to show
-    const requestedGW = gwParam ? parseInt(gwParam) : maxGW;
-    const currentGW = Math.min(Math.max(1, requestedGW), maxGW);
+    // Get total gameweeks from league (FPL has 38 GWs)
+    // Use league data or default to 38 for FPL
+    const maxGW = 38;
+
+    // Determine which GW to show (default to max completed, but allow viewing up to maxGW)
+    const requestedGW = gwParam ? parseInt(gwParam) : maxCompletedGW;
+    const currentGW = Math.min(Math.max(1, requestedGW), maxCompletedGW);
 
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(allMatches, managers, currentGW);

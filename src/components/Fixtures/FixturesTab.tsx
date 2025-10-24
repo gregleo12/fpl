@@ -199,85 +199,134 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW }: Props) {
       </div>
 
       {/* Opponent Insights for Upcoming GWs */}
-      {fixturesData.status === 'upcoming' && insights && (
-        <div className={styles.insightsCard}>
-          <h3 className={styles.insightsTitle}>🎯 Your Next Opponent</h3>
-          <div className={styles.opponentHeader}>
-            <div>
-              <div className={styles.opponentName}>{insights.opponent_name}</div>
-              <div className={styles.opponentTeam}>{insights.opponent_team}</div>
-            </div>
-            <div className={styles.rankBadge}>
-              Rank: {insights.opponent_rank}
-            </div>
-          </div>
+      {fixturesData.status === 'upcoming' && insights && (() => {
+        const yourAvg = parseFloat(insights.your_stats.avg_points_last_5);
+        const theirAvg = parseFloat(insights.recent_form.avg_points_last_5);
+        const avgDiff = theirAvg - yourAvg;
+        const chipAdvantage = insights.chips_remaining.theirs.length - insights.chips_remaining.yours.length;
+        const hasHotStreak = insights.momentum.streak_type === 'win' && insights.momentum.current_streak >= 3;
 
-          <div className={styles.insightsGrid}>
-            <div className={styles.insightBox}>
-              <div className={styles.insightLabel}>Recent Form (Last 5)</div>
-              <div className={styles.formBadges}>
-                {insights.recent_form.last_5_results.map((result, idx) => (
-                  <span
-                    key={idx}
-                    className={`${styles.formBadge} ${
-                      result === 'W' ? styles.formWin :
-                      result === 'D' ? styles.formDraw :
-                      styles.formLoss
-                    }`}
-                  >
-                    {result}
-                  </span>
-                ))}
+        return (
+          <div className={styles.insightsCard}>
+            <h3 className={styles.insightsTitle}>🎯 Your Next Opponent</h3>
+            <div className={styles.opponentHeader}>
+              <div>
+                <div className={styles.opponentName}>{insights.opponent_name}</div>
+                <div className={styles.opponentTeam}>{insights.opponent_team}</div>
+              </div>
+              <div className={styles.rankBadge}>
+                Rank: {insights.opponent_rank}
               </div>
             </div>
 
-            <div className={styles.insightBox}>
-              <div className={styles.insightLabel}>Average Points (Last 5 GWs)</div>
-              <div className={styles.comparison}>
-                <span>You: {insights.your_stats.avg_points_last_5}</span>
-                <span className={styles.divider}>vs</span>
-                <span>Them: {insights.recent_form.avg_points_last_5}</span>
-              </div>
-            </div>
-
-            <div className={styles.insightBox}>
-              <div className={styles.insightLabel}>Chips Remaining</div>
-              <div className={styles.chipsComparison}>
-                <div>
-                  <strong>You:</strong> {insights.chips_remaining.yours.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
-                </div>
-                <div>
-                  <strong>Them:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
-                </div>
-              </div>
-            </div>
-
-            {insights.momentum.current_streak >= 3 && (
+            <div className={styles.insightsGrid}>
               <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>⚠️ Momentum Alert</div>
-                <div className={styles.momentum}>
-                  On a {insights.momentum.current_streak}-game {insights.momentum.streak_type} streak!
-                </div>
-              </div>
-            )}
-
-            {insights.head_to_head.total_meetings > 0 && (
-              <div className={styles.insightBox}>
-                <div className={styles.insightLabel}>Head-to-Head Record</div>
-                <div className={styles.h2hRecord}>
-                  <span>Total: {insights.head_to_head.your_wins}-{insights.head_to_head.their_wins}</span>
-                  {insights.head_to_head.last_meeting && (
-                    <span className={styles.lastMeeting}>
-                      Last: GW{insights.head_to_head.last_meeting.event}
-                      ({insights.head_to_head.last_meeting.your_score}-{insights.head_to_head.last_meeting.their_score})
+                <div className={styles.insightLabel}>Recent Form (Last 5)</div>
+                <div className={styles.formBadges}>
+                  {insights.recent_form.last_5_results.map((result, idx) => (
+                    <span
+                      key={idx}
+                      className={`${styles.formBadge} ${
+                        result === 'W' ? styles.formWin :
+                        result === 'D' ? styles.formDraw :
+                        styles.formLoss
+                      }`}
+                    >
+                      {result}
                     </span>
-                  )}
+                  ))}
                 </div>
               </div>
-            )}
+
+              <div className={styles.insightBox}>
+                <div className={styles.insightLabel}>Average Points (Last 5 GWs)</div>
+                <div className={styles.comparison}>
+                  <span>You: {insights.your_stats.avg_points_last_5}</span>
+                  <span className={styles.divider}>vs</span>
+                  <span>Them: {insights.recent_form.avg_points_last_5}</span>
+                </div>
+                {Math.abs(avgDiff) >= 2 && (
+                  <div className={`${styles.warning} ${avgDiff > 0 ? styles.negative : styles.positive}`}>
+                    {avgDiff > 0 ? '⚠️' : '✅'}
+                    {avgDiff > 0
+                      ? ` They score ~${avgDiff.toFixed(1)} more pts/GW`
+                      : ` You score ~${Math.abs(avgDiff).toFixed(1)} more pts/GW`
+                    }
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.insightBox}>
+                <div className={styles.insightLabel}>Chips Remaining</div>
+                <div className={styles.chipsComparison}>
+                  <div>
+                    <strong>You:</strong> {insights.chips_remaining.yours.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
+                  </div>
+                  <div>
+                    <strong>Them:</strong> {insights.chips_remaining.theirs.map(c => getChipAbbreviation(c)).join(', ') || 'None'}
+                  </div>
+                </div>
+                {chipAdvantage > 0 && (
+                  <div className={styles.warning}>
+                    ⚠️ They have {chipAdvantage} more chip{chipAdvantage > 1 ? 's' : ''}
+                  </div>
+                )}
+                {chipAdvantage < 0 && (
+                  <div className={`${styles.warning} ${styles.positive}`}>
+                    ✅ You have {Math.abs(chipAdvantage)} more chip{Math.abs(chipAdvantage) > 1 ? 's' : ''}
+                  </div>
+                )}
+              </div>
+
+              {hasHotStreak && (
+                <div className={styles.insightBox}>
+                  <div className={styles.insightLabel}>🔥 Hot Streak Alert!</div>
+                  <div className={styles.hotStreak}>
+                    On a {insights.momentum.current_streak}-game winning streak!
+                  </div>
+                </div>
+              )}
+
+              {insights.head_to_head.total_meetings > 0 && (
+                <div className={styles.insightBox}>
+                  <div className={styles.insightLabel}>Head-to-Head Record</div>
+                  <div className={styles.h2hRecord}>
+                    <span>Total: {insights.head_to_head.your_wins}-{insights.head_to_head.their_wins}</span>
+                    {insights.head_to_head.last_meeting && (
+                      <span className={styles.lastMeeting}>
+                        Last: GW{insights.head_to_head.last_meeting.event}
+                        ({insights.head_to_head.last_meeting.your_score}-{insights.head_to_head.last_meeting.their_score})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Key Insight */}
+            <div className={styles.keyInsight}>
+              <div className={styles.insightIcon}>💡</div>
+              <div className={styles.insightText}>
+                {(() => {
+                  if (hasHotStreak && chipAdvantage > 0) {
+                    return `${insights.opponent_name} is in excellent form with more chips remaining. Consider using your best chip if you have strong captain picks this week.`;
+                  }
+                  if (avgDiff > 5) {
+                    return `They've been averaging significantly more points. Make sure your team is optimized and consider using a chip strategically.`;
+                  }
+                  if (chipAdvantage < 0) {
+                    return `You have a chip advantage! Use it wisely to maximize your points this gameweek.`;
+                  }
+                  if (insights.head_to_head.their_wins > insights.head_to_head.your_wins) {
+                    return `They lead the H2H record. Focus on differential picks to gain an advantage.`;
+                  }
+                  return `Plan your team carefully and good luck!`;
+                })()}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Matches */}
       <div className={styles.matchesContainer}>

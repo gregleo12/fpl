@@ -292,10 +292,36 @@
   color: #00ff87;
 }
 
-.momentum {
+.warning {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 0, 102, 0.1);
+  border: 1px solid rgba(255, 0, 102, 0.3);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #ff0066;
+  text-align: center;
+  font-weight: 600;
+}
+
+.warning.positive {
+  background: rgba(0, 255, 135, 0.1);
+  border-color: rgba(0, 255, 135, 0.3);
+  color: #00ff87;
+}
+
+.warning.negative {
+  background: rgba(255, 0, 102, 0.1);
+  border-color: rgba(255, 0, 102, 0.3);
+  color: #ff0066;
+}
+
+.hotStreak {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #ff2882;
+  color: #ff6400;
+  text-shadow: 0 0 8px rgba(255, 100, 0, 0.6);
+  animation: pulse 2s infinite;
 }
 
 .h2hRecord {
@@ -308,6 +334,30 @@
 .lastMeeting {
   color: rgba(255, 255, 255, 0.6);
   font-size: 0.85rem;
+}
+
+/* Key Insight */
+.keyInsight {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(0, 255, 135, 0.08);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.insightIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.insightText {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
 /* Matches */
