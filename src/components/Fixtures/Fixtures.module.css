@@ -285,11 +285,19 @@
 
   /* Smaller box titles on mobile */
   .boxTitle {
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
+    word-break: break-word;
+    line-height: 1.2;
   }
 
   .boxSubtitle {
-    font-size: 0.625rem;
+    font-size: 0.5625rem;
+  }
+
+  /* Center box headers on mobile */
+  .boxHeader {
+    justify-content: center;
+    text-align: center;
   }
 
   /* Smaller form circles on mobile */
@@ -311,6 +319,23 @@
 
   .vs {
     font-size: 0.75rem;
+  }
+
+  /* Center chips display on mobile */
+  .chipsDisplay {
+    justify-content: center;
+  }
+
+  /* Ensure emoji doesn't take too much space */
+  .emoji {
+    font-size: 1rem;
+  }
+
+  /* Smaller chip badges on mobile */
+  .chipBadge {
+    font-size: 0.6875rem;
+    padding: 4px 8px;
+    min-width: 36px;
   }
 }
 
