@@ -94,30 +94,38 @@ export async function GET(
     };
 
     // Calculate chips remaining from FPL API
-    // All FPL chips (note: wildcards can be used twice - once per half)
-    const allChips = ['wildcard', 'bboost', '3xc', 'freehit'];
+    // Build remaining chips array based on actual usage
+    const calculateRemainingChips = (chipsUsed: any[]): string[] => {
+      const remaining: string[] = [];
+
+      // Count chip usage
+      const chipCounts: { [key: string]: number } = {};
+      chipsUsed.forEach((chip: any) => {
+        const chipName = chip.name;
+        chipCounts[chipName] = (chipCounts[chipName] || 0) + 1;
+      });
+
+      // Wildcards: You get 2 per season (one per half)
+      const wildcardsUsed = chipCounts['wildcard'] || 0;
+      const wildcardsRemaining = 2 - wildcardsUsed;
+      for (let i = 0; i < wildcardsRemaining; i++) {
+        remaining.push('wildcard');
+      }
+
+      // Other chips: You get 1 of each
+      if (!chipCounts['bboost']) remaining.push('bboost');
+      if (!chipCounts['3xc']) remaining.push('3xc');
+      if (!chipCounts['freehit']) remaining.push('freehit');
+
+      return remaining;
+    };
 
     // Get opponent's chip usage from FPL API
-    let opponentChipsRemaining = [...allChips];
+    let opponentChipsRemaining: string[] = ['wildcard', 'wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
     try {
       const opponentHistoryData = await fplApi.getEntryHistory(targetEntryId);
       if (opponentHistoryData && opponentHistoryData.chips && Array.isArray(opponentHistoryData.chips)) {
-        // Count how many times each chip was used
-        const opponentChipCounts: { [key: string]: number } = {};
-        opponentHistoryData.chips.forEach((chip: any) => {
-          const chipName = chip.name;
-          opponentChipCounts[chipName] = (opponentChipCounts[chipName] || 0) + 1;
-        });
-
-        // Filter remaining chips
-        opponentChipsRemaining = allChips.filter(chip => {
-          if (chip === 'wildcard') {
-            // Wildcards can be used twice (once per half)
-            return (opponentChipCounts[chip] || 0) < 2;
-          }
-          // Other chips can only be used once
-          return !opponentChipCounts[chip];
-        });
+        opponentChipsRemaining = calculateRemainingChips(opponentHistoryData.chips);
       }
     } catch (error) {
       console.log('Could not fetch opponent chip data:', error);
@@ -125,26 +133,11 @@ export async function GET(
     }
 
     // Get my chip usage from FPL API
-    let myChipsRemaining = [...allChips];
+    let myChipsRemaining: string[] = ['wildcard', 'wildcard', 'bboost', '3xc', 'freehit']; // Default: all chips
     try {
       const myHistoryData = await fplApi.getEntryHistory(myId);
       if (myHistoryData && myHistoryData.chips && Array.isArray(myHistoryData.chips)) {
-        // Count how many times each chip was used
-        const myChipCounts: { [key: string]: number } = {};
-        myHistoryData.chips.forEach((chip: any) => {
-          const chipName = chip.name;
-          myChipCounts[chipName] = (myChipCounts[chipName] || 0) + 1;
-        });
-
-        // Filter remaining chips
-        myChipsRemaining = allChips.filter(chip => {
-          if (chip === 'wildcard') {
-            // Wildcards can be used twice (once per half)
-            return (myChipCounts[chip] || 0) < 2;
-          }
-          // Other chips can only be used once
-          return !myChipCounts[chip];
-        });
+        myChipsRemaining = calculateRemainingChips(myHistoryData.chips);
       }
     } catch (error) {
       console.log('Could not fetch my chip data:', error);
