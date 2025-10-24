@@ -60,10 +60,10 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
             <div className={styles.intelLabel}>BENCH POINTS (LAST 5 GWs)</div>
             <div className={styles.benchStats}>
               <div className={styles.benchTotal}>
-                {entry1.strategicIntel.benchPoints.total} pts
+                {entry1.strategicIntel.benchPoints.average.toFixed(1)} pts/GW
               </div>
               <div className={styles.benchAvg}>
-                {entry1.strategicIntel.benchPoints.average.toFixed(1)} avg/GW
+                {entry1.strategicIntel.benchPoints.total} pts total
               </div>
             </div>
           </div>
@@ -81,14 +81,9 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
             <div className={styles.intelLabel}>HITS TAKEN (SEASON)</div>
             <div className={styles.hitsStats}>
               {entry1.strategicIntel.hitsTaken.total < 0 ? (
-                <>
-                  <div className={styles.hitsTotal}>
-                    {entry1.strategicIntel.hitsTaken.total} pts
-                  </div>
-                  <div className={styles.hitsCount}>
-                    {entry1.strategicIntel.hitsTaken.count} hit{entry1.strategicIntel.hitsTaken.count > 1 ? 's' : ''}
-                  </div>
-                </>
+                <div className={styles.hitsTotal}>
+                  {entry1.strategicIntel.hitsTaken.total} pts ({entry1.strategicIntel.hitsTaken.count} hit{entry1.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
+                </div>
               ) : (
                 <div className={styles.noHits}>No hits</div>
               )}
@@ -119,10 +114,10 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
             <div className={styles.intelLabel}>BENCH POINTS (LAST 5 GWs)</div>
             <div className={styles.benchStats}>
               <div className={styles.benchTotal}>
-                {entry2.strategicIntel.benchPoints.total} pts
+                {entry2.strategicIntel.benchPoints.average.toFixed(1)} pts/GW
               </div>
               <div className={styles.benchAvg}>
-                {entry2.strategicIntel.benchPoints.average.toFixed(1)} avg/GW
+                {entry2.strategicIntel.benchPoints.total} pts total
               </div>
             </div>
           </div>
@@ -140,14 +135,9 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
             <div className={styles.intelLabel}>HITS TAKEN (SEASON)</div>
             <div className={styles.hitsStats}>
               {entry2.strategicIntel.hitsTaken.total < 0 ? (
-                <>
-                  <div className={styles.hitsTotal}>
-                    {entry2.strategicIntel.hitsTaken.total} pts
-                  </div>
-                  <div className={styles.hitsCount}>
-                    {entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''}
-                  </div>
-                </>
+                <div className={styles.hitsTotal}>
+                  {entry2.strategicIntel.hitsTaken.total} pts ({entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
+                </div>
               ) : (
                 <div className={styles.noHits}>No hits</div>
               )}
