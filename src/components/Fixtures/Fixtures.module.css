@@ -920,8 +920,28 @@
   }
 
   .insightsGrid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Recent Form - full width */
+  .insightBox:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+
+  /* Average Points - full width */
+  .insightBox:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  /* Chips Remaining - left side */
+  .insightBox:nth-child(3) {
+    grid-column: 1;
+  }
+
+  /* Free Transfers - right side */
+  .insightBox:nth-child(4) {
+    grid-column: 2;
   }
 
   .insightBox {
@@ -1053,7 +1073,28 @@
 
 @media (max-width: 480px) {
   .insightsGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Recent Form - full width */
+  .insightBox:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+
+  /* Average Points - full width */
+  .insightBox:nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  /* Chips Remaining - left side */
+  .insightBox:nth-child(3) {
+    grid-column: 1;
+  }
+
+  /* Free Transfers - right side */
+  .insightBox:nth-child(4) {
+    grid-column: 2;
   }
 
   .comparison {
