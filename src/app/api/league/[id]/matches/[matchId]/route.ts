@@ -116,11 +116,27 @@ export async function GET(
           // Current gameweeks data
           if (historyData.current && historyData.current.length > 0) {
             const currentGWs = historyData.current;
-            const lastGW = currentGWs[currentGWs.length - 1];
 
-            // Free transfers
-            const lastGWTransfers = lastGW.event_transfers || 0;
-            freeTransfers = lastGWTransfers === 0 ? 2 : 1;
+            // Calculate free transfers by tracking through the season
+            let ftBalance = 1; // Start of season
+            for (const gw of currentGWs) {
+              const transfers = gw.event_transfers || 0;
+              const chipUsed = gw.chip_name;
+
+              // Wildcard/Free Hit don't consume FTs
+              if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
+                // FT balance is preserved, transfers don't consume FTs
+              } else {
+                // Normal transfers consume FTs
+                if (transfers > 0) {
+                  ftBalance = Math.max(0, ftBalance - transfers);
+                }
+              }
+
+              // Add 1 FT for next GW (capped at 2)
+              ftBalance = Math.min(2, ftBalance + 1);
+            }
+            freeTransfers = ftBalance;
 
             // Bench points (last 5 GWs)
             const last5GWs = currentGWs.slice(-5);
