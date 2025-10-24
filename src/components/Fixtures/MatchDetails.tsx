@@ -102,9 +102,6 @@ export function MatchDetails({ entry1, entry2, headToHead }: MatchDetailsProps) 
           </div>
         </div>
 
-        {/* Divider */}
-        <div className={styles.divider}></div>
-
         {/* Player 2 Column */}
         <div className={styles.playerColumn}>
           {/* Recent Form */}
