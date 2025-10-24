@@ -7,9 +7,10 @@ import Header from '@/components/Layout/Header';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
+import AwardsTab from '@/components/Awards/AwardsTab';
 import styles from './dashboard.module.css';
 
-type TabType = 'league' | 'fixtures' | 'myteam';
+type TabType = 'league' | 'fixtures' | 'myteam' | 'awards';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -116,6 +117,13 @@ export default function DashboardPage() {
             <span className={styles.tabIcon}>🏆</span>
             <span className={styles.tabLabel}>My Team</span>
           </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'awards' ? styles.active : ''}`}
+            onClick={() => setActiveTab('awards')}
+          >
+            <span className={styles.tabIcon}>🎖️</span>
+            <span className={styles.tabLabel}>Awards</span>
+          </button>
         </nav>
       </div>
 
@@ -145,6 +153,12 @@ export default function DashboardPage() {
             myManagerName={state.myManagerName}
             myTeamName={state.myTeamName}
             leagueId={state.leagueId}
+          />
+        )}
+        {activeTab === 'awards' && (
+          <AwardsTab
+            leagueId={state.leagueId}
+            myTeamId={state.myTeamId}
           />
         )}
       </main>
