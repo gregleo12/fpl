@@ -93,33 +93,59 @@ export async function GET(
         : '0.0'
     };
 
-    // Get currently available chips from FPL API
-    // This gives us the actual chips available right now (accounting for chip renewal in January)
-    let opponentChipsRemaining: string[] = [];
-    let myChipsRemaining: string[] = [];
+    // Calculate chips remaining from database
+    // All FPL chips (note: wildcards can be used twice - once per half)
+    const allChips = ['wildcard', 'bboost', '3xc', 'freehit'];
 
-    try {
-      // Fetch opponent's chips from FPL API
-      const opponentEntryData = await fplApi.getEntry(targetEntryId);
-      // The chips field contains an array of available chips
-      // Available chips are those that can be played right now
-      if (opponentEntryData.chips && Array.isArray(opponentEntryData.chips)) {
-        opponentChipsRemaining = opponentEntryData.chips
-          .filter((chip: any) => chip.status_for_entry === 'available')
-          .map((chip: any) => chip.name);
-      }
+    // Get opponent's chips used from matches
+    const opponentChipsUsed = opponentMatches
+      .filter((m: any) => m.chip_used)
+      .map((m: any) => m.chip_used);
 
-      // Fetch my chips from FPL API
-      const myEntryData = await fplApi.getEntry(myId);
-      if (myEntryData.chips && Array.isArray(myEntryData.chips)) {
-        myChipsRemaining = myEntryData.chips
-          .filter((chip: any) => chip.status_for_entry === 'available')
-          .map((chip: any) => chip.name);
+    // Count chip usage (wildcards can be used twice)
+    const opponentChipCounts: { [key: string]: number } = {};
+    opponentChipsUsed.forEach(chip => {
+      opponentChipCounts[chip] = (opponentChipCounts[chip] || 0) + 1;
+    });
+
+    // For wildcards, check how many times used
+    // If used once, still have one left. If used twice, none left
+    const opponentChipsRemaining = allChips.filter(chip => {
+      if (chip === 'wildcard') {
+        return (opponentChipCounts[chip] || 0) < 2;
       }
-    } catch (error) {
-      console.error('Error fetching chip data from FPL API:', error);
-      // Fallback to empty arrays if API call fails
-    }
+      return !opponentChipCounts[chip];
+    });
+
+    // Get my chips used
+    const myChipsResult = await db.query(`
+      SELECT
+        CASE
+          WHEN entry_1_id = $1 THEN active_chip_1
+          ELSE active_chip_2
+        END as chip_used
+      FROM h2h_matches
+      WHERE league_id = $2
+        AND (entry_1_id = $1 OR entry_2_id = $1)
+        AND (
+          (entry_1_id = $1 AND active_chip_1 IS NOT NULL) OR
+          (entry_2_id = $1 AND active_chip_2 IS NOT NULL)
+        )
+    `, [myId, leagueId]);
+
+    const myChipsUsed = myChipsResult.rows.map((r: any) => r.chip_used);
+
+    const myChipCounts: { [key: string]: number } = {};
+    myChipsUsed.forEach(chip => {
+      myChipCounts[chip] = (myChipCounts[chip] || 0) + 1;
+    });
+
+    const myChipsRemaining = allChips.filter(chip => {
+      if (chip === 'wildcard') {
+        return (myChipCounts[chip] || 0) < 2;
+      }
+      return !myChipCounts[chip];
+    });
 
     const chipsRemaining = {
       yours: myChipsRemaining,
