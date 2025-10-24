@@ -225,13 +225,11 @@ export async function GET(
       ]);
 
       if (picks1Data && picks2Data && picks1Data.picks && picks2Data.picks) {
-        // Get starting 11 player IDs
+        // Get all squad player IDs (including bench)
         const team1Players = picks1Data.picks
-          .filter((p: any) => p.position <= 11)
           .map((p: any) => p.element);
 
         const team2Players = picks2Data.picks
-          .filter((p: any) => p.position <= 11)
           .map((p: any) => p.element);
 
         // Find common player IDs
@@ -248,7 +246,7 @@ export async function GET(
 
         commonPlayers = {
           count: commonPlayerIds.length,
-          percentage: Math.round((commonPlayerIds.length / 11) * 100),
+          percentage: Math.round((commonPlayerIds.length / 15) * 100),
           players: playerNames
         };
       }
