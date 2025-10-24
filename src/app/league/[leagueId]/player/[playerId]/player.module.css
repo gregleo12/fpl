@@ -200,8 +200,9 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 200px));
   gap: 1.5rem;
+  justify-content: center;
 }
 
 .statBox {
