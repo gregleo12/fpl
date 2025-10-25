@@ -186,11 +186,14 @@
 }
 
 .commonPlayersList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 8px;
   font-size: 0.8125rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
-  text-align: center;
 }
 
 .commonPlayer {
