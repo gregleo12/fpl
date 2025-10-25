@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .loading,
@@ -22,8 +22,8 @@
   top: 180px; /* Header (84px) + Tabs (~96px with padding) */
   background: transparent;
   z-index: 80; /* Below tabs (90), above content */
-  padding: 0 0 16px 0;
-  margin: -1rem 0 1rem 0;
+  padding: 0;
+  margin: -1rem 0 0 0;
 }
 
 .navigator {
