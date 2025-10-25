@@ -70,6 +70,8 @@ function calculateCompletedStats(
   const finalScore = entryHistory.points;
 
   console.log(`Final score for ${manager}: ${finalScore}`);
+  console.log(`Picks data for ${manager}:`, JSON.stringify(picks.slice(0, 3), null, 2));
+  console.log(`Sample live data:`, liveData.elements ? Object.keys(liveData.elements).length + ' elements' : 'No live data');
 
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
@@ -81,13 +83,15 @@ function calculateCompletedStats(
   const captainBasePoints = captainLive?.stats?.total_points || 0;
   const captainPoints = captainBasePoints * captainMultiplier;
 
-  // Get top performers (top 3 by points) - only from starting 11
+  // Get top performers (top 3 by points) - check ALL players including auto-subs
+  // For completed matches, some bench players may have been auto-subbed in
   const performers = picks
-    .filter((p: any) => p.position <= 11) // Starting 11 only
     .map((p: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === p.element);
       const liveElement = liveData.elements[p.element];
       const basePoints = liveElement?.stats?.total_points || 0;
+
+      // Apply multiplier for captain
       let multiplier = 1;
       if (p.is_captain) {
         multiplier = picksData.active_chip === '3xc' ? 3 : 2;
@@ -98,7 +102,16 @@ function calculateCompletedStats(
         name: element?.web_name || 'Unknown',
         points: points,
         isCaptain: p.is_captain,
+        position: p.position,
       };
+    })
+    .filter((p: any) => {
+      // For Bench Boost, include everyone
+      if (picksData.active_chip === 'bboost') {
+        return true;
+      }
+      // Otherwise, only include starting 11
+      return p.position <= 11;
     })
     .sort((a: any, b: any) => b.points - a.points)
     .slice(0, 3);
