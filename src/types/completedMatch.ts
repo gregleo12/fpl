@@ -5,16 +5,7 @@ export interface CompletedMatchData {
     manager: string;
     team: string;
     finalScore: number;
-    captain: {
-      name: string;
-      points: number;
-    };
-    topPerformers: {
-      name: string;
-      points: number;
-      isCaptain: boolean;
-    }[];
-    benchPoints: number;
+    captain: string;
     transferCost: number;
     chipUsed: string | null;
   };
@@ -23,16 +14,7 @@ export interface CompletedMatchData {
     manager: string;
     team: string;
     finalScore: number;
-    captain: {
-      name: string;
-      points: number;
-    };
-    topPerformers: {
-      name: string;
-      points: number;
-      isCaptain: boolean;
-    }[];
-    benchPoints: number;
+    captain: string;
     transferCost: number;
     chipUsed: string | null;
   };

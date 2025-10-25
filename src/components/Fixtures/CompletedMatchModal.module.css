@@ -212,20 +212,20 @@
   font-weight: 600;
 }
 
-/* Performers Grid */
-.performersGrid {
+/* Stats Grid */
+.statsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.performersBox {
+.statsBox {
   padding: 16px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
 }
 
-.performersLabel {
+.statsLabel {
   font-size: 0.75rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
@@ -234,43 +234,32 @@
   letter-spacing: 0.05em;
 }
 
-.performersList {
+.statsList {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.performer {
+.statRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
 }
 
-.performerRank {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
-  min-width: 20px;
-}
-
-.performerName {
-  flex: 1;
+.statLabel {
   font-size: 0.875rem;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.statValue {
+  font-size: 0.875rem;
+  font-weight: 700;
   color: #ffffff;
 }
 
-.captainBadge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #00ff87;
-  margin-left: 4px;
-}
-
-.performerPoints {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #00ff87;
+.statValue.negative {
+  color: #ff0066;
 }
 
 /* Differences Box */
@@ -359,12 +348,12 @@
     font-size: 1.75rem;
   }
 
-  .performersGrid {
+  .statsGrid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .performersBox {
+  .statsBox {
     padding: 12px;
   }
 
