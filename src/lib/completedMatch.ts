@@ -23,11 +23,12 @@ export async function getCompletedMatchData(
     const data = await response.json();
     const picks1Data = data.picks1;
     const picks2Data = data.picks2;
+    const liveData = data.live;
     const bootstrapData = data.bootstrap;
 
     // Calculate stats for both teams
-    const player1Data = calculateCompletedStats(picks1Data, bootstrapData, entryId1, manager1, team1);
-    const player2Data = calculateCompletedStats(picks2Data, bootstrapData, entryId2, manager2, team2);
+    const player1Data = calculateCompletedStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
+    const player2Data = calculateCompletedStats(picks2Data, liveData, bootstrapData, entryId2, manager2, team2);
 
     // Determine winner
     let winner: 'player1' | 'player2' | 'draw';
@@ -56,6 +57,7 @@ export async function getCompletedMatchData(
 
 function calculateCompletedStats(
   picksData: any,
+  liveData: any,
   bootstrapData: any,
   entryId: number,
   manager: string,
@@ -72,10 +74,11 @@ function calculateCompletedStats(
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
   const captainElement = bootstrapData.elements.find((e: any) => e.id === captainPick?.element);
+  const captainLive = liveData.elements[captainPick?.element];
 
-  // Get captain points from live data (will be in picks data for completed gameweeks)
+  // Get captain points from live data
   const captainMultiplier = picksData.active_chip === '3xc' ? 3 : 2;
-  const captainBasePoints = captainElement?.event_points || 0;
+  const captainBasePoints = captainLive?.stats?.total_points || 0;
   const captainPoints = captainBasePoints * captainMultiplier;
 
   // Get top performers (top 3 by points) - only from starting 11
@@ -83,7 +86,8 @@ function calculateCompletedStats(
     .filter((p: any) => p.position <= 11) // Starting 11 only
     .map((p: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === p.element);
-      const basePoints = element?.event_points || 0;
+      const liveElement = liveData.elements[p.element];
+      const basePoints = liveElement?.stats?.total_points || 0;
       let multiplier = 1;
       if (p.is_captain) {
         multiplier = picksData.active_chip === '3xc' ? 3 : 2;
@@ -103,8 +107,8 @@ function calculateCompletedStats(
   const benchPoints = picks
     .filter((p: any) => p.position > 11) // Bench (positions 12-15)
     .reduce((sum: number, p: any) => {
-      const element = bootstrapData.elements.find((e: any) => e.id === p.element);
-      return sum + (element?.event_points || 0);
+      const liveElement = liveData.elements[p.element];
+      return sum + (liveElement?.stats?.total_points || 0);
     }, 0);
 
   console.log(`Bench points for ${manager}: ${benchPoints}`);

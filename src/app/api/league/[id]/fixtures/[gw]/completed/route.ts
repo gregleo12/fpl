@@ -17,29 +17,32 @@ export async function GET(
       );
     }
 
-    // Fetch picks for both entries and bootstrap data in parallel
-    const [picks1Response, picks2Response, bootstrapResponse] = await Promise.all([
+    // Fetch picks, live data, and bootstrap data in parallel
+    const [picks1Response, picks2Response, liveResponse, bootstrapResponse] = await Promise.all([
       fetch(`https://fantasy.premierleague.com/api/entry/${entryId1}/event/${gw}/picks/`),
       fetch(`https://fantasy.premierleague.com/api/entry/${entryId2}/event/${gw}/picks/`),
+      fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`),
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
     ]);
 
-    if (!picks1Response.ok || !picks2Response.ok || !bootstrapResponse.ok) {
+    if (!picks1Response.ok || !picks2Response.ok || !liveResponse.ok || !bootstrapResponse.ok) {
       return NextResponse.json(
         { error: 'Failed to fetch data from FPL' },
         { status: 500 }
       );
     }
 
-    const [picks1Data, picks2Data, bootstrapData] = await Promise.all([
+    const [picks1Data, picks2Data, liveData, bootstrapData] = await Promise.all([
       picks1Response.json(),
       picks2Response.json(),
+      liveResponse.json(),
       bootstrapResponse.json(),
     ]);
 
     return NextResponse.json({
       picks1: picks1Data,
       picks2: picks2Data,
+      live: liveData,
       bootstrap: bootstrapData,
     });
   } catch (error: any) {
