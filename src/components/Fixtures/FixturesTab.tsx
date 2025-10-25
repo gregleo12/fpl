@@ -346,7 +346,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           match.entry_1.player_name,
           match.entry_1.team_name,
           match.entry_2.player_name,
-          match.entry_2.team_name
+          match.entry_2.team_name,
+          leagueId
         );
         console.log('Live match data received:', liveData);
         setLiveMatchData(liveData);

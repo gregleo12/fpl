@@ -7,23 +7,24 @@ export async function getLiveMatchData(
   manager1: string,
   team1: string,
   manager2: string,
-  team2: string
+  team2: string,
+  leagueId: string
 ): Promise<LiveMatchData> {
   try {
-    // Fetch both teams' picks for the gameweek and live data in parallel
-    const [picks1Response, picks2Response, liveResponse, bootstrapResponse] = await Promise.all([
-      fetch(`https://fantasy.premierleague.com/api/entry/${entryId1}/event/${gameweek}/picks/`),
-      fetch(`https://fantasy.premierleague.com/api/entry/${entryId2}/event/${gameweek}/picks/`),
-      fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`),
-      fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-    ]);
+    // Call our backend API to fetch FPL data (avoids CORS issues)
+    const response = await fetch(
+      `/api/league/${leagueId}/fixtures/${gameweek}/live?entry1=${entryId1}&entry2=${entryId2}`
+    );
 
-    const [picks1Data, picks2Data, liveData, bootstrapData] = await Promise.all([
-      picks1Response.json(),
-      picks2Response.json(),
-      liveResponse.json(),
-      bootstrapResponse.json(),
-    ]);
+    if (!response.ok) {
+      throw new Error('Failed to fetch live data from backend');
+    }
+
+    const data = await response.json();
+    const picks1Data = data.picks1;
+    const picks2Data = data.picks2;
+    const liveData = data.live;
+    const bootstrapData = data.bootstrap;
 
     // Calculate live stats for both teams
     const player1Data = calculateLiveStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
