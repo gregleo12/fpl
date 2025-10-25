@@ -1,0 +1,73 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--badge-bg);
+  border: 2px solid var(--badge-color);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--badge-color);
+  box-shadow: 0 2px 8px var(--badge-bg);
+  transition: all 0.2s ease;
+}
+
+.emoji {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.label {
+  line-height: 1;
+}
+
+/* Pulsing animation for live badges */
+.badge.in_progress {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* Hover effect */
+.badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--badge-bg);
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .badge {
+    padding: 4px 10px;
+    font-size: 0.6875rem;
+    gap: 5px;
+    border-width: 1.5px;
+  }
+
+  .emoji {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .badge {
+    padding: 3px 8px;
+    font-size: 0.625rem;
+    gap: 4px;
+  }
+
+  .emoji {
+    font-size: 0.75rem;
+  }
+}

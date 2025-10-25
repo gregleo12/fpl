@@ -5,6 +5,7 @@ import styles from './Fixtures.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
 import { MatchDetails } from './MatchDetails';
 import { MatchDetailsModal } from './MatchDetailsModal';
+import { StateBadge } from './StateBadge';
 
 interface Match {
   id: number;
@@ -167,10 +168,69 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [showModal, setShowModal] = useState(false);
   const [modalData, setModalData] = useState<MatchDetailsData | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<{ [key: number]: boolean }>({});
+  const [initialGWSet, setInitialGWSet] = useState(false);
+
+  // Find the live or upcoming GW on initial load
+  useEffect(() => {
+    async function findOptimalGW() {
+      try {
+        // Check a range of GWs around the defaultGW to find live or upcoming
+        const gwsToCheck = [
+          defaultGW,
+          defaultGW - 1,
+          defaultGW + 1,
+          defaultGW - 2,
+        ].filter(gw => gw >= 1 && gw <= maxGW);
+
+        // Fetch all GWs in parallel for faster detection
+        const promises = gwsToCheck.map(async (gw) => {
+          try {
+            const response = await fetch(`/api/league/${leagueId}/fixtures/${gw}`);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return { gw, status: data.status };
+          } catch {
+            return null;
+          }
+        });
+
+        const results = await Promise.all(promises);
+        const validResults = results.filter(r => r !== null) as Array<{ gw: number; status: string }>;
+
+        // Priority 1: Find live GW
+        const liveGW = validResults.find(r => r.status === 'in_progress');
+        if (liveGW) {
+          setCurrentGW(liveGW.gw);
+          setInitialGWSet(true);
+          return;
+        }
+
+        // Priority 2: Find upcoming GW (prefer the one closest to defaultGW)
+        const upcomingGWs = validResults.filter(r => r.status === 'upcoming');
+        if (upcomingGWs.length > 0) {
+          // Sort by proximity to defaultGW
+          upcomingGWs.sort((a, b) => Math.abs(a.gw - defaultGW) - Math.abs(b.gw - defaultGW));
+          setCurrentGW(upcomingGWs[0].gw);
+          setInitialGWSet(true);
+          return;
+        }
+
+        // Priority 3: All completed, stick with defaultGW
+        setInitialGWSet(true);
+      } catch (error) {
+        console.error('Error finding optimal GW:', error);
+        setInitialGWSet(true);
+      }
+    }
+
+    findOptimalGW();
+  }, [leagueId, defaultGW, maxGW]);
 
   useEffect(() => {
-    fetchFixtures();
-  }, [currentGW]);
+    if (initialGWSet) {
+      fetchFixtures();
+    }
+  }, [currentGW, initialGWSet]);
 
   async function fetchFixtures() {
     setLoading(true);
@@ -263,19 +323,13 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     }
   }
 
-  if (loading && !fixturesData) {
+  if (!initialGWSet || (loading && !fixturesData)) {
     return <div className={styles.loading}>Loading fixtures...</div>;
   }
 
   if (!fixturesData) {
     return <div className={styles.error}>Failed to load fixtures</div>;
   }
-
-  const statusText = {
-    completed: 'Completed',
-    in_progress: 'In Progress',
-    upcoming: 'Upcoming'
-  }[fixturesData.status];
 
   return (
     <div className={styles.container}>
@@ -292,9 +346,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           </button>
           <div className={styles.gwInfo}>
             <span className={styles.gwNumber}>GW {currentGW}</span>
-            <span className={`${styles.gwStatus} ${styles[fixturesData.status]}`}>
-              {statusText}
-            </span>
+            <StateBadge status={fixturesData.status} />
           </div>
           <button
             className={styles.navButton}
