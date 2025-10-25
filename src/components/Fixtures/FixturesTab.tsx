@@ -338,6 +338,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
       // Fetch live match data
       setLoadingLiveData(true);
       try {
+        console.log('Fetching live match data for GW', currentGW);
         const liveData = await getLiveMatchData(
           match.entry_1.id,
           match.entry_2.id,
@@ -347,10 +348,12 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           match.entry_2.player_name,
           match.entry_2.team_name
         );
+        console.log('Live match data received:', liveData);
         setLiveMatchData(liveData);
         setShowLiveModal(true);
       } catch (error) {
         console.error('Error fetching live match data:', error);
+        alert('Failed to load live match data. Please try again.');
       } finally {
         setLoadingLiveData(false);
       }
@@ -570,6 +573,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             liveMatchData.player2.entryId.toString() === myTeamId
           }
         />
+      )}
+
+      {/* LOADING OVERLAY */}
+      {loadingLiveData && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingSpinner}>
+            <div className={styles.spinner}></div>
+            <div className={styles.loadingText}>Loading live match data...</div>
+          </div>
+        </div>
       )}
     </div>
   );
