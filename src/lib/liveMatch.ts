@@ -54,6 +54,10 @@ function calculateLiveStats(
   console.log('Calculating stats for:', manager);
   console.log('Active chip:', picksData.active_chip);
 
+  // Use official score from FPL (includes auto-subs)
+  const currentScore = picksData.entry_history?.points || 0;
+  console.log(`Official score for ${manager}: ${currentScore}`);
+
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
   const captainElement = bootstrapData.elements.find((e: any) => e.id === captainPick?.element);
@@ -69,8 +73,7 @@ function calculateLiveStats(
 
   console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
-  // Calculate current score (playing 11 only)
-  let currentScore = 0;
+  // Calculate stats (players played, bench points, etc.)
   let playersPlayed = 0;
   let playersRemaining = 0;
   let benchPoints = 0;
@@ -80,18 +83,9 @@ function calculateLiveStats(
     const bootstrapElement = bootstrapData.elements.find((e: any) => e.id === pick.element);
     const rawPoints = liveElement?.stats?.total_points || 0;
 
-    // Determine multiplier
-    let multiplier = 1;
-    if (pick.is_captain) {
-      multiplier = picksData.active_chip === '3xc' ? 3 : 2;
-    }
-
-    const totalPoints = rawPoints * multiplier;
-
     if (pick.position <= 11) {
       // Starting 11
-      currentScore += totalPoints;
-      console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts x${multiplier} = ${totalPoints}`);
+      console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts`);
 
       // Check if player has played or fixture is finished
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -109,13 +103,6 @@ function calculateLiveStats(
     }
   });
 
-  // Bench boost adds all bench points to score
-  if (picksData.active_chip === 'bboost') {
-    console.log(`Bench Boost active! Adding ${benchPoints} bench points`);
-    currentScore += benchPoints;
-  }
-
-  console.log(`Final score for ${manager}: ${currentScore}`);
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining`);
 
   return {
