@@ -55,22 +55,25 @@ export async function GET(
       }
     }
 
-    // For in-progress gameweeks, fetch live scores from FPL API
-    let liveScores: Map<string, number> | null = null;
+    // For in-progress gameweeks, fetch fresh scores from FPL H2H matches API
+    let liveScoresMap: Map<string, { entry1: number; entry2: number }> | null = null;
     if (status === 'in_progress') {
       try {
-        liveScores = await fetchLiveScores(matches, gw);
+        liveScoresMap = await fetchLiveH2HScores(leagueId, gw);
       } catch (error) {
-        console.error('Error fetching live scores:', error);
+        console.error('Error fetching live H2H scores:', error);
         // Fall back to database scores if live fetch fails
       }
     }
 
     // Format matches for response
     const formattedMatches = matches.map((match: any) => {
-      // Use live scores if available, otherwise use database scores
-      const entry1Score = liveScores?.get(`${match.entry_1_id}`) ?? match.entry_1_points ?? 0;
-      const entry2Score = liveScores?.get(`${match.entry_2_id}`) ?? match.entry_2_points ?? 0;
+      // Use live scores from FPL H2H API if available, otherwise use database scores
+      const matchKey = `${match.entry_1_id}_${match.entry_2_id}`;
+      const liveScores = liveScoresMap?.get(matchKey);
+
+      const entry1Score = liveScores?.entry1 ?? match.entry_1_points ?? 0;
+      const entry2Score = liveScores?.entry2 ?? match.entry_2_points ?? 0;
 
       return {
         id: match.id,
@@ -109,72 +112,46 @@ export async function GET(
   }
 }
 
-// Helper function to fetch live scores for all entries
-async function fetchLiveScores(matches: any[], gw: number): Promise<Map<string, number>> {
-  // Collect unique entry IDs
-  const entryIds = new Set<number>();
-  matches.forEach((match: any) => {
-    entryIds.add(match.entry_1_id);
-    entryIds.add(match.entry_2_id);
-  });
+// Helper function to fetch live scores from FPL's H2H matches endpoint
+async function fetchLiveH2HScores(
+  leagueId: number,
+  gw: number
+): Promise<Map<string, { entry1: number; entry2: number }>> {
+  const scoresMap = new Map<string, { entry1: number; entry2: number }>();
 
-  // Fetch bootstrap and live data from FPL API
-  const [bootstrapResponse, liveResponse] = await Promise.all([
-    fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-    fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`),
-  ]);
+  // Fetch from FPL's H2H matches API (this includes auto-subs and is the official score)
+  let page = 1;
+  let hasMore = true;
 
-  if (!bootstrapResponse.ok || !liveResponse.ok) {
-    throw new Error('Failed to fetch FPL live data');
-  }
-
-  const bootstrap = await bootstrapResponse.json();
-  const liveData = await liveResponse.json();
-
-  // Fetch picks for all entries in parallel
-  const picksPromises = Array.from(entryIds).map(async (entryId) => {
+  while (hasMore) {
     const response = await fetch(
-      `https://fantasy.premierleague.com/api/entry/${entryId}/event/${gw}/picks/`
+      `https://fantasy.premierleague.com/api/leagues-h2h-matches/league/${leagueId}/?page=${page}`
     );
-    if (!response.ok) return { entryId, picks: null };
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch H2H matches from FPL');
+    }
+
     const data = await response.json();
-    return { entryId, picks: data };
-  });
 
-  const picksResults = await Promise.all(picksPromises);
-
-  // Calculate scores for each entry
-  const scores = new Map<string, number>();
-
-  for (const { entryId, picks } of picksResults) {
-    if (!picks) continue;
-
-    let score = 0;
-    const activeChip = picks.active_chip;
-
-    picks.picks.forEach((pick: any) => {
-      const liveElement = liveData.elements[pick.element];
-      const rawPoints = liveElement?.stats?.total_points || 0;
-
-      // Determine multiplier
-      let multiplier = 1;
-      if (pick.is_captain) {
-        multiplier = activeChip === '3xc' ? 3 : 2;
+    // Filter matches for this specific gameweek
+    for (const match of data.results) {
+      if (match.event === gw) {
+        const key = `${match.entry_1_entry}_${match.entry_2_entry}`;
+        scoresMap.set(key, {
+          entry1: match.entry_1_points,
+          entry2: match.entry_2_points,
+        });
       }
+    }
 
-      const totalPoints = rawPoints * multiplier;
+    // Stop if we've found all matches for this GW or no more pages
+    hasMore = data.has_next;
+    page++;
 
-      // Only count starting 11
-      if (pick.position <= 11) {
-        score += totalPoints;
-      } else if (activeChip === 'bboost') {
-        // Bench boost adds bench points
-        score += rawPoints;
-      }
-    });
-
-    scores.set(`${entryId}`, score);
+    // Safety: stop after 10 pages to avoid infinite loops
+    if (page > 10) break;
   }
 
-  return scores;
+  return scoresMap;
 }
