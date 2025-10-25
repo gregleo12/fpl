@@ -169,6 +169,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [modalData, setModalData] = useState<MatchDetailsData | null>(null);
   const [loadingDetails, setLoadingDetails] = useState<{ [key: number]: boolean }>({});
   const [initialGWSet, setInitialGWSet] = useState(false);
+  const [showGWSelector, setShowGWSelector] = useState(false);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Find the live or upcoming GW on initial load
   useEffect(() => {
@@ -279,6 +281,29 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     if (currentGW < maxGW) setCurrentGW(currentGW + 1);
   }
 
+  function handleGWInfoPress() {
+    setShowGWSelector(true);
+  }
+
+  function handleGWInfoMouseDown() {
+    const timer = setTimeout(() => {
+      setShowGWSelector(true);
+    }, 300); // 300ms for long press
+    setLongPressTimer(timer);
+  }
+
+  function handleGWInfoMouseUp() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  }
+
+  function handleSelectGW(gw: number) {
+    setCurrentGW(gw);
+    setShowGWSelector(false);
+  }
+
   async function fetchMatchDetails(matchId: number) {
     if (matchDetails[matchId]) {
       return matchDetails[matchId]; // Already cached
@@ -344,9 +369,19 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           >
             ◄
           </button>
-          <div className={styles.gwInfo}>
+          <div
+            className={styles.gwInfo}
+            onClick={handleGWInfoPress}
+            onMouseDown={handleGWInfoMouseDown}
+            onMouseUp={handleGWInfoMouseUp}
+            onMouseLeave={handleGWInfoMouseUp}
+            onTouchStart={handleGWInfoMouseDown}
+            onTouchEnd={handleGWInfoMouseUp}
+            style={{ cursor: 'pointer' }}
+          >
             <span className={styles.gwNumber}>GW {currentGW}</span>
             <StateBadge status={fixturesData.status} />
+            <span className={styles.gwHint}>▼</span>
           </div>
           <button
             className={styles.navButton}
@@ -357,22 +392,35 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             ►
           </button>
         </div>
-
-        {/* Timeline */}
-        <div className={styles.timeline}>
-          {Array.from({ length: maxGW }, (_, i) => i + 1).map(gw => (
-            <button
-              key={gw}
-              onClick={() => setCurrentGW(gw)}
-              className={`${styles.gwDot} ${gw === currentGW ? styles.active : ''}`}
-              aria-label={`Go to gameweek ${gw}`}
-              title={`GW${gw}`}
-            >
-              {gw}
-            </button>
-          ))}
-        </div>
       </div>
+
+      {/* GW Selector Dropdown */}
+      {showGWSelector && (
+        <div className={styles.gwSelectorOverlay} onClick={() => setShowGWSelector(false)}>
+          <div className={styles.gwSelectorModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.gwSelectorHeader}>
+              <h3>Select Gameweek</h3>
+              <button
+                className={styles.closeButton}
+                onClick={() => setShowGWSelector(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.gwGrid}>
+              {Array.from({ length: maxGW }, (_, i) => i + 1).map(gw => (
+                <button
+                  key={gw}
+                  onClick={() => handleSelectGW(gw)}
+                  className={`${styles.gwGridItem} ${gw === currentGW ? styles.gwGridItemActive : ''}`}
+                >
+                  GW {gw}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Matches */}
       <div className={styles.matchesContainer}>

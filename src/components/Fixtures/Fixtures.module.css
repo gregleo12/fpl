@@ -68,6 +68,25 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.gwInfo:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+.gwInfo:active {
+  transform: scale(0.98);
+}
+
+.gwHint {
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: -0.25rem;
 }
 
 .gwNumber {
@@ -1227,5 +1246,171 @@
 @media (max-width: 767px) {
   .detailsPanel {
     display: none;
+  }
+}
+
+/* === GW Selector Dropdown === */
+.gwSelectorOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.gwSelectorModal {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.98) 100%);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gwSelectorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gwSelectorHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.closeButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  background: rgba(255, 0, 102, 0.2);
+  border-color: rgba(255, 0, 102, 0.5);
+  color: #ff0066;
+  transform: rotate(90deg);
+}
+
+.gwGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  padding: 1.5rem 2rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.gwGridItem {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gwGridItem:hover {
+  background: rgba(0, 255, 135, 0.1);
+  border-color: rgba(0, 255, 135, 0.3);
+  color: #00ff87;
+  transform: translateY(-2px);
+}
+
+.gwGridItemActive {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: #00ff87;
+  color: #00ff87;
+  box-shadow: 0 4px 16px rgba(0, 255, 135, 0.3);
+}
+
+/* Mobile adjustments for GW Selector */
+@media (max-width: 767px) {
+  .gwSelectorModal {
+    max-width: 95vw;
+    max-height: 85vh;
+  }
+
+  .gwSelectorHeader {
+    padding: 1rem 1.5rem;
+  }
+
+  .gwSelectorHeader h3 {
+    font-size: 1.25rem;
+  }
+
+  .gwGrid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 10px;
+    padding: 1rem 1.5rem;
+  }
+
+  .gwGridItem {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gwGrid {
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+    padding: 1rem;
+  }
+
+  .gwGridItem {
+    padding: 0.625rem 0.375rem;
+    font-size: 0.8125rem;
   }
 }
