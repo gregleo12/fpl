@@ -15,6 +15,7 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
   const [view, setView] = useState<AwardView>('gameweek');
   const [awards, setAwards] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAwards();
@@ -22,13 +23,19 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
 
   async function fetchAwards() {
     setLoading(true);
+    setError(null);
     try {
       const response = await fetch(`/api/league/${leagueId}/awards?view=${view}`);
-      if (!response.ok) throw new Error('Failed to fetch awards');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch awards');
+      }
       const data = await response.json();
+      console.log('Awards data:', data); // Debug log
       setAwards(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching awards:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -36,6 +43,10 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
 
   if (loading && !awards) {
     return <div className={styles.loading}>Loading awards...</div>;
+  }
+
+  if (error) {
+    return <div className={styles.error}>Error loading awards: {error}</div>;
   }
 
   return (
@@ -64,9 +75,9 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
 
       {/* Awards Grid */}
       <div className={styles.awardsGrid}>
-        {view === 'gameweek' && awards?.gameweek && <GameweekAwards awards={awards.gameweek} />}
-        {view === 'monthly' && awards?.monthly && <MonthlyAwards awards={awards.monthly} />}
-        {view === 'season' && awards?.season && <SeasonAwards awards={awards.season} />}
+        {view === 'gameweek' && <GameweekAwards awards={awards?.gameweek || {}} />}
+        {view === 'monthly' && <MonthlyAwards awards={awards?.monthly || {}} />}
+        {view === 'season' && <SeasonAwards awards={awards?.season || {}} />}
       </div>
     </div>
   );
