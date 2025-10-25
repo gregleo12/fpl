@@ -24,28 +24,23 @@
   letter-spacing: 0.05em;
 }
 
-/* Intel Grid - Two Columns */
+/* Intel Grid - Row by Row Comparison */
 .intelGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 20px;
-}
-
-.playerColumn {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  margin-bottom: 20px;
 }
 
-/* Left column - left aligned */
-.playerColumn:first-child {
-  align-items: flex-start;
-}
-
-/* Right column - right aligned */
-.playerColumn:last-child {
-  align-items: flex-end;
+/* Each row compares left vs right */
+.intelRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Intel Section */
@@ -53,17 +48,18 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
 }
 
-/* Left column sections - left aligned */
-.playerColumn:first-child .intelSection {
+/* Left column - left aligned */
+.intelSection:first-child {
   align-items: flex-start;
+  text-align: left;
 }
 
-/* Right column sections - right aligned */
-.playerColumn:last-child .intelSection {
+/* Right column - right aligned */
+.intelSection:last-child {
   align-items: flex-end;
+  text-align: right;
 }
 
 .intelLabel {
@@ -201,99 +197,26 @@
   white-space: nowrap;
 }
 
-/* Right-align content in right column */
-.playerColumn:last-child .captainList,
-.playerColumn:last-child .benchStats,
-.playerColumn:last-child .hitsStats {
+/* Right-align content in right section */
+.intelSection:last-child .captainList,
+.intelSection:last-child .benchStats,
+.intelSection:last-child .hitsStats {
   align-items: flex-end;
 }
 
-.playerColumn:last-child .captainItem {
+.intelSection:last-child .captainItem {
   flex-direction: row-reverse;
 }
 
 /* Mobile Adjustments */
 @media (max-width: 767px) {
-  .intelGrid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  /* Keep left column left-aligned */
-  .playerColumn:first-child {
-    align-items: flex-start;
-    text-align: left;
-  }
-
-  .playerColumn:first-child .intelSection {
-    align-items: flex-start;
-  }
-
-  .playerColumn:first-child .captainList,
-  .playerColumn:first-child .benchStats,
-  .playerColumn:first-child .hitsStats {
-    align-items: flex-start;
-  }
-
-  /* Keep right column right-aligned on mobile */
-  .playerColumn:last-child {
-    align-items: flex-end;
-    text-align: right;
-  }
-
-  .playerColumn:last-child .intelSection {
-    align-items: flex-end;
-  }
-
-  .playerColumn:last-child .captainList,
-  .playerColumn:last-child .benchStats,
-  .playerColumn:last-child .hitsStats {
-    align-items: flex-end;
-  }
-
-  .playerColumn:last-child .captainItem {
-    flex-direction: row-reverse;
-  }
-
-  /* Add visual separation on mobile */
-  .playerColumn {
+  .intelRow {
+    gap: 12px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 8px;
   }
 
-  /* Add colored borders to distinguish players */
-  .playerColumn:first-child {
-    border-left: 3px solid rgba(0, 255, 135, 0.3);
-  }
-
-  .playerColumn:last-child {
-    border-right: 3px solid rgba(255, 0, 102, 0.3);
-  }
-
-  .commonPlayersTitle {
-    font-size: 0.6875rem;
-  }
-
-  .commonPlayersList {
-    font-size: 0.75rem;
-  }
-}
-
-/* Small phones */
-@media (max-width: 375px) {
-  .strategicIntel {
-    margin-top: 20px;
-    padding-top: 20px;
-  }
-
-  .intelGrid {
-    gap: 16px;
-  }
-
-  .playerColumn {
-    gap: 14px;
-    padding: 10px;
+  .intelLabel {
+    font-size: 0.625rem;
   }
 
   .captainName {
@@ -306,7 +229,32 @@
     font-size: 1.125rem;
   }
 
+  .commonPlayersTitle {
+    font-size: 0.6875rem;
+  }
+
+  .commonPlayersList {
+    font-size: 0.75rem;
+  }
+
   .commonPlayersSection {
     padding: 12px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 375px) {
+  .strategicIntel {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+  .intelGrid {
+    gap: 12px;
+  }
+
+  .intelRow {
+    gap: 8px;
+    padding: 10px;
   }
 }

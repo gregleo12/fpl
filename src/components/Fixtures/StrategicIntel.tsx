@@ -51,11 +51,10 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
         <span className={styles.title}>Strategic Intel</span>
       </div>
 
-      {/* Two-Column Grid */}
+      {/* Row-by-Row Comparison Grid */}
       <div className={styles.intelGrid}>
-        {/* LEFT COLUMN - Player 1 */}
-        <div className={styles.playerColumn}>
-          {/* Bench Points */}
+        {/* Bench Points Row */}
+        <div className={styles.intelRow}>
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>BENCH POINTS (Last 5)</div>
             <div className={styles.benchStats}>
@@ -67,16 +66,37 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
               </div>
             </div>
           </div>
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>BENCH POINTS (Last 5)</div>
+            <div className={styles.benchStats}>
+              <div className={styles.benchTotal}>
+                {entry2.strategicIntel.benchPoints.average.toFixed(1)} pts/GW
+              </div>
+              <div className={styles.benchAvg}>
+                {entry2.strategicIntel.benchPoints.total} pts total
+              </div>
+            </div>
+          </div>
+        </div>
 
-          {/* Team Value */}
+        {/* Team Value Row */}
+        <div className={styles.intelRow}>
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>TEAM VALUE</div>
             <div className={styles.teamValue}>
               £{entry1.strategicIntel.teamValue.toFixed(1)}M
             </div>
           </div>
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>TEAM VALUE</div>
+            <div className={styles.teamValue}>
+              £{entry2.strategicIntel.teamValue.toFixed(1)}M
+            </div>
+          </div>
+        </div>
 
-          {/* Hits Taken */}
+        {/* Hits Taken Row */}
+        <div className={styles.intelRow}>
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>HITS TAKEN</div>
             <div className={styles.hitsStats}>
@@ -89,8 +109,22 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
               )}
             </div>
           </div>
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>HITS TAKEN</div>
+            <div className={styles.hitsStats}>
+              {entry2.strategicIntel.hitsTaken.total < 0 ? (
+                <div className={styles.hitsTotal}>
+                  {entry2.strategicIntel.hitsTaken.total} pts ({entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
+                </div>
+              ) : (
+                <div className={styles.noHits}>No hits</div>
+              )}
+            </div>
+          </div>
+        </div>
 
-          {/* Captain Picks */}
+        {/* Captain Picks Row */}
+        <div className={styles.intelRow}>
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>CAPTAIN PICKS (Last 5)</div>
             <div className={styles.captainList}>
@@ -105,46 +139,6 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
               )}
             </div>
           </div>
-        </div>
-
-        {/* RIGHT COLUMN - Player 2 */}
-        <div className={styles.playerColumn}>
-          {/* Bench Points */}
-          <div className={styles.intelSection}>
-            <div className={styles.intelLabel}>BENCH POINTS (Last 5)</div>
-            <div className={styles.benchStats}>
-              <div className={styles.benchTotal}>
-                {entry2.strategicIntel.benchPoints.average.toFixed(1)} pts/GW
-              </div>
-              <div className={styles.benchAvg}>
-                {entry2.strategicIntel.benchPoints.total} pts total
-              </div>
-            </div>
-          </div>
-
-          {/* Team Value */}
-          <div className={styles.intelSection}>
-            <div className={styles.intelLabel}>TEAM VALUE</div>
-            <div className={styles.teamValue}>
-              £{entry2.strategicIntel.teamValue.toFixed(1)}M
-            </div>
-          </div>
-
-          {/* Hits Taken */}
-          <div className={styles.intelSection}>
-            <div className={styles.intelLabel}>HITS TAKEN</div>
-            <div className={styles.hitsStats}>
-              {entry2.strategicIntel.hitsTaken.total < 0 ? (
-                <div className={styles.hitsTotal}>
-                  {entry2.strategicIntel.hitsTaken.total} pts ({entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
-                </div>
-              ) : (
-                <div className={styles.noHits}>No hits</div>
-              )}
-            </div>
-          </div>
-
-          {/* Captain Picks */}
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>CAPTAIN PICKS (Last 5)</div>
             <div className={styles.captainList}>
