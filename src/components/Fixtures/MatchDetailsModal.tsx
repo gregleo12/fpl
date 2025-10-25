@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { MatchDetails } from './MatchDetails';
 import styles from './MatchDetailsModal.module.css';
 
@@ -56,12 +57,22 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+
     return () => {
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     };
   }, []);
 
-  return (
+  // Only render on client side
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const modalContent = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
         className={styles.modalContent}
@@ -91,4 +102,7 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
       </div>
     </div>
   );
+
+  // Render modal as portal at body level to avoid positioning conflicts
+  return createPortal(modalContent, document.body);
 }
