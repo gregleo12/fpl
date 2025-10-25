@@ -7,6 +7,7 @@ export interface LiveMatchData {
     currentScore: number;
     playersPlayed: number;
     playersRemaining: number;
+    totalPlayers: number; // 11 normally, 15 for Bench Boost
     captain: {
       name: string;
       points: number;
@@ -14,6 +15,7 @@ export interface LiveMatchData {
     };
     chipActive: string | null; // 'bboost', 'freehit', '3xc', 'wildcard'
     benchPoints: number;
+    transferCost: number;
   };
   player2: {
     entryId: number;
@@ -22,6 +24,7 @@ export interface LiveMatchData {
     currentScore: number;
     playersPlayed: number;
     playersRemaining: number;
+    totalPlayers: number; // 11 normally, 15 for Bench Boost
     captain: {
       name: string;
       points: number;
@@ -29,6 +32,7 @@ export interface LiveMatchData {
     };
     chipActive: string | null;
     benchPoints: number;
+    transferCost: number;
   };
 }
 

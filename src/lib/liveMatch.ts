@@ -74,6 +74,8 @@ function calculateLiveStats(
   console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
   // Calculate stats (players played, bench points, etc.)
+  const isBenchBoost = picksData.active_chip === 'bboost';
+  const totalPlayers = isBenchBoost ? 15 : 11;
   let playersPlayed = 0;
   let playersRemaining = 0;
   let benchPoints = 0;
@@ -83,13 +85,13 @@ function calculateLiveStats(
     const bootstrapElement = bootstrapData.elements.find((e: any) => e.id === pick.element);
     const rawPoints = liveElement?.stats?.total_points || 0;
 
+    // Check if player has played or fixture is finished
+    const hasPlayed = liveElement?.stats?.minutes > 0;
+    const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
     if (pick.position <= 11) {
       // Starting 11
       console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts`);
-
-      // Check if player has played or fixture is finished
-      const hasPlayed = liveElement?.stats?.minutes > 0;
-      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       if (hasPlayed || fixtureFinished) {
         playersPlayed++;
@@ -100,10 +102,23 @@ function calculateLiveStats(
       // Bench (positions 12-15)
       benchPoints += rawPoints;
       console.log(`BENCH ${bootstrapElement?.web_name}: ${rawPoints} pts`);
+
+      // If Bench Boost is active, count bench players towards total
+      if (isBenchBoost) {
+        if (hasPlayed || fixtureFinished) {
+          playersPlayed++;
+        } else {
+          playersRemaining++;
+        }
+      }
     }
   });
 
-  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining`);
+  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
+
+  // Get transfer cost (hits)
+  const transferCost = picksData.entry_history?.event_transfers_cost || 0;
+  console.log(`Transfer cost: ${transferCost}`);
 
   return {
     entryId,
@@ -112,6 +127,7 @@ function calculateLiveStats(
     currentScore,
     playersPlayed,
     playersRemaining,
+    totalPlayers,
     captain: {
       name: captainElement?.web_name || 'Unknown',
       points: captainPoints,
@@ -119,5 +135,6 @@ function calculateLiveStats(
     },
     chipActive: picksData.active_chip,
     benchPoints,
+    transferCost,
   };
 }

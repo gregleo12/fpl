@@ -109,7 +109,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
               <div className={styles.playersLabel}>{matchData.player1.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
-                  {matchData.player1.playersPlayed}/11 played
+                  {matchData.player1.playersPlayed}/{matchData.player1.totalPlayers} played
                 </div>
                 <div className={styles.playersRemaining}>
                   {matchData.player1.playersRemaining} remaining
@@ -126,7 +126,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
               <div className={styles.playersLabel}>{matchData.player2.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
-                  {matchData.player2.playersPlayed}/11 played
+                  {matchData.player2.playersPlayed}/{matchData.player2.totalPlayers} played
                 </div>
                 <div className={styles.playersRemaining}>
                   {matchData.player2.playersRemaining} remaining
@@ -232,6 +232,30 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
               <div className={styles.chipsLabel}>{matchData.player2.manager}</div>
               <div className={matchData.player2.chipActive ? styles.chipActive : styles.noChip}>
                 {getChipDisplay(matchData.player2.chipActive)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Transfer Hits Section */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.emoji}>🔄</span>
+            <span className={styles.sectionTitle}>Transfer Hits</span>
+          </div>
+
+          <div className={styles.hitsGrid}>
+            <div className={styles.hitsBox}>
+              <div className={styles.hitsLabel}>{matchData.player1.manager}</div>
+              <div className={`${styles.hitsPoints} ${matchData.player1.transferCost < 0 ? styles.negative : ''}`}>
+                {matchData.player1.transferCost} pts
+              </div>
+            </div>
+
+            <div className={styles.hitsBox}>
+              <div className={styles.hitsLabel}>{matchData.player2.manager}</div>
+              <div className={`${styles.hitsPoints} ${matchData.player2.transferCost < 0 ? styles.negative : ''}`}>
+                {matchData.player2.transferCost} pts
               </div>
             </div>
           </div>

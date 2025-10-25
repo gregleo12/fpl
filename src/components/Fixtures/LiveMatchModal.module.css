@@ -379,6 +379,38 @@
   font-style: italic;
 }
 
+/* Hits Grid */
+.hitsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.hitsBox {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.hitsLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.hitsPoints {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hitsPoints.negative {
+  color: #ff0066;
+}
+
 /* Bench Grid */
 .benchGrid {
   display: grid;
