@@ -55,25 +55,22 @@ export async function GET(
       }
     }
 
-    // For in-progress gameweeks, fetch fresh scores from FPL H2H matches API
-    let liveScoresMap: Map<string, { entry1: number; entry2: number }> | null = null;
+    // For in-progress gameweeks, fetch real-time scores from picks data
+    let liveScoresMap: Map<number, number> | null = null;
     if (status === 'in_progress') {
       try {
-        liveScoresMap = await fetchLiveH2HScores(leagueId, gw);
+        liveScoresMap = await fetchLiveScoresFromPicks(matches, gw);
       } catch (error) {
-        console.error('Error fetching live H2H scores:', error);
+        console.error('Error fetching live scores:', error);
         // Fall back to database scores if live fetch fails
       }
     }
 
     // Format matches for response
     const formattedMatches = matches.map((match: any) => {
-      // Use live scores from FPL H2H API if available, otherwise use database scores
-      const matchKey = `${match.entry_1_id}_${match.entry_2_id}`;
-      const liveScores = liveScoresMap?.get(matchKey);
-
-      const entry1Score = liveScores?.entry1 ?? match.entry_1_points ?? 0;
-      const entry2Score = liveScores?.entry2 ?? match.entry_2_points ?? 0;
+      // Use live scores from picks data if available, otherwise use database scores
+      const entry1Score = liveScoresMap?.get(match.entry_1_id) ?? match.entry_1_points ?? 0;
+      const entry2Score = liveScoresMap?.get(match.entry_2_id) ?? match.entry_2_points ?? 0;
 
       return {
         id: match.id,
@@ -112,46 +109,50 @@ export async function GET(
   }
 }
 
-// Helper function to fetch live scores from FPL's H2H matches endpoint
-async function fetchLiveH2HScores(
-  leagueId: number,
+// Helper function to fetch live scores from picks data during live gameweeks
+async function fetchLiveScoresFromPicks(
+  matches: any[],
   gw: number
-): Promise<Map<string, { entry1: number; entry2: number }>> {
-  const scoresMap = new Map<string, { entry1: number; entry2: number }>();
+): Promise<Map<number, number>> {
+  const scoresMap = new Map<number, number>();
 
-  // Fetch from FPL's H2H matches API (this includes auto-subs and is the official score)
-  let page = 1;
-  let hasMore = true;
+  // Get unique entry IDs from all matches
+  const entryIds = new Set<number>();
+  matches.forEach((match: any) => {
+    entryIds.add(match.entry_1_id);
+    entryIds.add(match.entry_2_id);
+  });
 
-  while (hasMore) {
-    const response = await fetch(
-      `https://fantasy.premierleague.com/api/leagues-h2h-matches/league/${leagueId}/?page=${page}`
-    );
+  // Fetch picks data for all entries in parallel
+  const pickPromises = Array.from(entryIds).map(async (entryId) => {
+    try {
+      const response = await fetch(
+        `https://fantasy.premierleague.com/api/entry/${entryId}/event/${gw}/picks/`
+      );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch H2H matches from FPL');
-    }
-
-    const data = await response.json();
-
-    // Filter matches for this specific gameweek
-    for (const match of data.results) {
-      if (match.event === gw) {
-        const key = `${match.entry_1_entry}_${match.entry_2_entry}`;
-        scoresMap.set(key, {
-          entry1: match.entry_1_points,
-          entry2: match.entry_2_points,
-        });
+      if (!response.ok) {
+        console.error(`Failed to fetch picks for entry ${entryId}`);
+        return null;
       }
+
+      const data = await response.json();
+      // Use official score from entry_history (includes auto-subs)
+      const score = data.entry_history?.points || 0;
+      return { entryId, score };
+    } catch (error) {
+      console.error(`Error fetching picks for entry ${entryId}:`, error);
+      return null;
     }
+  });
 
-    // Stop if we've found all matches for this GW or no more pages
-    hasMore = data.has_next;
-    page++;
+  const results = await Promise.all(pickPromises);
 
-    // Safety: stop after 10 pages to avoid infinite loops
-    if (page > 10) break;
-  }
+  // Build the scores map
+  results.forEach((result) => {
+    if (result) {
+      scoresMap.set(result.entryId, result.score);
+    }
+  });
 
   return scoresMap;
 }
