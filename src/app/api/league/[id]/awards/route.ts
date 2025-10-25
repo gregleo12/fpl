@@ -112,7 +112,7 @@ async function calculateMonthlyAwards(db: any, leagueId: number, currentGW: numb
   const matches = matchesResult.rows;
 
   const monthMVP = calculateMonthMVP(matches);
-  const monthFaller = calculateMonthFaller(matches);
+  const monthFaller = await calculateMonthFaller(db, leagueId, startGW, currentGW);
   const monthHighest = calculateMonthHighest(matches);
   const monthToughest = calculateMonthToughest(matches);
   const captainOfMonth = calculateCaptainOfMonth(matches);
@@ -159,6 +159,20 @@ async function calculateSeasonAwards(db: any, leagueId: number) {
 
   const standings = standingsResult.rows;
 
+  // Get manager history for team values and hits
+  const historyResult = await db.query(`
+    SELECT
+      mh.*,
+      m.player_name,
+      m.team_name
+    FROM manager_history mh
+    JOIN managers m ON mh.entry_id = m.entry_id
+    WHERE m.league_id = $1
+    ORDER BY mh.event DESC
+  `, [leagueId]);
+
+  const history = historyResult.rows;
+
   const seasonLeader = standings[0] ? {
     manager: standings[0].player_name,
     team: standings[0].team_name,
@@ -169,12 +183,12 @@ async function calculateSeasonAwards(db: any, leagueId: number) {
   const highestPeak = calculateHighestPeak(matches);
   const mostWins = calculateMostWins(standings);
   const consistencyKing = calculateConsistencyKing(matches);
-  const richestSquad = { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  const richestSquad = calculateRichestSquad(history);
   const pointsMachine = calculatePointsMachine(standings);
   const losingStreak = calculateLosingStreak(matches);
   const totalBenchWaste = calculateTotalBenchWaste(matches);
   const wildestRide = calculateWildestRide(matches);
-  const hitParade = { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  const hitParade = calculateHitParade(history);
   const worstLoss = calculateWorstLoss(matches);
 
   return {
@@ -238,13 +252,68 @@ function calculateToughWeek(matches: any[], gameweek: number) {
 }
 
 async function calculateComebackKid(db: any, leagueId: number, matches: any[], gameweek: number) {
-  // For now, return placeholder
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  // Get rank changes for the gameweek
+  const historyResult = await db.query(`
+    SELECT
+      mh.*,
+      m.player_name,
+      m.team_name
+    FROM manager_history mh
+    JOIN managers m ON mh.entry_id = m.entry_id
+    WHERE m.league_id = $1 AND mh.event = $2
+  `, [leagueId, gameweek]);
+
+  const history = historyResult.rows;
+
+  let biggestRise = 0;
+  let winner: any = null;
+
+  for (const entry of history) {
+    if (entry.rank_change && entry.rank_change < 0) { // Negative means rank improved
+      const rise = Math.abs(entry.rank_change);
+      if (rise > biggestRise) {
+        biggestRise = rise;
+        winner = { manager: entry.player_name, team: entry.team_name };
+      }
+    }
+  }
+
+  return winner ? {
+    ...winner,
+    value: `+${biggestRise} ranks`
+  } : null;
 }
 
 async function calculateRankCrasher(db: any, leagueId: number, matches: any[], gameweek: number) {
-  // For now, return placeholder
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  // Get rank changes for the gameweek
+  const historyResult = await db.query(`
+    SELECT
+      mh.*,
+      m.player_name,
+      m.team_name
+    FROM manager_history mh
+    JOIN managers m ON mh.entry_id = m.entry_id
+    WHERE m.league_id = $1 AND mh.event = $2
+  `, [leagueId, gameweek]);
+
+  const history = historyResult.rows;
+
+  let biggestFall = 0;
+  let loser: any = null;
+
+  for (const entry of history) {
+    if (entry.rank_change && entry.rank_change > 0) { // Positive means rank worsened
+      if (entry.rank_change > biggestFall) {
+        biggestFall = entry.rank_change;
+        loser = { manager: entry.player_name, team: entry.team_name };
+      }
+    }
+  }
+
+  return loser ? {
+    ...loser,
+    value: `-${biggestFall} ranks`
+  } : null;
 }
 
 function calculateChipMaster(matches: any[]) {
@@ -386,8 +455,59 @@ function calculateMonthMVP(matches: any[]) {
   } : null;
 }
 
-function calculateMonthFaller(matches: any[]) {
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+async function calculateMonthFaller(db: any, leagueId: number, startGW: number, endGW: number) {
+  // Get rank data for start and end of the month period
+  const historyResult = await db.query(`
+    SELECT
+      mh.*,
+      m.player_name,
+      m.team_name
+    FROM manager_history mh
+    JOIN managers m ON mh.entry_id = m.entry_id
+    WHERE m.league_id = $1 AND (mh.event = $2 OR mh.event = $3)
+    ORDER BY mh.entry_id, mh.event
+  `, [leagueId, startGW, endGW - 1]);
+
+  const history = historyResult.rows;
+
+  // Group by entry to compare start and end ranks
+  const entryRanks: Record<string, { startRank?: number, endRank?: number, manager: string, team: string }> = {};
+
+  for (const entry of history) {
+    const entryId = entry.entry_id.toString();
+
+    if (!entryRanks[entryId]) {
+      entryRanks[entryId] = {
+        manager: entry.player_name,
+        team: entry.team_name
+      };
+    }
+
+    if (entry.event === startGW) {
+      entryRanks[entryId].startRank = entry.overall_rank;
+    } else if (entry.event === endGW - 1) {
+      entryRanks[entryId].endRank = entry.overall_rank;
+    }
+  }
+
+  let biggestFall = 0;
+  let loser: any = null;
+
+  for (const [id, data] of Object.entries(entryRanks)) {
+    if (data.startRank && data.endRank) {
+      const rankChange = data.endRank - data.startRank;
+      if (rankChange > biggestFall) {
+        biggestFall = rankChange;
+        loser = data;
+      }
+    }
+  }
+
+  return loser ? {
+    manager: loser.manager,
+    team: loser.team,
+    value: `-${biggestFall.toLocaleString()} ranks`
+  } : null;
 }
 
 function calculateMonthHighest(matches: any[]) {
@@ -460,7 +580,57 @@ function calculateMonthToughest(matches: any[]) {
 }
 
 function calculateCaptainOfMonth(matches: any[]) {
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  const entryCaptainStats: Record<string, { total: number, count: number, manager: string, team: string }> = {};
+
+  for (const match of matches) {
+    const entry1Id = match.entry_1_id.toString();
+    const entry2Id = match.entry_2_id.toString();
+
+    if (!entryCaptainStats[entry1Id]) {
+      entryCaptainStats[entry1Id] = {
+        total: 0,
+        count: 0,
+        manager: match.entry_1_player,
+        team: match.entry_1_team
+      };
+    }
+    if (!entryCaptainStats[entry2Id]) {
+      entryCaptainStats[entry2Id] = {
+        total: 0,
+        count: 0,
+        manager: match.entry_2_player,
+        team: match.entry_2_team
+      };
+    }
+
+    if (match.entry_1_captain_points !== null) {
+      entryCaptainStats[entry1Id].total += match.entry_1_captain_points;
+      entryCaptainStats[entry1Id].count++;
+    }
+    if (match.entry_2_captain_points !== null) {
+      entryCaptainStats[entry2Id].total += match.entry_2_captain_points;
+      entryCaptainStats[entry2Id].count++;
+    }
+  }
+
+  let bestAvg = 0;
+  let winner: any = null;
+
+  for (const [id, data] of Object.entries(entryCaptainStats)) {
+    if (data.count > 0) {
+      const avg = data.total / data.count;
+      if (avg > bestAvg) {
+        bestAvg = avg;
+        winner = data;
+      }
+    }
+  }
+
+  return winner ? {
+    manager: winner.manager,
+    team: winner.team,
+    value: `${bestAvg.toFixed(1)} avg pts/GW`
+  } : null;
 }
 
 function calculateBenchWaste(matches: any[]) {
@@ -605,7 +775,53 @@ function calculateMostWins(standings: any[]) {
 }
 
 function calculateConsistencyKing(matches: any[]) {
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  // Calculate variance for each entry's scores
+  const entryScores: Record<string, { scores: number[], manager: string, team: string }> = {};
+
+  for (const match of matches) {
+    const entry1Id = match.entry_1_id.toString();
+    const entry2Id = match.entry_2_id.toString();
+
+    if (!entryScores[entry1Id]) {
+      entryScores[entry1Id] = {
+        scores: [],
+        manager: match.entry_1_player,
+        team: match.entry_1_team
+      };
+    }
+    if (!entryScores[entry2Id]) {
+      entryScores[entry2Id] = {
+        scores: [],
+        manager: match.entry_2_player,
+        team: match.entry_2_team
+      };
+    }
+
+    entryScores[entry1Id].scores.push(match.entry_1_points);
+    entryScores[entry2Id].scores.push(match.entry_2_points);
+  }
+
+  let lowestVariance = Infinity;
+  let winner: any = null;
+
+  for (const [id, data] of Object.entries(entryScores)) {
+    if (data.scores.length > 1) {
+      const avg = data.scores.reduce((sum, score) => sum + score, 0) / data.scores.length;
+      const variance = data.scores.reduce((sum, score) => sum + Math.pow(score - avg, 2), 0) / data.scores.length;
+      const stdDev = Math.sqrt(variance);
+
+      if (variance < lowestVariance) {
+        lowestVariance = variance;
+        winner = { ...data, stdDev };
+      }
+    }
+  }
+
+  return winner ? {
+    manager: winner.manager,
+    team: winner.team,
+    value: `σ = ${winner.stdDev.toFixed(1)}`
+  } : null;
 }
 
 function calculatePointsMachine(standings: any[]) {
@@ -724,7 +940,53 @@ function calculateTotalBenchWaste(matches: any[]) {
 }
 
 function calculateWildestRide(matches: any[]) {
-  return { manager: 'N/A', team: 'N/A', value: 'Coming soon' };
+  // Calculate variance for each entry's scores (opposite of Consistency King)
+  const entryScores: Record<string, { scores: number[], manager: string, team: string }> = {};
+
+  for (const match of matches) {
+    const entry1Id = match.entry_1_id.toString();
+    const entry2Id = match.entry_2_id.toString();
+
+    if (!entryScores[entry1Id]) {
+      entryScores[entry1Id] = {
+        scores: [],
+        manager: match.entry_1_player,
+        team: match.entry_1_team
+      };
+    }
+    if (!entryScores[entry2Id]) {
+      entryScores[entry2Id] = {
+        scores: [],
+        manager: match.entry_2_player,
+        team: match.entry_2_team
+      };
+    }
+
+    entryScores[entry1Id].scores.push(match.entry_1_points);
+    entryScores[entry2Id].scores.push(match.entry_2_points);
+  }
+
+  let highestVariance = 0;
+  let winner: any = null;
+
+  for (const [id, data] of Object.entries(entryScores)) {
+    if (data.scores.length > 1) {
+      const avg = data.scores.reduce((sum, score) => sum + score, 0) / data.scores.length;
+      const variance = data.scores.reduce((sum, score) => sum + Math.pow(score - avg, 2), 0) / data.scores.length;
+      const stdDev = Math.sqrt(variance);
+
+      if (variance > highestVariance) {
+        highestVariance = variance;
+        winner = { ...data, stdDev };
+      }
+    }
+  }
+
+  return winner ? {
+    manager: winner.manager,
+    team: winner.team,
+    value: `σ = ${winner.stdDev.toFixed(1)}`
+  } : null;
 }
 
 function calculateWorstLoss(matches: any[]) {
@@ -753,5 +1015,77 @@ function calculateWorstLoss(matches: any[]) {
   return loser ? {
     ...loser,
     value: `Lost ${scores} (-${worstMargin})`
+  } : null;
+}
+
+function calculateRichestSquad(history: any[]) {
+  // Find the manager with the highest team value (most recent data)
+  const entryValues: Record<string, { value: number, manager: string, team: string }> = {};
+
+  for (const entry of history) {
+    const entryId = entry.entry_id.toString();
+
+    if (!entryValues[entryId] && entry.value) {
+      entryValues[entryId] = {
+        value: entry.value,
+        manager: entry.player_name,
+        team: entry.team_name
+      };
+    }
+  }
+
+  let highestValue = 0;
+  let winner: any = null;
+
+  for (const [id, data] of Object.entries(entryValues)) {
+    if (data.value > highestValue) {
+      highestValue = data.value;
+      winner = data;
+    }
+  }
+
+  return winner ? {
+    manager: winner.manager,
+    team: winner.team,
+    value: `£${(highestValue / 10).toFixed(1)}M`
+  } : null;
+}
+
+function calculateHitParade(history: any[]) {
+  // Sum up all transfer costs for each manager
+  const entryHits: Record<string, { total: number, count: number, manager: string, team: string }> = {};
+
+  for (const entry of history) {
+    const entryId = entry.entry_id.toString();
+
+    if (!entryHits[entryId]) {
+      entryHits[entryId] = {
+        total: 0,
+        count: 0,
+        manager: entry.player_name,
+        team: entry.team_name
+      };
+    }
+
+    if (entry.event_transfers_cost && entry.event_transfers_cost > 0) {
+      entryHits[entryId].total += entry.event_transfers_cost;
+      entryHits[entryId].count++;
+    }
+  }
+
+  let mostHits = 0;
+  let loser: any = null;
+
+  for (const [id, data] of Object.entries(entryHits)) {
+    if (data.total > mostHits) {
+      mostHits = data.total;
+      loser = data;
+    }
+  }
+
+  return loser ? {
+    manager: loser.manager,
+    team: loser.team,
+    value: `-${mostHits} pts (${loser.count} hits)`
   } : null;
 }
