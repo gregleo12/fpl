@@ -30,10 +30,18 @@ export async function getLiveMatchData(
     const player1Data = calculateLiveStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
     const player2Data = calculateLiveStats(picks2Data, liveData, bootstrapData, entryId2, manager2, team2);
 
+    // Calculate differentials
+    const { player1Differentials, player2Differentials } = calculateDifferentials(
+      picks1Data,
+      picks2Data,
+      liveData,
+      bootstrapData
+    );
+
     return {
       gameweek,
-      player1: player1Data,
-      player2: player2Data,
+      player1: { ...player1Data, differentials: player1Differentials },
+      player2: { ...player2Data, differentials: player2Differentials },
     };
   } catch (error) {
     console.error('Error fetching live match data:', error);
@@ -136,5 +144,74 @@ function calculateLiveStats(
     chipActive: picksData.active_chip,
     benchPoints,
     transferCost,
+  };
+}
+
+function calculateDifferentials(
+  picks1Data: any,
+  picks2Data: any,
+  liveData: any,
+  bootstrapData: any
+) {
+  const picks1 = picks1Data.picks;
+  const picks2 = picks2Data.picks;
+
+  // Get element IDs for both teams
+  const team1ElementIds = new Set(picks1.map((p: any) => p.element));
+  const team2ElementIds = new Set(picks2.map((p: any) => p.element));
+
+  // Find differentials for player 1 (players team1 has but team2 doesn't)
+  const player1Differentials = picks1
+    .filter((pick: any) => !team2ElementIds.has(pick.element))
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements[pick.element];
+      const points = liveElement?.stats?.total_points || 0;
+
+      // Apply captain multiplier if this is the captain
+      let finalPoints = points;
+      if (pick.is_captain) {
+        const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
+        finalPoints = points * multiplier;
+      }
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: finalPoints,
+        position: pick.position,
+        isCaptain: pick.is_captain,
+      };
+    })
+    // Sort by points descending
+    .sort((a: any, b: any) => b.points - a.points);
+
+  // Find differentials for player 2 (players team2 has but team1 doesn't)
+  const player2Differentials = picks2
+    .filter((pick: any) => !team1ElementIds.has(pick.element))
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements[pick.element];
+      const points = liveElement?.stats?.total_points || 0;
+
+      // Apply captain multiplier if this is the captain
+      let finalPoints = points;
+      if (pick.is_captain) {
+        const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
+        finalPoints = points * multiplier;
+      }
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: finalPoints,
+        position: pick.position,
+        isCaptain: pick.is_captain,
+      };
+    })
+    // Sort by points descending
+    .sort((a: any, b: any) => b.points - a.points);
+
+  return {
+    player1Differentials,
+    player2Differentials,
   };
 }

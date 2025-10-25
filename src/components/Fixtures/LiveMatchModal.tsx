@@ -284,6 +284,64 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
           </div>
         </div>
+
+        {/* Differential Players Section */}
+        {(matchData.player1.differentials.length > 0 || matchData.player2.differentials.length > 0) && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <span className={styles.emoji}>🔀</span>
+              <span className={styles.sectionTitle}>Differential Players</span>
+            </div>
+
+            <div className={styles.differentialsGrid}>
+              {/* Player 1 Differentials */}
+              <div className={styles.differentialsBox}>
+                <div className={styles.differentialsLabel}>{matchData.player1.manager}</div>
+                {matchData.player1.differentials.length > 0 ? (
+                  <div className={styles.playersList}>
+                    {matchData.player1.differentials.map((player, idx) => (
+                      <div key={idx} className={styles.playerRow}>
+                        <span className={styles.playerName}>
+                          {player.name}
+                          {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
+                          {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
+                        </span>
+                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
+                          {player.points} pts
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.noDifferentials}>No unique players</div>
+                )}
+              </div>
+
+              {/* Player 2 Differentials */}
+              <div className={styles.differentialsBox}>
+                <div className={styles.differentialsLabel}>{matchData.player2.manager}</div>
+                {matchData.player2.differentials.length > 0 ? (
+                  <div className={styles.playersList}>
+                    {matchData.player2.differentials.map((player, idx) => (
+                      <div key={idx} className={styles.playerRow}>
+                        <span className={styles.playerName}>
+                          {player.name}
+                          {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
+                          {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
+                        </span>
+                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
+                          {player.points} pts
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.noDifferentials}>No unique players</div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
