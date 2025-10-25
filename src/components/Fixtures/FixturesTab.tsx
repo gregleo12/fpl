@@ -6,6 +6,9 @@ import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
 import { MatchDetails } from './MatchDetails';
 import { MatchDetailsModal } from './MatchDetailsModal';
 import { StateBadge } from './StateBadge';
+import { LiveMatchModal } from './LiveMatchModal';
+import { getLiveMatchData } from '@/lib/liveMatch';
+import type { LiveMatchData } from '@/types/liveMatch';
 
 interface Match {
   id: number;
@@ -171,6 +174,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [initialGWSet, setInitialGWSet] = useState(false);
   const [showGWSelector, setShowGWSelector] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showLiveModal, setShowLiveModal] = useState(false);
+  const [liveMatchData, setLiveMatchData] = useState<LiveMatchData | null>(null);
+  const [loadingLiveData, setLoadingLiveData] = useState(false);
 
   // Find the live or upcoming GW on initial load
   useEffect(() => {
@@ -326,7 +332,32 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     }
   }
 
-  async function handleCardClick(matchId: number) {
+  async function handleCardClick(matchId: number, match: Match) {
+    // Check if this is a live match
+    if (fixturesData?.status === 'in_progress') {
+      // Fetch live match data
+      setLoadingLiveData(true);
+      try {
+        const liveData = await getLiveMatchData(
+          match.entry_1.id,
+          match.entry_2.id,
+          currentGW,
+          match.entry_1.player_name,
+          match.entry_1.team_name,
+          match.entry_2.player_name,
+          match.entry_2.team_name
+        );
+        setLiveMatchData(liveData);
+        setShowLiveModal(true);
+      } catch (error) {
+        console.error('Error fetching live match data:', error);
+      } finally {
+        setLoadingLiveData(false);
+      }
+      return;
+    }
+
+    // For completed/upcoming matches, show regular modal
     // Check if mobile
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -446,7 +477,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             <div
               key={match.id}
               className={`${styles.matchCard} ${isMyMatch ? styles.myMatch : ''} ${isExpanded ? styles.expanded : ''}`}
-              onClick={() => handleCardClick(match.id)}
+              onClick={() => handleCardClick(match.id, match)}
               style={{ cursor: 'pointer' }}
             >
               <div className={styles.matchHeader}>
@@ -525,6 +556,19 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           entry2={modalData.entry_2}
           headToHead={modalData.head_to_head}
           onClose={() => setShowModal(false)}
+        />
+      )}
+
+      {/* LIVE MATCH MODAL */}
+      {showLiveModal && liveMatchData && (
+        <LiveMatchModal
+          isOpen={showLiveModal}
+          onClose={() => setShowLiveModal(false)}
+          matchData={liveMatchData}
+          isMyMatch={
+            liveMatchData.player1.entryId.toString() === myTeamId ||
+            liveMatchData.player2.entryId.toString() === myTeamId
+          }
         />
       )}
     </div>
