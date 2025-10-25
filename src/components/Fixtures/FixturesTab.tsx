@@ -9,6 +9,9 @@ import { StateBadge } from './StateBadge';
 import { LiveMatchModal } from './LiveMatchModal';
 import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
+import { CompletedMatchModal } from './CompletedMatchModal';
+import { getCompletedMatchData } from '@/lib/completedMatch';
+import type { CompletedMatchData } from '@/types/completedMatch';
 
 interface Match {
   id: number;
@@ -177,6 +180,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [showLiveModal, setShowLiveModal] = useState(false);
   const [liveMatchData, setLiveMatchData] = useState<LiveMatchData | null>(null);
   const [loadingLiveData, setLoadingLiveData] = useState(false);
+  const [showCompletedModal, setShowCompletedModal] = useState(false);
+  const [completedMatchData, setCompletedMatchData] = useState<CompletedMatchData | null>(null);
+  const [loadingCompletedData, setLoadingCompletedData] = useState(false);
 
   // Find the live or upcoming GW on initial load
   useEffect(() => {
@@ -361,7 +367,35 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
       return;
     }
 
-    // For completed/upcoming matches, show regular modal
+    // Check if this is a completed match
+    if (fixturesData?.status === 'completed') {
+      // Fetch completed match data
+      setLoadingCompletedData(true);
+      try {
+        console.log('Fetching completed match data for GW', currentGW);
+        const completedData = await getCompletedMatchData(
+          match.entry_1.id,
+          match.entry_2.id,
+          currentGW,
+          match.entry_1.player_name,
+          match.entry_1.team_name,
+          match.entry_2.player_name,
+          match.entry_2.team_name,
+          leagueId
+        );
+        console.log('Completed match data received:', completedData);
+        setCompletedMatchData(completedData);
+        setShowCompletedModal(true);
+      } catch (error) {
+        console.error('Error fetching completed match data:', error);
+        alert('Failed to load completed match data. Please try again.');
+      } finally {
+        setLoadingCompletedData(false);
+      }
+      return;
+    }
+
+    // For upcoming matches, show regular modal
     // Check if mobile
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -576,12 +610,29 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         />
       )}
 
+      {showCompletedModal && completedMatchData && (
+        <CompletedMatchModal
+          isOpen={showCompletedModal}
+          onClose={() => setShowCompletedModal(false)}
+          matchData={completedMatchData}
+        />
+      )}
+
       {/* LOADING OVERLAY */}
       {loadingLiveData && (
         <div className={styles.loadingOverlay}>
           <div className={styles.loadingSpinner}>
             <div className={styles.spinner}></div>
             <div className={styles.loadingText}>Loading live match data...</div>
+          </div>
+        </div>
+      )}
+
+      {loadingCompletedData && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingSpinner}>
+            <div className={styles.spinner}></div>
+            <div className={styles.loadingText}>Loading match details...</div>
           </div>
         </div>
       )}

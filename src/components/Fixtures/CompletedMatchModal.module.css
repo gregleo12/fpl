@@ -1,0 +1,400 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.98) 100%);
+  border-radius: 20px;
+  padding: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.headerBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.completedIndicator {
+  font-size: 1.25rem;
+}
+
+.headerTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.closeButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: rgba(0, 255, 135, 0.5);
+  color: #00ff87;
+  transform: rotate(90deg);
+}
+
+/* Score Section */
+.scoreSection {
+  margin-bottom: 24px;
+}
+
+.scoreDisplay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.teamScore {
+  flex: 1;
+  text-align: center;
+}
+
+.teamName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.vsLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.resultBadge {
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resultBadge.player1,
+.resultBadge.player2 {
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  color: #00ff87;
+}
+
+.resultBadge.draw {
+  background: rgba(255, 165, 0, 0.15);
+  border: 1px solid rgba(255, 165, 0, 0.3);
+  color: #ffa500;
+}
+
+/* Section */
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.emoji {
+  font-size: 1.25rem;
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Story Box */
+.storyBox {
+  padding: 16px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+}
+
+.storyText {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.benchMention {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #ff9900;
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+}
+
+/* Performers Grid */
+.performersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.performersBox {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.performersLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.performersList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.performer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.performerRank {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 20px;
+}
+
+.performerName {
+  flex: 1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.captainBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin-left: 4px;
+}
+
+.performerPoints {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+/* Differences Box */
+.differencesBox {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.differenceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.differenceRow:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.differenceLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.differenceValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.differenceValue.positive {
+  color: #00ff87;
+}
+
+.differenceValue.negative {
+  color: #ff0066;
+}
+
+.chipsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsText {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.chipActive {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00ff87;
+  padding: 4px 8px;
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 4px;
+}
+
+.noChip {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  .modalContent {
+    padding: 20px;
+    max-height: 95vh;
+  }
+
+  .scoreDisplay {
+    padding: 16px;
+  }
+
+  .score {
+    font-size: 1.75rem;
+  }
+
+  .performersGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .performersBox {
+    padding: 12px;
+  }
+
+  .differencesBox {
+    padding: 12px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 10px;
+  }
+
+  .section {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    padding: 16px;
+  }
+
+  .headerTitle {
+    font-size: 0.875rem;
+  }
+
+  .score {
+    font-size: 1.5rem;
+  }
+
+  .storyText {
+    font-size: 0.875rem;
+  }
+}
