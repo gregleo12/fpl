@@ -51,6 +51,9 @@ function calculateLiveStats(
 ) {
   const picks = picksData.picks;
 
+  console.log('Calculating stats for:', manager);
+  console.log('Active chip:', picksData.active_chip);
+
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
   const captainElement = bootstrapData.elements.find((e: any) => e.id === captainPick?.element);
@@ -61,7 +64,10 @@ function calculateLiveStats(
   if (picksData.active_chip === '3xc') {
     captainMultiplier = 3; // Triple captain
   }
-  const captainPoints = (captainLive?.stats?.total_points || 0) * captainMultiplier;
+  const rawCaptainPoints = captainLive?.stats?.total_points || 0;
+  const captainPoints = rawCaptainPoints * captainMultiplier;
+
+  console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
   // Calculate current score (playing 11 only)
   let currentScore = 0;
@@ -69,9 +75,10 @@ function calculateLiveStats(
   let playersRemaining = 0;
   let benchPoints = 0;
 
-  picks.forEach((pick: any, index: number) => {
+  picks.forEach((pick: any) => {
     const liveElement = liveData.elements[pick.element];
-    const points = liveElement?.stats?.total_points || 0;
+    const bootstrapElement = bootstrapData.elements.find((e: any) => e.id === pick.element);
+    const rawPoints = liveElement?.stats?.total_points || 0;
 
     // Determine multiplier
     let multiplier = 1;
@@ -79,16 +86,16 @@ function calculateLiveStats(
       multiplier = picksData.active_chip === '3xc' ? 3 : 2;
     }
 
-    const totalPoints = points * multiplier;
+    const totalPoints = rawPoints * multiplier;
 
     if (pick.position <= 11) {
       // Starting 11
       currentScore += totalPoints;
+      console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts x${multiplier} = ${totalPoints}`);
 
       // Check if player has played or fixture is finished
       const hasPlayed = liveElement?.stats?.minutes > 0;
-      const fixtureFinished = liveElement?.explain?.length > 0 &&
-        liveElement.explain[0]?.fixture_finished;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       if (hasPlayed || fixtureFinished) {
         playersPlayed++;
@@ -97,14 +104,19 @@ function calculateLiveStats(
       }
     } else {
       // Bench (positions 12-15)
-      benchPoints += points;
+      benchPoints += rawPoints;
+      console.log(`BENCH ${bootstrapElement?.web_name}: ${rawPoints} pts`);
     }
   });
 
   // Bench boost adds all bench points to score
   if (picksData.active_chip === 'bboost') {
+    console.log(`Bench Boost active! Adding ${benchPoints} bench points`);
     currentScore += benchPoints;
   }
+
+  console.log(`Final score for ${manager}: ${currentScore}`);
+  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining`);
 
   return {
     entryId,

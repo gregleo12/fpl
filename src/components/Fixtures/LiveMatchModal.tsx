@@ -74,9 +74,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.captainGrid}>
             <div className={styles.captainBox}>
-              <div className={styles.captainLabel}>
-                {isMyMatch ? 'Your Captain' : matchData.player1.manager}
-              </div>
+              <div className={styles.captainLabel}>{matchData.player1.manager}</div>
               <div className={styles.captainName}>{matchData.player1.captain.name}</div>
               <div className={styles.captainPoints}>
                 {matchData.player1.captain.points} pts
@@ -84,9 +82,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
 
             <div className={styles.captainBox}>
-              <div className={styles.captainLabel}>
-                {isMyMatch ? 'Their Captain' : matchData.player2.manager}
-              </div>
+              <div className={styles.captainLabel}>{matchData.player2.manager}</div>
               <div className={styles.captainName}>{matchData.player2.captain.name}</div>
               <div className={styles.captainPoints}>
                 {matchData.player2.captain.points} pts
@@ -110,9 +106,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.playersGrid}>
             <div className={styles.playersBox}>
-              <div className={styles.playersLabel}>
-                {isMyMatch ? 'You' : matchData.player1.manager}
-              </div>
+              <div className={styles.playersLabel}>{matchData.player1.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
                   {matchData.player1.playersPlayed}/11 played
@@ -120,19 +114,27 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
                 <div className={styles.playersRemaining}>
                   {matchData.player1.playersRemaining} remaining
                 </div>
+                <div className={styles.avgPoints}>
+                  Avg: {matchData.player1.playersPlayed > 0
+                    ? (matchData.player1.currentScore / matchData.player1.playersPlayed).toFixed(1)
+                    : '0.0'} pts/player
+                </div>
               </div>
             </div>
 
             <div className={styles.playersBox}>
-              <div className={styles.playersLabel}>
-                {isMyMatch ? 'Them' : matchData.player2.manager}
-              </div>
+              <div className={styles.playersLabel}>{matchData.player2.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
                   {matchData.player2.playersPlayed}/11 played
                 </div>
                 <div className={styles.playersRemaining}>
                   {matchData.player2.playersRemaining} remaining
+                </div>
+                <div className={styles.avgPoints}>
+                  Avg: {matchData.player2.playersPlayed > 0
+                    ? (matchData.player2.currentScore / matchData.player2.playersPlayed).toFixed(1)
+                    : '0.0'} pts/player
                 </div>
               </div>
             </div>
@@ -146,27 +148,68 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             <span className={styles.sectionTitle}>To Win</span>
           </div>
 
-          <div className={styles.requirementsBox}>
-            {winRequirements.status === 'winning' ? (
-              <div className={styles.requirementText}>
-                <strong>Maintain your lead!</strong><br />
-                They need avg {winRequirements.opponentAvgNeeded.toFixed(1)} pts/player from {matchData.player2.playersRemaining} remaining
+          <div className={styles.requirementsGrid}>
+            <div className={styles.requirementBox}>
+              <div className={styles.requirementLabel}>{matchData.player1.manager}</div>
+              <div className={styles.requirementStats}>
+                {winRequirements.status === 'winning' ? (
+                  <>
+                    <div className={styles.requirementMain}>Maintain Lead</div>
+                    <div className={styles.requirementDetail}>
+                      Ahead by {winRequirements.margin} pts
+                    </div>
+                  </>
+                ) : winRequirements.status === 'losing' ? (
+                  <>
+                    <div className={styles.requirementMain}>Needs {winRequirements.pointsNeeded}+ pts</div>
+                    <div className={styles.requirementDetail}>
+                      Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/player
+                    </div>
+                    <div className={styles.requirementDetail}>
+                      {matchData.player1.playersRemaining} players left
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.requirementMain}>Level</div>
+                    <div className={styles.requirementDetail}>
+                      {matchData.player1.playersRemaining} players left
+                    </div>
+                  </>
+                )}
               </div>
-            ) : winRequirements.status === 'losing' ? (
-              <div className={styles.requirementText}>
-                <strong>You need {winRequirements.pointsNeeded}+ pts to win</strong><br />
-                Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/player from {matchData.player1.playersRemaining} remaining
-                <div className={styles.opponentRequirement}>
-                  They need avg {winRequirements.opponentAvgNeeded.toFixed(1)} pts/player to maintain lead
-                </div>
+            </div>
+
+            <div className={styles.requirementBox}>
+              <div className={styles.requirementLabel}>{matchData.player2.manager}</div>
+              <div className={styles.requirementStats}>
+                {winRequirements.status === 'losing' ? (
+                  <>
+                    <div className={styles.requirementMain}>Maintain Lead</div>
+                    <div className={styles.requirementDetail}>
+                      Ahead by {winRequirements.margin} pts
+                    </div>
+                  </>
+                ) : winRequirements.status === 'winning' ? (
+                  <>
+                    <div className={styles.requirementMain}>Needs {Math.abs(winRequirements.margin) + 1}+ pts</div>
+                    <div className={styles.requirementDetail}>
+                      Avg {winRequirements.opponentAvgNeeded.toFixed(1)} pts/player
+                    </div>
+                    <div className={styles.requirementDetail}>
+                      {matchData.player2.playersRemaining} players left
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.requirementMain}>Level</div>
+                    <div className={styles.requirementDetail}>
+                      {matchData.player2.playersRemaining} players left
+                    </div>
+                  </>
+                )}
               </div>
-            ) : (
-              <div className={styles.requirementText}>
-                <strong>Level! First to score wins</strong><br />
-                You: {matchData.player1.playersRemaining} players left<br />
-                Them: {matchData.player2.playersRemaining} players left
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
@@ -179,18 +222,14 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.chipsGrid}>
             <div className={styles.chipsBox}>
-              <div className={styles.chipsLabel}>
-                {isMyMatch ? 'You' : matchData.player1.manager}
-              </div>
+              <div className={styles.chipsLabel}>{matchData.player1.manager}</div>
               <div className={matchData.player1.chipActive ? styles.chipActive : styles.noChip}>
                 {getChipDisplay(matchData.player1.chipActive)}
               </div>
             </div>
 
             <div className={styles.chipsBox}>
-              <div className={styles.chipsLabel}>
-                {isMyMatch ? 'Them' : matchData.player2.manager}
-              </div>
+              <div className={styles.chipsLabel}>{matchData.player2.manager}</div>
               <div className={matchData.player2.chipActive ? styles.chipActive : styles.noChip}>
                 {getChipDisplay(matchData.player2.chipActive)}
               </div>
@@ -207,18 +246,14 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.benchGrid}>
             <div className={styles.benchBox}>
-              <div className={styles.benchLabel}>
-                {isMyMatch ? 'You' : matchData.player1.manager}
-              </div>
+              <div className={styles.benchLabel}>{matchData.player1.manager}</div>
               <div className={styles.benchPoints}>
                 {matchData.player1.benchPoints} pts
               </div>
             </div>
 
             <div className={styles.benchBox}>
-              <div className={styles.benchLabel}>
-                {isMyMatch ? 'Them' : matchData.player2.manager}
-              </div>
+              <div className={styles.benchLabel}>{matchData.player2.manager}</div>
               <div className={styles.benchPoints}>
                 {matchData.player2.benchPoints} pts
               </div>

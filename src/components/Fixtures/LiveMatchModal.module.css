@@ -292,29 +292,49 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Requirements Box */
-.requirementsBox {
+.avgPoints {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #00ff87;
+  margin-top: 4px;
+}
+
+/* Requirements Grid */
+.requirementsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.requirementBox {
   padding: 16px;
   background: rgba(139, 92, 246, 0.1);
   border: 1px solid rgba(139, 92, 246, 0.3);
   border-radius: 8px;
+  text-align: center;
 }
 
-.requirementText {
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
+.requirementLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 12px;
+  text-transform: uppercase;
 }
 
-.requirementText strong {
-  color: #ffffff;
+.requirementStats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.requirementMain {
+  font-size: 1rem;
   font-weight: 700;
+  color: #ffffff;
 }
 
-.opponentRequirement {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.requirementDetail {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
 }
