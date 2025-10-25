@@ -884,7 +884,6 @@
 @media (max-width: 768px) {
   .matchesContainer {
     gap: 0.5rem;
-    padding: 0 0.75rem;
   }
 
   .navigator {
