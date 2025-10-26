@@ -293,6 +293,23 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
               <span className={styles.sectionTitle}>Differential Players</span>
             </div>
 
+            {/* Total Differential Points Summary */}
+            <div className={styles.differentialTotals}>
+              <div className={styles.differentialTotalBox}>
+                <span className={styles.differentialTotalLabel}>{matchData.player1.manager}</span>
+                <span className={styles.differentialTotalPoints}>
+                  {matchData.player1.differentials.reduce((sum, p) => sum + p.points, 0)} pts
+                </span>
+              </div>
+              <div className={styles.differentialVs}>vs</div>
+              <div className={styles.differentialTotalBox}>
+                <span className={styles.differentialTotalLabel}>{matchData.player2.manager}</span>
+                <span className={styles.differentialTotalPoints}>
+                  {matchData.player2.differentials.reduce((sum, p) => sum + p.points, 0)} pts
+                </span>
+              </div>
+            </div>
+
             <div className={styles.differentialsGrid}>
               {/* Player 1 Differentials */}
               <div className={styles.differentialsBox}>

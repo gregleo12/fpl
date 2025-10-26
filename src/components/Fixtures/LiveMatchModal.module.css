@@ -439,6 +439,47 @@
   color: #ff0066;
 }
 
+/* Differential Totals Summary */
+.differentialTotals {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(0, 255, 135, 0.08);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.differentialTotalBox {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.differentialTotalLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.differentialTotalPoints {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.differentialVs {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
 /* Differentials Grid */
 .differentialsGrid {
   display: grid;
@@ -556,6 +597,14 @@
   .playerRow {
     padding: 6px;
     font-size: 0.8125rem;
+  }
+
+  .differentialTotals {
+    padding: 12px;
+  }
+
+  .differentialTotalPoints {
+    font-size: 1.25rem;
   }
 }
 
