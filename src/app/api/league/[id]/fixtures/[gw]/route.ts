@@ -36,22 +36,48 @@ export async function GET(
 
     const matches = matchesResult.rows;
 
-    // Determine status
+    // Determine status by checking FPL API for actual gameweek status
     let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
 
-    if (matches.length > 0) {
-      const hasScores = matches.some((m: any) =>
-        (m.entry_1_points && m.entry_1_points > 0) ||
-        (m.entry_2_points && m.entry_2_points > 0)
-      );
+    try {
+      // Fetch bootstrap-static to get current gameweek status
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const events = bootstrapData.events;
+        const currentEvent = events.find((e: any) => e.id === gw);
 
-      if (hasScores) {
-        // Check if all matches have scores
-        const allComplete = matches.every((m: any) =>
-          (m.entry_1_points !== null && m.entry_1_points >= 0) &&
-          (m.entry_2_points !== null && m.entry_2_points >= 0)
+        if (currentEvent) {
+          // Check if gameweek has finished
+          if (currentEvent.finished) {
+            status = 'completed';
+          }
+          // Check if gameweek is currently in progress (started but not finished)
+          else if (currentEvent.is_current || currentEvent.data_checked) {
+            status = 'in_progress';
+          }
+          // Otherwise it's upcoming
+          else {
+            status = 'upcoming';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error determining gameweek status:', error);
+      // Fall back to database-based detection if FPL API fails
+      if (matches.length > 0) {
+        const hasScores = matches.some((m: any) =>
+          (m.entry_1_points && m.entry_1_points > 0) ||
+          (m.entry_2_points && m.entry_2_points > 0)
         );
-        status = allComplete ? 'completed' : 'in_progress';
+
+        if (hasScores) {
+          const allComplete = matches.every((m: any) =>
+            (m.entry_1_points !== null && m.entry_1_points >= 0) &&
+            (m.entry_2_points !== null && m.entry_2_points >= 0)
+          );
+          status = allComplete ? 'completed' : 'in_progress';
+        }
       }
     }
 
