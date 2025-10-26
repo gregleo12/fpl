@@ -33,37 +33,37 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.headerBadge}>
-            <span className={styles.liveIndicator}>🔴</span>
-            <span className={styles.headerTitle}>LIVE MATCH (GW{matchData.gameweek})</span>
+        {/* Sticky Header with Score */}
+        <div className={styles.stickyHeader}>
+          {/* Header */}
+          <div className={styles.header}>
+            <div className={styles.headerBadge}>
+              <span className={styles.liveIndicator}>🔴</span>
+              <span className={styles.headerTitle}>LIVE MATCH (GW{matchData.gameweek})</span>
+            </div>
+            <button className={styles.closeButton} onClick={onClose}>×</button>
           </div>
-          <button className={styles.closeButton} onClick={onClose}>×</button>
+
+          {/* Score Section */}
+          <div className={styles.scoreSection}>
+            <div className={styles.scoreDisplay}>
+              <div className={styles.teamScore}>
+                <div className={styles.teamName}>{matchData.player1.manager}</div>
+                <div className={styles.score}>{matchData.player1.currentScore}</div>
+              </div>
+
+              <div className={styles.vsLabel}>vs</div>
+
+              <div className={styles.teamScore}>
+                <div className={styles.teamName}>{matchData.player2.manager}</div>
+                <div className={styles.score}>{matchData.player2.currentScore}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Score Section */}
-        <div className={styles.scoreSection}>
-          <div className={styles.scoreDisplay}>
-            <div className={styles.teamScore}>
-              <div className={styles.teamName}>{matchData.player1.manager}</div>
-              <div className={styles.score}>{matchData.player1.currentScore}</div>
-            </div>
-
-            <div className={styles.vsLabel}>vs</div>
-
-            <div className={styles.teamScore}>
-              <div className={styles.teamName}>{matchData.player2.manager}</div>
-              <div className={styles.score}>{matchData.player2.currentScore}</div>
-            </div>
-          </div>
-
-          <div className={`${styles.statusBadge} ${styles[winRequirements.status]}`}>
-            {winRequirements.status === 'winning' && `↑ WINNING BY ${winRequirements.margin}`}
-            {winRequirements.status === 'losing' && `↓ LOSING BY ${winRequirements.margin}`}
-            {winRequirements.status === 'drawing' && `LEVEL`}
-          </div>
-        </div>
+        {/* Scrollable Content */}
+        <div className={styles.scrollableContent}>
 
         {/* Captain Section */}
         <div className={styles.section}>
@@ -74,7 +74,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.captainGrid}>
             <div className={styles.captainBox}>
-              <div className={styles.captainLabel}>{matchData.player1.manager}</div>
               <div className={styles.captainName}>{matchData.player1.captain.name}</div>
               <div className={styles.captainPoints}>
                 {matchData.player1.captain.points} pts
@@ -82,7 +81,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
 
             <div className={styles.captainBox}>
-              <div className={styles.captainLabel}>{matchData.player2.manager}</div>
               <div className={styles.captainName}>{matchData.player2.captain.name}</div>
               <div className={styles.captainPoints}>
                 {matchData.player2.captain.points} pts
@@ -106,7 +104,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.playersGrid}>
             <div className={styles.playersBox}>
-              <div className={styles.playersLabel}>{matchData.player1.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
                   {matchData.player1.playersPlayed}/{matchData.player1.totalPlayers} played
@@ -123,7 +120,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
 
             <div className={styles.playersBox}>
-              <div className={styles.playersLabel}>{matchData.player2.manager}</div>
               <div className={styles.playersStats}>
                 <div className={styles.playersPlayed}>
                   {matchData.player2.playersPlayed}/{matchData.player2.totalPlayers} played
@@ -150,7 +146,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.requirementsGrid}>
             <div className={styles.requirementBox}>
-              <div className={styles.requirementLabel}>{matchData.player1.manager}</div>
               <div className={styles.requirementStats}>
                 {winRequirements.status === 'winning' ? (
                   <>
@@ -181,7 +176,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
 
             <div className={styles.requirementBox}>
-              <div className={styles.requirementLabel}>{matchData.player2.manager}</div>
               <div className={styles.requirementStats}>
                 {winRequirements.status === 'losing' ? (
                   <>
@@ -222,64 +216,14 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
           <div className={styles.chipsGrid}>
             <div className={styles.chipsBox}>
-              <div className={styles.chipsLabel}>{matchData.player1.manager}</div>
               <div className={matchData.player1.chipActive ? styles.chipActive : styles.noChip}>
                 {getChipDisplay(matchData.player1.chipActive)}
               </div>
             </div>
 
             <div className={styles.chipsBox}>
-              <div className={styles.chipsLabel}>{matchData.player2.manager}</div>
               <div className={matchData.player2.chipActive ? styles.chipActive : styles.noChip}>
                 {getChipDisplay(matchData.player2.chipActive)}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Transfer Hits Section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>🔄</span>
-            <span className={styles.sectionTitle}>Transfer Hits</span>
-          </div>
-
-          <div className={styles.hitsGrid}>
-            <div className={styles.hitsBox}>
-              <div className={styles.hitsLabel}>{matchData.player1.manager}</div>
-              <div className={`${styles.hitsPoints} ${matchData.player1.transferCost < 0 ? styles.negative : ''}`}>
-                {matchData.player1.transferCost} pts
-              </div>
-            </div>
-
-            <div className={styles.hitsBox}>
-              <div className={styles.hitsLabel}>{matchData.player2.manager}</div>
-              <div className={`${styles.hitsPoints} ${matchData.player2.transferCost < 0 ? styles.negative : ''}`}>
-                {matchData.player2.transferCost} pts
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bench Points Section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>💺</span>
-            <span className={styles.sectionTitle}>Bench Points</span>
-          </div>
-
-          <div className={styles.benchGrid}>
-            <div className={styles.benchBox}>
-              <div className={styles.benchLabel}>{matchData.player1.manager}</div>
-              <div className={styles.benchPoints}>
-                {matchData.player1.benchPoints} pts
-              </div>
-            </div>
-
-            <div className={styles.benchBox}>
-              <div className={styles.benchLabel}>{matchData.player2.manager}</div>
-              <div className={styles.benchPoints}>
-                {matchData.player2.benchPoints} pts
               </div>
             </div>
           </div>
@@ -313,7 +257,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             <div className={styles.differentialsGrid}>
               {/* Player 1 Differentials */}
               <div className={styles.differentialsBox}>
-                <div className={styles.differentialsLabel}>{matchData.player1.manager}</div>
                 {matchData.player1.differentials.length > 0 ? (
                   <div className={styles.playersList}>
                     {matchData.player1.differentials.map((player, idx) => (
@@ -336,7 +279,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
 
               {/* Player 2 Differentials */}
               <div className={styles.differentialsBox}>
-                <div className={styles.differentialsLabel}>{matchData.player2.manager}</div>
                 {matchData.player2.differentials.length > 0 ? (
                   <div className={styles.playersList}>
                     {matchData.player2.differentials.map((player, idx) => (
@@ -359,6 +301,51 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
           </div>
         )}
+
+        {/* Transfer Hits Section */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.emoji}>🔄</span>
+            <span className={styles.sectionTitle}>Transfer Hits</span>
+          </div>
+
+          <div className={styles.hitsGrid}>
+            <div className={styles.hitsBox}>
+              <div className={`${styles.hitsPoints} ${matchData.player1.transferCost < 0 ? styles.negative : ''}`}>
+                {matchData.player1.transferCost} pts
+              </div>
+            </div>
+
+            <div className={styles.hitsBox}>
+              <div className={`${styles.hitsPoints} ${matchData.player2.transferCost < 0 ? styles.negative : ''}`}>
+                {matchData.player2.transferCost} pts
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bench Points Section */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.emoji}>💺</span>
+            <span className={styles.sectionTitle}>Bench Points</span>
+          </div>
+
+          <div className={styles.benchGrid}>
+            <div className={styles.benchBox}>
+              <div className={styles.benchPoints}>
+                {matchData.player1.benchPoints} pts
+              </div>
+            </div>
+
+            <div className={styles.benchBox}>
+              <div className={styles.benchPoints}>
+                {matchData.player2.benchPoints} pts
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   );
