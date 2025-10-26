@@ -160,19 +160,31 @@ function calculateDifferentials(
   const team1ElementIds = new Set(picks1.map((p: any) => p.element));
   const team2ElementIds = new Set(picks2.map((p: any) => p.element));
 
+  // Check if Bench Boost is active for each team
+  const isBenchBoost1 = picks1Data.active_chip === 'bboost';
+  const isBenchBoost2 = picks2Data.active_chip === 'bboost';
+
   // Find differentials for player 1 (players team1 has but team2 doesn't)
   const player1Differentials = picks1
-    .filter((pick: any) => !team2ElementIds.has(pick.element))
+    .filter((pick: any) => {
+      // Must be a differential
+      if (team2ElementIds.has(pick.element)) return false;
+
+      // If on bench (position > 11), only include if Bench Boost is active
+      if (pick.position > 11 && !isBenchBoost1) return false;
+
+      return true;
+    })
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements[pick.element];
-      const points = liveElement?.stats?.total_points || 0;
+      const basePoints = liveElement?.stats?.total_points || 0;
 
       // Apply captain multiplier if this is the captain
-      let finalPoints = points;
+      let finalPoints = basePoints;
       if (pick.is_captain) {
         const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = points * multiplier;
+        finalPoints = basePoints * multiplier;
       }
 
       return {
@@ -187,17 +199,25 @@ function calculateDifferentials(
 
   // Find differentials for player 2 (players team2 has but team1 doesn't)
   const player2Differentials = picks2
-    .filter((pick: any) => !team1ElementIds.has(pick.element))
+    .filter((pick: any) => {
+      // Must be a differential
+      if (team1ElementIds.has(pick.element)) return false;
+
+      // If on bench (position > 11), only include if Bench Boost is active
+      if (pick.position > 11 && !isBenchBoost2) return false;
+
+      return true;
+    })
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements[pick.element];
-      const points = liveElement?.stats?.total_points || 0;
+      const basePoints = liveElement?.stats?.total_points || 0;
 
       // Apply captain multiplier if this is the captain
-      let finalPoints = points;
+      let finalPoints = basePoints;
       if (pick.is_captain) {
         const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = points * multiplier;
+        finalPoints = basePoints * multiplier;
       }
 
       return {

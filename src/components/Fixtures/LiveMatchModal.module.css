@@ -549,8 +549,13 @@
     margin-bottom: 20px;
   }
 
-  .differentialsGrid {
-    grid-template-columns: 1fr;
+  .differentialsBox {
+    padding: 12px;
+  }
+
+  .playerRow {
+    padding: 6px;
+    font-size: 0.8125rem;
   }
 }
 
