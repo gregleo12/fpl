@@ -21,11 +21,11 @@
 /* Gameweek Navigator */
 .navigatorWrapper {
   position: sticky;
-  top: 180px; /* Header (84px) + Tabs (~96px with padding) */
+  top: 100px; /* Updated: No header + Navbar (~100px with new padding) */
   background: transparent;
   z-index: 80; /* Below tabs (90), above content */
   padding: 0;
-  margin: -1rem 0 0 0;
+  margin: 0 0 1rem 0;
 }
 
 .navigator {
@@ -902,7 +902,7 @@
   }
 
   .navigatorWrapper {
-    top: 140px; /* Header (60px) + Tabs (~80px) */
+    top: calc(env(safe-area-inset-top, 0px) + 80px); /* Updated: Safe area + Navbar (~80px) */
     padding: 0 0 12px 0;
   }
 

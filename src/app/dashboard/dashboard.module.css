@@ -20,7 +20,7 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0 2rem;
+  padding: 0.75rem 2.5rem;
   margin-top: 0;
   background: transparent;
 }
@@ -138,7 +138,7 @@
 
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: 0 1rem;
+    padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 1.5rem 0.5rem 1.5rem;
   }
 
   .tabs {
