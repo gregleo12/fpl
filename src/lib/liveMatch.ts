@@ -69,7 +69,7 @@ function calculateLiveStats(
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
   const captainElement = bootstrapData.elements.find((e: any) => e.id === captainPick?.element);
-  const captainLive = liveData.elements[captainPick?.element];
+  const captainLive = liveData.elements.find((e: any) => e.id === captainPick?.element);
 
   // Captain points calculation
   let captainMultiplier = 2; // Standard captain
@@ -89,7 +89,7 @@ function calculateLiveStats(
   let benchPoints = 0;
 
   picks.forEach((pick: any) => {
-    const liveElement = liveData.elements[pick.element];
+    const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
     const bootstrapElement = bootstrapData.elements.find((e: any) => e.id === pick.element);
     const rawPoints = liveElement?.stats?.total_points || 0;
 
@@ -177,7 +177,7 @@ function calculateDifferentials(
     })
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
-      const liveElement = liveData.elements[pick.element];
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
       // Apply captain multiplier if this is the captain
@@ -210,7 +210,7 @@ function calculateDifferentials(
     })
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
-      const liveElement = liveData.elements[pick.element];
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
       // Apply captain multiplier if this is the captain
