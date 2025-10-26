@@ -61,15 +61,6 @@ async function calculateGameweekAwards(db: any, leagueId: number, gameweek: numb
 
   const matches = matchesResult.rows;
 
-  // Get all managers
-  const managersResult = await db.query(`
-    SELECT *
-    FROM managers
-    WHERE league_id = $1
-  `, [leagueId]);
-
-  const managers = managersResult.rows;
-
   // Calculate various awards
   const topGun = calculateTopGun(matches, gameweek);
   const toughWeek = calculateToughWeek(matches, gameweek);
