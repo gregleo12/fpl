@@ -16,25 +16,25 @@
 
 .tabsWrapper {
   position: sticky;
-  top: 84px; /* Height of header (70px) + margin */
+  top: 0;
   left: 0;
   right: 0;
-  z-index: 90; /* Below header (100), above content */
-  padding: 0 2rem; /* Match content horizontal padding */
-  margin-top: 0;
-  background: transparent;
+  z-index: 100;
+  padding: env(safe-area-inset-top, 0) 0.75rem 0;
+  background: rgba(26, 13, 46, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tabs {
   display: flex;
-  gap: 8px;
-  padding: 6px;
+  gap: 4px;
+  padding: 8px 6px;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  max-width: calc(1400px - 4rem); /* Subtract horizontal padding */
-  margin: 0 auto 12px auto;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 .tab {
@@ -138,18 +138,16 @@
 
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: 0 1rem; /* Match mobile content padding */
-    top: 60px; /* Smaller header on mobile */
+    padding: env(safe-area-inset-top, 0) 0.5rem 0;
   }
 
   .tabs {
-    border-radius: 12px;
-    padding: 4px;
-    gap: 6px;
+    gap: 2px;
+    padding: 6px 4px;
   }
 
   .tab {
-    padding: 10px 8px;
+    padding: 8px 4px;
     gap: 4px;
   }
 
@@ -168,8 +166,13 @@
 
 /* Small phones */
 @media (max-width: 375px) {
+  .tabs {
+    gap: 2px;
+    padding: 6px 4px;
+  }
+
   .tab {
-    padding: 8px 6px;
+    padding: 8px 4px;
   }
 
   .tabIcon {

@@ -3,14 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
-import Header from '@/components/Layout/Header';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
 import AwardsTab from '@/components/Awards/AwardsTab';
+import SettingsTab from '@/components/Settings/SettingsTab';
 import styles from './dashboard.module.css';
 
-type TabType = 'league' | 'fixtures' | 'myteam' | 'awards';
+type TabType = 'league' | 'fixtures' | 'myteam' | 'awards' | 'settings';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -69,7 +71,15 @@ export default function DashboardPage() {
   async function handleRefresh() {
     if (!state) return;
     await fetchAllData(state.leagueId, state.myTeamId);
+    // Small delay for better UX feedback
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
+
+  const { isRefreshing: isPullingToRefresh, pullDistance } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: activeTab !== 'settings', // Disable on settings tab
+  });
 
   if (isLoading && !leagueData) {
     return (
@@ -85,13 +95,9 @@ export default function DashboardPage() {
 
   return (
     <div className={styles.container}>
-      <Header
-        leagueName={state.leagueName}
-        myTeamName={state.myTeamName}
-        leagueId={state.leagueId}
-        myTeamId={state.myTeamId}
-        onRefresh={handleRefresh}
-        isRefreshing={isLoading}
+      <PullToRefreshIndicator
+        isRefreshing={isPullingToRefresh}
+        pullDistance={pullDistance}
       />
 
       <div className={styles.tabsWrapper}>
@@ -123,6 +129,13 @@ export default function DashboardPage() {
           >
             <span className={styles.tabIcon}>🎖️</span>
             <span className={styles.tabLabel}>Awards</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <span className={styles.tabIcon}>⚙️</span>
+            <span className={styles.tabLabel}>Settings</span>
           </button>
         </nav>
       </div>
@@ -159,6 +172,14 @@ export default function DashboardPage() {
           <AwardsTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
+          />
+        )}
+        {activeTab === 'settings' && (
+          <SettingsTab
+            leagueName={state.leagueName}
+            myTeamName={state.myTeamName}
+            onRefresh={handleRefresh}
+            isRefreshing={isLoading}
           />
         )}
       </main>
