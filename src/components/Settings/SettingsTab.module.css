@@ -95,12 +95,97 @@
   border-color: rgba(255, 0, 102, 0.5);
 }
 
+.secondaryButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.secondaryButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.updateButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.2), rgba(0, 212, 255, 0.15));
+  border: 2px solid #00ff87;
+  border-radius: 12px;
+  color: #00ff87;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 135, 0.3);
+}
+
+.updateButton:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.3), rgba(0, 212, 255, 0.25));
+  transform: translateY(-2px);
+}
+
 .buttonIcon {
   font-size: 1.25rem;
 }
 
 .buttonText {
   font-size: 1rem;
+  font-weight: 700;
+}
+
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.recentItem {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.recentName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.recentId {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.updateAvailable {
+  color: #00ff87 !important;
   font-weight: 700;
 }
 
@@ -112,6 +197,7 @@
   padding: 1rem;
   border-radius: 8px;
   border-left: 3px solid rgba(0, 255, 135, 0.5);
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 768px) {

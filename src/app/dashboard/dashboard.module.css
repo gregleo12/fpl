@@ -20,21 +20,21 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: env(safe-area-inset-top, 0) 0.75rem 0;
-  background: rgba(26, 13, 46, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 2rem;
+  margin-top: 0;
+  background: transparent;
 }
 
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 8px 6px;
+  gap: 6px;
+  padding: 8px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 0 auto 1rem auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
 .tab {
@@ -138,12 +138,12 @@
 
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: env(safe-area-inset-top, 0) 0.5rem 0;
+    padding: 0 1rem;
   }
 
   .tabs {
-    gap: 2px;
-    padding: 6px 4px;
+    gap: 4px;
+    padding: 6px;
   }
 
   .tab {
