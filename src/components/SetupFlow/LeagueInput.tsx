@@ -32,16 +32,12 @@ export default function LeagueInput() {
       const response = await fetch(`/api/league/${id}`);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('League fetch error:', errorData);
-        throw new Error(errorData.error || 'League not found');
+        throw new Error('League not found');
       }
 
       const statsResponse = await fetch(`/api/league/${id}/stats`);
       if (!statsResponse.ok) {
-        const errorData = await statsResponse.json().catch(() => ({}));
-        console.error('Stats fetch error:', errorData);
-        throw new Error(errorData.error || 'Could not fetch league stats');
+        throw new Error('Could not fetch league stats');
       }
 
       const data = await statsResponse.json();
@@ -55,9 +51,8 @@ export default function LeagueInput() {
 
       // Navigate to team selection
       router.push(`/setup/team`);
-    } catch (err: any) {
-      console.error('Fetch error:', err);
-      setError(err.message || 'Could not fetch league. Please check the ID and try again.');
+    } catch (err) {
+      setError('Could not fetch league. Please check the ID and try again.');
       setIsLoading(false);
     }
   }

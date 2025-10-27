@@ -93,29 +93,14 @@ export async function GET(
       }
     }
 
-    // Fetch picks in parallel with controlled concurrency
-    console.log(`Fetching ${picksToFetch.length} picks in parallel (concurrency: 20)...`);
-    const BATCH_SIZE = 20; // Process 20 at a time
-    const picksResults: Array<PromiseSettledResult<{ entryId: number; event: number; data: any }>> = [];
-
-    for (let i = 0; i < picksToFetch.length; i += BATCH_SIZE) {
-      const batch = picksToFetch.slice(i, i + BATCH_SIZE);
-
-      if (i > 0 && i % 100 === 0) {
-        console.log(`Fetched ${i}/${picksToFetch.length} picks...`);
-      }
-
-      const batchResults = await Promise.allSettled(
-        batch.map(({entryId, event}) =>
-          fplApi.getEntryPicks(entryId, event)
-            .then(data => ({ entryId, event, data }))
-        )
-      );
-
-      picksResults.push(...batchResults);
-    }
-
-    console.log(`Completed: ${picksResults.filter(r => r.status === 'fulfilled').length}/${picksToFetch.length} successful`);
+    // Fetch all picks in parallel (much faster!)
+    console.log(`Fetching ${picksToFetch.length} picks in parallel...`);
+    const picksResults = await Promise.allSettled(
+      picksToFetch.map(({entryId, event}) =>
+        fplApi.getEntryPicks(entryId, event)
+          .then(data => ({ entryId, event, data }))
+      )
+    );
 
     // Store captain data from successful picks
     const captainInserts: Array<any> = [];
@@ -190,23 +175,9 @@ export async function GET(
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);
-    console.error('Error stack:', error.stack);
-
-    // Provide more specific error messages
-    let errorMessage = 'Failed to fetch league data';
-    if (error.response?.status === 404) {
-      errorMessage = 'League not found. Please check the league ID.';
-    } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-      errorMessage = 'Cannot connect to FPL API. Please try again later.';
-    } else if (error.message?.includes('database') || error.code?.startsWith('PG')) {
-      errorMessage = 'Database error. Please try again later.';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-
     return NextResponse.json(
-      { error: errorMessage },
-      { status: error.response?.status || 500 }
+      { error: error.message || 'Failed to fetch league data' },
+      { status: 500 }
     );
   }
 }
