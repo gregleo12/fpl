@@ -157,11 +157,6 @@ export class FPLApiClient {
       allMatches = allMatches.concat(data.results);
       hasMore = data.results.length > 0;
       page++;
-
-      // Add delay between pages to avoid rate limiting
-      if (hasMore) {
-        await delay(100);
-      }
     }
 
     return allMatches;

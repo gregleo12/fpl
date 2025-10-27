@@ -93,18 +93,17 @@ export async function GET(
       }
     }
 
-    // Fetch picks in small batches with delays to avoid rate limiting
-    console.log(`Fetching ${picksToFetch.length} picks in batches...`);
-    const BATCH_SIZE = 3; // Process 3 at a time
-    const BATCH_DELAY = 1000; // 1 second delay between batches
+    // Fetch picks in parallel with controlled concurrency
+    console.log(`Fetching ${picksToFetch.length} picks in parallel (concurrency: 20)...`);
+    const BATCH_SIZE = 20; // Process 20 at a time
     const picksResults: Array<PromiseSettledResult<{ entryId: number; event: number; data: any }>> = [];
 
     for (let i = 0; i < picksToFetch.length; i += BATCH_SIZE) {
       const batch = picksToFetch.slice(i, i + BATCH_SIZE);
-      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-      const totalBatches = Math.ceil(picksToFetch.length / BATCH_SIZE);
 
-      console.log(`Processing batch ${batchNum}/${totalBatches} (${i + 1}-${Math.min(i + BATCH_SIZE, picksToFetch.length)}/${picksToFetch.length})`);
+      if (i > 0 && i % 100 === 0) {
+        console.log(`Fetched ${i}/${picksToFetch.length} picks...`);
+      }
 
       const batchResults = await Promise.allSettled(
         batch.map(({entryId, event}) =>
@@ -114,14 +113,9 @@ export async function GET(
       );
 
       picksResults.push(...batchResults);
-
-      // Delay between batches (except for last batch)
-      if (i + BATCH_SIZE < picksToFetch.length) {
-        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
-      }
     }
 
-    console.log(`Completed fetching picks: ${picksResults.filter(r => r.status === 'fulfilled').length}/${picksToFetch.length} successful`);
+    console.log(`Completed: ${picksResults.filter(r => r.status === 'fulfilled').length}/${picksToFetch.length} successful`);
 
     // Store captain data from successful picks
     const captainInserts: Array<any> = [];
