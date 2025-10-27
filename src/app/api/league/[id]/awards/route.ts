@@ -158,7 +158,8 @@ async function calculateSeasonAwards(db: any, leagueId: number) {
       m.team_name
     FROM manager_history mh
     JOIN managers m ON mh.entry_id = m.entry_id
-    WHERE m.league_id = $1
+    JOIN league_standings ls ON m.entry_id = ls.entry_id
+    WHERE ls.league_id = $1
     ORDER BY mh.event DESC
   `, [leagueId]);
 
@@ -251,7 +252,8 @@ async function calculateComebackKid(db: any, leagueId: number, matches: any[], g
       m.team_name
     FROM manager_history mh
     JOIN managers m ON mh.entry_id = m.entry_id
-    WHERE m.league_id = $1 AND mh.event = $2
+    JOIN league_standings ls ON m.entry_id = ls.entry_id
+    WHERE ls.league_id = $1 AND mh.event = $2
   `, [leagueId, gameweek]);
 
   const history = historyResult.rows;
@@ -284,7 +286,8 @@ async function calculateRankCrasher(db: any, leagueId: number, matches: any[], g
       m.team_name
     FROM manager_history mh
     JOIN managers m ON mh.entry_id = m.entry_id
-    WHERE m.league_id = $1 AND mh.event = $2
+    JOIN league_standings ls ON m.entry_id = ls.entry_id
+    WHERE ls.league_id = $1 AND mh.event = $2
   `, [leagueId, gameweek]);
 
   const history = historyResult.rows;
@@ -455,7 +458,8 @@ async function calculateMonthFaller(db: any, leagueId: number, startGW: number, 
       m.team_name
     FROM manager_history mh
     JOIN managers m ON mh.entry_id = m.entry_id
-    WHERE m.league_id = $1 AND (mh.event = $2 OR mh.event = $3)
+    JOIN league_standings ls ON m.entry_id = ls.entry_id
+    WHERE ls.league_id = $1 AND (mh.event = $2 OR mh.event = $3)
     ORDER BY mh.entry_id, mh.event
   `, [leagueId, startGW, endGW - 1]);
 
