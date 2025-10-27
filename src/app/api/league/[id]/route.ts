@@ -93,34 +93,31 @@ export async function GET(
       }
     }
 
-    // Fetch picks sequentially with delays to avoid rate limiting
-    console.log(`Fetching ${picksToFetch.length} picks sequentially with rate limiting...`);
-    const DELAY_BETWEEN_REQUESTS = 300; // 300ms between each request
+    // Fetch picks in small batches with delays to avoid rate limiting
+    console.log(`Fetching ${picksToFetch.length} picks in batches...`);
+    const BATCH_SIZE = 3; // Process 3 at a time
+    const BATCH_DELAY = 1000; // 1 second delay between batches
     const picksResults: Array<PromiseSettledResult<{ entryId: number; event: number; data: any }>> = [];
 
-    for (let i = 0; i < picksToFetch.length; i++) {
-      const {entryId, event} = picksToFetch[i];
+    for (let i = 0; i < picksToFetch.length; i += BATCH_SIZE) {
+      const batch = picksToFetch.slice(i, i + BATCH_SIZE);
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(picksToFetch.length / BATCH_SIZE);
 
-      if (i > 0 && i % 10 === 0) {
-        console.log(`Fetched ${i}/${picksToFetch.length} picks...`);
-      }
+      console.log(`Processing batch ${batchNum}/${totalBatches} (${i + 1}-${Math.min(i + BATCH_SIZE, picksToFetch.length)}/${picksToFetch.length})`);
 
-      try {
-        const data = await fplApi.getEntryPicks(entryId, event);
-        picksResults.push({
-          status: 'fulfilled',
-          value: { entryId, event, data }
-        });
-      } catch (error) {
-        picksResults.push({
-          status: 'rejected',
-          reason: error
-        });
-      }
+      const batchResults = await Promise.allSettled(
+        batch.map(({entryId, event}) =>
+          fplApi.getEntryPicks(entryId, event)
+            .then(data => ({ entryId, event, data }))
+        )
+      );
 
-      // Delay between requests
-      if (i < picksToFetch.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
+      picksResults.push(...batchResults);
+
+      // Delay between batches (except for last batch)
+      if (i + BATCH_SIZE < picksToFetch.length) {
+        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
       }
     }
 
