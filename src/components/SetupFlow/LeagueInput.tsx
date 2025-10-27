@@ -29,18 +29,27 @@ export default function LeagueInput() {
 
     try {
       // Fetch league data from API
+      console.log('Fetching league:', id);
       const response = await fetch(`/api/league/${id}`);
+      console.log('League response status:', response.status);
 
       if (!response.ok) {
-        throw new Error('League not found');
+        const errorText = await response.text();
+        console.error('League fetch failed:', errorText);
+        throw new Error(`League fetch failed: ${response.status}`);
       }
 
       const statsResponse = await fetch(`/api/league/${id}/stats`);
+      console.log('Stats response status:', statsResponse.status);
+
       if (!statsResponse.ok) {
-        throw new Error('Could not fetch league stats');
+        const errorText = await statsResponse.text();
+        console.error('Stats fetch failed:', errorText);
+        throw new Error(`Stats fetch failed: ${statsResponse.status}`);
       }
 
       const data = await statsResponse.json();
+      console.log('Successfully fetched league data');
 
       // Store league data temporarily
       sessionStorage.setItem('temp_league', JSON.stringify({
@@ -51,8 +60,9 @@ export default function LeagueInput() {
 
       // Navigate to team selection
       router.push(`/setup/team`);
-    } catch (err) {
-      setError('Could not fetch league. Please check the ID and try again.');
+    } catch (err: any) {
+      console.error('Full error:', err);
+      setError(err.message || 'Could not fetch league. Please check the ID and try again.');
       setIsLoading(false);
     }
   }
