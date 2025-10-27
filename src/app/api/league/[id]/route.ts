@@ -93,14 +93,30 @@ export async function GET(
       }
     }
 
-    // Fetch all picks in parallel (much faster!)
-    console.log(`Fetching ${picksToFetch.length} picks in parallel...`);
-    const picksResults = await Promise.allSettled(
-      picksToFetch.map(({entryId, event}) =>
-        fplApi.getEntryPicks(entryId, event)
-          .then(data => ({ entryId, event, data }))
-      )
-    );
+    // Fetch picks in batches to avoid overwhelming FPL API
+    console.log(`Fetching ${picksToFetch.length} picks in batches...`);
+    const BATCH_SIZE = 5; // Process 5 at a time
+    const BATCH_DELAY = 500; // 500ms delay between batches
+    const picksResults: Array<PromiseSettledResult<{ entryId: number; event: number; data: any }>> = [];
+
+    for (let i = 0; i < picksToFetch.length; i += BATCH_SIZE) {
+      const batch = picksToFetch.slice(i, i + BATCH_SIZE);
+      console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(picksToFetch.length / BATCH_SIZE)}`);
+
+      const batchResults = await Promise.allSettled(
+        batch.map(({entryId, event}) =>
+          fplApi.getEntryPicks(entryId, event)
+            .then(data => ({ entryId, event, data }))
+        )
+      );
+
+      picksResults.push(...batchResults);
+
+      // Delay between batches (except for last batch)
+      if (i + BATCH_SIZE < picksToFetch.length) {
+        await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
+      }
+    }
 
     // Store captain data from successful picks
     const captainInserts: Array<any> = [];
