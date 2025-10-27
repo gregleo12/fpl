@@ -175,9 +175,23 @@ export async function GET(
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);
+    console.error('Error stack:', error.stack);
+
+    // Provide more specific error messages
+    let errorMessage = 'Failed to fetch league data';
+    if (error.response?.status === 404) {
+      errorMessage = 'League not found. Please check the league ID.';
+    } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+      errorMessage = 'Cannot connect to FPL API. Please try again later.';
+    } else if (error.message?.includes('database') || error.code?.startsWith('PG')) {
+      errorMessage = 'Database error. Please try again later.';
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch league data' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: error.response?.status || 500 }
     );
   }
 }

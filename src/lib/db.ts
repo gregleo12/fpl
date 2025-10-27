@@ -77,11 +77,39 @@ async function initializeDatabase() {
       UNIQUE(league_id, entry_id)
     );
 
+    CREATE TABLE IF NOT EXISTS manager_history (
+      id SERIAL PRIMARY KEY,
+      entry_id BIGINT NOT NULL,
+      event INTEGER NOT NULL,
+      points INTEGER DEFAULT 0,
+      total_points INTEGER DEFAULT 0,
+      rank INTEGER,
+      rank_sort INTEGER,
+      overall_rank INTEGER,
+      bank INTEGER DEFAULT 0,
+      value INTEGER DEFAULT 0,
+      event_transfers INTEGER DEFAULT 0,
+      event_transfers_cost INTEGER DEFAULT 0,
+      points_on_bench INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(entry_id, event)
+    );
+
+    -- Add rank_change column if it doesn't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='manager_history' AND column_name='rank_change') THEN
+        ALTER TABLE manager_history ADD COLUMN rank_change INTEGER DEFAULT 0;
+      END IF;
+    END $$;
+
     CREATE INDEX IF NOT EXISTS idx_h2h_matches_league ON h2h_matches(league_id);
     CREATE INDEX IF NOT EXISTS idx_h2h_matches_event ON h2h_matches(event);
     CREATE INDEX IF NOT EXISTS idx_standings_league ON league_standings(league_id);
     CREATE INDEX IF NOT EXISTS idx_captains_entry ON entry_captains(entry_id);
     CREATE INDEX IF NOT EXISTS idx_captains_event ON entry_captains(event);
+    CREATE INDEX IF NOT EXISTS idx_manager_history_entry ON manager_history(entry_id);
+    CREATE INDEX IF NOT EXISTS idx_manager_history_event ON manager_history(event);
   `);
 
   initialized = true;
