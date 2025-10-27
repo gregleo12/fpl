@@ -2,14 +2,19 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.FPL_API_BASE_URL || 'https://fantasy.premierleague.com/api';
 
+// Configure axios with more conservative settings
+axios.defaults.headers.common['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+axios.defaults.httpAgent = { keepAlive: false };
+axios.defaults.httpsAgent = { keepAlive: false };
+
 // Helper function for delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Retry helper with exponential backoff
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries: number = 3,
-  baseDelay: number = 1000
+  maxRetries: number = 5,
+  baseDelay: number = 2000
 ): Promise<T> {
   let lastError: any;
 
@@ -29,9 +34,9 @@ async function retryWithBackoff<T>(
         break;
       }
 
-      // Exponential backoff with jitter
-      const delayTime = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
-      console.log(`Request failed, retrying in ${delayTime}ms... (attempt ${attempt + 1}/${maxRetries})`);
+      // Exponential backoff with jitter - more aggressive delays
+      const delayTime = baseDelay * Math.pow(2, attempt) + Math.random() * 2000;
+      console.log(`Request failed (${error.code || error.message}), retrying in ${Math.round(delayTime)}ms... (attempt ${attempt + 1}/${maxRetries})`);
       await delay(delayTime);
     }
   }
@@ -121,7 +126,7 @@ export class FPLApiClient {
   async getBootstrapData(): Promise<BootstrapData> {
     return retryWithBackoff(async () => {
       const response = await axios.get(`${this.baseUrl}/bootstrap-static/`, {
-        timeout: 10000
+        timeout: 15000
       });
       return response.data;
     });
@@ -131,7 +136,7 @@ export class FPLApiClient {
     return retryWithBackoff(async () => {
       const response = await axios.get(
         `${this.baseUrl}/leagues-h2h/${leagueId}/standings/`,
-        { timeout: 10000 }
+        { timeout: 15000 }
       );
       return response.data;
     });
@@ -141,7 +146,7 @@ export class FPLApiClient {
     return retryWithBackoff(async () => {
       const response = await axios.get(
         `${this.baseUrl}/leagues-h2h-matches/league/${leagueId}/?page=${page}`,
-        { timeout: 10000 }
+        { timeout: 15000 }
       );
       return response.data;
     });
@@ -158,9 +163,9 @@ export class FPLApiClient {
       hasMore = data.results.length > 0;
       page++;
 
-      // Add small delay between pages to avoid rate limiting
+      // Add delay between pages to avoid rate limiting
       if (hasMore) {
-        await delay(200);
+        await delay(500);
       }
     }
 
@@ -170,7 +175,7 @@ export class FPLApiClient {
   async getEntry(entryId: number): Promise<any> {
     return retryWithBackoff(async () => {
       const response = await axios.get(`${this.baseUrl}/entry/${entryId}/`, {
-        timeout: 10000
+        timeout: 15000
       });
       return response.data;
     });
@@ -179,7 +184,7 @@ export class FPLApiClient {
   async getEntryHistory(entryId: number): Promise<any> {
     return retryWithBackoff(async () => {
       const response = await axios.get(`${this.baseUrl}/entry/${entryId}/history/`, {
-        timeout: 10000
+        timeout: 15000
       });
       return response.data;
     });
@@ -189,7 +194,7 @@ export class FPLApiClient {
     return retryWithBackoff(async () => {
       const response = await axios.get(
         `${this.baseUrl}/entry/${entryId}/event/${eventId}/picks/`,
-        { timeout: 10000 }
+        { timeout: 15000 }
       );
       return response.data;
     });
