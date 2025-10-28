@@ -257,6 +257,10 @@
   gap: 2rem;
 }
 
+.statsGrid + .statsGrid {
+  margin-top: 2rem;
+}
+
 .statCard {
   background: rgba(255, 255, 255, 0.05);
   padding: 1.5rem;
@@ -641,6 +645,10 @@
     gap: 12px !important;
   }
 
+  .statsGrid + .statsGrid {
+    margin-top: 12px !important;
+  }
+
   .statCard {
     padding: 14px 10px;
     min-height: 70px;
@@ -769,6 +777,10 @@
 @media (max-width: 375px) {
   .statsGrid {
     gap: 6px !important;
+  }
+
+  .statsGrid + .statsGrid {
+    margin-top: 6px !important;
   }
 
   .statCard {
