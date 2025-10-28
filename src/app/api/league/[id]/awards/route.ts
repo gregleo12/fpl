@@ -77,6 +77,17 @@ async function calculateGameweekAwards(db: any, leagueId: number, gameweek: numb
 
   const matches = matchesResult.rows;
 
+  console.log('GW Awards Debug - League:', leagueId, 'GW:', gameweek);
+  console.log('Matches found:', matches.length);
+  if (matches.length > 0) {
+    console.log('Sample match data:', {
+      entry_1_captain: matches[0].entry_1_captain,
+      entry_1_captain_points: matches[0].entry_1_captain_points,
+      entry_1_bench_points: matches[0].entry_1_bench_points,
+      entry_1_chip: matches[0].entry_1_chip,
+    });
+  }
+
   // Calculate various awards
   const topGun = calculateTopGun(matches, gameweek);
   const toughWeek = calculateToughWeek(matches, gameweek);
@@ -298,18 +309,29 @@ async function calculateComebackKid(db: any, leagueId: number, matches: any[], g
 
   const history = historyResult.rows;
 
+  console.log('Comeback Kid Debug - Found entries:', history.length);
+  if (history.length > 0) {
+    console.log('Sample rank_change values:', history.map(h => ({
+      name: h.player_name,
+      rank_change: h.rank_change,
+      rank: h.rank
+    })));
+  }
+
   let biggestRise = 0;
   let winner: any = null;
 
   for (const entry of history) {
-    if (entry.rank_change && entry.rank_change < 0) { // Negative means rank improved
-      const rise = Math.abs(entry.rank_change);
+    if (entry.rank_change && entry.rank_change > 0) { // Positive means rank improved (went from 5 to 3 = +2)
+      const rise = entry.rank_change;
       if (rise > biggestRise) {
         biggestRise = rise;
         winner = { manager: entry.player_name, team: entry.team_name };
       }
     }
   }
+
+  console.log('Comeback Kid result:', winner, 'Rise:', biggestRise);
 
   return winner ? {
     ...winner,
@@ -332,17 +354,22 @@ async function calculateRankCrasher(db: any, leagueId: number, matches: any[], g
 
   const history = historyResult.rows;
 
+  console.log('Rank Crasher Debug - Found entries:', history.length);
+
   let biggestFall = 0;
   let loser: any = null;
 
   for (const entry of history) {
-    if (entry.rank_change && entry.rank_change > 0) { // Positive means rank worsened
-      if (entry.rank_change > biggestFall) {
-        biggestFall = entry.rank_change;
+    if (entry.rank_change && entry.rank_change < 0) { // Negative means rank worsened (went from 3 to 5 = -2)
+      const fall = Math.abs(entry.rank_change);
+      if (fall > biggestFall) {
+        biggestFall = fall;
         loser = { manager: entry.player_name, team: entry.team_name };
       }
     }
   }
+
+  console.log('Rank Crasher result:', loser, 'Fall:', biggestFall);
 
   return loser ? {
     ...loser,
@@ -354,6 +381,13 @@ function calculateChipMaster(matches: any[]) {
   let bestChipScore = 0;
   let winner: any = null;
   let chipUsed = '';
+
+  console.log('Chip Master Debug - Checking', matches.length, 'matches');
+  const chipsFound = matches.filter(m => m.entry_1_chip || m.entry_2_chip);
+  console.log('Matches with chips:', chipsFound.length, 'Examples:', chipsFound.slice(0, 2).map(m => ({
+    e1_chip: m.entry_1_chip,
+    e2_chip: m.entry_2_chip
+  })));
 
   for (const match of matches) {
     if (match.entry_1_chip && match.entry_1_points > bestChipScore) {
@@ -368,6 +402,8 @@ function calculateChipMaster(matches: any[]) {
     }
   }
 
+  console.log('Chip Master result:', winner, chipUsed, bestChipScore);
+
   return winner ? {
     ...winner,
     value: `${chipUsed}, ${bestChipScore} pts`
@@ -379,6 +415,14 @@ function calculateCaptainFantastic(matches: any[]) {
   let winner: any = null;
   let captainName = '';
   let totalPoints = 0;
+
+  console.log('Captain Fantastic Debug - Checking', matches.length, 'matches');
+  const captainsFound = matches.filter(m => m.entry_1_captain_points || m.entry_2_captain_points);
+  console.log('Matches with captain data:', captainsFound.length, 'Examples:', captainsFound.slice(0, 2).map(m => ({
+    e1_cap: m.entry_1_captain,
+    e1_cap_pts: m.entry_1_captain_points,
+    e1_total: m.entry_1_points
+  })));
 
   for (const match of matches) {
     if (match.entry_1_captain_points && match.entry_1_points > 0) {
@@ -401,6 +445,8 @@ function calculateCaptainFantastic(matches: any[]) {
     }
   }
 
+  console.log('Captain Fantastic result:', winner, bestPercentage, captainName);
+
   return winner ? {
     ...winner,
     value: `${Math.round(bestPercentage)}% (${captainName})`
@@ -410,6 +456,13 @@ function calculateCaptainFantastic(matches: any[]) {
 function calculateBenchDisaster(matches: any[]) {
   let worstBench = 0;
   let loser: any = null;
+
+  console.log('Bench Disaster Debug - Checking', matches.length, 'matches');
+  const benchData = matches.filter(m => m.entry_1_bench_points || m.entry_2_bench_points);
+  console.log('Matches with bench data:', benchData.length, 'Examples:', benchData.slice(0, 2).map(m => ({
+    e1_bench: m.entry_1_bench_points,
+    e2_bench: m.entry_2_bench_points
+  })));
 
   for (const match of matches) {
     if (!match.entry_1_chip && match.entry_1_bench_points > worstBench && match.entry_1_bench_points >= 20) {
@@ -421,6 +474,8 @@ function calculateBenchDisaster(matches: any[]) {
       loser = { manager: match.entry_2_player, team: match.entry_2_team };
     }
   }
+
+  console.log('Bench Disaster result:', loser, worstBench);
 
   return loser ? {
     ...loser,
