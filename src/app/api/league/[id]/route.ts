@@ -102,26 +102,74 @@ export async function GET(
       )
     );
 
-    // Store captain data from successful picks
+    // Store captain data from successful picks (with points)
     const captainInserts: Array<any> = [];
+    const historyInserts: Array<any> = [];
     for (const result of picksResults) {
       if (result.status === 'fulfilled') {
         const { entryId, event, data } = result.value;
         const captain = data.picks.find((p: any) => p.is_captain);
         if (captain) {
           const captainName = playerMap.get(captain.element) || 'Unknown';
-          captainInserts.push([entryId, event, captain.element, captainName]);
+          const captainPoints = captain.multiplier * captain.points;
+          captainInserts.push([entryId, event, captain.element, captainName, captainPoints]);
+        }
+
+        // Store manager history with bench points
+        if (data.entry_history) {
+          const eh = data.entry_history;
+          const benchPoints = data.picks
+            .filter((p: any) => p.position > 11)
+            .reduce((sum: number, p: any) => sum + p.points, 0);
+          historyInserts.push([
+            entryId,
+            event,
+            eh.points || 0,
+            eh.total_points || 0,
+            eh.rank || null,
+            eh.rank_sort || null,
+            eh.overall_rank || null,
+            eh.bank || 0,
+            eh.value || 0,
+            eh.event_transfers || 0,
+            eh.event_transfers_cost || 0,
+            benchPoints
+          ]);
         }
       }
     }
 
-    // Batch insert captains
-    for (const [entryId, event, captainElementId, captainName] of captainInserts) {
+    // Batch insert captains with points
+    for (const [entryId, event, captainElementId, captainName, captainPoints] of captainInserts) {
       await db.query(`
-        INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (entry_id, event) DO NOTHING
-      `, [entryId, event, captainElementId, captainName]);
+        INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name, captain_points)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (entry_id, event) DO UPDATE SET captain_points = $5
+      `, [entryId, event, captainElementId, captainName, captainPoints]);
+    }
+
+    // Batch insert manager history (without rank for now - will calculate after)
+    for (const historyData of historyInserts) {
+      const [entryId, event, points, totalPoints, rank, rankSort, overallRank, bank, value, eventTransfers, eventTransfersCost, benchPoints] = historyData;
+
+      await db.query(`
+        INSERT INTO manager_history
+        (entry_id, event, points, total_points, rank, rank_sort, overall_rank, bank, value,
+         event_transfers, event_transfers_cost, points_on_bench, rank_change)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0)
+        ON CONFLICT (entry_id, event) DO UPDATE SET
+          points = $3,
+          total_points = $4,
+          rank = $5,
+          rank_sort = $6,
+          overall_rank = $7,
+          bank = $8,
+          value = $9,
+          event_transfers = $10,
+          event_transfers_cost = $11,
+          points_on_bench = $12
+      `, [entryId, event, points, totalPoints, rank, rankSort, overallRank, bank, value,
+          eventTransfers, eventTransfersCost, benchPoints]);
     }
 
     // Store matches (with chips from picks data)
@@ -166,6 +214,49 @@ export async function GET(
         activeChip1,
         activeChip2
       ]);
+    }
+
+    // Calculate H2H league ranks for each gameweek and update rank_change
+    const allEvents = [...new Set(matches.map(m => m.event))].sort((a, b) => a - b);
+    const entryIds = league.standings.results.map(s => s.entry);
+
+    for (const event of allEvents) {
+      // Calculate standings up to this gameweek
+      const standingsUpToGW = await db.query(`
+        SELECT
+          entry_id,
+          SUM(CASE WHEN winner = entry_id THEN 3 WHEN winner IS NULL THEN 1 ELSE 0 END) as total_points
+        FROM (
+          SELECT entry_1_id as entry_id, winner FROM h2h_matches WHERE league_id = $1 AND event <= $2
+          UNION ALL
+          SELECT entry_2_id as entry_id, winner FROM h2h_matches WHERE league_id = $1 AND event <= $2
+        ) matches
+        GROUP BY entry_id
+        ORDER BY total_points DESC, entry_id
+      `, [leagueId, event]);
+
+      // Assign ranks
+      const rankedEntries = standingsUpToGW.rows;
+      for (let i = 0; i < rankedEntries.length; i++) {
+        const h2hRank = i + 1;
+        const entryId = rankedEntries[i].entry_id;
+
+        // Get previous rank
+        const prevRankResult = await db.query(`
+          SELECT rank FROM manager_history
+          WHERE entry_id = $1 AND event = $2
+        `, [entryId, event - 1]);
+
+        const prevRank = prevRankResult.rows[0]?.rank;
+        const rankChange = prevRank ? (prevRank - h2hRank) : 0;
+
+        // Update manager_history with H2H league rank and rank_change
+        await db.query(`
+          UPDATE manager_history
+          SET rank = $1, rank_change = $2
+          WHERE entry_id = $3 AND event = $4
+        `, [h2hRank, rankChange, entryId, event]);
+      }
     }
 
     return NextResponse.json({

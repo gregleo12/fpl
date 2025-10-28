@@ -36,7 +36,8 @@ export async function GET(
     }
 
     return NextResponse.json({
-      [view]: awardsData
+      [view]: awardsData,
+      lastCompletedGW
     });
   } catch (error: any) {
     console.error('Error fetching awards:', error);

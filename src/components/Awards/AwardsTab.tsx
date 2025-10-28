@@ -16,6 +16,7 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
   const [awards, setAwards] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastCompletedGW, setLastCompletedGW] = useState<number | null>(null);
 
   useEffect(() => {
     fetchAwards();
@@ -33,6 +34,9 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
       const data = await response.json();
       console.log('Awards data:', data); // Debug log
       setAwards(data);
+      if (data.lastCompletedGW) {
+        setLastCompletedGW(data.lastCompletedGW);
+      }
     } catch (error: any) {
       console.error('Error fetching awards:', error);
       setError(error.message);
@@ -57,7 +61,7 @@ export default function AwardsTab({ leagueId, myTeamId }: AwardsTabProps) {
           className={`${styles.toggleButton} ${view === 'gameweek' ? styles.active : ''}`}
           onClick={() => setView('gameweek')}
         >
-          Last GW
+          {lastCompletedGW ? `GW${lastCompletedGW}` : 'Last GW'}
         </button>
         <button
           className={`${styles.toggleButton} ${view === 'monthly' ? styles.active : ''}`}
