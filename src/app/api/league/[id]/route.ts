@@ -217,7 +217,7 @@ export async function GET(
     }
 
     // Calculate H2H league ranks for each gameweek and update rank_change
-    const allEvents = [...new Set(matches.map(m => m.event))].sort((a, b) => a - b);
+    const allEvents = Array.from(new Set(matches.map(m => m.event))).sort((a, b) => a - b);
     const entryIds = league.standings.results.map(s => s.entry);
 
     for (const event of allEvents) {
