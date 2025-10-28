@@ -17,15 +17,18 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // Get current gameweek
+    // Get last completed gameweek
     const bootstrapData = await fplApi.getBootstrapData();
-    const currentEvent = bootstrapData.events.find((e: any) => e.is_current || e.is_next);
-    const currentGW = currentEvent?.id || 1;
+    const lastFinishedEvent = bootstrapData.events
+      .filter((e: any) => e.finished)
+      .sort((a: any, b: any) => b.id - a.id)[0];
+    const lastCompletedGW = lastFinishedEvent?.id || 1;
+    const currentGW = lastCompletedGW;
 
     let awardsData;
 
     if (view === 'gameweek') {
-      awardsData = await calculateGameweekAwards(db, leagueId, currentGW - 1); // Last completed GW
+      awardsData = await calculateGameweekAwards(db, leagueId, lastCompletedGW);
     } else if (view === 'monthly') {
       awardsData = await calculateMonthlyAwards(db, leagueId, currentGW);
     } else if (view === 'season') {
@@ -45,17 +48,29 @@ export async function GET(
 }
 
 async function calculateGameweekAwards(db: any, leagueId: number, gameweek: number) {
-  // Get all matches for the gameweek
+  // Get all matches for the gameweek with captain and bench data
   const matchesResult = await db.query(`
     SELECT
       hm.*,
       m1.player_name as entry_1_player,
       m1.team_name as entry_1_team,
       m2.player_name as entry_2_player,
-      m2.team_name as entry_2_team
+      m2.team_name as entry_2_team,
+      ec1.captain_name as entry_1_captain,
+      ec1.captain_points as entry_1_captain_points,
+      ec2.captain_name as entry_2_captain,
+      ec2.captain_points as entry_2_captain_points,
+      mh1.points_on_bench as entry_1_bench_points,
+      mh2.points_on_bench as entry_2_bench_points,
+      hm.active_chip_1 as entry_1_chip,
+      hm.active_chip_2 as entry_2_chip
     FROM h2h_matches hm
     JOIN managers m1 ON hm.entry_1_id = m1.entry_id
     JOIN managers m2 ON hm.entry_2_id = m2.entry_id
+    LEFT JOIN entry_captains ec1 ON hm.entry_1_id = ec1.entry_id AND hm.event = ec1.event
+    LEFT JOIN entry_captains ec2 ON hm.entry_2_id = ec2.entry_id AND hm.event = ec2.event
+    LEFT JOIN manager_history mh1 ON hm.entry_1_id = mh1.entry_id AND hm.event = mh1.event
+    LEFT JOIN manager_history mh2 ON hm.entry_2_id = mh2.entry_id AND hm.event = mh2.event
     WHERE hm.league_id = $1 AND hm.event = $2
   `, [leagueId, gameweek]);
 
@@ -93,11 +108,23 @@ async function calculateMonthlyAwards(db: any, leagueId: number, currentGW: numb
       m1.player_name as entry_1_player,
       m1.team_name as entry_1_team,
       m2.player_name as entry_2_player,
-      m2.team_name as entry_2_team
+      m2.team_name as entry_2_team,
+      ec1.captain_name as entry_1_captain,
+      ec1.captain_points as entry_1_captain_points,
+      ec2.captain_name as entry_2_captain,
+      ec2.captain_points as entry_2_captain_points,
+      mh1.points_on_bench as entry_1_bench_points,
+      mh2.points_on_bench as entry_2_bench_points,
+      hm.active_chip_1 as entry_1_chip,
+      hm.active_chip_2 as entry_2_chip
     FROM h2h_matches hm
     JOIN managers m1 ON hm.entry_1_id = m1.entry_id
     JOIN managers m2 ON hm.entry_2_id = m2.entry_id
-    WHERE hm.league_id = $1 AND hm.event >= $2 AND hm.event < $3
+    LEFT JOIN entry_captains ec1 ON hm.entry_1_id = ec1.entry_id AND hm.event = ec1.event
+    LEFT JOIN entry_captains ec2 ON hm.entry_2_id = ec2.entry_id AND hm.event = ec2.event
+    LEFT JOIN manager_history mh1 ON hm.entry_1_id = mh1.entry_id AND hm.event = mh1.event
+    LEFT JOIN manager_history mh2 ON hm.entry_2_id = mh2.entry_id AND hm.event = mh2.event
+    WHERE hm.league_id = $1 AND hm.event >= $2 AND hm.event <= $3
   `, [leagueId, startGW, currentGW]);
 
   const matches = matchesResult.rows;
@@ -120,17 +147,29 @@ async function calculateMonthlyAwards(db: any, leagueId: number, currentGW: numb
 }
 
 async function calculateSeasonAwards(db: any, leagueId: number) {
-  // Get all matches
+  // Get all matches with captain and bench data
   const matchesResult = await db.query(`
     SELECT
       hm.*,
       m1.player_name as entry_1_player,
       m1.team_name as entry_1_team,
       m2.player_name as entry_2_player,
-      m2.team_name as entry_2_team
+      m2.team_name as entry_2_team,
+      ec1.captain_name as entry_1_captain,
+      ec1.captain_points as entry_1_captain_points,
+      ec2.captain_name as entry_2_captain,
+      ec2.captain_points as entry_2_captain_points,
+      mh1.points_on_bench as entry_1_bench_points,
+      mh2.points_on_bench as entry_2_bench_points,
+      hm.active_chip_1 as entry_1_chip,
+      hm.active_chip_2 as entry_2_chip
     FROM h2h_matches hm
     JOIN managers m1 ON hm.entry_1_id = m1.entry_id
     JOIN managers m2 ON hm.entry_2_id = m2.entry_id
+    LEFT JOIN entry_captains ec1 ON hm.entry_1_id = ec1.entry_id AND hm.event = ec1.event
+    LEFT JOIN entry_captains ec2 ON hm.entry_2_id = ec2.entry_id AND hm.event = ec2.event
+    LEFT JOIN manager_history mh1 ON hm.entry_1_id = mh1.entry_id AND hm.event = mh1.event
+    LEFT JOIN manager_history mh2 ON hm.entry_2_id = mh2.entry_id AND hm.event = mh2.event
     WHERE hm.league_id = $1
   `, [leagueId]);
 
