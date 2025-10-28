@@ -25,6 +25,23 @@ function getChipAbbreviation(chipName: string): string {
   return chipMap[normalized] || chipName;
 }
 
+// Helper to get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
+function getOrdinalSuffix(num: number): string {
+  const j = num % 10;
+  const k = num % 100;
+
+  if (j === 1 && k !== 11) {
+    return num + 'st';
+  }
+  if (j === 2 && k !== 12) {
+    return num + 'nd';
+  }
+  if (j === 3 && k !== 13) {
+    return num + 'rd';
+  }
+  return num + 'th';
+}
+
 export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName }: Props) {
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No team data available</div>;
@@ -53,8 +70,7 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
             <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
           </div>
           <div className={styles.rankBadge}>
-            <span className={styles.rankNumber}>{myTeam.rank}</span>
-            <span className={styles.rankLabel}>Rank</span>
+            <span className={styles.rankNumber}>{getOrdinalSuffix(myTeam.rank)}</span>
           </div>
         </div>
       </div>

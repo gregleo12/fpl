@@ -227,9 +227,9 @@
 .rankBadge {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   background: rgba(0, 255, 135, 0.1);
-  padding: 8px 16px;
+  padding: 12px 20px;
   border-radius: 12px;
   border: 2px solid #00ff87;
 }
@@ -254,7 +254,7 @@
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .statCard {
@@ -638,8 +638,7 @@
   .statsGrid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 8px !important;
-    padding: 16px;
+    gap: 12px !important;
   }
 
   .statCard {
