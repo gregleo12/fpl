@@ -216,48 +216,11 @@ export async function GET(
       ]);
     }
 
-    // Calculate H2H league ranks for each gameweek and update rank_change
-    const allEvents = Array.from(new Set(matches.map(m => m.event))).sort((a, b) => a - b);
-    const entryIds = league.standings.results.map(s => s.entry);
+    // TODO: Optimize rank calculation - currently too slow for production
+    // For now, we'll skip calculating historical H2H ranks to avoid 3+ minute hangs
+    // Comeback Kid and Rank Crasher awards won't work until this is optimized
 
-    for (const event of allEvents) {
-      // Calculate standings up to this gameweek
-      const standingsUpToGW = await db.query(`
-        SELECT
-          entry_id,
-          SUM(CASE WHEN winner = entry_id THEN 3 WHEN winner IS NULL THEN 1 ELSE 0 END) as total_points
-        FROM (
-          SELECT entry_1_id as entry_id, winner FROM h2h_matches WHERE league_id = $1 AND event <= $2
-          UNION ALL
-          SELECT entry_2_id as entry_id, winner FROM h2h_matches WHERE league_id = $1 AND event <= $2
-        ) matches
-        GROUP BY entry_id
-        ORDER BY total_points DESC, entry_id
-      `, [leagueId, event]);
-
-      // Assign ranks
-      const rankedEntries = standingsUpToGW.rows;
-      for (let i = 0; i < rankedEntries.length; i++) {
-        const h2hRank = i + 1;
-        const entryId = rankedEntries[i].entry_id;
-
-        // Get previous rank
-        const prevRankResult = await db.query(`
-          SELECT rank FROM manager_history
-          WHERE entry_id = $1 AND event = $2
-        `, [entryId, event - 1]);
-
-        const prevRank = prevRankResult.rows[0]?.rank;
-        const rankChange = prevRank ? (prevRank - h2hRank) : 0;
-
-        // Update manager_history with H2H league rank and rank_change
-        await db.query(`
-          UPDATE manager_history
-          SET rank = $1, rank_change = $2
-          WHERE entry_id = $3 AND event = $4
-        `, [h2hRank, rankChange, entryId, event]);
-      }
-    }
+    console.log('League data fetch completed successfully');
 
     return NextResponse.json({
       league: league.league,
