@@ -129,6 +129,11 @@ export class FPLApiClient {
     const response = await axios.get(`${this.baseUrl}/entry/${entryId}/event/${eventId}/picks/`);
     return response.data;
   }
+
+  async getEventLive(eventId: number): Promise<any> {
+    const response = await axios.get(`${this.baseUrl}/event/${eventId}/live/`);
+    return response.data;
+  }
 }
 
 export const fplApi = new FPLApiClient();

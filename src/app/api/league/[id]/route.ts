@@ -102,38 +102,59 @@ export async function GET(
       )
     );
 
-    // Store captain data from successful picks (with points)
+    // Fetch live event data for all unique gameweeks to get actual player points
+    const uniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
+    console.log(`Fetching live data for ${uniqueEvents.length} gameweeks:`, uniqueEvents);
+
+    const liveDataMap = new Map<number, Map<number, number>>(); // event -> (elementId -> points)
+
+    await Promise.all(
+      uniqueEvents.map(async (event) => {
+        try {
+          const liveData = await fplApi.getEventLive(event);
+          const playerPointsMap = new Map<number, number>();
+
+          // Map each player's ID to their total points for this gameweek
+          for (const element of liveData.elements) {
+            playerPointsMap.set(element.id, element.stats.total_points);
+          }
+
+          liveDataMap.set(event, playerPointsMap);
+          console.log(`GW${event}: Loaded points for ${playerPointsMap.size} players`);
+        } catch (error) {
+          console.error(`Failed to fetch live data for GW${event}:`, error);
+        }
+      })
+    );
+
+    // Store captain data and manager history with actual points
     const captainInserts: Array<any> = [];
     const historyInserts: Array<any> = [];
-
-    // Debug: Log first pick response to see data structure
-    if (picksResults.length > 0 && picksResults[0].status === 'fulfilled') {
-      const firstPick = (picksResults[0] as any).value.data;
-      console.log('Sample picks data structure:', {
-        has_entry_history: !!firstPick.entry_history,
-        entry_history_points: firstPick.entry_history?.points,
-        first_pick: firstPick.picks?.[0],
-        active_chip: firstPick.active_chip
-      });
-    }
 
     for (const result of picksResults) {
       if (result.status === 'fulfilled') {
         const { entryId, event, data } = result.value;
+        const playerPoints = liveDataMap.get(event);
+
+        // Store captain with actual points
         const captain = data.picks.find((p: any) => p.is_captain);
-        if (captain) {
+        if (captain && playerPoints) {
           const captainName = playerMap.get(captain.element) || 'Unknown';
-          const captainPoints = captain.multiplier * captain.points;
-          console.log(`Captain for entry ${entryId} GW${event}: ${captainName}, points: ${captain.points}, multiplier: ${captain.multiplier}, total: ${captainPoints}`);
+          const captainBasePoints = playerPoints.get(captain.element) || 0;
+          const captainPoints = captain.multiplier * captainBasePoints;
           captainInserts.push([entryId, event, captain.element, captainName, captainPoints]);
         }
 
-        // Store manager history with bench points
-        if (data.entry_history) {
+        // Store manager history with actual bench points
+        if (data.entry_history && playerPoints) {
           const eh = data.entry_history;
           const benchPoints = data.picks
             .filter((p: any) => p.position > 11)
-            .reduce((sum: number, p: any) => sum + p.points, 0);
+            .reduce((sum: number, p: any) => {
+              const points = playerPoints.get(p.element) || 0;
+              return sum + points;
+            }, 0);
+
           historyInserts.push([
             entryId,
             event,
