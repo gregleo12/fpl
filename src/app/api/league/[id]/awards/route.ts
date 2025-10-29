@@ -311,7 +311,7 @@ async function calculateComebackKid(db: any, leagueId: number, matches: any[], g
 
   console.log('Comeback Kid Debug - Found entries:', history.length);
   if (history.length > 0) {
-    console.log('Sample rank_change values:', history.map(h => ({
+    console.log('Sample rank_change values:', history.map((h: any) => ({
       name: h.player_name,
       rank_change: h.rank_change,
       rank: h.rank
@@ -383,8 +383,8 @@ function calculateChipMaster(matches: any[]) {
   let chipUsed = '';
 
   console.log('Chip Master Debug - Checking', matches.length, 'matches');
-  const chipsFound = matches.filter(m => m.entry_1_chip || m.entry_2_chip);
-  console.log('Matches with chips:', chipsFound.length, 'Examples:', chipsFound.slice(0, 2).map(m => ({
+  const chipsFound = matches.filter((m: any) => m.entry_1_chip || m.entry_2_chip);
+  console.log('Matches with chips:', chipsFound.length, 'Examples:', chipsFound.slice(0, 2).map((m: any) => ({
     e1_chip: m.entry_1_chip,
     e2_chip: m.entry_2_chip
   })));
@@ -417,8 +417,8 @@ function calculateCaptainFantastic(matches: any[]) {
   let totalPoints = 0;
 
   console.log('Captain Fantastic Debug - Checking', matches.length, 'matches');
-  const captainsFound = matches.filter(m => m.entry_1_captain_points || m.entry_2_captain_points);
-  console.log('Matches with captain data:', captainsFound.length, 'Examples:', captainsFound.slice(0, 2).map(m => ({
+  const captainsFound = matches.filter((m: any) => m.entry_1_captain_points || m.entry_2_captain_points);
+  console.log('Matches with captain data:', captainsFound.length, 'Examples:', captainsFound.slice(0, 2).map((m: any) => ({
     e1_cap: m.entry_1_captain,
     e1_cap_pts: m.entry_1_captain_points,
     e1_total: m.entry_1_points
@@ -458,8 +458,8 @@ function calculateBenchDisaster(matches: any[]) {
   let loser: any = null;
 
   console.log('Bench Disaster Debug - Checking', matches.length, 'matches');
-  const benchData = matches.filter(m => m.entry_1_bench_points || m.entry_2_bench_points);
-  console.log('Matches with bench data:', benchData.length, 'Examples:', benchData.slice(0, 2).map(m => ({
+  const benchData = matches.filter((m: any) => m.entry_1_bench_points || m.entry_2_bench_points);
+  console.log('Matches with bench data:', benchData.length, 'Examples:', benchData.slice(0, 2).map((m: any) => ({
     e1_bench: m.entry_1_bench_points,
     e2_bench: m.entry_2_bench_points
   })));
