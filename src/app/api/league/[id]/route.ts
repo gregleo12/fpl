@@ -112,11 +112,19 @@ export async function GET(
       uniqueEvents.map(async (event) => {
         try {
           const liveData = await fplApi.getEventLive(event);
+          console.log(`GW${event}: Live data structure:`, {
+            hasElements: !!liveData.elements,
+            elementsLength: liveData.elements?.length,
+            keys: Object.keys(liveData).slice(0, 10)
+          });
+
           const playerPointsMap = new Map<number, number>();
 
           // Map each player's ID to their total points for this gameweek
-          for (const element of liveData.elements) {
-            playerPointsMap.set(element.id, element.stats.total_points);
+          if (liveData.elements && Array.isArray(liveData.elements)) {
+            for (const element of liveData.elements) {
+              playerPointsMap.set(element.id, element.stats.total_points);
+            }
           }
 
           liveDataMap.set(event, playerPointsMap);
