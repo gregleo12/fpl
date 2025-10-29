@@ -14,8 +14,16 @@ export async function GET(
     }
 
     const league = await fplApi.getH2HLeague(leagueId);
-    const matches = await fplApi.getAllH2HMatches(leagueId);
+    const allMatches = await fplApi.getAllH2HMatches(leagueId);
     const bootstrap = await fplApi.getBootstrapData();
+
+    // Filter to only include FINISHED gameweeks
+    const finishedGameweeks = bootstrap.events
+      .filter(event => event.finished)
+      .map(event => event.id);
+    const matches = allMatches.filter(match => finishedGameweeks.includes(match.event));
+
+    console.log(`Total matches: ${allMatches.length}, Finished matches: ${matches.length}`);
 
     const db = await getDatabase();
 
@@ -103,15 +111,9 @@ export async function GET(
     );
 
     // Fetch live event data for all unique gameweeks to get actual player points
-    // Only fetch for FINISHED gameweeks
-    const allUniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
-    const finishedEvents = bootstrap.events
-      .filter(event => event.finished)
-      .map(event => event.id);
-    const uniqueEvents = allUniqueEvents.filter(event => finishedEvents.includes(event));
-
-    console.log(`Fetching live data for ${uniqueEvents.length} FINISHED gameweeks:`, uniqueEvents);
-    console.log(`Skipping ${allUniqueEvents.length - uniqueEvents.length} unfinished gameweeks`);
+    // Since we filtered matches to only finished ones, all picks should be from finished GWs
+    const uniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
+    console.log(`Fetching live data for ${uniqueEvents.length} finished gameweeks:`, uniqueEvents);
 
     const liveDataMap = new Map<number, Map<number, number>>(); // event -> (elementId -> points)
 
@@ -230,7 +232,8 @@ export async function GET(
       }
     }
 
-    for (const match of matches) {
+    // Store ALL matches (including future ones) but chip data only for finished matches
+    for (const match of allMatches) {
       // Calculate winner based on points
       let winner = null;
       if (match.entry_1_points > match.entry_2_points) {
@@ -274,7 +277,7 @@ export async function GET(
     return NextResponse.json({
       league: league.league,
       standings: league.standings.results,
-      matches: matches
+      matches: allMatches
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);
