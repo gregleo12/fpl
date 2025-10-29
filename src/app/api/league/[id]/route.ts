@@ -105,6 +105,18 @@ export async function GET(
     // Store captain data from successful picks (with points)
     const captainInserts: Array<any> = [];
     const historyInserts: Array<any> = [];
+
+    // Debug: Log first pick response to see data structure
+    if (picksResults.length > 0 && picksResults[0].status === 'fulfilled') {
+      const firstPick = (picksResults[0] as any).value.data;
+      console.log('Sample picks data structure:', {
+        has_entry_history: !!firstPick.entry_history,
+        entry_history_points: firstPick.entry_history?.points,
+        first_pick: firstPick.picks?.[0],
+        active_chip: firstPick.active_chip
+      });
+    }
+
     for (const result of picksResults) {
       if (result.status === 'fulfilled') {
         const { entryId, event, data } = result.value;
@@ -112,6 +124,7 @@ export async function GET(
         if (captain) {
           const captainName = playerMap.get(captain.element) || 'Unknown';
           const captainPoints = captain.multiplier * captain.points;
+          console.log(`Captain for entry ${entryId} GW${event}: ${captainName}, points: ${captain.points}, multiplier: ${captain.multiplier}, total: ${captainPoints}`);
           captainInserts.push([entryId, event, captain.element, captainName, captainPoints]);
         }
 
