@@ -103,8 +103,15 @@ export async function GET(
     );
 
     // Fetch live event data for all unique gameweeks to get actual player points
-    const uniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
-    console.log(`Fetching live data for ${uniqueEvents.length} gameweeks:`, uniqueEvents);
+    // Only fetch for FINISHED gameweeks
+    const allUniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
+    const finishedEvents = bootstrap.events
+      .filter(event => event.finished)
+      .map(event => event.id);
+    const uniqueEvents = allUniqueEvents.filter(event => finishedEvents.includes(event));
+
+    console.log(`Fetching live data for ${uniqueEvents.length} FINISHED gameweeks:`, uniqueEvents);
+    console.log(`Skipping ${allUniqueEvents.length - uniqueEvents.length} unfinished gameweeks`);
 
     const liveDataMap = new Map<number, Map<number, number>>(); // event -> (elementId -> points)
 
