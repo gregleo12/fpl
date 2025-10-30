@@ -295,41 +295,33 @@ function calculateToughWeek(matches: any[], gameweek: number) {
 }
 
 async function calculateComebackKid(db: any, leagueId: number, matches: any[], gameweek: number) {
-  // Get rank changes for the gameweek
-  const historyResult = await db.query(`
-    SELECT
-      mh.*,
-      m.player_name,
-      m.team_name
-    FROM manager_history mh
-    JOIN managers m ON mh.entry_id = m.entry_id
-    JOIN league_standings ls ON m.entry_id = ls.entry_id
-    WHERE ls.league_id = $1 AND mh.event = $2
-  `, [leagueId, gameweek]);
+  if (gameweek < 2) return null; // Need at least 2 gameweeks to compare
 
-  const history = historyResult.rows;
+  // Calculate H2H standings for current and previous gameweek
+  const currentStandings = await calculateH2HStandingsForGameweek(db, leagueId, gameweek);
+  const previousStandings = await calculateH2HStandingsForGameweek(db, leagueId, gameweek - 1);
 
-  console.log('Comeback Kid Debug - Found entries:', history.length);
-  if (history.length > 0) {
-    console.log('Sample rank_change values:', history.map((h: any) => ({
-      name: h.player_name,
-      rank_change: h.rank_change,
-      rank: h.rank
-    })));
-  }
+  // Create maps for quick lookup
+  const prevRankMap = new Map<number, number>();
+  previousStandings.forEach((standing: any, index: number) => {
+    prevRankMap.set(standing.entry_id, index + 1); // rank is 1-indexed
+  });
 
   let biggestRise = 0;
   let winner: any = null;
 
-  for (const entry of history) {
-    if (entry.rank_change && entry.rank_change > 0) { // Positive means rank improved (went from 5 to 3 = +2)
-      const rise = entry.rank_change;
-      if (rise > biggestRise) {
-        biggestRise = rise;
-        winner = { manager: entry.player_name, team: entry.team_name };
+  currentStandings.forEach((standing: any, index: number) => {
+    const currentRank = index + 1;
+    const previousRank = prevRankMap.get(standing.entry_id);
+
+    if (previousRank) {
+      const rankChange = previousRank - currentRank; // Positive means improved (5→3 = +2)
+      if (rankChange > biggestRise) {
+        biggestRise = rankChange;
+        winner = { manager: standing.player_name, team: standing.team_name };
       }
     }
-  }
+  });
 
   console.log('Comeback Kid result:', winner, 'Rise:', biggestRise);
 
@@ -340,34 +332,33 @@ async function calculateComebackKid(db: any, leagueId: number, matches: any[], g
 }
 
 async function calculateRankCrasher(db: any, leagueId: number, matches: any[], gameweek: number) {
-  // Get rank changes for the gameweek
-  const historyResult = await db.query(`
-    SELECT
-      mh.*,
-      m.player_name,
-      m.team_name
-    FROM manager_history mh
-    JOIN managers m ON mh.entry_id = m.entry_id
-    JOIN league_standings ls ON m.entry_id = ls.entry_id
-    WHERE ls.league_id = $1 AND mh.event = $2
-  `, [leagueId, gameweek]);
+  if (gameweek < 2) return null; // Need at least 2 gameweeks to compare
 
-  const history = historyResult.rows;
+  // Calculate H2H standings for current and previous gameweek
+  const currentStandings = await calculateH2HStandingsForGameweek(db, leagueId, gameweek);
+  const previousStandings = await calculateH2HStandingsForGameweek(db, leagueId, gameweek - 1);
 
-  console.log('Rank Crasher Debug - Found entries:', history.length);
+  // Create maps for quick lookup
+  const prevRankMap = new Map<number, number>();
+  previousStandings.forEach((standing: any, index: number) => {
+    prevRankMap.set(standing.entry_id, index + 1); // rank is 1-indexed
+  });
 
   let biggestFall = 0;
   let loser: any = null;
 
-  for (const entry of history) {
-    if (entry.rank_change && entry.rank_change < 0) { // Negative means rank worsened (went from 3 to 5 = -2)
-      const fall = Math.abs(entry.rank_change);
-      if (fall > biggestFall) {
-        biggestFall = fall;
-        loser = { manager: entry.player_name, team: entry.team_name };
+  currentStandings.forEach((standing: any, index: number) => {
+    const currentRank = index + 1;
+    const previousRank = prevRankMap.get(standing.entry_id);
+
+    if (previousRank) {
+      const rankChange = previousRank - currentRank; // Negative means worsened (3→5 = -2)
+      if (rankChange < 0 && Math.abs(rankChange) > biggestFall) {
+        biggestFall = Math.abs(rankChange);
+        loser = { manager: standing.player_name, team: standing.team_name };
       }
     }
-  }
+  });
 
   console.log('Rank Crasher result:', loser, 'Fall:', biggestFall);
 
@@ -1178,4 +1169,56 @@ function calculateHitParade(history: any[]) {
     team: loser.team,
     value: `-${mostHits} pts (${loser.count} hits)`
   } : null;
+}
+
+// Helper function to calculate H2H standings for a specific gameweek
+async function calculateH2HStandingsForGameweek(db: any, leagueId: number, gameweek: number) {
+  // Get all matches up to and including the specified gameweek
+  const result = await db.query(`
+    WITH match_results AS (
+      SELECT
+        entry_1_id AS entry_id,
+        CASE
+          WHEN winner = entry_1_id THEN 3
+          WHEN winner IS NULL THEN 1
+          ELSE 0
+        END AS points,
+        entry_1_points AS points_for,
+        entry_2_points AS points_against
+      FROM h2h_matches
+      WHERE league_id = $1 AND event <= $2
+
+      UNION ALL
+
+      SELECT
+        entry_2_id AS entry_id,
+        CASE
+          WHEN winner = entry_2_id THEN 3
+          WHEN winner IS NULL THEN 1
+          ELSE 0
+        END AS points,
+        entry_2_points AS points_for,
+        entry_1_points AS points_against
+      FROM h2h_matches
+      WHERE league_id = $1 AND event <= $2
+    ),
+    standings AS (
+      SELECT
+        mr.entry_id,
+        SUM(mr.points) AS total_points,
+        SUM(mr.points_for) AS total_points_for,
+        SUM(mr.points_against) AS total_points_against
+      FROM match_results mr
+      GROUP BY mr.entry_id
+    )
+    SELECT
+      s.*,
+      m.player_name,
+      m.team_name
+    FROM standings s
+    JOIN managers m ON s.entry_id = m.entry_id
+    ORDER BY s.total_points DESC, s.total_points_for DESC, s.entry_id ASC
+  `, [leagueId, gameweek]);
+
+  return result.rows;
 }
