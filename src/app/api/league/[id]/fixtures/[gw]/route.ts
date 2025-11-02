@@ -85,11 +85,15 @@ export async function GET(
     let liveScoresMap: Map<number, number> | null = null;
     if (status === 'in_progress') {
       try {
+        console.log(`GW${gw} is IN_PROGRESS - fetching live scores from FPL API...`);
         liveScoresMap = await fetchLiveScoresFromPicks(matches, gw);
+        console.log(`Fetched live scores for ${liveScoresMap.size} entries`);
       } catch (error) {
         console.error('Error fetching live scores:', error);
         // Fall back to database scores if live fetch fails
       }
+    } else {
+      console.log(`GW${gw} status: ${status} - using database scores`);
     }
 
     // Format matches for response
@@ -97,6 +101,10 @@ export async function GET(
       // Use live scores from picks data if available, otherwise use database scores
       const entry1Score = liveScoresMap?.get(match.entry_1_id) ?? match.entry_1_points ?? 0;
       const entry2Score = liveScoresMap?.get(match.entry_2_id) ?? match.entry_2_points ?? 0;
+
+      if (liveScoresMap) {
+        console.log(`Match ${match.entry_1_player} vs ${match.entry_2_player}: ${entry1Score} - ${entry2Score} (live: ${liveScoresMap.has(match.entry_1_id)}, db: ${match.entry_1_points})`);
+      }
 
       return {
         id: match.id,
@@ -149,21 +157,23 @@ async function fetchLiveScoresFromPicks(
     entryIds.add(match.entry_2_id);
   });
 
+  console.log(`Fetching live scores for ${entryIds.size} entries in GW${gw}...`);
+
   // Fetch picks data for all entries in parallel
   const pickPromises = Array.from(entryIds).map(async (entryId) => {
     try {
-      const response = await fetch(
-        `https://fantasy.premierleague.com/api/entry/${entryId}/event/${gw}/picks/`
-      );
+      const url = `https://fantasy.premierleague.com/api/entry/${entryId}/event/${gw}/picks/`;
+      const response = await fetch(url);
 
       if (!response.ok) {
-        console.error(`Failed to fetch picks for entry ${entryId}`);
+        console.error(`Failed to fetch picks for entry ${entryId}: ${response.status}`);
         return null;
       }
 
       const data = await response.json();
       // Use official score from entry_history (includes auto-subs)
       const score = data.entry_history?.points || 0;
+      console.log(`Entry ${entryId}: ${score} pts`);
       return { entryId, score };
     } catch (error) {
       console.error(`Error fetching picks for entry ${entryId}:`, error);
@@ -180,5 +190,6 @@ async function fetchLiveScoresFromPicks(
     }
   });
 
+  console.log(`Successfully fetched ${scoresMap.size} live scores`);
   return scoresMap;
 }
