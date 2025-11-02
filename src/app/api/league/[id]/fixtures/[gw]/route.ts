@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 
+// Force dynamic rendering and disable caching for live scores
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string; gw: string } }
@@ -129,11 +133,23 @@ export async function GET(
       };
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       event: gw,
       status,
       matches: formattedMatches
     });
+
+    // Add cache control headers - no caching for in_progress gameweeks
+    if (status === 'in_progress') {
+      response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      response.headers.set('Pragma', 'no-cache');
+      response.headers.set('Expires', '0');
+    } else {
+      // Allow caching for completed/upcoming gameweeks (5 minutes)
+      response.headers.set('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    }
+
+    return response;
   } catch (error: any) {
     console.error('Error fetching fixtures:', error);
     return NextResponse.json(

@@ -246,10 +246,26 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     }
   }, [currentGW, initialGWSet]);
 
+  // Auto-refresh for live gameweeks every 30 seconds
+  useEffect(() => {
+    if (fixturesData?.status === 'in_progress') {
+      const interval = setInterval(() => {
+        console.log('Auto-refreshing live gameweek scores...');
+        fetchFixtures();
+      }, 30000); // 30 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [fixturesData?.status]);
+
   async function fetchFixtures() {
     setLoading(true);
     try {
-      const response = await fetch(`/api/league/${leagueId}/fixtures/${currentGW}`);
+      // Add cache busting for fresh data (especially important for live gameweeks)
+      const cacheBuster = `?t=${Date.now()}`;
+      const response = await fetch(`/api/league/${leagueId}/fixtures/${currentGW}${cacheBuster}`, {
+        cache: 'no-store'
+      });
       if (!response.ok) throw new Error('Failed to fetch fixtures');
 
       const data = await response.json();
