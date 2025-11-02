@@ -139,11 +139,11 @@ function calculateLiveStats(
 
   // Get transfer cost (hits)
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
-  console.log(`Transfer cost: ${transferCost}`);
+  console.log(`Transfer cost from API: ${transferCost}`);
 
-  // Calculate final live score (subtract hits)
-  const currentScore = liveScore + transferCost; // transferCost is negative
-  console.log(`Live calculated score for ${manager}: ${currentScore} (${liveScore} from players + ${transferCost} from hits)`);
+  // Calculate final live score (subtract hits - API returns positive values)
+  const currentScore = liveScore - Math.abs(transferCost);
+  console.log(`Live calculated score for ${manager}: ${currentScore} (${liveScore} from players - ${Math.abs(transferCost)} from hits)`);
 
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
@@ -352,13 +352,13 @@ function calculateDifferentials(
   console.log(`Transfer hits - Player1: ${hits1}, Player2: ${hits2}`);
 
   // Only show transfer hit as a differential if one player has it and the other doesn't
-  // Note: FPL API returns 0 for no hits, NEGATIVE for hits taken (e.g., -4, -8)
+  // Note: FPL API returns POSITIVE values for hits taken (e.g., 4, 8), 0 for no hits
   if (hits1 !== hits2) {
-    // Determine which player took MORE hits (more negative = worse)
-    if (hits1 < hits2) {
-      // Player 1 has MORE negative value = took more hits
-      const diffPoints = hits1 - hits2; // e.g., -4 - 0 = -4
-      const numHits = Math.abs(diffPoints) / 4;
+    // Determine which player took MORE hits (higher value = worse)
+    if (hits1 > hits2) {
+      // Player 1 took MORE hits (higher positive value)
+      const diffPoints = -(hits1 - hits2); // Make it negative: -(4 - 0) = -4
+      const numHits = (hits1 - hits2) / 4;
       console.log(`Adding ${diffPoints} pts transfer hit to player1 (${numHits} hits)`);
       player1Differentials.push({
         name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
@@ -368,9 +368,9 @@ function calculateDifferentials(
         hasPlayed: true,
       });
     } else {
-      // Player 2 has MORE negative value = took more hits
-      const diffPoints = hits2 - hits1; // e.g., -4 - 0 = -4
-      const numHits = Math.abs(diffPoints) / 4;
+      // Player 2 took MORE hits (higher positive value)
+      const diffPoints = -(hits2 - hits1); // Make it negative: -(4 - 0) = -4
+      const numHits = (hits2 - hits1) / 4;
       console.log(`Adding ${diffPoints} pts transfer hit to player2 (${numHits} hits)`);
       player2Differentials.push({
         name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
