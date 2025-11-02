@@ -345,31 +345,35 @@ function calculateDifferentials(
   const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
-  // Add transfer hits differential if there's a difference
+  // Add transfer hits differential ONLY if there's a difference
   const hits1 = picks1Data.entry_history?.event_transfers_cost || 0;
   const hits2 = picks2Data.entry_history?.event_transfers_cost || 0;
 
-  // Show transfer hit in the column of whoever took the hit
-  if (hits1 < hits2) {
-    // Player 1 has more hits (more negative) - show in player1's column
-    const numHits = Math.abs(hits1) / 4; // Each hit is -4 pts
-    player1Differentials.push({
-      name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: hits1, // The actual negative points
-      position: 0,
-      isCaptain: false,
-      hasPlayed: true,
-    });
-  } else if (hits1 > hits2) {
-    // Player 2 has more hits (more negative) - show in player2's column
-    const numHits = Math.abs(hits2) / 4; // Each hit is -4 pts
-    player2Differentials.push({
-      name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: hits2, // The actual negative points
-      position: 0,
-      isCaptain: false,
-      hasPlayed: true,
-    });
+  // Only add if there's an actual difference (one player took more hits than the other)
+  if (hits1 !== hits2) {
+    if (hits1 < hits2) {
+      // Player 1 took MORE hits (more negative value = worse)
+      // Show the differential as negative points in player1's column
+      const diffHits = Math.abs(hits1 - hits2) / 4;
+      player1Differentials.push({
+        name: diffHits === 1 ? 'Transfer Hit' : `Transfer Hits (${diffHits}x)`,
+        points: hits1 - hits2, // The differential (negative)
+        position: 0,
+        isCaptain: false,
+        hasPlayed: true,
+      });
+    } else {
+      // Player 2 took MORE hits (more negative value = worse)
+      // Show the differential as negative points in player2's column
+      const diffHits = Math.abs(hits2 - hits1) / 4;
+      player2Differentials.push({
+        name: diffHits === 1 ? 'Transfer Hit' : `Transfer Hits (${diffHits}x)`,
+        points: hits2 - hits1, // The differential (negative)
+        position: 0,
+        isCaptain: false,
+        hasPlayed: true,
+      });
+    }
   }
 
   return {
