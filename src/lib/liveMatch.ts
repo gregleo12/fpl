@@ -348,29 +348,27 @@ function calculateDifferentials(
   // Add transfer hits differential if there's a difference
   const hits1 = picks1Data.entry_history?.event_transfers_cost || 0;
   const hits2 = picks2Data.entry_history?.event_transfers_cost || 0;
-  const hitsDiff = hits1 - hits2;
 
-  if (hitsDiff < 0) {
-    // Player 1 has MORE hits (worse) - hits are negative, so more negative = more hits
-    // The differential is the extra negative points player1 has
+  // Show transfer hit in the column of whoever took the hit
+  if (hits1 < hits2) {
+    // Player 1 has more hits (more negative) - show in player1's column
     const numHits = Math.abs(hits1) / 4; // Each hit is -4 pts
     player1Differentials.push({
       name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: hitsDiff, // The differential (negative)
+      points: hits1, // The actual negative points
       position: 0,
       isCaptain: false,
-      hasPlayed: true, // Hits have already occurred
+      hasPlayed: true,
     });
-  } else if (hitsDiff > 0) {
-    // Player 2 has MORE hits (worse) - hits are negative, so more negative = more hits
-    // The differential is the extra negative points player2 has
+  } else if (hits1 > hits2) {
+    // Player 2 has more hits (more negative) - show in player2's column
     const numHits = Math.abs(hits2) / 4; // Each hit is -4 pts
     player2Differentials.push({
       name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: -hitsDiff, // The differential (negative)
+      points: hits2, // The actual negative points
       position: 0,
       isCaptain: false,
-      hasPlayed: true, // Hits have already occurred
+      hasPlayed: true,
     });
   }
 
