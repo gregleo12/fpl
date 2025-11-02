@@ -306,6 +306,32 @@ function calculateDifferentials(
   const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
+  // Add transfer hits differential if there's a difference
+  const hits1 = picks1Data.entry_history?.event_transfers_cost || 0;
+  const hits2 = picks2Data.entry_history?.event_transfers_cost || 0;
+  const hitsDiff = hits1 - hits2;
+
+  if (hitsDiff < 0) {
+    // Player 1 has fewer hits (better), so player 2 has more hits (worse)
+    const extraHits = Math.abs(hitsDiff);
+    const numHits = Math.abs(hits2) / 4; // Each hit is -4 pts
+    player2Differentials.push({
+      name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
+      points: hits2, // Negative points
+      position: 0,
+      isCaptain: false,
+    });
+  } else if (hitsDiff > 0) {
+    // Player 2 has fewer hits (better), so player 1 has more hits (worse)
+    const numHits = Math.abs(hits1) / 4; // Each hit is -4 pts
+    player1Differentials.push({
+      name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
+      points: hits1, // Negative points
+      position: 0,
+      isCaptain: false,
+    });
+  }
+
   return {
     player1Differentials,
     player2Differentials,
