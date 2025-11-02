@@ -38,10 +38,19 @@ export async function getLiveMatchData(
       bootstrapData
     );
 
+    // Calculate common players
+    const commonPlayers = calculateCommonPlayers(
+      picks1Data,
+      picks2Data,
+      liveData,
+      bootstrapData
+    );
+
     return {
       gameweek,
       player1: { ...player1Data, differentials: player1Differentials },
       player2: { ...player2Data, differentials: player2Differentials },
+      commonPlayers,
     };
   } catch (error) {
     console.error('Error fetching live match data:', error);
@@ -61,10 +70,6 @@ function calculateLiveStats(
 
   console.log('Calculating stats for:', manager);
   console.log('Active chip:', picksData.active_chip);
-
-  // Use official score from FPL (includes auto-subs)
-  const currentScore = picksData.entry_history?.points || 0;
-  console.log(`Official score for ${manager}: ${currentScore}`);
 
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
@@ -87,6 +92,7 @@ function calculateLiveStats(
   let playersPlayed = 0;
   let playersRemaining = 0;
   let benchPoints = 0;
+  let liveScore = 0; // Calculate live score from individual players
 
   picks.forEach((pick: any) => {
     const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
@@ -101,6 +107,13 @@ function calculateLiveStats(
       // Starting 11
       console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts`);
 
+      // Add to live score (with captain multiplier)
+      if (pick.is_captain) {
+        liveScore += rawPoints * captainMultiplier;
+      } else {
+        liveScore += rawPoints;
+      }
+
       if (hasPlayed || fixtureFinished) {
         playersPlayed++;
       } else {
@@ -113,6 +126,8 @@ function calculateLiveStats(
 
       // If Bench Boost is active, count bench players towards total
       if (isBenchBoost) {
+        liveScore += rawPoints;
+
         if (hasPlayed || fixtureFinished) {
           playersPlayed++;
         } else {
@@ -122,11 +137,15 @@ function calculateLiveStats(
     }
   });
 
-  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
-
   // Get transfer cost (hits)
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   console.log(`Transfer cost: ${transferCost}`);
+
+  // Calculate final live score (subtract hits)
+  const currentScore = liveScore + transferCost; // transferCost is negative
+  console.log(`Live calculated score for ${manager}: ${currentScore} (${liveScore} from players + ${transferCost} from hits)`);
+
+  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
   return {
     entryId,
@@ -358,4 +377,73 @@ function calculateDifferentials(
     player1Differentials,
     player2Differentials,
   };
+}
+
+function calculateCommonPlayers(
+  picks1Data: any,
+  picks2Data: any,
+  liveData: any,
+  bootstrapData: any
+) {
+  const picks1 = picks1Data.picks;
+  const picks2 = picks2Data.picks;
+
+  // Get element IDs for both teams (only starting 11 + bench boost)
+  const isBenchBoost1 = picks1Data.active_chip === 'bboost';
+  const isBenchBoost2 = picks1Data.active_chip === 'bboost';
+
+  const team1ElementIds = new Set(
+    picks1
+      .filter((p: any) => p.position <= 11 || isBenchBoost1)
+      .map((p: any) => p.element)
+  );
+  const team2ElementIds = new Set(
+    picks2
+      .filter((p: any) => p.position <= 11 || isBenchBoost2)
+      .map((p: any) => p.element)
+  );
+
+  // Find common players
+  const commonElementIds = Array.from(team1ElementIds).filter((id: any) =>
+    team2ElementIds.has(id)
+  );
+
+  // Get details for common players
+  const commonPlayers = commonElementIds.map((elementId: any) => {
+    const element = bootstrapData.elements.find((e: any) => e.id === elementId);
+    const liveElement = liveData.elements.find((e: any) => e.id === elementId);
+    const basePoints = liveElement?.stats?.total_points || 0;
+
+    // Check if either player captained this player
+    const pick1 = picks1.find((p: any) => p.element === elementId);
+    const pick2 = picks2.find((p: any) => p.element === elementId);
+
+    const player1Captain = pick1?.is_captain || false;
+    const player2Captain = pick2?.is_captain || false;
+
+    // Calculate points for each team
+    let player1Points = basePoints;
+    let player2Points = basePoints;
+
+    if (player1Captain) {
+      const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
+      player1Points = basePoints * multiplier;
+    }
+
+    if (player2Captain) {
+      const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
+      player2Points = basePoints * multiplier;
+    }
+
+    return {
+      name: element?.web_name || 'Unknown',
+      points: basePoints,
+      player1Points,
+      player2Points,
+      player1Captain,
+      player2Captain,
+    };
+  });
+
+  return commonPlayers.sort((a: any, b: any) => b.points - a.points);
 }

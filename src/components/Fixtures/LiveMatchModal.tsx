@@ -341,6 +341,52 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             </div>
           </div>
         </div>
+
+        {/* Common Players Section */}
+        {matchData.commonPlayers.length > 0 && (
+          <div className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <span className={styles.emoji}>👥</span>
+              <span className={styles.sectionTitle}>Common Players</span>
+            </div>
+
+            <div className={styles.differentialsGrid}>
+              {/* Player 1 Common Players */}
+              <div className={styles.differentialsBox}>
+                <div className={styles.playersList}>
+                  {matchData.commonPlayers.map((player, idx) => (
+                    <div key={idx} className={styles.playerRow}>
+                      <span className={styles.playerName}>
+                        {player.name}
+                        {player.player1Captain && <span className={styles.captainBadge}>(C)</span>}
+                      </span>
+                      <span className={`${styles.playerPoints} ${player.player1Points > 0 ? styles.positive : ''}`}>
+                        {player.player1Points} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Player 2 Common Players */}
+              <div className={styles.differentialsBox}>
+                <div className={styles.playersList}>
+                  {matchData.commonPlayers.map((player, idx) => (
+                    <div key={idx} className={styles.playerRow}>
+                      <span className={styles.playerName}>
+                        {player.name}
+                        {player.player2Captain && <span className={styles.captainBadge}>(C)</span>}
+                      </span>
+                      <span className={`${styles.playerPoints} ${player.player2Points > 0 ? styles.positive : ''}`}>
+                        {player.player2Points} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>

@@ -6,6 +6,15 @@ export interface DifferentialPlayer {
   hasPlayed: boolean; // Whether the player has played (minutes > 0 or fixture finished)
 }
 
+export interface CommonPlayer {
+  name: string;
+  points: number; // Base points
+  player1Points: number; // Points for player 1 (with captain multiplier if applicable)
+  player2Points: number; // Points for player 2 (with captain multiplier if applicable)
+  player1Captain: boolean;
+  player2Captain: boolean;
+}
+
 export interface LiveMatchData {
   gameweek: number;
   player1: {
@@ -44,6 +53,7 @@ export interface LiveMatchData {
     transferCost: number;
     differentials: DifferentialPlayer[];
   };
+  commonPlayers: CommonPlayer[];
 }
 
 export interface WinRequirements {
