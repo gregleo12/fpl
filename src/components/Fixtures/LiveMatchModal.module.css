@@ -9,7 +9,7 @@
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(4px);
   z-index: 9999;
-  overflow-y: auto;
+  overflow: hidden; /* Prevent overlay from scrolling */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,8 +52,11 @@
 
 .scrollableContent {
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 0 24px 24px 24px;
   flex: 1;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+  overscroll-behavior: contain; /* Prevent scroll chaining to parent */
 }
 
 @keyframes slideUp {
