@@ -829,8 +829,12 @@
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  min-width: 90px;
+  text-align: center;
 }
 
 .liveToggle:hover:not(:disabled) {
@@ -844,9 +848,9 @@
 }
 
 .liveToggleActive {
-  background: #ff4757;
-  border-color: #ff4757;
-  color: white;
+  background: #ff4757 !important;
+  border-color: #ff4757 !important;
+  color: white !important;
   animation: pulse 2s ease-in-out infinite;
 }
 
