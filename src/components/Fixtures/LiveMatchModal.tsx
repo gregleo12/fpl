@@ -72,18 +72,26 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
             <span className={styles.sectionTitle}>Captains</span>
           </div>
 
-          <div className={styles.captainGrid}>
-            <div className={styles.captainBox}>
-              <div className={styles.captainName}>{matchData.player1.captain.name}</div>
-              <div className={styles.captainPoints}>
-                {matchData.player1.captain.points} pts
+          <div className={styles.differentialsGrid}>
+            <div className={styles.differentialsBox}>
+              <div className={styles.playersList}>
+                <div className={styles.playerRow}>
+                  <span className={styles.playerName}>{matchData.player1.captain.name}</span>
+                  <span className={`${styles.playerPoints} ${matchData.player1.captain.points > 0 ? styles.positive : ''}`}>
+                    {matchData.player1.captain.points} pts
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className={styles.captainBox}>
-              <div className={styles.captainName}>{matchData.player2.captain.name}</div>
-              <div className={styles.captainPoints}>
-                {matchData.player2.captain.points} pts
+            <div className={styles.differentialsBox}>
+              <div className={styles.playersList}>
+                <div className={styles.playerRow}>
+                  <span className={styles.playerName}>{matchData.player2.captain.name}</span>
+                  <span className={`${styles.playerPoints} ${matchData.player2.captain.points > 0 ? styles.positive : ''}`}>
+                    {matchData.player2.captain.points} pts
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -189,15 +197,12 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
                   <>
                     <div className={styles.requirementMain}>Needs +{winRequirements.pointsNeeded} diff pts</div>
                     <div className={styles.requirementDetail}>
-                      {matchData.player1.playersRemaining} players left
+                      Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/diff player
                     </div>
                   </>
                 ) : (
                   <>
                     <div className={styles.requirementMain}>Level on Differentials</div>
-                    <div className={styles.requirementDetail}>
-                      {matchData.player1.playersRemaining} players left
-                    </div>
                   </>
                 )}
               </div>
@@ -216,15 +221,12 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
                   <>
                     <div className={styles.requirementMain}>Needs +{winRequirements.pointsNeeded} diff pts</div>
                     <div className={styles.requirementDetail}>
-                      {matchData.player2.playersRemaining} players left
+                      Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/diff player
                     </div>
                   </>
                 ) : (
                   <>
                     <div className={styles.requirementMain}>Level on Differentials</div>
-                    <div className={styles.requirementDetail}>
-                      {matchData.player2.playersRemaining} players left
-                    </div>
                   </>
                 )}
               </div>
@@ -353,20 +355,22 @@ function calculateWinRequirements(matchData: LiveMatchData, isMyMatch: boolean):
   // Calculate the differential margin (how much ahead/behind based on differentials alone)
   const diffMargin = player1DiffTotal - player2DiffTotal;
 
-  const yourPlayersLeft = matchData.player1.playersRemaining;
-  const theirPlayersLeft = matchData.player2.playersRemaining;
+  // Count differential players remaining (haven't played yet)
+  const player1DiffRemaining = matchData.player1.differentials.filter(p => !p.hasPlayed).length;
+  const player2DiffRemaining = matchData.player2.differentials.filter(p => !p.hasPlayed).length;
 
   // Winning on differentials
   if (diffMargin > 0) {
     const opponentNeeds = diffMargin + 1;
+    const avgPerPlayer = player2DiffRemaining > 0 ? opponentNeeds / player2DiffRemaining : 0;
 
     return {
       status: 'winning',
       margin: Math.abs(diffMargin),
       pointsNeeded: opponentNeeds,
-      avgPerPlayer: 0,
-      opponentAvgNeeded: 0,
-      message: `Leading by ${diffMargin} differential pts. Opponent needs ${opponentNeeds}+ diff pts.`,
+      avgPerPlayer: avgPerPlayer,
+      opponentAvgNeeded: avgPerPlayer,
+      message: `Leading by ${diffMargin} differential pts. Opponent needs ${opponentNeeds}+ diff pts (avg ${avgPerPlayer.toFixed(1)}/diff player).`,
     };
   }
 
@@ -384,13 +388,14 @@ function calculateWinRequirements(matchData: LiveMatchData, isMyMatch: boolean):
 
   // Losing on differentials
   const youNeed = Math.abs(diffMargin) + 1;
+  const avgPerPlayer = player1DiffRemaining > 0 ? youNeed / player1DiffRemaining : 0;
 
   return {
     status: 'losing',
     margin: Math.abs(diffMargin),
     pointsNeeded: youNeed,
-    avgPerPlayer: 0,
+    avgPerPlayer: avgPerPlayer,
     opponentAvgNeeded: 0,
-    message: `Need ${youNeed}+ differential pts from remaining players.`,
+    message: `Need ${youNeed}+ differential pts from ${player1DiffRemaining} diff players (avg ${avgPerPlayer.toFixed(1)}/player).`,
   };
 }

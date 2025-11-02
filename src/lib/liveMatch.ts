@@ -184,6 +184,10 @@ function calculateDifferentials(
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
       // Apply captain multiplier if this is the captain
       let finalPoints = basePoints;
       if (pick.is_captain) {
@@ -196,6 +200,7 @@ function calculateDifferentials(
         points: finalPoints,
         position: pick.position,
         isCaptain: pick.is_captain,
+        hasPlayed: hasPlayed || fixtureFinished || false,
       };
     });
 
@@ -221,6 +226,10 @@ function calculateDifferentials(
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
       // The differential is the EXTRA points from captaincy (1x base points for standard captain)
       const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
       const captainBonus = basePoints * (multiplier - 1);
@@ -230,6 +239,7 @@ function calculateDifferentials(
         points: captainBonus,
         position: pick.position,
         isCaptain: true,
+        hasPlayed: hasPlayed || fixtureFinished || false,
       };
     });
 
@@ -253,6 +263,10 @@ function calculateDifferentials(
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
       // Apply captain multiplier if this is the captain
       let finalPoints = basePoints;
       if (pick.is_captain) {
@@ -265,6 +279,7 @@ function calculateDifferentials(
         points: finalPoints,
         position: pick.position,
         isCaptain: pick.is_captain,
+        hasPlayed: hasPlayed || fixtureFinished || false,
       };
     });
 
@@ -290,6 +305,10 @@ function calculateDifferentials(
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
       const basePoints = liveElement?.stats?.total_points || 0;
 
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
       // The differential is the EXTRA points from captaincy (1x base points for standard captain)
       const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
       const captainBonus = basePoints * (multiplier - 1);
@@ -299,6 +318,7 @@ function calculateDifferentials(
         points: captainBonus,
         position: pick.position,
         isCaptain: true,
+        hasPlayed: hasPlayed || fixtureFinished || false,
       };
     });
 
@@ -320,6 +340,7 @@ function calculateDifferentials(
       points: hits2, // Negative points
       position: 0,
       isCaptain: false,
+      hasPlayed: true, // Hits have already occurred
     });
   } else if (hitsDiff > 0) {
     // Player 2 has fewer hits (better), so player 1 has more hits (worse)
@@ -329,6 +350,7 @@ function calculateDifferentials(
       points: hits1, // Negative points
       position: 0,
       isCaptain: false,
+      hasPlayed: true, // Hits have already occurred
     });
   }
 

@@ -3,6 +3,7 @@ export interface DifferentialPlayer {
   points: number;
   position: number; // 1-11 starting, 12-15 bench
   isCaptain: boolean;
+  hasPlayed: boolean; // Whether the player has played (minutes > 0 or fixture finished)
 }
 
 export interface LiveMatchData {
