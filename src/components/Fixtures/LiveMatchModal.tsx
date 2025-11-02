@@ -140,8 +140,8 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
                           {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
                           {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
                         </span>
-                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
-                          {player.points} pts
+                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
+                          {player.points < 0 ? `${player.points}` : player.points} pts
                         </span>
                       </div>
                     ))}
@@ -162,8 +162,8 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
                           {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
                           {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
                         </span>
-                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
-                          {player.points} pts
+                        <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
+                          {player.points < 0 ? `${player.points}` : player.points} pts
                         </span>
                       </div>
                     ))}

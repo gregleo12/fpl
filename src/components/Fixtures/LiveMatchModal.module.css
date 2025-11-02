@@ -570,6 +570,10 @@
   color: #00ff87;
 }
 
+.playerPoints.negative {
+  color: #ff4444;
+}
+
 .noDifferentials {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.3);
