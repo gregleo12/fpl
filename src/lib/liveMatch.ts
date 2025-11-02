@@ -164,8 +164,12 @@ function calculateDifferentials(
   const isBenchBoost1 = picks1Data.active_chip === 'bboost';
   const isBenchBoost2 = picks2Data.active_chip === 'bboost';
 
-  // Find differentials for player 1 (players team1 has but team2 doesn't)
-  const player1Differentials = picks1
+  // Create maps for captain lookups
+  const team1Captain = picks1.find((p: any) => p.is_captain)?.element;
+  const team2Captain = picks2.find((p: any) => p.is_captain)?.element;
+
+  // Find pure differentials for player 1 (players team1 has but team2 doesn't)
+  const player1PureDifferentials = picks1
     .filter((pick: any) => {
       // Must be a differential
       if (team2ElementIds.has(pick.element)) return false;
@@ -193,12 +197,48 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
       };
+    });
+
+  // Find captain differentials for player 1 (both have player, but only player1 captained it)
+  const player1CaptainDifferentials = picks1
+    .filter((pick: any) => {
+      // Must be captained by player1
+      if (!pick.is_captain) return false;
+
+      // Must also be in team2's squad
+      if (!team2ElementIds.has(pick.element)) return false;
+
+      // Must NOT be team2's captain (that would not be a differential)
+      if (pick.element === team2Captain) return false;
+
+      // If on bench for team1 (position > 11), only include if Bench Boost is active
+      if (pick.position > 11 && !isBenchBoost1) return false;
+
+      return true;
     })
-    // Sort by points descending
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+      const basePoints = liveElement?.stats?.total_points || 0;
+
+      // The differential is the EXTRA points from captaincy (1x base points for standard captain)
+      const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
+      const captainBonus = basePoints * (multiplier - 1);
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: captainBonus,
+        position: pick.position,
+        isCaptain: true,
+      };
+    });
+
+  // Combine pure differentials and captain differentials for player 1
+  const player1Differentials = [...player1PureDifferentials, ...player1CaptainDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
-  // Find differentials for player 2 (players team2 has but team1 doesn't)
-  const player2Differentials = picks2
+  // Find pure differentials for player 2 (players team2 has but team1 doesn't)
+  const player2PureDifferentials = picks2
     .filter((pick: any) => {
       // Must be a differential
       if (team1ElementIds.has(pick.element)) return false;
@@ -226,8 +266,44 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
       };
+    });
+
+  // Find captain differentials for player 2 (both have player, but only player2 captained it)
+  const player2CaptainDifferentials = picks2
+    .filter((pick: any) => {
+      // Must be captained by player2
+      if (!pick.is_captain) return false;
+
+      // Must also be in team1's squad
+      if (!team1ElementIds.has(pick.element)) return false;
+
+      // Must NOT be team1's captain (that would not be a differential)
+      if (pick.element === team1Captain) return false;
+
+      // If on bench for team2 (position > 11), only include if Bench Boost is active
+      if (pick.position > 11 && !isBenchBoost2) return false;
+
+      return true;
     })
-    // Sort by points descending
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+      const basePoints = liveElement?.stats?.total_points || 0;
+
+      // The differential is the EXTRA points from captaincy (1x base points for standard captain)
+      const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
+      const captainBonus = basePoints * (multiplier - 1);
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: captainBonus,
+        position: pick.position,
+        isCaptain: true,
+      };
+    });
+
+  // Combine pure differentials and captain differentials for player 2
+  const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
   return {
