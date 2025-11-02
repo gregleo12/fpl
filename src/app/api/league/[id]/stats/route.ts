@@ -352,8 +352,10 @@ export async function GET(
               );
               if (response.ok) {
                 const data = await response.json();
-                const score = data.entry_history?.points || 0;
-                return { entryId, score };
+                const grossScore = data.entry_history?.points || 0;
+                const transferCost = data.entry_history?.event_transfers_cost || 0;
+                const netScore = grossScore - transferCost;
+                return { entryId, score: netScore };
               }
             } catch (error) {
               console.error(`Error fetching live score for entry ${entryId}:`, error);

@@ -187,10 +187,14 @@ async function fetchLiveScoresFromPicks(
       }
 
       const data = await response.json();
-      // Use official score from entry_history (includes auto-subs)
-      const score = data.entry_history?.points || 0;
-      console.log(`Entry ${entryId}: ${score} pts`);
-      return { entryId, score };
+      // Get score from entry_history (includes auto-subs)
+      const grossScore = data.entry_history?.points || 0;
+      // Get transfer cost (hits taken)
+      const transferCost = data.entry_history?.event_transfers_cost || 0;
+      // Calculate net score (deduct transfer hits)
+      const netScore = grossScore - transferCost;
+      console.log(`Entry ${entryId}: ${netScore} pts (${grossScore} gross - ${transferCost} hits)`);
+      return { entryId, score: netScore };
     } catch (error) {
       console.error(`Error fetching picks for entry ${entryId}:`, error);
       return null;
