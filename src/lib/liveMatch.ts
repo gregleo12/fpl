@@ -351,22 +351,23 @@ function calculateDifferentials(
   const hitsDiff = hits1 - hits2;
 
   if (hitsDiff < 0) {
-    // Player 1 has fewer hits (better), so player 2 has more hits (worse)
-    const extraHits = Math.abs(hitsDiff);
-    const numHits = Math.abs(hits2) / 4; // Each hit is -4 pts
-    player2Differentials.push({
+    // Player 1 has MORE hits (worse) - hits are negative, so more negative = more hits
+    // The differential is the extra negative points player1 has
+    const numHits = Math.abs(hits1) / 4; // Each hit is -4 pts
+    player1Differentials.push({
       name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: hits2, // Negative points
+      points: hitsDiff, // The differential (negative)
       position: 0,
       isCaptain: false,
       hasPlayed: true, // Hits have already occurred
     });
   } else if (hitsDiff > 0) {
-    // Player 2 has fewer hits (better), so player 1 has more hits (worse)
-    const numHits = Math.abs(hits1) / 4; // Each hit is -4 pts
-    player1Differentials.push({
+    // Player 2 has MORE hits (worse) - hits are negative, so more negative = more hits
+    // The differential is the extra negative points player2 has
+    const numHits = Math.abs(hits2) / 4; // Each hit is -4 pts
+    player2Differentials.push({
       name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
-      points: hits1, // Negative points
+      points: -hitsDiff, // The differential (negative)
       position: 0,
       isCaptain: false,
       hasPlayed: true, // Hits have already occurred
