@@ -12,6 +12,7 @@ import type { LiveMatchData } from '@/types/liveMatch';
 import { CompletedMatchModal } from './CompletedMatchModal';
 import { getCompletedMatchData } from '@/lib/completedMatch';
 import type { CompletedMatchData } from '@/types/completedMatch';
+import { HitBadge } from './HitBadge';
 
 interface Match {
   id: number;
@@ -23,6 +24,7 @@ interface Match {
     score: number;
     chip: string | null;
     captain: string | null;
+    hit?: number; // Transfer hit points (0, -4, -8, etc.)
   };
   entry_2: {
     id: number;
@@ -31,6 +33,7 @@ interface Match {
     score: number;
     chip: string | null;
     captain: string | null;
+    hit?: number; // Transfer hit points (0, -4, -8, etc.)
   };
   winner: number | null;
 }
@@ -536,20 +539,27 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             >
               <div className={styles.matchHeader}>
                 <div className={styles.team}>
-                  <div className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
-                    {shortenTeamName(match.entry_1.team_name)}
+                  <div className={styles.teamHeader}>
+                    <div className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
+                      {shortenTeamName(match.entry_1.team_name)}
+                    </div>
+                    {match.entry_1.hit && match.entry_1.hit < 0 && (
+                      <HitBadge points={match.entry_1.hit} />
+                    )}
                   </div>
-                  <div className={styles.playerName}>
-                    {shortenManagerName(match.entry_1.player_name)}
+                  <div className={styles.managerRow}>
+                    {match.entry_1.chip && (
+                      <span className={styles.chipBadge}>
+                        {getChipAbbreviation(match.entry_1.chip)}
+                      </span>
+                    )}
+                    <div className={styles.playerName}>
+                      {shortenManagerName(match.entry_1.player_name)}
+                    </div>
+                    {match.entry_1.captain && (
+                      <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
+                    )}
                   </div>
-                  {match.entry_1.captain && (
-                    <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
-                  )}
-                  {match.entry_1.chip && (
-                    <span className={styles.chipBadge}>
-                      {getChipAbbreviation(match.entry_1.chip)}
-                    </span>
-                  )}
                 </div>
 
                 <div className={styles.scoreBox}>
@@ -559,20 +569,27 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 </div>
 
                 <div className={styles.team}>
-                  <div className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
-                    {shortenTeamName(match.entry_2.team_name)}
+                  <div className={styles.teamHeader}>
+                    <div className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
+                      {shortenTeamName(match.entry_2.team_name)}
+                    </div>
+                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                      <HitBadge points={match.entry_2.hit} />
+                    )}
                   </div>
-                  <div className={styles.playerName}>
-                    {shortenManagerName(match.entry_2.player_name)}
+                  <div className={styles.managerRow}>
+                    {match.entry_2.chip && (
+                      <span className={styles.chipBadge}>
+                        {getChipAbbreviation(match.entry_2.chip)}
+                      </span>
+                    )}
+                    <div className={styles.playerName}>
+                      {shortenManagerName(match.entry_2.player_name)}
+                    </div>
+                    {match.entry_2.captain && (
+                      <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
+                    )}
                   </div>
-                  {match.entry_2.captain && (
-                    <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
-                  )}
-                  {match.entry_2.chip && (
-                    <span className={styles.chipBadge}>
-                      {getChipAbbreviation(match.entry_2.chip)}
-                    </span>
-                  )}
                 </div>
               </div>
 
