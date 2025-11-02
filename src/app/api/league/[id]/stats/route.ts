@@ -261,9 +261,10 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    // Get GW parameter from query string
+    // Get GW and mode parameters from query string
     const { searchParams } = new URL(request.url);
     const gwParam = searchParams.get('gw');
+    const mode = searchParams.get('mode') || 'live'; // 'live' or 'official'
 
     const db = await getDatabase();
 
@@ -304,9 +305,28 @@ export async function GET(
     // Use league data or default to 38 for FPL
     const maxGW = 38;
 
-    // Determine which GW to show (default to max completed, but allow viewing up to maxGW)
-    const requestedGW = gwParam ? parseInt(gwParam) : maxCompletedGW;
-    const currentGW = Math.min(Math.max(1, requestedGW), maxCompletedGW);
+    // Determine which GW to show based on mode
+    let currentGW: number;
+    if (gwParam) {
+      // If GW is explicitly specified, use it (limited to maxCompletedGW)
+      currentGW = Math.min(Math.max(1, parseInt(gwParam)), maxCompletedGW);
+    } else {
+      // No specific GW requested - use mode to determine default
+      if (mode === 'official') {
+        // Official mode: Show only fully completed GWs
+        // Assume maxCompletedGW might be in-progress, so use maxCompletedGW - 1
+        // But ensure we don't go below 1
+        currentGW = Math.max(1, maxCompletedGW - 1);
+
+        // If maxCompletedGW is 1, official mode should still show GW 1
+        if (maxCompletedGW === 1) {
+          currentGW = 1;
+        }
+      } else {
+        // Live mode: Include the current/in-progress GW
+        currentGW = maxCompletedGW;
+      }
+    }
 
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(allMatches, managers, currentGW);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
 
@@ -11,8 +12,11 @@ interface Props {
   onPlayerClick?: (playerId: string) => void;
 }
 
-export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: Props) {
+export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPlayerClick }: Props) {
   const router = useRouter();
+  const [showLiveRankings, setShowLiveRankings] = useState(true);
+  const [data, setData] = useState(initialData);
+  const [isLoadingToggle, setIsLoadingToggle] = useState(false);
 
   const handlePlayerClick = (playerId: string) => {
     if (onPlayerClick) {
@@ -22,6 +26,28 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
     }
   };
 
+  const handleToggleLiveRankings = async () => {
+    setIsLoadingToggle(true);
+    const newMode = !showLiveRankings;
+    setShowLiveRankings(newMode);
+
+    try {
+      const response = await fetch(`/api/league/${leagueId}/stats?mode=${newMode ? 'live' : 'official'}`);
+      if (response.ok) {
+        const newData = await response.json();
+        setData(newData);
+      }
+    } catch (error) {
+      console.error('Error fetching rankings:', error);
+    } finally {
+      setIsLoadingToggle(false);
+    }
+  };
+
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
+
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No league data available</div>;
   }
@@ -29,7 +55,16 @@ export default function LeagueTab({ data, myTeamId, leagueId, onPlayerClick }: P
   return (
     <div className={styles.leagueTab}>
       <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>League Rankings</h2>
+        <div className={styles.sectionHeaderWithToggle}>
+          <h2 className={styles.sectionTitle}>League Rankings</h2>
+          <button
+            onClick={handleToggleLiveRankings}
+            className={`${styles.liveToggle} ${showLiveRankings ? styles.liveToggleActive : ''}`}
+            disabled={isLoadingToggle}
+          >
+            {isLoadingToggle ? '...' : showLiveRankings ? 'LIVE' : 'OFFICIAL'}
+          </button>
+        </div>
         <div className={styles.table}>
           <table>
             <thead>
