@@ -328,12 +328,86 @@ export async function GET(
       }
     }
 
+    // For live mode, fetch live scores and update match results for current GW
+    let matchesWithLiveScores = [...allMatches];
+    if (mode === 'live') {
+      try {
+        // Get all matches for the current GW
+        const currentGWMatches = allMatches.filter((m: any) => m.event === currentGW);
+
+        if (currentGWMatches.length > 0) {
+          // Get unique entry IDs
+          const entryIds = new Set<number>();
+          currentGWMatches.forEach((match: any) => {
+            entryIds.add(match.entry_1_id);
+            entryIds.add(match.entry_2_id);
+          });
+
+          // Fetch live scores from FPL API
+          const liveScores = new Map<number, number>();
+          const scorePromises = Array.from(entryIds).map(async (entryId) => {
+            try {
+              const response = await fetch(
+                `https://fantasy.premierleague.com/api/entry/${entryId}/event/${currentGW}/picks/`
+              );
+              if (response.ok) {
+                const data = await response.json();
+                const score = data.entry_history?.points || 0;
+                return { entryId, score };
+              }
+            } catch (error) {
+              console.error(`Error fetching live score for entry ${entryId}:`, error);
+            }
+            return null;
+          });
+
+          const results = await Promise.all(scorePromises);
+          results.forEach((result) => {
+            if (result) {
+              liveScores.set(result.entryId, result.score);
+            }
+          });
+
+          // Update matches with live scores
+          matchesWithLiveScores = allMatches.map((match: any) => {
+            if (match.event === currentGW && liveScores.size > 0) {
+              const entry1Score = liveScores.get(match.entry_1_id);
+              const entry2Score = liveScores.get(match.entry_2_id);
+
+              if (entry1Score !== undefined && entry2Score !== undefined) {
+                // Calculate winner from live scores
+                let winner = null;
+                if (entry1Score > entry2Score) {
+                  winner = match.entry_1_id;
+                } else if (entry2Score > entry1Score) {
+                  winner = match.entry_2_id;
+                }
+
+                return {
+                  ...match,
+                  entry_1_points: entry1Score,
+                  entry_2_points: entry2Score,
+                  winner,
+                };
+              }
+            }
+            return match;
+          });
+
+          console.log(`Updated ${currentGWMatches.length} matches with live scores for GW${currentGW}`);
+        }
+      } catch (error) {
+        console.error('Error fetching live scores for rankings:', error);
+        // Fall back to database scores if live fetch fails
+      }
+    }
+
     // Rebuild standings for the current GW
-    const standings = rebuildStandingsFromMatches(allMatches, managers, currentGW);
+    const standings = rebuildStandingsFromMatches(matchesWithLiveScores, managers, currentGW);
 
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = standings.map((standing: any) => {
-      const formData = calculateFormAndStreakFromMatches(standing.entry_id, allMatches, currentGW);
+      const formData = calculateFormAndStreakFromMatches(standing.entry_id, matchesWithLiveScores, currentGW);
 
       // Calculate rank change from previous GW
       let rankChange = 0;
