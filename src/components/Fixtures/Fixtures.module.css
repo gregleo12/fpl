@@ -886,6 +886,13 @@
   flex-shrink: 0;
 }
 
+.badgesRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
 .scoreBox {
   display: flex;
   flex-direction: column;
@@ -1106,10 +1113,10 @@
     text-overflow: ellipsis;
   }
 
-  /* Chip badges - slightly larger and more visible */
+  /* Chip badges - smaller font on mobile to match hit badges */
   .chipBadge {
     padding: 0.15rem 0.35rem;
-    font-size: 0.625rem;
+    font-size: 0.5625rem; /* 9px - smaller on mobile */
     margin: 0.15rem 0 0 0;
     line-height: 1;
     border-radius: 4px;

@@ -539,13 +539,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             >
               <div className={styles.matchHeader}>
                 <div className={styles.team}>
-                  <div className={styles.teamHeader}>
-                    <div className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
-                      {shortenTeamName(match.entry_1.team_name)}
-                    </div>
-                    {match.entry_1.hit && match.entry_1.hit < 0 && (
-                      <HitBadge points={match.entry_1.hit} />
-                    )}
+                  <div className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
+                    {shortenTeamName(match.entry_1.team_name)}
                   </div>
                   <div className={styles.playerName}>
                     {shortenManagerName(match.entry_1.player_name)}
@@ -553,11 +548,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                   {match.entry_1.captain && (
                     <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
                   )}
-                  {match.entry_1.chip && (
-                    <span className={styles.chipBadge}>
-                      {getChipAbbreviation(match.entry_1.chip)}
-                    </span>
-                  )}
+                  <div className={styles.badgesRow}>
+                    {match.entry_1.chip && (
+                      <span className={styles.chipBadge}>
+                        {getChipAbbreviation(match.entry_1.chip)}
+                      </span>
+                    )}
+                    {match.entry_1.hit && match.entry_1.hit < 0 && (
+                      <HitBadge points={match.entry_1.hit} />
+                    )}
+                  </div>
                 </div>
 
                 <div className={styles.scoreBox}>
@@ -567,13 +567,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 </div>
 
                 <div className={styles.team}>
-                  <div className={styles.teamHeader}>
-                    <div className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
-                      {shortenTeamName(match.entry_2.team_name)}
-                    </div>
-                    {match.entry_2.hit && match.entry_2.hit < 0 && (
-                      <HitBadge points={match.entry_2.hit} />
-                    )}
+                  <div className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
+                    {shortenTeamName(match.entry_2.team_name)}
                   </div>
                   <div className={styles.playerName}>
                     {shortenManagerName(match.entry_2.player_name)}
@@ -581,11 +576,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                   {match.entry_2.captain && (
                     <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
                   )}
-                  {match.entry_2.chip && (
-                    <span className={styles.chipBadge}>
-                      {getChipAbbreviation(match.entry_2.chip)}
-                    </span>
-                  )}
+                  <div className={styles.badgesRow}>
+                    {match.entry_2.chip && (
+                      <span className={styles.chipBadge}>
+                        {getChipAbbreviation(match.entry_2.chip)}
+                      </span>
+                    )}
+                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                      <HitBadge points={match.entry_2.hit} />
+                    )}
+                  </div>
                 </div>
               </div>
 
