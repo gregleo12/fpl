@@ -769,13 +769,13 @@
 
 .matchCard {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
-  padding: 10px 14px;
+  padding: 6px 12px; /* Compact! Small top/bottom padding */
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
-  min-height: 92px;
-  max-height: 92px;
+  min-height: 78px; /* Compact 3-line height */
+  max-height: 78px;
   margin-bottom: 0.75rem;
 }
 
@@ -799,12 +799,30 @@
 .team {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px; /* Tight gaps between lines */
   min-height: 0;
 }
 
 .team:last-child {
   align-items: flex-end;
+}
+
+/* Line 1: Team Info (Team name + hit badge) */
+.teamInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.team:first-child .teamInfo {
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
+.team:last-child .teamInfo {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
 }
 
 .teamHeader {
@@ -852,12 +870,30 @@
   text-overflow: ellipsis;
 }
 
-.captainInfo {
-  font-size: 0.6875rem;
-  color: rgba(0, 255, 135, 0.8);
-  margin-top: 0;
+/* Line 3: Info Row (Captain • Chip) */
+.infoLine {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+  flex-wrap: nowrap; /* Don't wrap! */
+  min-height: 16px; /* Consistent height even if empty */
+}
+
+.captain {
+  font-size: 0.6875rem; /* 11px */
+  color: #00d4ff; /* Blue! */
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.6875rem;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .chipBadge {
@@ -881,12 +917,7 @@
   flex-shrink: 0;
 }
 
-.badgesRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-}
+/* Old .badgesRow removed - now using .infoLine instead */
 
 .scoreBox {
   display: flex;
@@ -1039,10 +1070,10 @@
 
   /* Compact horizontal match cards - like standings table */
   .matchCard {
-    padding: 8px 12px;
+    padding: 5px 10px; /* Even tighter on mobile */
     margin-bottom: 0.5rem;
-    min-height: 88px;
-    max-height: 88px;
+    min-height: 74px; /* Compact mobile height */
+    max-height: 74px;
     border-radius: 8px;
   }
 
@@ -1106,13 +1137,17 @@
     text-overflow: ellipsis;
   }
 
-  .captainInfo {
+  .captain {
+    font-size: 0.625rem; /* 10px */
+    line-height: 1;
+  }
+
+  .separator {
     font-size: 0.625rem;
-    line-height: 1.1;
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  }
+
+  .infoLine {
+    gap: 3px;
   }
 
   /* Chip badges - smaller font on mobile to fit badge */

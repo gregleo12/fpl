@@ -549,52 +549,75 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               style={{ cursor: 'pointer' }}
             >
               <div className={styles.matchHeader}>
+                {/* LEFT TEAM */}
                 <div className={styles.team}>
-                  <div className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
-                    {shortenTeamName(match.entry_1.team_name)}
-                  </div>
-                  <div className={styles.playerName}>
-                    {shortenManagerName(match.entry_1.player_name)}
-                  </div>
-                  {match.entry_1.captain && (
-                    <div className={styles.captainInfo}>C: {match.entry_1.captain}</div>
-                  )}
-                  <div className={styles.badgesRow}>
-                    {match.entry_1.chip && (
-                      <span className={styles.chipBadge}>
-                        {getChipAbbreviation(match.entry_1.chip)}
-                      </span>
-                    )}
+                  {/* Line 1: Team name + hit badge */}
+                  <div className={styles.teamInfo}>
+                    <span className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
+                      {shortenTeamName(match.entry_1.team_name)}
+                    </span>
                     {match.entry_1.hit && match.entry_1.hit < 0 && (
                       <HitBadge points={match.entry_1.hit} />
                     )}
                   </div>
+
+                  {/* Line 2: Manager name */}
+                  <div className={styles.playerName}>
+                    {shortenManagerName(match.entry_1.player_name)}
+                  </div>
+
+                  {/* Line 3: Captain • Chip (info line) */}
+                  <div className={styles.infoLine}>
+                    {match.entry_1.captain && (
+                      <span className={styles.captain}>C: {match.entry_1.captain}</span>
+                    )}
+                    {match.entry_1.chip && (
+                      <>
+                        {match.entry_1.captain && <span className={styles.separator}>•</span>}
+                        <span className={styles.chipBadge}>
+                          {getChipAbbreviation(match.entry_1.chip)}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
+                {/* SCORE */}
                 <div className={styles.scoreBox}>
                   <div className={styles.score}>
                     {match.entry_1.score} - {match.entry_2.score}
                   </div>
                 </div>
 
+                {/* RIGHT TEAM */}
                 <div className={styles.team}>
-                  <div className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
-                    {shortenTeamName(match.entry_2.team_name)}
+                  {/* Line 1: Team name + hit badge */}
+                  <div className={styles.teamInfo}>
+                    <span className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
+                      {shortenTeamName(match.entry_2.team_name)}
+                    </span>
+                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                      <HitBadge points={match.entry_2.hit} />
+                    )}
                   </div>
+
+                  {/* Line 2: Manager name */}
                   <div className={styles.playerName}>
                     {shortenManagerName(match.entry_2.player_name)}
                   </div>
-                  {match.entry_2.captain && (
-                    <div className={styles.captainInfo}>C: {match.entry_2.captain}</div>
-                  )}
-                  <div className={styles.badgesRow}>
-                    {match.entry_2.chip && (
-                      <span className={styles.chipBadge}>
-                        {getChipAbbreviation(match.entry_2.chip)}
-                      </span>
+
+                  {/* Line 3: Captain • Chip (info line) */}
+                  <div className={styles.infoLine}>
+                    {match.entry_2.captain && (
+                      <span className={styles.captain}>C: {match.entry_2.captain}</span>
                     )}
-                    {match.entry_2.hit && match.entry_2.hit < 0 && (
-                      <HitBadge points={match.entry_2.hit} />
+                    {match.entry_2.chip && (
+                      <>
+                        {match.entry_2.captain && <span className={styles.separator}>•</span>}
+                        <span className={styles.chipBadge}>
+                          {getChipAbbreviation(match.entry_2.chip)}
+                        </span>
+                      </>
                     )}
                   </div>
                 </div>
