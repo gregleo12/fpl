@@ -190,6 +190,20 @@ async function fetchLiveScoresFromPicks(
 
   console.log(`Fetching live scores for ${entryIds.size} entries in GW${gw}...`);
 
+  // Fetch live player data once for all entries
+  let liveData: any = null;
+  try {
+    const liveResponse = await fetch(
+      `https://fantasy.premierleague.com/api/event/${gw}/live/`
+    );
+    if (liveResponse.ok) {
+      liveData = await liveResponse.json();
+      console.log(`Fetched live data for GW${gw}`);
+    }
+  } catch (error) {
+    console.error('Error fetching live player data:', error);
+  }
+
   // Fetch picks data for all entries in parallel
   const pickPromises = Array.from(entryIds).map(async (entryId) => {
     try {
@@ -201,19 +215,49 @@ async function fetchLiveScoresFromPicks(
         return null;
       }
 
-      const data = await response.json();
-      // Get score from entry_history (includes auto-subs)
-      const grossScore = data.entry_history?.points || 0;
-      // Get transfer cost (hits taken) - API returns positive values (4, 8, etc)
-      const transferCost = data.entry_history?.event_transfers_cost || 0;
-      // Calculate net score (deduct transfer hits)
-      const netScore = grossScore - transferCost;
-      // Convert hit to negative for display (-4, -8, etc)
+      const picksData = await response.json();
+      const picks = picksData.picks;
+      const activeChip = picksData.active_chip || null;
+      const transferCost = picksData.entry_history?.event_transfers_cost || 0;
+
+      let liveScore = 0;
+
+      // Calculate score from individual players (like liveMatch.ts does)
+      if (liveData && liveData.elements) {
+        const isBenchBoost = activeChip === 'bboost';
+        const isTripleCaptain = activeChip === '3xc';
+
+        picks.forEach((pick: any) => {
+          const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+          const rawPoints = liveElement?.stats?.total_points || 0;
+
+          if (pick.position <= 11) {
+            // Starting 11
+            if (pick.is_captain) {
+              const multiplier = isTripleCaptain ? 3 : 2;
+              liveScore += rawPoints * multiplier;
+            } else {
+              liveScore += rawPoints;
+            }
+          } else {
+            // Bench (positions 12-15)
+            if (isBenchBoost) {
+              liveScore += rawPoints;
+            }
+          }
+        });
+      } else {
+        // Fallback to entry_history.points if live data unavailable
+        liveScore = picksData.entry_history?.points || 0;
+      }
+
+      // Calculate final score (subtract transfer hits)
+      const netScore = liveScore - transferCost;
+      // Convert hit to negative for display
       const hit = transferCost > 0 ? -transferCost : 0;
-      // Get active chip
-      const chip = data.active_chip || null;
-      console.log(`Entry ${entryId}: ${netScore} pts (${grossScore} gross - ${transferCost} hits) chip: ${chip}`);
-      return { entryId, score: netScore, hit, chip };
+
+      console.log(`Entry ${entryId}: ${netScore} pts (${liveScore} from players - ${transferCost} hits) chip: ${activeChip}`);
+      return { entryId, score: netScore, hit, chip: activeChip };
     } catch (error) {
       console.error(`Error fetching picks for entry ${entryId}:`, error);
       return null;
