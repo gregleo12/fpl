@@ -86,7 +86,7 @@ export async function GET(
     }
 
     // For in-progress gameweeks, fetch real-time scores from picks data
-    let liveScoresMap: Map<number, { score: number; hit: number }> | null = null;
+    let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null }> | null = null;
     if (status === 'in_progress') {
       try {
         console.log(`GW${gw} is IN_PROGRESS - fetching live scores from FPL API...`);
@@ -111,6 +111,9 @@ export async function GET(
       // Only include hit if it's actually negative (don't include 0)
       const entry1Hit = entry1Data?.hit && entry1Data.hit < 0 ? entry1Data.hit : undefined;
       const entry2Hit = entry2Data?.hit && entry2Data.hit < 0 ? entry2Data.hit : undefined;
+      // Use live chip data if available, otherwise use database chip data
+      const entry1Chip = entry1Data?.chip ?? match.active_chip_1 ?? null;
+      const entry2Chip = entry2Data?.chip ?? match.active_chip_2 ?? null;
 
       if (liveScoresMap) {
         console.log(`Match ${match.entry_1_player} vs ${match.entry_2_player}: ${entry1Score} - ${entry2Score} (live: ${liveScoresMap.has(match.entry_1_id)}, db: ${match.entry_1_points})`);
@@ -121,7 +124,7 @@ export async function GET(
         player_name: match.entry_1_player,
         team_name: match.entry_1_team,
         score: entry1Score,
-        chip: match.active_chip_1 || null,
+        chip: entry1Chip,
         captain: match.entry_1_captain || null,
         ...(entry1Hit !== undefined && { hit: entry1Hit })
       };
@@ -131,7 +134,7 @@ export async function GET(
         player_name: match.entry_2_player,
         team_name: match.entry_2_team,
         score: entry2Score,
-        chip: match.active_chip_2 || null,
+        chip: entry2Chip,
         captain: match.entry_2_captain || null,
         ...(entry2Hit !== undefined && { hit: entry2Hit })
       };
@@ -175,8 +178,8 @@ export async function GET(
 async function fetchLiveScoresFromPicks(
   matches: any[],
   gw: number
-): Promise<Map<number, { score: number; hit: number }>> {
-  const scoresMap = new Map<number, { score: number; hit: number }>();
+): Promise<Map<number, { score: number; hit: number; chip: string | null }>> {
+  const scoresMap = new Map<number, { score: number; hit: number; chip: string | null }>();
 
   // Get unique entry IDs from all matches
   const entryIds = new Set<number>();
@@ -207,8 +210,10 @@ async function fetchLiveScoresFromPicks(
       const netScore = grossScore - transferCost;
       // Convert hit to negative for display (-4, -8, etc)
       const hit = transferCost > 0 ? -transferCost : 0;
-      console.log(`Entry ${entryId}: ${netScore} pts (${grossScore} gross - ${transferCost} hits)`);
-      return { entryId, score: netScore, hit };
+      // Get active chip
+      const chip = data.active_chip || null;
+      console.log(`Entry ${entryId}: ${netScore} pts (${grossScore} gross - ${transferCost} hits) chip: ${chip}`);
+      return { entryId, score: netScore, hit, chip };
     } catch (error) {
       console.error(`Error fetching picks for entry ${entryId}:`, error);
       return null;
@@ -220,7 +225,7 @@ async function fetchLiveScoresFromPicks(
   // Build the scores map
   results.forEach((result) => {
     if (result) {
-      scoresMap.set(result.entryId, { score: result.score, hit: result.hit });
+      scoresMap.set(result.entryId, { score: result.score, hit: result.hit, chip: result.chip });
     }
   });
 

@@ -817,6 +817,18 @@
   flex-wrap: wrap;
 }
 
+/* Left team: normal order (Name, then Badge) */
+.team:first-child .teamHeader {
+  justify-content: flex-start;
+  flex-direction: row;
+}
+
+/* Right team: reversed order (Badge, then Name) */
+.team:last-child .teamHeader {
+  justify-content: flex-end;
+  flex-direction: row-reverse;
+}
+
 .playerName {
   font-size: 1rem;
   font-weight: 700;
@@ -876,8 +888,8 @@
 }
 
 .score {
-  font-size: 1.75rem;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #ffffff;
   text-align: center;
   padding: 0.5rem 1rem;
@@ -1049,10 +1061,10 @@
     justify-content: center;
   }
 
-  /* Much smaller score - similar to standings table */
+  /* Smaller score for mobile */
   .score {
-    font-size: 0.8125rem;
-    padding: 0.25rem 0.45rem;
+    font-size: 1.375rem;
+    padding: 0.5rem 0.75rem;
     line-height: 1;
     font-weight: 700;
   }
