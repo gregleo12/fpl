@@ -1113,15 +1113,15 @@
     text-overflow: ellipsis;
   }
 
-  /* Chip badges - smaller font on mobile to match hit badges */
+  /* Chip badges - smaller font on mobile to fit badge */
   .chipBadge {
-    padding: 0.15rem 0.35rem;
-    font-size: 0.5625rem; /* 9px - smaller on mobile */
+    padding: 0.15rem 0.3rem;
+    font-size: 0.5rem; /* 8px - smaller on mobile to fit BB, WC, TC, FH */
     margin: 0.15rem 0 0 0;
     line-height: 1;
     border-radius: 4px;
     display: inline-block;
-    font-weight: 700;
+    font-weight: 600;
   }
 }
 
