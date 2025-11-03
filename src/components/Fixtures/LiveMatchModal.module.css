@@ -15,6 +15,8 @@
   justify-content: center;
   padding: 20px;
   animation: fadeIn 0.2s ease;
+  /* CRITICAL: Allow touch events to pass through to content */
+  pointer-events: auto;
 }
 
 @keyframes fadeIn {
@@ -39,6 +41,8 @@
   border: 2px solid rgba(255, 0, 102, 0.3);
   animation: slideUp 0.3s ease;
   overflow: hidden;
+  /* CRITICAL: Allow interaction */
+  pointer-events: auto;
 }
 
 .stickyHeader {
@@ -51,11 +55,23 @@
 }
 
 .scrollableContent {
+  /* CRITICAL: Enable native scrolling */
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 24px 24px 24px;
+  -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+
+  /* CRITICAL: Set explicit height for flex */
   flex: 1;
-  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+  min-height: 0; /* Allow flex shrinking */
+
+  /* Padding for content */
+  padding: 0 24px 24px 24px;
+
+  /* CRITICAL: Ensure touch events work */
+  touch-action: pan-y; /* Only allow vertical scrolling */
+
+  /* Smooth scrolling and prevent scroll chaining */
+  scroll-behavior: smooth;
   overscroll-behavior: contain; /* Prevent scroll chaining to parent */
 }
 
@@ -587,12 +603,28 @@
 
 /* Mobile */
 @media (max-width: 767px) {
+  .modalOverlay {
+    padding: 0; /* Full screen on mobile */
+  }
+
+  .modalContent {
+    max-height: 100vh; /* Full height on mobile */
+    border-radius: 0; /* No border radius on mobile */
+    max-width: 100%;
+  }
+
   .stickyHeader {
     padding: 20px 20px 0 20px;
   }
 
   .scrollableContent {
     padding: 0 20px 20px 20px;
+    /* CRITICAL: Ensure scrolling works on mobile */
+    -webkit-overflow-scrolling: touch;
+    overflow-y: scroll; /* Force scrollbar on iOS */
+    overscroll-behavior: contain; /* Prevent parent scroll */
+    /* Force GPU acceleration for smoother scrolling */
+    transform: translateZ(0);
   }
 
   .scoreDisplay {
