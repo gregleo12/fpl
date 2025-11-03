@@ -817,13 +817,6 @@
   flex-wrap: wrap;
 }
 
-.managerRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
 .playerName {
   font-size: 1rem;
   font-weight: 700;
@@ -859,19 +852,20 @@
   align-items: center;
   justify-content: center;
   width: fit-content;
-  min-width: 32px;
-  max-width: 48px;
-  padding: 0.25rem 0.5rem;
+  min-width: 26px;
+  height: 16px;
+  padding: 0 5px;
   background: rgba(0, 255, 135, 0.2);
   color: #00ff87;
-  border: 1px solid rgba(0, 255, 135, 0.4);
-  border-radius: 999px;
-  font-size: 0.7rem;
+  border: 1px solid rgba(0, 255, 135, 0.6);
+  border-radius: 8px;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 0.25rem;
+  letter-spacing: 0.3px;
   white-space: nowrap;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .scoreBox {

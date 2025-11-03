@@ -108,34 +108,39 @@ export async function GET(
 
       const entry1Score = entry1Data?.score ?? match.entry_1_points ?? 0;
       const entry2Score = entry2Data?.score ?? match.entry_2_points ?? 0;
-      const entry1Hit = entry1Data?.hit ?? 0;
-      const entry2Hit = entry2Data?.hit ?? 0;
+      // Only include hit if it's actually negative (don't include 0)
+      const entry1Hit = entry1Data?.hit && entry1Data.hit < 0 ? entry1Data.hit : undefined;
+      const entry2Hit = entry2Data?.hit && entry2Data.hit < 0 ? entry2Data.hit : undefined;
 
       if (liveScoresMap) {
         console.log(`Match ${match.entry_1_player} vs ${match.entry_2_player}: ${entry1Score} - ${entry2Score} (live: ${liveScoresMap.has(match.entry_1_id)}, db: ${match.entry_1_points})`);
       }
 
+      const entry1 = {
+        id: match.entry_1_id,
+        player_name: match.entry_1_player,
+        team_name: match.entry_1_team,
+        score: entry1Score,
+        chip: match.active_chip_1 || null,
+        captain: match.entry_1_captain || null,
+        ...(entry1Hit !== undefined && { hit: entry1Hit })
+      };
+
+      const entry2 = {
+        id: match.entry_2_id,
+        player_name: match.entry_2_player,
+        team_name: match.entry_2_team,
+        score: entry2Score,
+        chip: match.active_chip_2 || null,
+        captain: match.entry_2_captain || null,
+        ...(entry2Hit !== undefined && { hit: entry2Hit })
+      };
+
       return {
         id: match.id,
         event: match.event,
-        entry_1: {
-          id: match.entry_1_id,
-          player_name: match.entry_1_player,
-          team_name: match.entry_1_team,
-          score: entry1Score,
-          chip: match.active_chip_1 || null,
-          captain: match.entry_1_captain || null,
-          hit: entry1Hit
-        },
-        entry_2: {
-          id: match.entry_2_id,
-          player_name: match.entry_2_player,
-          team_name: match.entry_2_team,
-          score: entry2Score,
-          chip: match.active_chip_2 || null,
-          captain: match.entry_2_captain || null,
-          hit: entry2Hit
-        },
+        entry_1: entry1,
+        entry_2: entry2,
         winner: match.winner ? parseInt(match.winner) : null
       };
     });
