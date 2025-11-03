@@ -2,14 +2,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 28px;
-  height: 18px;
-  padding: 0 6px;
+  min-width: 24px;
+  height: 16px;
+  padding: 0 5px;
   background: rgba(255, 40, 130, 0.2);
-  border: 1px solid rgba(255, 40, 130, 0.5);
-  border-radius: 9px;
+  border: 1px solid rgba(255, 40, 130, 0.6);
+  border-radius: 8px;
   font-size: 0.6875rem; /* 11px */
-  font-weight: 700;
+  font-weight: 600;
   color: #ff2882;
   line-height: 1;
+  white-space: nowrap;
 }

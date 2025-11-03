@@ -774,12 +774,13 @@
 
 .matchCard {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
-  padding: 0.75rem 1rem;
+  padding: 10px 14px;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
-  min-height: 100px;
+  min-height: 92px;
+  max-height: 92px;
   margin-bottom: 0.75rem;
 }
 
@@ -803,7 +804,8 @@
 .team {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 3px;
+  min-height: 0;
 }
 
 .team:last-child {
@@ -830,9 +832,9 @@
 }
 
 .playerName {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
   transition: color 0.2s ease;
   line-height: 1.1;
 }
@@ -846,13 +848,17 @@
 }
 
 .teamName {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .captainInfo {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: rgba(0, 255, 135, 0.8);
   margin-top: 0;
   font-weight: 600;
@@ -864,15 +870,15 @@
   align-items: center;
   justify-content: center;
   width: fit-content;
-  min-width: 26px;
+  min-width: 24px;
   height: 16px;
   padding: 0 5px;
   background: rgba(0, 255, 135, 0.2);
   color: #00ff87;
   border: 1px solid rgba(0, 255, 135, 0.6);
   border-radius: 8px;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 0.6875rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
   white-space: nowrap;
@@ -888,11 +894,11 @@
 }
 
 .score {
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 700;
   color: #ffffff;
   text-align: center;
-  padding: 0.5rem 1rem;
+  padding: 5px 12px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -1024,9 +1030,10 @@
 
   /* Compact horizontal match cards - like standings table */
   .matchCard {
-    padding: 0.5rem 0.65rem;
+    padding: 8px 12px;
     margin-bottom: 0.5rem;
-    min-height: auto;
+    min-height: 88px;
+    max-height: 88px;
     border-radius: 8px;
   }
 
@@ -1063,17 +1070,17 @@
 
   /* Smaller score for mobile */
   .score {
-    font-size: 1.375rem;
-    padding: 0.5rem 0.75rem;
+    font-size: 1.25rem;
+    padding: 4px 10px;
     line-height: 1;
     font-weight: 700;
   }
 
   /* Match standings table font sizes - swapped order */
   .teamName {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     line-height: 1.1;
-    font-weight: 700;
+    font-weight: 600;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
@@ -1081,7 +1088,7 @@
   }
 
   .playerName {
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
     line-height: 1.1;
     margin: 0;
     color: rgba(255, 255, 255, 0.5);
@@ -1091,7 +1098,7 @@
   }
 
   .captainInfo {
-    font-size: 0.5625rem;
+    font-size: 0.625rem;
     line-height: 1.1;
     margin: 0;
     white-space: nowrap;
