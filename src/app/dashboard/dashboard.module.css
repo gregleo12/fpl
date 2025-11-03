@@ -20,7 +20,7 @@
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0.75rem 2rem;
+  padding: 0.75rem 2rem 0.5rem 2rem; /* Reduced bottom padding from 12px to 8px */
   margin-top: 0;
   background: transparent;
 }
@@ -120,7 +120,7 @@
 }
 
 .content {
-  padding: 2rem;
+  padding: 1rem 2rem 2rem 2rem; /* 16px top (1rem) to match container gaps */
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -138,7 +138,7 @@
 
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 1rem 0.5rem 1rem;
+    padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 1rem 0.375rem 1rem; /* Reduced bottom to 6px */
   }
 
   .tabs {
@@ -160,7 +160,7 @@
   }
 
   .content {
-    padding: 1rem;
+    padding: 0.75rem 1rem 1rem 1rem; /* 12px top to match mobile container gaps */
   }
 }
 
