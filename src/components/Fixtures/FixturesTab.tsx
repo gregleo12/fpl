@@ -446,9 +446,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   return (
     <div className={styles.container}>
-      {/* Gameweek Navigator */}
+      {/* Gameweek Navigator - Compact Horizontal Layout */}
       <div className={styles.navigatorWrapper}>
         <div className={styles.navigator}>
+          {/* Previous button */}
           <button
             className={styles.navButton}
             onClick={handlePrevGW}
@@ -457,20 +458,30 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           >
             ◄
           </button>
-          <div
-            className={styles.gwInfo}
-            onClick={handleGWInfoPress}
-            onMouseDown={handleGWInfoMouseDown}
-            onMouseUp={handleGWInfoMouseUp}
-            onMouseLeave={handleGWInfoMouseUp}
-            onTouchStart={handleGWInfoMouseDown}
-            onTouchEnd={handleGWInfoMouseUp}
-            style={{ cursor: 'pointer' }}
-          >
+
+          {/* Gameweek display with inline status and dropdown */}
+          <div className={styles.gwInfo}>
             <span className={styles.gwNumber}>GW {currentGW}</span>
-            <StateBadge status={fixturesData.status} />
-            <span className={styles.gwHint}>▼</span>
+
+            <button
+              className={styles.dropdownButton}
+              onClick={handleGWInfoPress}
+              onMouseDown={handleGWInfoMouseDown}
+              onMouseUp={handleGWInfoMouseUp}
+              onMouseLeave={handleGWInfoMouseUp}
+              onTouchStart={handleGWInfoMouseDown}
+              onTouchEnd={handleGWInfoMouseUp}
+              aria-label="Select gameweek"
+            >
+              ▼
+            </button>
+
+            {fixturesData.status === 'in_progress' && (
+              <span className={styles.liveBadge}>LIVE</span>
+            )}
           </div>
+
+          {/* Next button */}
           <button
             className={styles.navButton}
             onClick={handleNextGW}
