@@ -85,15 +85,15 @@ export async function GET(
       }
     }
 
-    // For in-progress gameweeks, fetch real-time scores from picks data
+    // For in-progress and completed gameweeks, fetch picks data for chips and hits
     let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null }> | null = null;
-    if (status === 'in_progress') {
+    if (status === 'in_progress' || status === 'completed') {
       try {
-        console.log(`GW${gw} is IN_PROGRESS - fetching live scores from FPL API...`);
-        liveScoresMap = await fetchLiveScoresFromPicks(matches, gw);
-        console.log(`Fetched live scores for ${liveScoresMap.size} entries`);
+        console.log(`GW${gw} is ${status.toUpperCase()} - fetching picks data from FPL API...`);
+        liveScoresMap = await fetchLiveScoresFromPicks(matches, gw, status);
+        console.log(`Fetched picks data for ${liveScoresMap.size} entries`);
       } catch (error) {
-        console.error('Error fetching live scores:', error);
+        console.error('Error fetching picks data:', error);
         // Fall back to database scores if live fetch fails
       }
     } else {
@@ -174,10 +174,11 @@ export async function GET(
   }
 }
 
-// Helper function to fetch live scores from picks data during live gameweeks
+// Helper function to fetch live scores from picks data during live and completed gameweeks
 async function fetchLiveScoresFromPicks(
   matches: any[],
-  gw: number
+  gw: number,
+  status: 'in_progress' | 'completed'
 ): Promise<Map<number, { score: number; hit: number; chip: string | null }>> {
   const scoresMap = new Map<number, { score: number; hit: number; chip: string | null }>();
 
@@ -188,20 +189,22 @@ async function fetchLiveScoresFromPicks(
     entryIds.add(match.entry_2_id);
   });
 
-  console.log(`Fetching live scores for ${entryIds.size} entries in GW${gw}...`);
+  console.log(`Fetching picks data for ${entryIds.size} entries in GW${gw}...`);
 
-  // Fetch live player data once for all entries
+  // Only fetch live player data for in-progress gameweeks
   let liveData: any = null;
-  try {
-    const liveResponse = await fetch(
-      `https://fantasy.premierleague.com/api/event/${gw}/live/`
-    );
-    if (liveResponse.ok) {
-      liveData = await liveResponse.json();
-      console.log(`Fetched live data for GW${gw}`);
+  if (status === 'in_progress') {
+    try {
+      const liveResponse = await fetch(
+        `https://fantasy.premierleague.com/api/event/${gw}/live/`
+      );
+      if (liveResponse.ok) {
+        liveData = await liveResponse.json();
+        console.log(`Fetched live data for GW${gw}`);
+      }
+    } catch (error) {
+      console.error('Error fetching live player data:', error);
     }
-  } catch (error) {
-    console.error('Error fetching live player data:', error);
   }
 
   // Fetch picks data for all entries in parallel
@@ -222,8 +225,13 @@ async function fetchLiveScoresFromPicks(
 
       let liveScore = 0;
 
-      // Calculate score from individual players (like liveMatch.ts does)
-      if (liveData && liveData.elements) {
+      // For completed gameweeks, use final score from entry_history
+      // For in-progress gameweeks, calculate from live player data
+      if (status === 'completed') {
+        // Use the final score for completed gameweeks
+        liveScore = picksData.entry_history?.points || 0;
+      } else if (liveData && liveData.elements) {
+        // Calculate score from individual players for live gameweeks
         const isBenchBoost = activeChip === 'bboost';
         const isTripleCaptain = activeChip === '3xc';
 
