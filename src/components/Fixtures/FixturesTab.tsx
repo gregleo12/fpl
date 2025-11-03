@@ -566,7 +566,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {shortenManagerName(match.entry_1.player_name)}
                   </div>
 
-                  {/* Line 3: Captain • Chip (info line) */}
+                  {/* Line 3: Captain • Chip • Hit (info line) */}
                   <div className={styles.infoLine}>
                     {match.entry_1.captain && (
                       <span className={styles.captain}>C: {match.entry_1.captain}</span>
@@ -577,6 +577,14 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         <span className={styles.chipBadge}>
                           {getChipAbbreviation(match.entry_1.chip)}
                         </span>
+                      </>
+                    )}
+                    {match.entry_1.hit && match.entry_1.hit < 0 && (
+                      <>
+                        {(match.entry_1.captain || match.entry_1.chip) && (
+                          <span className={styles.separator}>•</span>
+                        )}
+                        <HitBadge points={match.entry_1.hit} />
                       </>
                     )}
                   </div>
@@ -606,7 +614,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {shortenManagerName(match.entry_2.player_name)}
                   </div>
 
-                  {/* Line 3: Captain • Chip (info line) */}
+                  {/* Line 3: Captain • Chip • Hit (info line) */}
                   <div className={styles.infoLine}>
                     {match.entry_2.captain && (
                       <span className={styles.captain}>C: {match.entry_2.captain}</span>
@@ -619,13 +627,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         </span>
                       </>
                     )}
+                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                      <>
+                        {(match.entry_2.captain || match.entry_2.chip) && (
+                          <span className={styles.separator}>•</span>
+                        )}
+                        <HitBadge points={match.entry_2.hit} />
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-
-              {/* Expansion indicator */}
-              <div className={styles.expandIndicator}>
-                {isExpanded ? '▲' : '▼'}
               </div>
 
               {/* Loading state */}

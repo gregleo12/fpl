@@ -797,14 +797,23 @@
 }
 
 .team {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px; /* Tight gaps between lines */
-  min-height: 0;
+  min-width: 0;
 }
 
+/* LEFT TEAM - align left */
+.team:first-child {
+  align-items: flex-start;
+  text-align: left;
+}
+
+/* RIGHT TEAM - align right */
 .team:last-child {
   align-items: flex-end;
+  text-align: right;
 }
 
 /* Line 1: Team Info (Team name + hit badge) */
@@ -850,6 +859,14 @@
   color: rgba(255, 255, 255, 0.5);
   transition: color 0.2s ease;
   line-height: 1.1;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team:last-child .playerName {
+  text-align: right;
 }
 
 .playerName.winner {
@@ -868,9 +885,15 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
-/* Line 3: Info Row (Captain • Chip) */
+.team:last-child .teamName {
+  text-align: right;
+}
+
+/* Line 3: Info Row (Captain • Chip • Hit) */
 .infoLine {
   display: flex;
   align-items: center;
@@ -878,6 +901,14 @@
   line-height: 1;
   flex-wrap: nowrap; /* Don't wrap! */
   min-height: 16px; /* Consistent height even if empty */
+}
+
+.team:first-child .infoLine {
+  justify-content: flex-start;
+}
+
+.team:last-child .infoLine {
+  justify-content: flex-end;
 }
 
 .captain {
