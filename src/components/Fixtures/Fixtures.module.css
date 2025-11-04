@@ -1018,7 +1018,7 @@
 
   .navigatorWrapper {
     top: calc(env(safe-area-inset-top, 0px) + 70px); /* Safe area + Nav (60px) + 10px gap */
-    padding: 0 0 12px 0;
+    padding: 0; /* No padding - gap handled by container */
   }
 
   .timeline {
