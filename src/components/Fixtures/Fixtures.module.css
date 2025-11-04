@@ -769,13 +769,13 @@
 
 .matchCard {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
-  padding: 6px 12px; /* Compact! Small top/bottom padding */
+  padding: 6px 12px 4px 12px; /* Tighter bottom padding */
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.2s ease;
-  min-height: 78px; /* Compact 3-line height */
-  max-height: 78px;
+  min-height: 76px; /* Reduced from 78px for tighter spacing */
+  max-height: 76px;
   margin-bottom: 0.75rem;
 }
 
@@ -1119,10 +1119,10 @@
 
   /* Compact horizontal match cards - like standings table */
   .matchCard {
-    padding: 5px 10px; /* Even tighter on mobile */
+    padding: 5px 10px 3px 10px; /* Tighter bottom padding on mobile */
     margin-bottom: 0.5rem;
-    min-height: 74px; /* Compact mobile height */
-    max-height: 74px;
+    min-height: 72px; /* Reduced from 74px for tighter spacing */
+    max-height: 72px;
     border-radius: 8px;
   }
 
