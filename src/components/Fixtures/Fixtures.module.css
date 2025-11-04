@@ -776,7 +776,7 @@
   transition: all 0.2s ease;
   min-height: auto; /* Natural height based on content */
   max-height: none;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0; /* No margin - gap handled by matchesContainer */
 }
 
 .matchCard:hover {
@@ -1120,7 +1120,7 @@
   /* Compact horizontal match cards - like standings table */
   .matchCard {
     padding: 8px 10px; /* Equal top/bottom padding on mobile */
-    margin-bottom: 0.5rem;
+    margin-bottom: 0; /* No margin - gap handled by matchesContainer */
     min-height: auto; /* Natural height based on content */
     max-height: none;
     border-radius: 8px;
