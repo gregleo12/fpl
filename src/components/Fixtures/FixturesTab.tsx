@@ -9,9 +9,6 @@ import { StateBadge } from './StateBadge';
 import { LiveMatchModal } from './LiveMatchModal';
 import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
-import { CompletedMatchModal } from './CompletedMatchModal';
-import { getCompletedMatchData } from '@/lib/completedMatch';
-import type { CompletedMatchData } from '@/types/completedMatch';
 
 interface Match {
   id: number;
@@ -182,9 +179,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [showLiveModal, setShowLiveModal] = useState(false);
   const [liveMatchData, setLiveMatchData] = useState<LiveMatchData | null>(null);
   const [loadingLiveData, setLoadingLiveData] = useState(false);
-  const [showCompletedModal, setShowCompletedModal] = useState(false);
-  const [completedMatchData, setCompletedMatchData] = useState<CompletedMatchData | null>(null);
-  const [loadingCompletedData, setLoadingCompletedData] = useState(false);
 
   // Find the live or upcoming GW on initial load
   useEffect(() => {
@@ -357,12 +351,13 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   }
 
   async function handleCardClick(matchId: number, match: Match) {
-    // Check if this is a live match
-    if (fixturesData?.status === 'in_progress') {
-      // Fetch live match data
+    // Check if this is a live or completed match - use same modal for both
+    if (fixturesData?.status === 'in_progress' || fixturesData?.status === 'completed') {
+      // Fetch live match data (works for both live and completed)
       setLoadingLiveData(true);
       try {
-        console.log('Fetching live match data for GW', currentGW);
+        const statusLabel = fixturesData?.status === 'completed' ? 'completed' : 'live';
+        console.log(`Fetching ${statusLabel} match data for GW`, currentGW);
         const liveData = await getLiveMatchData(
           match.entry_1.id,
           match.entry_2.id,
@@ -373,42 +368,14 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           match.entry_2.team_name,
           leagueId
         );
-        console.log('Live match data received:', liveData);
+        console.log(`${statusLabel} match data received:`, liveData);
         setLiveMatchData(liveData);
         setShowLiveModal(true);
       } catch (error) {
-        console.error('Error fetching live match data:', error);
-        alert('Failed to load live match data. Please try again.');
+        console.error('Error fetching match data:', error);
+        alert('Failed to load match data. Please try again.');
       } finally {
         setLoadingLiveData(false);
-      }
-      return;
-    }
-
-    // Check if this is a completed match
-    if (fixturesData?.status === 'completed') {
-      // Fetch completed match data
-      setLoadingCompletedData(true);
-      try {
-        console.log('Fetching completed match data for GW', currentGW);
-        const completedData = await getCompletedMatchData(
-          match.entry_1.id,
-          match.entry_2.id,
-          currentGW,
-          match.entry_1.player_name,
-          match.entry_1.team_name,
-          match.entry_2.player_name,
-          match.entry_2.team_name,
-          leagueId
-        );
-        console.log('Completed match data received:', completedData);
-        setCompletedMatchData(completedData);
-        setShowCompletedModal(true);
-      } catch (error) {
-        console.error('Error fetching completed match data:', error);
-        alert('Failed to load completed match data. Please try again.');
-      } finally {
-        setLoadingCompletedData(false);
       }
       return;
     }
@@ -666,7 +633,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         />
       )}
 
-      {/* LIVE MATCH MODAL */}
+      {/* LIVE MATCH MODAL (used for both live and completed fixtures) */}
       {showLiveModal && liveMatchData && (
         <LiveMatchModal
           isOpen={showLiveModal}
@@ -676,14 +643,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             liveMatchData.player1.entryId.toString() === myTeamId ||
             liveMatchData.player2.entryId.toString() === myTeamId
           }
-        />
-      )}
-
-      {showCompletedModal && completedMatchData && (
-        <CompletedMatchModal
-          isOpen={showCompletedModal}
-          onClose={() => setShowCompletedModal(false)}
-          matchData={completedMatchData}
+          isCompleted={fixturesData?.status === 'completed'}
         />
       )}
 
@@ -692,16 +652,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         <div className={styles.loadingOverlay}>
           <div className={styles.loadingSpinner}>
             <div className={styles.spinner}></div>
-            <div className={styles.loadingText}>Loading live match data...</div>
-          </div>
-        </div>
-      )}
-
-      {loadingCompletedData && (
-        <div className={styles.loadingOverlay}>
-          <div className={styles.loadingSpinner}>
-            <div className={styles.spinner}></div>
-            <div className={styles.loadingText}>Loading match details...</div>
+            <div className={styles.loadingText}>Loading match data...</div>
           </div>
         </div>
       )}

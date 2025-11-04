@@ -105,6 +105,11 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
+.completedIndicator {
+  font-size: 1.25rem;
+  color: #00ff87; /* Green checkmark for completed */
+}
+
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }

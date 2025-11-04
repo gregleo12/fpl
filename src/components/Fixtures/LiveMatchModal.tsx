@@ -7,9 +7,10 @@ interface LiveMatchModalProps {
   onClose: () => void;
   matchData: LiveMatchData;
   isMyMatch: boolean;
+  isCompleted?: boolean;
 }
 
-export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMatchModalProps) {
+export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isCompleted = false }: LiveMatchModalProps) {
   if (!isOpen) return null;
 
   const winRequirements = useMemo(
@@ -38,8 +39,17 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch }: LiveMa
           {/* Header */}
           <div className={styles.header}>
             <div className={styles.headerBadge}>
-              <span className={styles.liveIndicator}>🔴</span>
-              <span className={styles.headerTitle}>LIVE MATCH (GW{matchData.gameweek})</span>
+              {isCompleted ? (
+                <>
+                  <span className={styles.completedIndicator}>✓</span>
+                  <span className={styles.headerTitle}>COMPLETED (GW{matchData.gameweek})</span>
+                </>
+              ) : (
+                <>
+                  <span className={styles.liveIndicator}>🔴</span>
+                  <span className={styles.headerTitle}>LIVE MATCH (GW{matchData.gameweek})</span>
+                </>
+              )}
             </div>
             <button className={styles.closeButton} onClick={onClose}>×</button>
           </div>
