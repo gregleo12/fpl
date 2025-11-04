@@ -23,7 +23,7 @@
 
 .sectionTitle {
   color: #00ff87;
-  margin: 0 0 1.5rem 0;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -593,6 +593,10 @@
     margin-bottom: 1rem;
   }
 
+  .sectionHeaderWithToggle {
+    margin-bottom: 10px;
+  }
+
   .sectionTitle {
     font-size: 1.125rem;
   }
@@ -821,7 +825,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 10px;
 }
 
 .liveToggle {
