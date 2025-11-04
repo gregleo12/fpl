@@ -769,7 +769,7 @@
 
 .matchCard {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
-  padding: 6px 12px 2px 12px; /* Very tight bottom padding */
+  padding: 8px 12px; /* Equal top/bottom padding */
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -900,7 +900,7 @@
   gap: 4px;
   line-height: 1;
   flex-wrap: nowrap; /* Don't wrap! */
-  min-height: 16px; /* Consistent height even if empty */
+  min-height: auto; /* No forced height */
 }
 
 .team:first-child .infoLine {
@@ -1119,7 +1119,7 @@
 
   /* Compact horizontal match cards - like standings table */
   .matchCard {
-    padding: 5px 10px 2px 10px; /* Very tight bottom padding on mobile */
+    padding: 8px 10px; /* Equal top/bottom padding on mobile */
     margin-bottom: 0.5rem;
     min-height: 70px; /* Reduced for very tight spacing */
     max-height: 70px;
