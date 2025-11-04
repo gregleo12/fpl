@@ -800,7 +800,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px; /* Tight gaps between lines */
+  gap: 1px; /* Very tight gaps between lines for compact layout */
   min-width: 0;
 }
 
