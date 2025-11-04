@@ -61,6 +61,14 @@ export function useVersionCheck() {
             version: data.version,
             detectedAt: Date.now()
           }));
+        } else {
+          // Current version matches server version - clear any stale pending updates
+          const pendingUpdate = localStorage.getItem(UPDATE_STORAGE_KEY);
+          if (pendingUpdate) {
+            console.log('Already on latest version, clearing stale notification');
+            localStorage.removeItem(UPDATE_STORAGE_KEY);
+            setUpdateAvailable(false);
+          }
         }
       } catch (error) {
         console.error('Version check error:', error);
@@ -79,6 +87,31 @@ export function useVersionCheck() {
 
   const applyUpdate = async () => {
     try {
+      // First, check if we're already on the latest version
+      const response = await fetch(`/api/version?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Re-read current version to ensure accuracy
+        const packageJson = require('../../package.json');
+        const CURRENT_VERSION = packageJson.version;
+
+        if (data.version === CURRENT_VERSION) {
+          // We're already on the latest version, just clear the notification
+          console.log('Already on latest version, dismissing notification');
+          localStorage.removeItem(UPDATE_STORAGE_KEY);
+          setUpdateAvailable(false);
+          return;
+        }
+      }
+
+      // Not on latest version yet, proceed with cache clearing and reload
       // Clear all caches
       if ('caches' in window) {
         const cacheNames = await caches.keys();
