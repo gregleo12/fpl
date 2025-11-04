@@ -551,14 +551,11 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               <div className={styles.matchHeader}>
                 {/* LEFT TEAM */}
                 <div className={styles.team}>
-                  {/* Line 1: Team name + hit badge */}
+                  {/* Line 1: Team name */}
                   <div className={styles.teamInfo}>
                     <span className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
                       {shortenTeamName(match.entry_1.team_name)}
                     </span>
-                    {match.entry_1.hit && match.entry_1.hit < 0 && (
-                      <HitBadge points={match.entry_1.hit} />
-                    )}
                   </div>
 
                   {/* Line 2: Manager name */}
@@ -599,14 +596,11 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
                 {/* RIGHT TEAM */}
                 <div className={styles.team}>
-                  {/* Line 1: Team name + hit badge */}
+                  {/* Line 1: Team name */}
                   <div className={styles.teamInfo}>
                     <span className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
                       {shortenTeamName(match.entry_2.team_name)}
                     </span>
-                    {match.entry_2.hit && match.entry_2.hit < 0 && (
-                      <HitBadge points={match.entry_2.hit} />
-                    )}
                   </div>
 
                   {/* Line 2: Manager name */}
