@@ -785,8 +785,8 @@
 }
 
 .myMatch {
-  border: 2px solid rgba(0, 255, 135, 0.5);
-  background: linear-gradient(135deg, rgba(0, 255, 135, 0.1) 0%, rgba(26, 26, 46, 0.95) 100%);
+  border: 1px solid rgba(0, 255, 135, 0.3); /* Subtle green tint */
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.05) 0%, rgba(26, 26, 46, 0.95) 100%); /* More subtle gradient */
 }
 
 .matchHeader {
@@ -891,6 +891,11 @@
 
 .team:last-child .teamName {
   text-align: right;
+}
+
+.myTeam {
+  color: #00ff87 !important; /* Green text for user's team */
+  font-weight: 700 !important; /* Slightly bolder */
 }
 
 /* Line 3: Info Row (Captain • Chip • Hit) */
@@ -1123,7 +1128,7 @@
     margin-bottom: 0; /* No margin - gap handled by matchesContainer */
     min-height: auto; /* Natural height based on content */
     max-height: none;
-    border-radius: 8px;
+    border-radius: 12px; /* Consistent with desktop */
   }
 
   /* KEEP HORIZONTAL LAYOUT - 3 columns like desktop */

@@ -533,6 +533,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           })
           .map((match) => {
           const isMyMatch = match.entry_1.id.toString() === myTeamId || match.entry_2.id.toString() === myTeamId;
+          const isEntry1User = match.entry_1.id.toString() === myTeamId;
+          const isEntry2User = match.entry_2.id.toString() === myTeamId;
           const isCompleted = fixturesData.status === 'completed';
           const entry1Won = isCompleted && match.entry_1.score > match.entry_2.score;
           const entry2Won = isCompleted && match.entry_2.score > match.entry_1.score;
@@ -552,7 +554,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 <div className={styles.team}>
                   {/* Line 1: Team name */}
                   <div className={styles.teamInfo}>
-                    <span className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''}`}>
+                    <span className={`${styles.teamName} ${entry1Won ? styles.winner : entry2Won ? styles.loser : ''} ${isEntry1User ? styles.myTeam : ''}`}>
                       {shortenTeamName(match.entry_1.team_name)}
                     </span>
                   </div>
@@ -597,7 +599,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 <div className={styles.team}>
                   {/* Line 1: Team name */}
                   <div className={styles.teamInfo}>
-                    <span className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''}`}>
+                    <span className={`${styles.teamName} ${entry2Won ? styles.winner : entry1Won ? styles.loser : ''} ${isEntry2User ? styles.myTeam : ''}`}>
                       {shortenTeamName(match.entry_2.team_name)}
                     </span>
                   </div>
