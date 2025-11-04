@@ -619,7 +619,7 @@
   }
 
   .stickyHeader {
-    padding: 20px 20px 0 20px;
+    padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 0 20px; /* Add safe area padding */
   }
 
   .scrollableContent {
@@ -673,7 +673,7 @@
 
 @media (max-width: 480px) {
   .stickyHeader {
-    padding: 16px 16px 0 16px;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px 0 16px; /* Add safe area padding */
   }
 
   .scrollableContent {
