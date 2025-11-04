@@ -32,7 +32,15 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPla
     setShowLiveRankings(newMode);
 
     try {
-      const response = await fetch(`/api/league/${leagueId}/stats?mode=${newMode ? 'live' : 'official'}`);
+      const response = await fetch(
+        `/api/league/${leagueId}/stats?mode=${newMode ? 'live' : 'official'}&t=${Date.now()}`,
+        {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        }
+      );
       if (response.ok) {
         const newData = await response.json();
         setData(newData);

@@ -311,21 +311,10 @@ export async function GET(
       // If GW is explicitly specified, use it (limited to maxCompletedGW)
       currentGW = Math.min(Math.max(1, parseInt(gwParam)), maxCompletedGW);
     } else {
-      // No specific GW requested - use mode to determine default
-      if (mode === 'official') {
-        // Official mode: Show only fully completed GWs
-        // Assume maxCompletedGW might be in-progress, so use maxCompletedGW - 1
-        // But ensure we don't go below 1
-        currentGW = Math.max(1, maxCompletedGW - 1);
-
-        // If maxCompletedGW is 1, official mode should still show GW 1
-        if (maxCompletedGW === 1) {
-          currentGW = 1;
-        }
-      } else {
-        // Live mode: Include the current/in-progress GW
-        currentGW = maxCompletedGW;
-      }
+      // Both live and official modes show the same GW now
+      // The difference is that live fetches real-time scores from FPL API
+      // while official uses only database scores
+      currentGW = maxCompletedGW;
     }
 
     // For live mode, fetch live scores and update match results for current GW
@@ -454,7 +443,7 @@ export async function GET(
     // This is what Fixtures should default to
     const activeGW = Math.min(maxCompletedGW + 1, maxGW);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       league,
       standings: standingsWithForm,
       recentMatches,
@@ -462,6 +451,13 @@ export async function GET(
       maxGW,
       activeGW
     });
+
+    // Prevent caching to ensure fresh data
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+
+    return response;
   } catch (error: any) {
     console.error('Error fetching league stats:', error);
     return NextResponse.json(

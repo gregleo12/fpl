@@ -43,8 +43,18 @@ export default function DashboardPage() {
     try {
       // Fetch league standings and player profile in parallel
       const [leagueResponse, playerResponse] = await Promise.all([
-        fetch(`/api/league/${leagueId}/stats`),
-        fetch(`/api/player/${playerId}`)
+        fetch(`/api/league/${leagueId}/stats?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        }),
+        fetch(`/api/player/${playerId}?t=${Date.now()}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        })
       ]);
 
       if (!leagueResponse.ok) {
