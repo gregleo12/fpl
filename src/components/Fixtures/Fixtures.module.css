@@ -927,6 +927,24 @@
   flex-shrink: 0;
 }
 
+.chipText {
+  font-size: 0.6875rem; /* 11px */
+  color: #00ff87; /* Green */
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hitText {
+  font-size: 0.6875rem; /* 11px */
+  color: #ff2882; /* Red */
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .chipBadge {
   display: inline-flex;
   align-items: center;
@@ -1179,6 +1197,14 @@
 
   .infoLine {
     gap: 3px;
+  }
+
+  .chipText {
+    font-size: 0.625rem; /* 10px */
+  }
+
+  .hitText {
+    font-size: 0.625rem; /* 10px */
   }
 
   /* Chip badges - smaller font on mobile to fit badge */

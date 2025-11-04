@@ -12,7 +12,6 @@ import type { LiveMatchData } from '@/types/liveMatch';
 import { CompletedMatchModal } from './CompletedMatchModal';
 import { getCompletedMatchData } from '@/lib/completedMatch';
 import type { CompletedMatchData } from '@/types/completedMatch';
-import { HitBadge } from './HitBadge';
 
 interface Match {
   id: number;
@@ -571,7 +570,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {match.entry_1.chip && (
                       <>
                         {match.entry_1.captain && <span className={styles.separator}>•</span>}
-                        <span className={styles.chipBadge}>
+                        <span className={styles.chipText}>
                           {getChipAbbreviation(match.entry_1.chip)}
                         </span>
                       </>
@@ -581,7 +580,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         {(match.entry_1.captain || match.entry_1.chip) && (
                           <span className={styles.separator}>•</span>
                         )}
-                        <HitBadge points={match.entry_1.hit} />
+                        <span className={styles.hitText}>{match.entry_1.hit}</span>
                       </>
                     )}
                   </div>
@@ -616,7 +615,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {match.entry_2.chip && (
                       <>
                         {match.entry_2.captain && <span className={styles.separator}>•</span>}
-                        <span className={styles.chipBadge}>
+                        <span className={styles.chipText}>
                           {getChipAbbreviation(match.entry_2.chip)}
                         </span>
                       </>
@@ -626,7 +625,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         {(match.entry_2.captain || match.entry_2.chip) && (
                           <span className={styles.separator}>•</span>
                         )}
-                        <HitBadge points={match.entry_2.hit} />
+                        <span className={styles.hitText}>{match.entry_2.hit}</span>
                       </>
                     )}
                   </div>
