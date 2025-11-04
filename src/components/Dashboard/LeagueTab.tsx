@@ -14,7 +14,8 @@ interface Props {
 
 export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPlayerClick }: Props) {
   const router = useRouter();
-  const [showLiveRankings, setShowLiveRankings] = useState(true);
+  // Smart default: Show LIVE when GW is active, OFFICIAL when finished
+  const [showLiveRankings, setShowLiveRankings] = useState(initialData?.isLive ?? true);
   const [data, setData] = useState(initialData);
   const [isLoadingToggle, setIsLoadingToggle] = useState(false);
 
@@ -54,6 +55,10 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPla
 
   useEffect(() => {
     setData(initialData);
+    // Update toggle state when data changes (e.g., after pull-to-refresh)
+    if (initialData?.isLive !== undefined) {
+      setShowLiveRankings(initialData.isLive);
+    }
   }, [initialData]);
 
   if (!data || !data.standings) {

@@ -261,12 +261,33 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
+    const db = await getDatabase();
+
+    // Check FPL API first to determine if current gameweek is live
+    // This helps us set smart defaults
+    let isCurrentGWLive = false;
+    try {
+      const fplResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (fplResponse.ok) {
+        const fplData = await fplResponse.json();
+        const currentEvent = fplData.events?.find((event: any) => event.is_current);
+
+        if (currentEvent) {
+          // Check if the current event is in progress (not finished)
+          isCurrentGWLive = !currentEvent.finished && currentEvent.is_current;
+          console.log(`GW${currentEvent.id} status: ${currentEvent.finished ? 'finished' : 'live'}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking FPL gameweek status:', error);
+      // Default to false if we can't determine
+    }
+
     // Get GW and mode parameters from query string
     const { searchParams } = new URL(request.url);
     const gwParam = searchParams.get('gw');
-    const mode = searchParams.get('mode') || 'live'; // 'live' or 'official'
-
-    const db = await getDatabase();
+    // Smart default: use 'live' when GW is active, 'official' when finished
+    const mode = searchParams.get('mode') || (isCurrentGWLive ? 'live' : 'official');
 
     // Get all managers in this league
     const managersResult = await db.query(`
@@ -449,7 +470,8 @@ export async function GET(
       recentMatches,
       currentGW,
       maxGW,
-      activeGW
+      activeGW,
+      isLive: isCurrentGWLive
     });
 
     // Prevent caching to ensure fresh data
