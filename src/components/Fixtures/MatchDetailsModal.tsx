@@ -93,12 +93,14 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
           </button>
         </div>
 
-        {/* Match Details Component */}
-        <MatchDetails
-          entry1={entry1}
-          entry2={entry2}
-          headToHead={headToHead}
-        />
+        {/* Scrollable Content */}
+        <div className={styles.scrollableContent}>
+          <MatchDetails
+            entry1={entry1}
+            entry2={entry2}
+            headToHead={headToHead}
+          />
+        </div>
       </div>
     </div>
   );
