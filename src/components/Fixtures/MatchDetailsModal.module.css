@@ -101,7 +101,6 @@
   touch-action: pan-y;
   flex: 1;
   min-height: 0;
-  padding-right: 4px;
 
   /* iOS scroll fix: Create invisible scrollable space at top */
   padding-top: 20px;
