@@ -30,6 +30,14 @@ export function usePullToRefresh({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
+      // Don't interfere with modal scrolling
+      const target = e.target as HTMLElement;
+      const isInsideModal = target.closest('[class*="modalOverlay"], [class*="modalContent"], [class*="scrollableContent"]');
+
+      if (isInsideModal) {
+        return; // Let the modal handle its own scrolling
+      }
+
       if (window.scrollY === 0 && startY.current > 0) {
         currentY.current = e.touches[0].clientY;
         const distance = currentY.current - startY.current;
