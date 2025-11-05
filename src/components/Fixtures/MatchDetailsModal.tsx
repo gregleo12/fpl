@@ -57,13 +57,9 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
 
     return () => {
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
     };
   }, []);
 
@@ -94,7 +90,18 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
         </div>
 
         {/* Scrollable Content */}
-        <div className={styles.scrollableContent}>
+        <div
+          className={styles.scrollableContent}
+          onScroll={(e) => {
+            const target = e.currentTarget;
+            console.log('MatchDetailsModal scroll:', {
+              scrollTop: target.scrollTop,
+              scrollHeight: target.scrollHeight,
+              clientHeight: target.clientHeight,
+              canScrollMore: target.scrollTop + target.clientHeight < target.scrollHeight
+            });
+          }}
+        >
           <MatchDetails
             entry1={entry1}
             entry2={entry2}

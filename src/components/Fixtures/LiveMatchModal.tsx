@@ -16,14 +16,10 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
     }
 
     return () => {
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
     };
   }, [isOpen]);
 
@@ -96,7 +92,18 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         </div>
 
         {/* Scrollable Content */}
-        <div className={styles.scrollableContent}>
+        <div
+          className={styles.scrollableContent}
+          onScroll={(e) => {
+            const target = e.currentTarget;
+            console.log('LiveMatchModal scroll:', {
+              scrollTop: target.scrollTop,
+              scrollHeight: target.scrollHeight,
+              clientHeight: target.clientHeight,
+              canScrollMore: target.scrollTop + target.clientHeight < target.scrollHeight
+            });
+          }}
+        >
 
         {/* Captain Section */}
         <div className={styles.section}>
