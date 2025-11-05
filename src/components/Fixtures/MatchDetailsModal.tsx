@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { MatchDetails } from './MatchDetails';
 import styles from './MatchDetailsModal.module.css';
@@ -54,6 +54,8 @@ interface MatchDetailsModalProps {
 }
 
 export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: MatchDetailsModalProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -61,6 +63,17 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
     return () => {
       document.body.style.overflow = '';
     };
+  }, []);
+
+  // Initialize scroll position for iOS - prevents scroll lock bug
+  useEffect(() => {
+    // Wait for content to render, then set scrollTop to 1px
+    // This "primes" the scroll container so iOS recognizes it can scroll up
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = 1;
+      }
+    }, 100);
   }, []);
 
   // Only render on client side
@@ -91,6 +104,7 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
 
         {/* Scrollable Content */}
         <div
+          ref={scrollRef}
           className={styles.scrollableContent}
           onScroll={(e) => {
             const target = e.currentTarget;

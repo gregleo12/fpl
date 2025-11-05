@@ -165,10 +165,16 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
   touch-action: pan-y;
   flex: 1;
   min-height: 0;
   padding-right: 4px;
+}
+
+/* Ensure modal content can scroll from the start */
+.scrollableContent > * {
+  padding-top: 1px;
 }
 
 /* Section */

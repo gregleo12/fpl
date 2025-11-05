@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { LiveMatchData, WinRequirements } from '@/types/liveMatch';
 import styles from './LiveMatchModal.module.css';
@@ -12,6 +12,8 @@ interface LiveMatchModalProps {
 }
 
 export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isCompleted = false }: LiveMatchModalProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -21,6 +23,19 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
     return () => {
       document.body.style.overflow = '';
     };
+  }, [isOpen]);
+
+  // Initialize scroll position for iOS - prevents scroll lock bug
+  useEffect(() => {
+    if (isOpen && scrollRef.current) {
+      // Wait for content to render, then set scrollTop to 1px
+      // This "primes" the scroll container so iOS recognizes it can scroll up
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = 1;
+        }
+      }, 100);
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -93,6 +108,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
 
         {/* Scrollable Content */}
         <div
+          ref={scrollRef}
           className={styles.scrollableContent}
           onScroll={(e) => {
             const target = e.currentTarget;
