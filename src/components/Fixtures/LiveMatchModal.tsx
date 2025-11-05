@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { LiveMatchData, WinRequirements } from '@/types/liveMatch';
 import styles from './LiveMatchModal.module.css';
 
@@ -11,7 +12,27 @@ interface LiveMatchModalProps {
 }
 
 export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isCompleted = false }: LiveMatchModalProps) {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  // Only render on client side
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
   const winRequirements = useMemo(
     () => calculateWinRequirements(matchData, isMyMatch),
@@ -31,43 +52,45 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
     return chipMap[chip] || chip;
   }
 
-  return (
+  const modalContent = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        {/* Sticky Header with Score */}
-        <div className={styles.stickyHeader}>
-          {/* Header */}
-          <div className={styles.header}>
-            <div className={styles.headerBadge}>
-              {isCompleted ? (
-                <>
-                  <span className={styles.completedIndicator}>✓</span>
-                  <span className={styles.headerTitle}>COMPLETED (GW{matchData.gameweek})</span>
-                </>
-              ) : (
-                <>
-                  <span className={styles.liveIndicator}>🔴</span>
-                  <span className={styles.headerTitle}>LIVE MATCH (GW{matchData.gameweek})</span>
-                </>
-              )}
-            </div>
-            <button className={styles.closeButton} onClick={onClose}>×</button>
+        {/* Drag handle */}
+        <div className={styles.dragHandle}></div>
+
+        {/* Modal header */}
+        <div className={styles.modalHeader}>
+          <div className={styles.headerBadge}>
+            {isCompleted ? (
+              <>
+                <span className={styles.completedIndicator}>✓</span>
+                <span className={styles.modalTitle}>COMPLETED (GW{matchData.gameweek})</span>
+              </>
+            ) : (
+              <>
+                <span className={styles.liveIndicator}>🔴</span>
+                <span className={styles.modalTitle}>LIVE (GW{matchData.gameweek})</span>
+              </>
+            )}
           </div>
+          <button className={styles.closeButton} onClick={onClose} aria-label="Close">
+            ✕
+          </button>
+        </div>
 
-          {/* Score Section */}
-          <div className={styles.scoreSection}>
-            <div className={styles.scoreDisplay}>
-              <div className={styles.teamScore}>
-                <div className={styles.teamName}>{matchData.player1.manager}</div>
-                <div className={styles.score}>{matchData.player1.currentScore}</div>
-              </div>
+        {/* Score Section */}
+        <div className={styles.scoreSection}>
+          <div className={styles.scoreDisplay}>
+            <div className={styles.teamScore}>
+              <div className={styles.teamName}>{matchData.player1.manager}</div>
+              <div className={styles.score}>{matchData.player1.currentScore}</div>
+            </div>
 
-              <div className={styles.vsLabel}>vs</div>
+            <div className={styles.vsLabel}>vs</div>
 
-              <div className={styles.teamScore}>
-                <div className={styles.teamName}>{matchData.player2.manager}</div>
-                <div className={styles.score}>{matchData.player2.currentScore}</div>
-              </div>
+            <div className={styles.teamScore}>
+              <div className={styles.teamName}>{matchData.player2.manager}</div>
+              <div className={styles.score}>{matchData.player2.currentScore}</div>
             </div>
           </div>
         </div>
@@ -401,6 +424,9 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
       </div>
     </div>
   );
+
+  // Render modal as portal at body level to avoid positioning conflicts
+  return createPortal(modalContent, document.body);
 }
 
 function calculateWinRequirements(matchData: LiveMatchData, isMyMatch: boolean): WinRequirements {
