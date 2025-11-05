@@ -32,7 +32,24 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
       // This "primes" the scroll container so iOS recognizes it can scroll up
       setTimeout(() => {
         if (scrollRef.current) {
-          scrollRef.current.scrollTop = 1;
+          const scrollHeight = scrollRef.current.scrollHeight;
+          const clientHeight = scrollRef.current.clientHeight;
+          const canScroll = scrollHeight > clientHeight;
+
+          console.log('LiveMatchModal scroll init:', {
+            scrollHeight,
+            clientHeight,
+            canScroll,
+            overflow: scrollHeight - clientHeight,
+            beforeScrollTop: scrollRef.current.scrollTop
+          });
+
+          if (canScroll) {
+            scrollRef.current.scrollTop = 1;
+            console.log('Set scrollTop to 1, now:', scrollRef.current.scrollTop);
+          } else {
+            console.log('⚠️ NO OVERFLOW - content not tall enough to scroll!');
+          }
         }
       }, 100);
     }
