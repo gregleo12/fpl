@@ -67,7 +67,7 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
 
   // Initialize scroll position for iOS - prevents scroll lock bug
   useEffect(() => {
-    // Wait for content to render, then set scrollTop to 1px
+    // Wait for content to render, then scroll to 10px
     // This "primes" the scroll container so iOS recognizes it can scroll up
     setTimeout(() => {
       if (scrollRef.current) {
@@ -84,8 +84,12 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
         });
 
         if (canScroll) {
-          scrollRef.current.scrollTop = 1;
-          console.log('Set scrollTop to 1, now:', scrollRef.current.scrollTop);
+          // Use scrollTo instead of direct scrollTop assignment to avoid negation bug
+          scrollRef.current.scrollTo({
+            top: 10,
+            behavior: 'instant'
+          });
+          console.log('After scrollTo(10), scrollTop:', scrollRef.current.scrollTop);
         } else {
           console.log('⚠️ NO OVERFLOW - content not tall enough to scroll!');
         }
