@@ -65,40 +65,8 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
     };
   }, []);
 
-  // Initialize scroll position for iOS - prevents scroll lock bug
-  useEffect(() => {
-    // Wait for content to render, then scroll to 10px
-    // This "primes" the scroll container so iOS recognizes it can scroll up
-    // Use longer timeout + requestAnimationFrame for reliable DOM settling
-    setTimeout(() => {
-      requestAnimationFrame(() => {
-        if (scrollRef.current) {
-          const scrollHeight = scrollRef.current.scrollHeight;
-          const clientHeight = scrollRef.current.clientHeight;
-          const canScroll = scrollHeight > clientHeight;
-
-          console.log('MatchDetailsModal scroll init:', {
-            scrollHeight,
-            clientHeight,
-            canScroll,
-            overflow: scrollHeight - clientHeight,
-            beforeScrollTop: scrollRef.current.scrollTop
-          });
-
-          if (canScroll) {
-            // Use scrollTo instead of direct scrollTop assignment to avoid negation bug
-            scrollRef.current.scrollTo({
-              top: 10,
-              behavior: 'instant'
-            });
-            console.log('After scrollTo(10), scrollTop:', scrollRef.current.scrollTop);
-          } else {
-            console.log('⚠️ NO OVERFLOW - content not tall enough to scroll!');
-          }
-        }
-      });
-    }, 300);
-  }, []);
+  // NOTE: Scroll initialization now handled via CSS padding (see MatchDetailsModal.module.css)
+  // No JavaScript needed - CSS creates invisible scrollable space at top
 
   // Only render on client side
   if (typeof window === 'undefined') {
@@ -130,15 +98,6 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
         <div
           ref={scrollRef}
           className={styles.scrollableContent}
-          onScroll={(e) => {
-            const target = e.currentTarget;
-            console.log('MatchDetailsModal scroll:', {
-              scrollTop: target.scrollTop,
-              scrollHeight: target.scrollHeight,
-              clientHeight: target.clientHeight,
-              canScrollMore: target.scrollTop + target.clientHeight < target.scrollHeight
-            });
-          }}
         >
           <MatchDetails
             entry1={entry1}

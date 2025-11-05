@@ -102,9 +102,13 @@
   flex: 1;
   min-height: 0;
   padding-right: 4px;
+
+  /* iOS scroll fix: Create invisible scrollable space at top */
+  padding-top: 20px;
+  margin-top: -20px;
 }
 
-/* Ensure modal content can scroll from the start */
-.scrollableContent > * {
-  padding-top: 1px;
+/* First child gets the margin to push content down into scroll space */
+.scrollableContent > *:first-child {
+  margin-top: 20px;
 }
