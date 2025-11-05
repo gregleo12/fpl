@@ -69,32 +69,35 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
   useEffect(() => {
     // Wait for content to render, then scroll to 10px
     // This "primes" the scroll container so iOS recognizes it can scroll up
+    // Use longer timeout + requestAnimationFrame for reliable DOM settling
     setTimeout(() => {
-      if (scrollRef.current) {
-        const scrollHeight = scrollRef.current.scrollHeight;
-        const clientHeight = scrollRef.current.clientHeight;
-        const canScroll = scrollHeight > clientHeight;
+      requestAnimationFrame(() => {
+        if (scrollRef.current) {
+          const scrollHeight = scrollRef.current.scrollHeight;
+          const clientHeight = scrollRef.current.clientHeight;
+          const canScroll = scrollHeight > clientHeight;
 
-        console.log('MatchDetailsModal scroll init:', {
-          scrollHeight,
-          clientHeight,
-          canScroll,
-          overflow: scrollHeight - clientHeight,
-          beforeScrollTop: scrollRef.current.scrollTop
-        });
-
-        if (canScroll) {
-          // Use scrollTo instead of direct scrollTop assignment to avoid negation bug
-          scrollRef.current.scrollTo({
-            top: 10,
-            behavior: 'instant'
+          console.log('MatchDetailsModal scroll init:', {
+            scrollHeight,
+            clientHeight,
+            canScroll,
+            overflow: scrollHeight - clientHeight,
+            beforeScrollTop: scrollRef.current.scrollTop
           });
-          console.log('After scrollTo(10), scrollTop:', scrollRef.current.scrollTop);
-        } else {
-          console.log('⚠️ NO OVERFLOW - content not tall enough to scroll!');
+
+          if (canScroll) {
+            // Use scrollTo instead of direct scrollTop assignment to avoid negation bug
+            scrollRef.current.scrollTo({
+              top: 10,
+              behavior: 'instant'
+            });
+            console.log('After scrollTo(10), scrollTop:', scrollRef.current.scrollTop);
+          } else {
+            console.log('⚠️ NO OVERFLOW - content not tall enough to scroll!');
+          }
         }
-      }
-    }, 100);
+      });
+    }, 300);
   }, []);
 
   // Only render on client side
