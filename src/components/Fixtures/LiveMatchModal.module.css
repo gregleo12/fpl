@@ -12,6 +12,8 @@
   display: flex;
   align-items: flex-end;
   animation: fadeIn 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 @keyframes fadeIn {
@@ -162,6 +164,8 @@
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   flex: 1;
   min-height: 0;
   padding-right: 4px;
