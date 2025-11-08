@@ -262,8 +262,56 @@ function calculateDifferentials(
       };
     });
 
-  // Combine pure differentials and captain differentials for player 1
-  const player1Differentials = [...player1PureDifferentials, ...player1CaptainDifferentials]
+  // Find position differentials for player 1 (both have player, player1 starting but player2 benched)
+  const player1PositionDifferentials = picks1
+    .filter((pick: any) => {
+      // Must be in starting 11 for player1 (or benched with bench boost)
+      const isPlayingForPlayer1 = pick.position <= 11 || isBenchBoost1;
+      if (!isPlayingForPlayer1) return false;
+
+      // Must also be in team2's squad
+      if (!team2ElementIds.has(pick.element)) return false;
+
+      // Find this player in team2's picks
+      const team2Pick = picks2.find((p: any) => p.element === pick.element);
+      if (!team2Pick) return false;
+
+      // Must be benched for player2 (and player2 doesn't have bench boost)
+      const isPlayingForPlayer2 = team2Pick.position <= 11 || isBenchBoost2;
+      if (isPlayingForPlayer2) return false;
+
+      // Don't double count if this is also a captain differential
+      if (pick.is_captain && pick.element !== team2Captain) return false;
+
+      return true;
+    })
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+      const basePoints = liveElement?.stats?.total_points || 0;
+
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
+      // Apply captain multiplier if this is the captain
+      let finalPoints = basePoints;
+      if (pick.is_captain) {
+        const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
+        finalPoints = basePoints * multiplier;
+      }
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: finalPoints,
+        position: pick.position,
+        isCaptain: pick.is_captain,
+        hasPlayed: hasPlayed || fixtureFinished || false,
+      };
+    });
+
+  // Combine all differentials for player 1
+  const player1Differentials = [...player1PureDifferentials, ...player1CaptainDifferentials, ...player1PositionDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
   // Find pure differentials for player 2 (players team2 has but team1 doesn't)
@@ -341,8 +389,56 @@ function calculateDifferentials(
       };
     });
 
-  // Combine pure differentials and captain differentials for player 2
-  const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials]
+  // Find position differentials for player 2 (both have player, player2 starting but player1 benched)
+  const player2PositionDifferentials = picks2
+    .filter((pick: any) => {
+      // Must be in starting 11 for player2 (or benched with bench boost)
+      const isPlayingForPlayer2 = pick.position <= 11 || isBenchBoost2;
+      if (!isPlayingForPlayer2) return false;
+
+      // Must also be in team1's squad
+      if (!team1ElementIds.has(pick.element)) return false;
+
+      // Find this player in team1's picks
+      const team1Pick = picks1.find((p: any) => p.element === pick.element);
+      if (!team1Pick) return false;
+
+      // Must be benched for player1 (and player1 doesn't have bench boost)
+      const isPlayingForPlayer1 = team1Pick.position <= 11 || isBenchBoost1;
+      if (isPlayingForPlayer1) return false;
+
+      // Don't double count if this is also a captain differential
+      if (pick.is_captain && pick.element !== team1Captain) return false;
+
+      return true;
+    })
+    .map((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+      const basePoints = liveElement?.stats?.total_points || 0;
+
+      // Check if player has played
+      const hasPlayed = liveElement?.stats?.minutes > 0;
+      const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
+
+      // Apply captain multiplier if this is the captain
+      let finalPoints = basePoints;
+      if (pick.is_captain) {
+        const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
+        finalPoints = basePoints * multiplier;
+      }
+
+      return {
+        name: element?.web_name || 'Unknown',
+        points: finalPoints,
+        position: pick.position,
+        isCaptain: pick.is_captain,
+        hasPlayed: hasPlayed || fixtureFinished || false,
+      };
+    });
+
+  // Combine all differentials for player 2
+  const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials, ...player2PositionDifferentials]
     .sort((a: any, b: any) => b.points - a.points);
 
   // Add transfer hits differential ONLY if there's a difference
