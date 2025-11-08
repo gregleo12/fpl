@@ -531,7 +531,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {shortenManagerName(match.entry_1.player_name)}
                   </div>
 
-                  {/* Line 3: Captain • Chip • Hit (info line) */}
+                  {/* Line 3: Captain • Chip • Hit (info line - flows left to right) */}
                   <div className={styles.infoLine}>
                     {match.entry_1.captain && (
                       <span className={styles.captain}>C: {match.entry_1.captain}</span>
@@ -576,25 +576,25 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     {shortenManagerName(match.entry_2.player_name)}
                   </div>
 
-                  {/* Line 3: Captain • Chip • Hit (info line) */}
+                  {/* Line 3: Hit • Chip • Captain (info line - MIRRORED for visual symmetry) */}
                   <div className={styles.infoLine}>
-                    {match.entry_2.captain && (
-                      <span className={styles.captain}>C: {match.entry_2.captain}</span>
+                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                      <span className={styles.hitText}>({Math.abs(match.entry_2.hit)})</span>
                     )}
                     {match.entry_2.chip && (
                       <>
-                        {match.entry_2.captain && <span className={styles.separator}>•</span>}
+                        {match.entry_2.hit && match.entry_2.hit < 0 && <span className={styles.separator}>•</span>}
                         <span className={styles.chipText}>
                           {getChipAbbreviation(match.entry_2.chip)}
                         </span>
                       </>
                     )}
-                    {match.entry_2.hit && match.entry_2.hit < 0 && (
+                    {match.entry_2.captain && (
                       <>
-                        {(match.entry_2.captain || match.entry_2.chip) && (
+                        {(match.entry_2.hit || match.entry_2.chip) && (
                           <span className={styles.separator}>•</span>
                         )}
-                        <span className={styles.hitText}>({Math.abs(match.entry_2.hit)})</span>
+                        <span className={styles.captain}>C: {match.entry_2.captain}</span>
                       </>
                     )}
                   </div>
