@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { loadState, updateLastFetched } from '@/lib/storage';
-import Header from '@/components/Layout/Header';
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
@@ -71,7 +72,14 @@ export default function PlayerProfilePage() {
 
   async function handleRefresh() {
     await fetchAllData(leagueId, playerId);
+    // Small delay for better UX feedback
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
+
+  const { isRefreshing: isPullingToRefresh, pullDistance } = usePullToRefresh({
+    onRefresh: handleRefresh,
+    threshold: 80,
+  });
 
   if (isLoading && !playerData) {
     return (
@@ -101,16 +109,13 @@ export default function PlayerProfilePage() {
 
   return (
     <div className={styles.container}>
-      <Header
-        leagueName={leagueData?.league?.name || state.leagueName}
-        myTeamName={state?.myTeamName || 'My Team'}
-        leagueId={leagueId}
-        myTeamId={state?.myTeamId}
-        onRefresh={handleRefresh}
-        isRefreshing={isLoading}
+      <PullToRefreshIndicator
+        isRefreshing={isPullingToRefresh}
+        pullDistance={pullDistance}
       />
 
-      <nav className={styles.tabs}>
+      <div className={styles.tabsWrapper}>
+        <nav className={styles.tabs}>
         <button
           className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
           onClick={() => setActiveTab('league')}
@@ -140,7 +145,8 @@ export default function PlayerProfilePage() {
           <span className={styles.tabIcon}>🏆</span>
           <span className={styles.tabLabel}>My Team</span>
         </button>
-      </nav>
+        </nav>
+      </div>
 
       <main className={styles.content}>
         {error && <div className={styles.error}>{error}</div>}

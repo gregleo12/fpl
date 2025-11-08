@@ -85,8 +85,8 @@ export async function GET(
       }
     }
 
-    // For in-progress and completed gameweeks, fetch picks data for chips and hits
-    let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null }> | null = null;
+    // For in-progress and completed gameweeks, fetch picks data for chips, hits, and captains
+    let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null; captain: string | null }> | null = null;
     if (status === 'in_progress' || status === 'completed') {
       try {
         console.log(`GW${gw} is ${status.toUpperCase()} - fetching picks data from FPL API...`);
@@ -114,6 +114,9 @@ export async function GET(
       // Use live chip data if available, otherwise use database chip data
       const entry1Chip = entry1Data?.chip ?? match.active_chip_1 ?? null;
       const entry2Chip = entry2Data?.chip ?? match.active_chip_2 ?? null;
+      // Use live captain data if available, otherwise use database captain data
+      const entry1Captain = entry1Data?.captain ?? match.entry_1_captain ?? null;
+      const entry2Captain = entry2Data?.captain ?? match.entry_2_captain ?? null;
 
       if (liveScoresMap) {
         console.log(`Match ${match.entry_1_player} vs ${match.entry_2_player}: ${entry1Score} - ${entry2Score} (live: ${liveScoresMap.has(match.entry_1_id)}, db: ${match.entry_1_points})`);
@@ -125,7 +128,7 @@ export async function GET(
         team_name: match.entry_1_team,
         score: entry1Score,
         chip: entry1Chip,
-        captain: match.entry_1_captain || null,
+        captain: entry1Captain,
         ...(entry1Hit !== undefined && { hit: entry1Hit })
       };
 
@@ -135,7 +138,7 @@ export async function GET(
         team_name: match.entry_2_team,
         score: entry2Score,
         chip: entry2Chip,
-        captain: match.entry_2_captain || null,
+        captain: entry2Captain,
         ...(entry2Hit !== undefined && { hit: entry2Hit })
       };
 
@@ -179,8 +182,8 @@ async function fetchLiveScoresFromPicks(
   matches: any[],
   gw: number,
   status: 'in_progress' | 'completed'
-): Promise<Map<number, { score: number; hit: number; chip: string | null }>> {
-  const scoresMap = new Map<number, { score: number; hit: number; chip: string | null }>();
+): Promise<Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>> {
+  const scoresMap = new Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>();
 
   // Get unique entry IDs from all matches
   const entryIds = new Set<number>();
@@ -190,6 +193,18 @@ async function fetchLiveScoresFromPicks(
   });
 
   console.log(`Fetching picks data for ${entryIds.size} entries in GW${gw}...`);
+
+  // Fetch bootstrap data to get player names (for captain)
+  let bootstrapData: any = null;
+  try {
+    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+    if (bootstrapResponse.ok) {
+      bootstrapData = await bootstrapResponse.json();
+      console.log(`Fetched bootstrap data for player names`);
+    }
+  } catch (error) {
+    console.error('Error fetching bootstrap data:', error);
+  }
 
   // Only fetch live player data for in-progress gameweeks
   let liveData: any = null;
@@ -222,6 +237,11 @@ async function fetchLiveScoresFromPicks(
       const picks = picksData.picks;
       const activeChip = picksData.active_chip || null;
       const transferCost = picksData.entry_history?.event_transfers_cost || 0;
+
+      // Find captain
+      const captainPick = picks.find((p: any) => p.is_captain);
+      const captainElement = bootstrapData?.elements?.find((e: any) => e.id === captainPick?.element);
+      const captainName = captainElement?.web_name || null;
 
       let liveScore = 0;
 
@@ -264,8 +284,8 @@ async function fetchLiveScoresFromPicks(
       // Convert hit to negative for display
       const hit = transferCost > 0 ? -transferCost : 0;
 
-      console.log(`Entry ${entryId}: ${netScore} pts (${liveScore} from players - ${transferCost} hits) chip: ${activeChip}`);
-      return { entryId, score: netScore, hit, chip: activeChip };
+      console.log(`Entry ${entryId}: ${netScore} pts (${liveScore} from players - ${transferCost} hits) chip: ${activeChip} captain: ${captainName}`);
+      return { entryId, score: netScore, hit, chip: activeChip, captain: captainName };
     } catch (error) {
       console.error(`Error fetching picks for entry ${entryId}:`, error);
       return null;
@@ -277,7 +297,7 @@ async function fetchLiveScoresFromPicks(
   // Build the scores map
   results.forEach((result) => {
     if (result) {
-      scoresMap.set(result.entryId, { score: result.score, hit: result.hit, chip: result.chip });
+      scoresMap.set(result.entryId, { score: result.score, hit: result.hit, chip: result.chip, captain: result.captain });
     }
   });
 

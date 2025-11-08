@@ -549,7 +549,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         {(match.entry_1.captain || match.entry_1.chip) && (
                           <span className={styles.separator}>•</span>
                         )}
-                        <span className={styles.hitText}>{match.entry_1.hit}</span>
+                        <span className={styles.hitText}>({Math.abs(match.entry_1.hit)})</span>
                       </>
                     )}
                   </div>
@@ -594,7 +594,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                         {(match.entry_2.captain || match.entry_2.chip) && (
                           <span className={styles.separator}>•</span>
                         )}
-                        <span className={styles.hitText}>{match.entry_2.hit}</span>
+                        <span className={styles.hitText}>({Math.abs(match.entry_2.hit)})</span>
                       </>
                     )}
                   </div>
