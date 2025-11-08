@@ -8,9 +8,11 @@ import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefresh
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
+import AwardsTab from '@/components/Awards/AwardsTab';
+import SettingsTab from '@/components/Settings/SettingsTab';
 import styles from './player.module.css';
 
-type TabType = 'league' | 'fixtures' | 'player';
+type TabType = 'league' | 'fixtures' | 'player' | 'awards' | 'settings';
 
 export default function PlayerProfilePage() {
   const params = useParams();
@@ -79,6 +81,7 @@ export default function PlayerProfilePage() {
   const { isRefreshing: isPullingToRefresh, pullDistance } = usePullToRefresh({
     onRefresh: handleRefresh,
     threshold: 80,
+    enabled: activeTab !== 'settings', // Disable on settings tab
   });
 
   if (isLoading && !playerData) {
@@ -116,35 +119,49 @@ export default function PlayerProfilePage() {
 
       <div className={styles.tabsWrapper}>
         <nav className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
-          onClick={() => setActiveTab('league')}
-        >
-          <span className={styles.tabIcon}>📊</span>
-          <span className={styles.tabLabel}>Standings</span>
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
-          onClick={() => setActiveTab('fixtures')}
-        >
-          <span className={styles.tabIcon}>🎯</span>
-          <span className={styles.tabLabel}>Fixtures</span>
-        </button>
-        <button
-          className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
-          onClick={() => {
-            if (isViewingSelf) {
-              // Already viewing self, just switch tab
-              setActiveTab('player');
-            } else if (state?.myTeamId) {
-              // Viewing someone else, navigate to your team
-              router.push(`/league/${leagueId}/player/${state.myTeamId}`);
-            }
-          }}
-        >
-          <span className={styles.tabIcon}>🏆</span>
-          <span className={styles.tabLabel}>My Team</span>
-        </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
+            onClick={() => setActiveTab('league')}
+          >
+            <span className={styles.tabIcon}>📊</span>
+            <span className={styles.tabLabel}>Rankings</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
+            onClick={() => setActiveTab('fixtures')}
+          >
+            <span className={styles.tabIcon}>🎯</span>
+            <span className={styles.tabLabel}>Fixtures</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'player' ? styles.active : ''}`}
+            onClick={() => {
+              if (isViewingSelf) {
+                // Already viewing self, just switch tab
+                setActiveTab('player');
+              } else if (state?.myTeamId) {
+                // Viewing someone else, navigate to your team
+                router.push(`/league/${leagueId}/player/${state.myTeamId}`);
+              }
+            }}
+          >
+            <span className={styles.tabIcon}>🏆</span>
+            <span className={styles.tabLabel}>My Team</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'awards' ? styles.active : ''}`}
+            onClick={() => setActiveTab('awards')}
+          >
+            <span className={styles.tabIcon}>🎖️</span>
+            <span className={styles.tabLabel}>Awards</span>
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <span className={styles.tabIcon}>⚙️</span>
+            <span className={styles.tabLabel}>Settings</span>
+          </button>
         </nav>
       </div>
 
@@ -183,6 +200,17 @@ export default function PlayerProfilePage() {
             myManagerName={playerName}
             myTeamName={teamName}
             leagueId={leagueId}
+          />
+        )}
+        {activeTab === 'awards' && state?.myTeamId && (
+          <AwardsTab leagueId={leagueId} myTeamId={state.myTeamId} />
+        )}
+        {activeTab === 'settings' && (
+          <SettingsTab
+            leagueName={leagueData?.league?.name || state?.leagueName || ''}
+            myTeamName={state?.myTeamName || ''}
+            onRefresh={handleRefresh}
+            isRefreshing={isLoading}
           />
         )}
       </main>
