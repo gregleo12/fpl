@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import { getDatabase } from '@/lib/db';
+import { getDatabase, getPoolStats } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const results = {
@@ -17,6 +17,11 @@ export async function GET(request: NextRequest) {
       connectionString: process.env.DATABASE_URL
         ? `postgresql://${process.env.DATABASE_URL.split('@')[1]?.split('/')[0] || 'unknown'}`
         : 'not configured',
+      poolStats: {
+        total: 0,
+        idle: 0,
+        waiting: 0,
+      },
     },
     environment: {
       nodeEnv: process.env.NODE_ENV,
@@ -51,6 +56,14 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
     const result = await db.query('SELECT 1 as health_check, NOW() as current_time');
     results.database.responseTime = Date.now() - dbStart;
+
+    // Get pool statistics
+    const poolStats = getPoolStats();
+    results.database.poolStats = {
+      total: poolStats.totalCount,
+      idle: poolStats.idleCount,
+      waiting: poolStats.waitingCount,
+    };
 
     if (result.rows.length > 0) {
       results.database.status = 'healthy';

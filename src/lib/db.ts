@@ -2,7 +2,39 @@ import { Pool, QueryResult } from 'pg';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+
+  // Connection pool limits (Railway hobby plan supports ~20 connections)
+  max: 10, // Maximum number of clients in the pool
+  min: 2, // Minimum number of clients to keep in the pool
+
+  // Timeouts
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 10000, // Wait max 10s for connection from pool
+
+  // Query timeout (prevent queries from hanging indefinitely)
+  statement_timeout: 30000, // 30 seconds max per query
+
+  // Keep connections alive
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+});
+
+// Error handling for pool
+pool.on('error', (err, client) => {
+  console.error('Unexpected error on idle database client', err);
+});
+
+pool.on('connect', (client) => {
+  console.log('Database client connected');
+});
+
+pool.on('acquire', (client) => {
+  console.log('Database client acquired from pool');
+});
+
+pool.on('remove', (client) => {
+  console.log('Database client removed from pool');
 });
 
 let initialized = false;
@@ -121,5 +153,36 @@ export async function getDatabase() {
 }
 
 export async function closeDatabase() {
+  console.log('Closing database connection pool...');
   await pool.end();
+  console.log('Database connection pool closed');
+}
+
+// Graceful shutdown handlers
+if (typeof process !== 'undefined') {
+  process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, closing database connections...');
+    await closeDatabase();
+    process.exit(0);
+  });
+
+  process.on('SIGINT', async () => {
+    console.log('SIGINT received, closing database connections...');
+    await closeDatabase();
+    process.exit(0);
+  });
+
+  // Handle unhandled rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  });
+}
+
+// Export pool stats for monitoring
+export function getPoolStats() {
+  return {
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount,
+  };
 }
