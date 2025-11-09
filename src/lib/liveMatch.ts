@@ -34,16 +34,18 @@ export async function getLiveMatchData(
     const liveData = data.live;
     const bootstrapData = data.bootstrap;
 
-    // Calculate live stats for both teams
-    const player1Data = calculateLiveStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
-    const player2Data = calculateLiveStats(picks2Data, liveData, bootstrapData, entryId2, manager2, team2);
+    // Calculate live stats for both teams (now returns auto-sub results too)
+    const { stats: player1Data, autoSubResult: autoSubs1 } = calculateLiveStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
+    const { stats: player2Data, autoSubResult: autoSubs2 } = calculateLiveStats(picks2Data, liveData, bootstrapData, entryId2, manager2, team2);
 
-    // Calculate differentials
+    // Calculate differentials (pass auto-sub results to mark substituted players)
     const { player1Differentials, player2Differentials } = calculateDifferentials(
       picks1Data,
       picks2Data,
       liveData,
-      bootstrapData
+      bootstrapData,
+      autoSubs1,
+      autoSubs2
     );
 
     // Calculate common players
@@ -240,21 +242,24 @@ function calculateLiveStats(
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
   return {
-    entryId,
-    manager,
-    team,
-    currentScore,
-    playersPlayed,
-    playersRemaining,
-    totalPlayers,
-    captain: {
-      name: captainElement?.web_name || 'Unknown',
-      points: captainPoints,
-      isPlaying: captainLive?.stats?.minutes > 0,
+    stats: {
+      entryId,
+      manager,
+      team,
+      currentScore,
+      playersPlayed,
+      playersRemaining,
+      totalPlayers,
+      captain: {
+        name: captainElement?.web_name || 'Unknown',
+        points: captainPoints,
+        isPlaying: captainLive?.stats?.minutes > 0,
+      },
+      chipActive: picksData.active_chip,
+      benchPoints,
+      transferCost,
     },
-    chipActive: picksData.active_chip,
-    benchPoints,
-    transferCost,
+    autoSubResult,
   };
 }
 
@@ -262,10 +267,31 @@ function calculateDifferentials(
   picks1Data: any,
   picks2Data: any,
   liveData: any,
-  bootstrapData: any
+  bootstrapData: any,
+  autoSubs1: any,
+  autoSubs2: any
 ) {
   const picks1 = picks1Data.picks;
   const picks2 = picks2Data.picks;
+
+  // Helper function to check if a player was auto-subbed in
+  const wasSubbedIn = (playerId: number, autoSubs: any) => {
+    if (!autoSubs || !autoSubs.substitutions) return false;
+    return autoSubs.substitutions.some((sub: any) => sub.playerIn.id === playerId);
+  };
+
+  // Helper function to check if a player was auto-subbed out
+  const wasSubbedOut = (playerId: number, autoSubs: any) => {
+    if (!autoSubs || !autoSubs.substitutions) return false;
+    return autoSubs.substitutions.some((sub: any) => sub.playerOut.id === playerId);
+  };
+
+  // Helper function to get replacement player name
+  const getReplacementName = (playerId: number, autoSubs: any) => {
+    if (!autoSubs || !autoSubs.substitutions) return undefined;
+    const sub = autoSubs.substitutions.find((s: any) => s.playerOut.id === playerId);
+    return sub ? sub.playerIn.name : undefined;
+  };
 
   // Get element IDs for both teams
   const team1ElementIds = new Set(picks1.map((p: any) => p.element));
@@ -312,6 +338,9 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
+        wasAutoSubbedIn: wasSubbedIn(pick.element, autoSubs1),
+        wasAutoSubbedOut: wasSubbedOut(pick.element, autoSubs1),
+        replacedBy: getReplacementName(pick.element, autoSubs1),
       };
     });
 
@@ -399,6 +428,9 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
+        wasAutoSubbedIn: wasSubbedIn(pick.element, autoSubs1),
+        wasAutoSubbedOut: wasSubbedOut(pick.element, autoSubs1),
+        replacedBy: getReplacementName(pick.element, autoSubs1),
       };
     });
 
@@ -439,10 +471,13 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
+        wasAutoSubbedIn: wasSubbedIn(pick.element, autoSubs2),
+        wasAutoSubbedOut: wasSubbedOut(pick.element, autoSubs2),
+        replacedBy: getReplacementName(pick.element, autoSubs2),
       };
     });
 
-  // Find captain differentials for player 2 (both have player, but only player2 captained it)
+  // Find captain differentials for player 2 (both have player, but only player2 captained it) (both have player, but only player2 captained it)
   const player2CaptainDifferentials = picks2
     .filter((pick: any) => {
       // Must be captained by player2
@@ -526,6 +561,9 @@ function calculateDifferentials(
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
+        wasAutoSubbedIn: wasSubbedIn(pick.element, autoSubs2),
+        wasAutoSubbedOut: wasSubbedOut(pick.element, autoSubs2),
+        replacedBy: getReplacementName(pick.element, autoSubs2),
       };
     });
 

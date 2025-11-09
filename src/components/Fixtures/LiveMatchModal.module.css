@@ -364,6 +364,32 @@
   font-weight: 700;
 }
 
+/* Auto-Sub Badges */
+.autoSubBadge {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.75rem;
+  color: #00d4ff;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: rgba(0, 212, 255, 0.15);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.autoSubInBadge {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.7rem;
+  color: #00ff87;
+  font-weight: 700;
+  padding: 2px 6px;
+  background: rgba(0, 255, 135, 0.15);
+  border-radius: 4px;
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  text-transform: uppercase;
+}
+
 /* Win Requirements */
 .requirementsGrid {
   display: grid;

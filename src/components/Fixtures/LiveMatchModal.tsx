@@ -173,9 +173,14 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                     {matchData.player1.differentials.map((player, idx) => (
                       <div key={idx} className={styles.playerRow}>
                         <span className={styles.playerName}>
-                          {player.name}
+                          {player.wasAutoSubbedOut && <span style={{ textDecoration: 'line-through', opacity: 0.6 }}>{player.name}</span>}
+                          {!player.wasAutoSubbedOut && player.name}
                           {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
-                          {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
+                          {player.position > 11 && !player.wasAutoSubbedIn && <span className={styles.benchBadge}>(B)</span>}
+                          {player.wasAutoSubbedOut && player.replacedBy && (
+                            <span className={styles.autoSubBadge}>→ {player.replacedBy}</span>
+                          )}
+                          {player.wasAutoSubbedIn && <span className={styles.autoSubInBadge}>IN</span>}
                         </span>
                         <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
                           {player.points < 0 ? `${player.points}` : player.points} pts
@@ -195,9 +200,14 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                     {matchData.player2.differentials.map((player, idx) => (
                       <div key={idx} className={styles.playerRow}>
                         <span className={styles.playerName}>
-                          {player.name}
+                          {player.wasAutoSubbedOut && <span style={{ textDecoration: 'line-through', opacity: 0.6 }}>{player.name}</span>}
+                          {!player.wasAutoSubbedOut && player.name}
                           {player.isCaptain && <span className={styles.captainBadge}>(C)</span>}
-                          {player.position > 11 && <span className={styles.benchBadge}>(B)</span>}
+                          {player.position > 11 && !player.wasAutoSubbedIn && <span className={styles.benchBadge}>(B)</span>}
+                          {player.wasAutoSubbedOut && player.replacedBy && (
+                            <span className={styles.autoSubBadge}>→ {player.replacedBy}</span>
+                          )}
+                          {player.wasAutoSubbedIn && <span className={styles.autoSubInBadge}>IN</span>}
                         </span>
                         <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
                           {player.points < 0 ? `${player.points}` : player.points} pts
