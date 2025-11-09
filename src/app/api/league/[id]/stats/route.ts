@@ -327,14 +327,20 @@ export async function GET(
 
     const allMatches = allMatchesResult.rows;
 
-    // Find max completed GW
-    const maxCompletedGW = allMatches.length > 0
+    // Find max GW in database
+    const maxGWInDatabase = allMatches.length > 0
       ? Math.max(...allMatches.map((m: any) => Number(m.event)))
       : 0;
 
-    if (maxCompletedGW === 0) {
+    if (maxGWInDatabase === 0) {
       return NextResponse.json({ error: 'No completed matches found' }, { status: 404 });
     }
+
+    // Determine the last FINISHED gameweek (not just last in DB)
+    // If current GW is live, the last finished GW is one before it
+    const maxCompletedGW = isCurrentGWLive && liveGameweekNumber > 0
+      ? liveGameweekNumber - 1
+      : maxGWInDatabase;
 
     // Get total gameweeks from league (FPL has 38 GWs)
     // Use league data or default to 38 for FPL
