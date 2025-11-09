@@ -329,15 +329,24 @@ async function fetchLiveScoresFromPicks(
           const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
           const autoSubResult = applyAutoSubstitutions(squad);
 
-          // Calculate score with auto-subs
+          // Import and calculate provisional bonus
+          const { calculateProvisionalBonus } = require('@/lib/fpl-calculations');
+          const bonusMap = calculateProvisionalBonus(autoSubResult.squad.starting11);
+
+          // Calculate score with auto-subs AND provisional bonus
+          let provisionalBonusTotal = 0;
           liveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
-            return sum + (player.points * player.multiplier);
+            const bonusInfo = bonusMap.get(player.id);
+            const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? (player.bonus || 0) : bonusInfo.provisional) : 0;
+            const totalPlayerPoints = (player.points + bonusPoints) * player.multiplier;
+            provisionalBonusTotal += bonusPoints * player.multiplier;
+            return sum + totalPlayerPoints;
           }, 0);
 
-          if (autoSubResult.substitutions.length > 0) {
+          if (autoSubResult.substitutions.length > 0 || provisionalBonusTotal > 0) {
             console.log(`Entry ${entryId}: Auto-subs applied - ${autoSubResult.substitutions.map(s =>
               `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
-            ).join(', ')}`);
+            ).join(', ')} + ${provisionalBonusTotal} provisional bonus`);
           }
         } else {
           // No auto-subs (Bench Boost active or bootstrap data unavailable)

@@ -228,14 +228,28 @@ function calculateLiveStats(
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   console.log(`Transfer cost from API: ${transferCost}`);
 
-  // Use auto-substitution adjusted score if available
+  // Use auto-substitution adjusted score if available (including provisional bonus)
   let finalLiveScore = liveScore;
+  let provisionalBonusTotal = 0;
   if (autoSubResult && !isBenchBoost) {
-    // Calculate score with auto-subs
-    finalLiveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
-      return sum + (player.points * player.multiplier);
+    // Calculate score with auto-subs AND provisional bonus
+    const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+    const autoSubsApplied = applyAutoSubstitutions(squad);
+
+    // Import and use calculateProvisionalBonus
+    const { calculateProvisionalBonus } = require('./fpl-calculations');
+    const bonusMap = calculateProvisionalBonus(autoSubsApplied.squad.starting11);
+
+    // Calculate final score with bonus
+    finalLiveScore = autoSubsApplied.squad.starting11.reduce((sum, player) => {
+      const bonusInfo = bonusMap.get(player.id);
+      const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? (player.bonus || 0) : bonusInfo.provisional) : 0;
+      const totalPlayerPoints = (player.points + bonusPoints) * player.multiplier;
+      provisionalBonusTotal += bonusPoints * player.multiplier;
+      return sum + totalPlayerPoints;
     }, 0);
-    console.log(`Score with auto-subs: ${finalLiveScore} (gained ${autoSubResult.pointsGained} from ${autoSubResult.substitutions.length} substitutions)`);
+
+    console.log(`Score with auto-subs + bonus: ${finalLiveScore} (${autoSubResult.substitutions.length} subs, +${provisionalBonusTotal} provisional bonus)`);
   }
 
   // Calculate final live score (subtract hits - API returns positive values)
