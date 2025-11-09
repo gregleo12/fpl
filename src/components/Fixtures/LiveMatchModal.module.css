@@ -264,6 +264,10 @@
   color: #ff2882;
 }
 
+.playerPoints.substituted {
+  color: #00d4ff;
+}
+
 .captainBadge {
   display: inline-block;
   margin-left: 4px;

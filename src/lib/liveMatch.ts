@@ -293,6 +293,13 @@ function calculateDifferentials(
     return sub ? sub.playerIn.name : undefined;
   };
 
+  // Helper function to get replacement player's points
+  const getReplacementPoints = (playerId: number, autoSubs: any) => {
+    if (!autoSubs || !autoSubs.substitutions) return undefined;
+    const sub = autoSubs.substitutions.find((s: any) => s.playerOut.id === playerId);
+    return sub ? sub.playerIn.points : undefined;
+  };
+
   // Get element IDs for both teams
   const team1ElementIds = new Set(picks1.map((p: any) => p.element));
   const team2ElementIds = new Set(picks2.map((p: any) => p.element));
@@ -435,8 +442,38 @@ function calculateDifferentials(
     });
 
   // Combine all differentials for player 1
-  const player1Differentials = [...player1PureDifferentials, ...player1CaptainDifferentials, ...player1PositionDifferentials]
-    .sort((a: any, b: any) => b.points - a.points);
+  let player1Differentials = [...player1PureDifferentials, ...player1CaptainDifferentials, ...player1PositionDifferentials];
+
+  // Post-process: Update points for subbed-out players and remove duplicate bench players
+  if (autoSubs1 && autoSubs1.substitutions) {
+    const subbedInIds = new Set(autoSubs1.substitutions.map((s: any) => s.playerIn.id));
+
+    player1Differentials = player1Differentials
+      .map((diff: any) => {
+        // If this player was subbed out, update their points to show the replacement's points
+        if (diff.wasAutoSubbedOut) {
+          // Find the element ID for this player
+          const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
+          if (element) {
+            const replacementPoints = getReplacementPoints(element.id, autoSubs1);
+            if (replacementPoints !== undefined) {
+              return {
+                ...diff,
+                points: replacementPoints * (diff.isCaptain ? (picks1Data.active_chip === '3xc' ? 3 : 2) : 1),
+              };
+            }
+          }
+        }
+        return diff;
+      })
+      .filter((diff: any) => {
+        // Remove bench players who came in as substitutes (they're shown in the subbed-out player's row)
+        const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
+        return !(diff.wasAutoSubbedIn && element && subbedInIds.has(element.id));
+      });
+  }
+
+  player1Differentials.sort((a: any, b: any) => b.points - a.points);
 
   // Find pure differentials for player 2 (players team2 has but team1 doesn't)
   const player2PureDifferentials = picks2
@@ -568,8 +605,38 @@ function calculateDifferentials(
     });
 
   // Combine all differentials for player 2
-  const player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials, ...player2PositionDifferentials]
-    .sort((a: any, b: any) => b.points - a.points);
+  let player2Differentials = [...player2PureDifferentials, ...player2CaptainDifferentials, ...player2PositionDifferentials];
+
+  // Post-process: Update points for subbed-out players and remove duplicate bench players
+  if (autoSubs2 && autoSubs2.substitutions) {
+    const subbedInIds = new Set(autoSubs2.substitutions.map((s: any) => s.playerIn.id));
+
+    player2Differentials = player2Differentials
+      .map((diff: any) => {
+        // If this player was subbed out, update their points to show the replacement's points
+        if (diff.wasAutoSubbedOut) {
+          // Find the element ID for this player
+          const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
+          if (element) {
+            const replacementPoints = getReplacementPoints(element.id, autoSubs2);
+            if (replacementPoints !== undefined) {
+              return {
+                ...diff,
+                points: replacementPoints * (diff.isCaptain ? (picks2Data.active_chip === '3xc' ? 3 : 2) : 1),
+              };
+            }
+          }
+        }
+        return diff;
+      })
+      .filter((diff: any) => {
+        // Remove bench players who came in as substitutes (they're shown in the subbed-out player's row)
+        const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
+        return !(diff.wasAutoSubbedIn && element && subbedInIds.has(element.id));
+      });
+  }
+
+  player2Differentials.sort((a: any, b: any) => b.points - a.points);
 
   // Add transfer hits differential ONLY if there's a difference
   const hits1 = picks1Data.entry_history?.event_transfers_cost || 0;
