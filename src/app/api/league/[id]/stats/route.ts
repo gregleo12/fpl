@@ -270,6 +270,7 @@ export async function GET(
     // Check FPL API first to determine if current gameweek is live
     // This helps us set smart defaults
     let isCurrentGWLive = false;
+    let liveGameweekNumber = 0;
     try {
       const fplResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
       if (fplResponse.ok) {
@@ -286,6 +287,7 @@ export async function GET(
           const deadlinePassed = now > deadline;
 
           isCurrentGWLive = currentEvent.is_current && !currentEvent.finished && deadlinePassed;
+          liveGameweekNumber = currentEvent.id;
 
           console.log(`GW${currentEvent.id} status - is_current: ${currentEvent.is_current}, finished: ${currentEvent.finished}, deadline_passed: ${deadlinePassed}, result: ${isCurrentGWLive ? 'LIVE' : 'OFFICIAL'}`);
         }
@@ -341,12 +343,13 @@ export async function GET(
     // Determine which GW to show based on mode
     let currentGW: number;
     if (gwParam) {
-      // If GW is explicitly specified, use it (limited to maxCompletedGW)
-      currentGW = Math.min(Math.max(1, parseInt(gwParam)), maxCompletedGW);
+      // If GW is explicitly specified, use it
+      currentGW = Math.min(Math.max(1, parseInt(gwParam)), maxGW);
+    } else if (mode === 'live' && isCurrentGWLive && liveGameweekNumber > 0) {
+      // LIVE mode: Show the current live gameweek from FPL API
+      currentGW = liveGameweekNumber;
     } else {
-      // Both live and official modes show the same GW now
-      // The difference is that live fetches real-time scores from FPL API
-      // while official uses only database scores
+      // OFFICIAL mode: Show the last completed gameweek with database scores
       currentGW = maxCompletedGW;
     }
 
