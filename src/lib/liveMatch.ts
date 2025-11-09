@@ -332,15 +332,14 @@ function calculateDifferentials(
 
   // Helper function to get bonus info for a player
   const getBonusInfo = (playerId: number, bonusMap: Map<number, any>, officialBonus: number) => {
-    const bonusInfo = bonusMap.get(playerId);
-    if (!bonusInfo) return { bonusPoints: 0 };
+    // IMPORTANT: We cannot calculate provisional bonus accurately for differentials
+    // because we only have BPS for the user's players, not all 22 players in the match.
+    // This causes players to get incorrect bonus (e.g., being alone in fixture = rank 0).
+    // Solution: Only show official bonus (which is already in totalPoints from API).
 
-    // Use official bonus if available, otherwise provisional
-    const bonus = bonusInfo.isOfficial
-      ? officialBonus // Use the actual official bonus from liveElement.stats.bonus
-      : bonusInfo.provisional;
-
-    return { bonusPoints: bonus };
+    // Return official bonus for display purposes (underline)
+    // This will be added back after we subtracted it, so net effect is 0 but we track it for UI
+    return { bonusPoints: officialBonus };
   };
 
   // Get element IDs for both teams
