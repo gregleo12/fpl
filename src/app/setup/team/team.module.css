@@ -143,6 +143,21 @@
   font-weight: 500;
 }
 
+.savedTeamBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+}
+
 .rememberMe {
   margin-bottom: 1.5rem;
   padding: 1rem;

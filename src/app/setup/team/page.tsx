@@ -11,6 +11,7 @@ export default function TeamSelectionPage() {
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [rememberMe, setRememberMe] = useState(true);
   const [sortedStandings, setSortedStandings] = useState<any[]>([]);
+  const [savedTeamId, setSavedTeamId] = useState<string | null>(null);
 
   useEffect(() => {
     // Get temporary league data from sessionStorage
@@ -40,8 +41,9 @@ export default function TeamSelectionPage() {
         const [savedTeam] = standings.splice(savedTeamIndex, 1);
         standings.unshift(savedTeam);
 
-        // Auto-select the saved team
+        // Auto-select the saved team and track it for badge display
         setSelectedTeam(savedState.myTeamId);
+        setSavedTeamId(savedState.myTeamId);
       }
     }
 
@@ -123,6 +125,9 @@ export default function TeamSelectionPage() {
                   {team.matches_won}W-{team.matches_drawn}D-{team.matches_lost}L
                 </span>
               </div>
+              {team.entry_id.toString() === savedTeamId && (
+                <span className={styles.savedTeamBadge}>YOUR TEAM</span>
+              )}
             </label>
           ))}
         </div>
