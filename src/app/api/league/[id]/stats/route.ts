@@ -300,8 +300,8 @@ export async function GET(
     // Get GW and mode parameters from query string
     const { searchParams } = new URL(request.url);
     const gwParam = searchParams.get('gw');
-    // Always default to 'official' - user must explicitly click LIVE button
-    const mode = searchParams.get('mode') || 'official';
+    // Smart default: Show LIVE when GW is active, OFFICIAL when no GW is live
+    const mode = searchParams.get('mode') || (isCurrentGWLive ? 'live' : 'official');
 
     // Get all managers in this league
     const managersResult = await db.query(`
