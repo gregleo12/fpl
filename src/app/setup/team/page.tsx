@@ -29,13 +29,19 @@ export default function TeamSelectionPage() {
 
     // Check for saved team selection
     const savedState = loadState();
+    console.log('=== DEBUG: Saved State ===');
+    console.log('Saved state:', savedState);
+    console.log('Current league ID:', parsedData.leagueId);
 
     // Sort standings to put saved team at top (if exists and matches this league)
     const standings = [...parsedData.standings];
     if (savedState && savedState.leagueId === parsedData.leagueId) {
+      console.log('League IDs match!');
       const savedTeamIndex = standings.findIndex(
         (team: any) => team.entry_id.toString() === savedState.myTeamId
       );
+      console.log('Saved team index:', savedTeamIndex);
+      console.log('Looking for team ID:', savedState.myTeamId);
 
       if (savedTeamIndex > -1) {
         // Move saved team to the top
@@ -46,7 +52,14 @@ export default function TeamSelectionPage() {
         setSelectedTeam(savedState.myTeamId);
         setSavedTeamId(savedState.myTeamId);
         setSavedTeamData(savedTeam);
+        console.log('Saved team data set:', savedTeam);
+      } else {
+        console.log('Team not found in standings');
       }
+    } else {
+      console.log('No saved state or league mismatch');
+      console.log('Has saved state:', !!savedState);
+      console.log('League match:', savedState?.leagueId === parsedData.leagueId);
     }
 
     setSortedStandings(standings);
@@ -112,6 +125,10 @@ export default function TeamSelectionPage() {
       </div>
     );
   }
+
+  console.log('=== DEBUG: Render ===');
+  console.log('Saved team data at render:', savedTeamData);
+  console.log('Should show recent section:', !!savedTeamData);
 
   return (
     <main className={styles.container}>
