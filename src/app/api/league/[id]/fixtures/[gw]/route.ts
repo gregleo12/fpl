@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import {
+  Squad,
+  Player,
+  Position,
+  applyAutoSubstitutions,
+} from '@/lib/fpl-calculations';
 
 // Force dynamic rendering and disable caching for live scores
 export const dynamic = 'force-dynamic';
@@ -177,6 +183,67 @@ export async function GET(
   }
 }
 
+/**
+ * Convert FPL element_type to Position
+ */
+function getPosition(elementType: number): Position {
+  switch (elementType) {
+    case 1: return 'GK';
+    case 2: return 'DEF';
+    case 3: return 'MID';
+    case 4: return 'FWD';
+    default: return 'MID';
+  }
+}
+
+/**
+ * Convert FPL picks data to Squad format for auto-substitutions
+ */
+function createSquadFromPicks(
+  picksData: any,
+  liveData: any,
+  bootstrapData: any
+): Squad {
+  const picks = picksData.picks;
+  const starting11: Player[] = [];
+  const bench: Player[] = [];
+
+  // Get captain multiplier
+  const captainMultiplier = picksData.active_chip === '3xc' ? 3 : 2;
+
+  picks.forEach((pick: any) => {
+    const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+    const liveElement = liveData?.elements?.find((e: any) => e.id === pick.element);
+
+    if (!element) return;
+
+    const player: Player = {
+      id: pick.element,
+      name: element.web_name,
+      position: getPosition(element.element_type),
+      minutes: liveElement?.stats?.minutes || 0,
+      points: liveElement?.stats?.total_points || 0,
+      multiplier: pick.is_captain ? captainMultiplier : 1,
+    };
+
+    if (pick.position <= 11) {
+      starting11.push(player);
+    } else if (pick.position <= 14) {
+      // Bench positions 12-14 (15 is typically not used for auto-subs)
+      bench.push(player);
+    }
+  });
+
+  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
+  bench.sort((a, b) => {
+    const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
+    const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
+    return posA - posB;
+  });
+
+  return { starting11, bench };
+}
+
 // Helper function to fetch live scores from picks data during live and completed gameweeks
 async function fetchLiveScoresFromPicks(
   matches: any[],
@@ -246,34 +313,53 @@ async function fetchLiveScoresFromPicks(
       let liveScore = 0;
 
       // For completed gameweeks, use final score from entry_history
-      // For in-progress gameweeks, calculate from live player data
+      // For in-progress gameweeks, calculate from live player data WITH AUTO-SUBS
       if (status === 'completed') {
         // Use the final score for completed gameweeks
         liveScore = picksData.entry_history?.points || 0;
       } else if (liveData && liveData.elements) {
         // Calculate score from individual players for live gameweeks
         const isBenchBoost = activeChip === 'bboost';
-        const isTripleCaptain = activeChip === '3xc';
 
-        picks.forEach((pick: any) => {
-          const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-          const rawPoints = liveElement?.stats?.total_points || 0;
+        // Apply auto-substitutions ONLY if Bench Boost is NOT active
+        if (!isBenchBoost && bootstrapData) {
+          const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+          const autoSubResult = applyAutoSubstitutions(squad);
 
-          if (pick.position <= 11) {
-            // Starting 11
-            if (pick.is_captain) {
-              const multiplier = isTripleCaptain ? 3 : 2;
-              liveScore += rawPoints * multiplier;
-            } else {
-              liveScore += rawPoints;
-            }
-          } else {
-            // Bench (positions 12-15)
-            if (isBenchBoost) {
-              liveScore += rawPoints;
-            }
+          // Calculate score with auto-subs
+          liveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
+            return sum + (player.points * player.multiplier);
+          }, 0);
+
+          if (autoSubResult.substitutions.length > 0) {
+            console.log(`Entry ${entryId}: Auto-subs applied - ${autoSubResult.substitutions.map(s =>
+              `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
+            ).join(', ')}`);
           }
-        });
+        } else {
+          // No auto-subs (Bench Boost active or bootstrap data unavailable)
+          const isTripleCaptain = activeChip === '3xc';
+
+          picks.forEach((pick: any) => {
+            const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+            const rawPoints = liveElement?.stats?.total_points || 0;
+
+            if (pick.position <= 11) {
+              // Starting 11
+              if (pick.is_captain) {
+                const multiplier = isTripleCaptain ? 3 : 2;
+                liveScore += rawPoints * multiplier;
+              } else {
+                liveScore += rawPoints;
+              }
+            } else {
+              // Bench (positions 12-15)
+              if (isBenchBoost) {
+                liveScore += rawPoints;
+              }
+            }
+          });
+        }
       } else {
         // Fallback to entry_history.points if live data unavailable
         liveScore = picksData.entry_history?.points || 0;
