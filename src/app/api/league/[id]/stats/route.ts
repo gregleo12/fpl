@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 
+// Force dynamic rendering - prevent caching and static generation
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 interface MatchResult {
   result: 'W' | 'D' | 'L';
   event: number;
@@ -273,9 +277,17 @@ export async function GET(
         const currentEvent = fplData.events?.find((event: any) => event.is_current);
 
         if (currentEvent) {
-          // Check if the current event is in progress (not finished)
-          isCurrentGWLive = !currentEvent.finished && currentEvent.is_current;
-          console.log(`GW${currentEvent.id} status: ${currentEvent.finished ? 'finished' : 'live'}`);
+          // Check if the current event is in progress
+          // A gameweek is "live" if:
+          // 1. It's marked as current AND not finished
+          // 2. OR if the deadline has passed but it's not finished (matches ongoing)
+          const now = new Date();
+          const deadline = new Date(currentEvent.deadline_time);
+          const deadlinePassed = now > deadline;
+
+          isCurrentGWLive = currentEvent.is_current && !currentEvent.finished && deadlinePassed;
+
+          console.log(`GW${currentEvent.id} status - is_current: ${currentEvent.is_current}, finished: ${currentEvent.finished}, deadline_passed: ${deadlinePassed}, result: ${isCurrentGWLive ? 'LIVE' : 'OFFICIAL'}`);
         }
       }
     } catch (error) {

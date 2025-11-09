@@ -15,9 +15,11 @@ interface Props {
 export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPlayerClick }: Props) {
   const router = useRouter();
   // Smart default: Show LIVE when GW is active, OFFICIAL when finished
-  const [showLiveRankings, setShowLiveRankings] = useState(initialData?.isLive ?? true);
+  // Default to OFFICIAL (false) if isLive is undefined
+  const [showLiveRankings, setShowLiveRankings] = useState(initialData?.isLive ?? false);
   const [data, setData] = useState(initialData);
   const [isLoadingToggle, setIsLoadingToggle] = useState(false);
+  const [userHasToggledManually, setUserHasToggledManually] = useState(false);
 
   const handlePlayerClick = (playerId: string) => {
     if (onPlayerClick) {
@@ -31,6 +33,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPla
     setIsLoadingToggle(true);
     const newMode = !showLiveRankings;
     setShowLiveRankings(newMode);
+    setUserHasToggledManually(true); // Mark that user has manually chosen a mode
 
     try {
       const response = await fetch(
@@ -55,11 +58,12 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPla
 
   useEffect(() => {
     setData(initialData);
-    // Update toggle state when data changes (e.g., after pull-to-refresh)
-    if (initialData?.isLive !== undefined) {
+    // Only update toggle state from data if user hasn't manually set a preference
+    // This prevents the toggle from resetting after pull-to-refresh
+    if (!userHasToggledManually && initialData?.isLive !== undefined) {
       setShowLiveRankings(initialData.isLive);
     }
-  }, [initialData]);
+  }, [initialData, userHasToggledManually]);
 
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No league data available</div>;
