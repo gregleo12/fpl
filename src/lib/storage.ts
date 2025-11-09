@@ -31,8 +31,15 @@ export function saveState(state: SavedState): void {
 
 export function loadState(): SavedState | null {
   if (typeof window !== 'undefined') {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : null;
+    // First try localStorage (persistent)
+    const persistentData = localStorage.getItem(STORAGE_KEY);
+    if (persistentData) {
+      return JSON.parse(persistentData);
+    }
+
+    // Fall back to sessionStorage (current session only)
+    const sessionData = sessionStorage.getItem('app_state');
+    return sessionData ? JSON.parse(sessionData) : null;
   }
   return null;
 }
@@ -40,6 +47,7 @@ export function loadState(): SavedState | null {
 export function clearState(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem('app_state');
   }
 }
 

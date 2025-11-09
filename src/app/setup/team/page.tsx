@@ -66,8 +66,14 @@ export default function TeamSelectionPage() {
       lastFetched: new Date().toISOString()
     };
 
+    // Always save state
+    // If rememberMe is true, save to localStorage (persists across sessions)
+    // If rememberMe is false, save to sessionStorage (current session only)
     if (rememberMe) {
       saveState(state);
+    } else {
+      // Save to sessionStorage for current session only
+      sessionStorage.setItem('app_state', JSON.stringify(state));
     }
 
     // Clear temporary data
