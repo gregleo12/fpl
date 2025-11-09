@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveState } from '@/lib/storage';
+import { saveState, loadState } from '@/lib/storage';
 import styles from './team.module.css';
 
 export default function TeamSelectionPage() {
@@ -10,6 +10,7 @@ export default function TeamSelectionPage() {
   const [tempData, setTempData] = useState<any>(null);
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [sortedStandings, setSortedStandings] = useState<any[]>([]);
 
   useEffect(() => {
     // Get temporary league data from sessionStorage
@@ -21,13 +22,36 @@ export default function TeamSelectionPage() {
       return;
     }
 
-    setTempData(JSON.parse(data));
+    const parsedData = JSON.parse(data);
+    setTempData(parsedData);
+
+    // Check for saved team selection
+    const savedState = loadState();
+
+    // Sort standings to put saved team at top (if exists and matches this league)
+    const standings = [...parsedData.standings];
+    if (savedState && savedState.leagueId === parsedData.leagueId) {
+      const savedTeamIndex = standings.findIndex(
+        (team: any) => team.entry_id.toString() === savedState.myTeamId
+      );
+
+      if (savedTeamIndex > -1) {
+        // Move saved team to the top
+        const [savedTeam] = standings.splice(savedTeamIndex, 1);
+        standings.unshift(savedTeam);
+
+        // Auto-select the saved team
+        setSelectedTeam(savedState.myTeamId);
+      }
+    }
+
+    setSortedStandings(standings);
   }, [router]);
 
   function handleContinue() {
     if (!selectedTeam || !tempData) return;
 
-    const team = tempData.standings.find(
+    const team = sortedStandings.find(
       (s: any) => s.entry_id.toString() === selectedTeam
     );
 
@@ -77,7 +101,7 @@ export default function TeamSelectionPage() {
         <p className={styles.leagueName}>{tempData.leagueName}</p>
 
         <div className={styles.teamList}>
-          {tempData.standings.map((team: any) => (
+          {sortedStandings.map((team: any) => (
             <label key={team.entry_id} className={styles.teamOption}>
               <input
                 type="radio"
