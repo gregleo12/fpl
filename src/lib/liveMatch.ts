@@ -241,9 +241,13 @@ function calculateLiveStats(
     const bonusMap = calculateProvisionalBonus(autoSubsApplied.squad.starting11);
 
     // Calculate final score with bonus
+    // IMPORTANT: player.points from API already includes official bonus!
+    // Only add provisional bonus if it's not official yet
     finalLiveScore = autoSubsApplied.squad.starting11.reduce((sum, player) => {
       const bonusInfo = bonusMap.get(player.id);
-      const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? (player.bonus || 0) : bonusInfo.provisional) : 0;
+      // If official bonus, it's already in player.points - don't add it again!
+      // Only add provisional bonus when it's not official
+      const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? 0 : bonusInfo.provisional) : 0;
       const totalPlayerPoints = (player.points + bonusPoints) * player.multiplier;
       provisionalBonusTotal += bonusPoints * player.multiplier;
       return sum + totalPlayerPoints;
