@@ -292,8 +292,6 @@ function calculateDifferentials(
   const bonusMap1 = autoSubs1 ? calculateProvisionalBonus(autoSubs1.squad.starting11) : new Map();
   const bonusMap2 = autoSubs2 ? calculateProvisionalBonus(autoSubs2.squad.starting11) : new Map();
 
-  console.log(`Bonus map 1 has ${bonusMap1.size} entries, Bonus map 2 has ${bonusMap2.size} entries`);
-
   // Helper function to check if a player was auto-subbed in
   const wasSubbedIn = (playerId: number, autoSubs: any) => {
     if (!autoSubs || !autoSubs.substitutions) return false;
@@ -377,11 +375,6 @@ function calculateDifferentials(
       const finalBasePoints = basePointsWithoutBonus * multiplier;
       const finalBonusPoints = bonus * multiplier;
       const finalTotalPoints = finalBasePoints + finalBonusPoints;
-
-      // Debug logging for Player1 bonus calculation
-      if (bonus > 0 || officialBonus > 0) {
-        console.log(`[P1] ${element?.web_name} - totalPts=${totalPoints}, officialBonus=${officialBonus}, base=${basePointsWithoutBonus}, provisionalBonus=${bonus}, finalTotal=${finalTotalPoints}, inBonusMap=${bonusMap1.has(pick.element)}`);
-      }
 
       return {
         name: element?.web_name || 'Unknown',
@@ -563,11 +556,6 @@ function calculateDifferentials(
       const finalBasePoints = basePointsWithoutBonus * multiplier;
       const finalBonusPoints = bonus * multiplier;
       const finalTotalPoints = finalBasePoints + finalBonusPoints;
-
-      // Debug logging for Player2 bonus calculation
-      if (bonus > 0 || officialBonus > 0) {
-        console.log(`[P2] ${element?.web_name} - totalPts=${totalPoints}, officialBonus=${officialBonus}, base=${basePointsWithoutBonus}, provisionalBonus=${bonus}, finalTotal=${finalTotalPoints}, inBonusMap=${bonusMap2.has(pick.element)}`);
-      }
 
       return {
         name: element?.web_name || 'Unknown',
