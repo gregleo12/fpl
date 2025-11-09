@@ -1,5 +1,6 @@
 import styles from './MatchDetails.module.css';
 import { StrategicIntel } from './StrategicIntel';
+import { DifferentialPlayers } from './DifferentialPlayers';
 
 interface CaptainPick {
   playerName: string;
@@ -55,10 +56,23 @@ interface H2HRecord {
   } | null;
 }
 
+interface DifferentialPlayer {
+  playerName: string;
+  avgPoints: number;
+  form: number[];
+  position: string;
+}
+
+interface DifferentialPlayers {
+  entry_1: DifferentialPlayer[];
+  entry_2: DifferentialPlayer[];
+}
+
 interface MatchDetailsProps {
   entry1: PlayerStats;
   entry2: PlayerStats;
   headToHead?: H2HRecord;
+  differentialPlayers?: DifferentialPlayers;
 }
 
 function getChipAbbreviation(chip: string): string {
@@ -71,7 +85,7 @@ function getChipAbbreviation(chip: string): string {
   return chipMap[chip.toLowerCase()] || chip;
 }
 
-export function MatchDetails({ entry1, entry2, headToHead }: MatchDetailsProps) {
+export function MatchDetails({ entry1, entry2, headToHead, differentialPlayers }: MatchDetailsProps) {
   return (
     <div className={styles.detailsGrid}>
       {/* Header */}
@@ -199,6 +213,16 @@ export function MatchDetails({ entry1, entry2, headToHead }: MatchDetailsProps) 
           strategicIntel: entry2.strategicIntel
         }}
       />
+
+      {/* Differential Players */}
+      {differentialPlayers && (
+        <DifferentialPlayers
+          entry1Name={entry1.player_name}
+          entry2Name={entry2.player_name}
+          entry1Differentials={differentialPlayers.entry_1}
+          entry2Differentials={differentialPlayers.entry_2}
+        />
+      )}
 
       {/* H2H History (if available) */}
       {headToHead && headToHead.total_meetings > 0 && (

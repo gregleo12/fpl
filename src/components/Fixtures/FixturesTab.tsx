@@ -143,6 +143,20 @@ interface MatchDetailsData {
       entry_2_score: number;
     } | null;
   };
+  differential_players?: {
+    entry_1: Array<{
+      playerName: string;
+      avgPoints: number;
+      form: number[];
+      position: string;
+    }>;
+    entry_2: Array<{
+      playerName: string;
+      avgPoints: number;
+      form: number[];
+      position: string;
+    }>;
+  };
 }
 
 interface Props {
@@ -615,6 +629,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     entry1={details.entry_1}
                     entry2={details.entry_2}
                     headToHead={details.head_to_head}
+                    differentialPlayers={details.differential_players}
                   />
                 </div>
               )}
@@ -629,6 +644,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           entry1={modalData.entry_1}
           entry2={modalData.entry_2}
           headToHead={modalData.head_to_head}
+          differentialPlayers={modalData.differential_players}
           onClose={() => setShowModal(false)}
         />
       )}

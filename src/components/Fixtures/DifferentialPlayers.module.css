@@ -1,0 +1,217 @@
+.differentialSection {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(138, 43, 226, 0.05);
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  border-radius: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+}
+
+.emoji {
+  font-size: 1.125rem;
+}
+
+.title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.differentialGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.differentialColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.columnHeader {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.playerRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+}
+
+.playerInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.position {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: rgba(138, 43, 226, 0.3);
+  color: #bb86fc;
+  border-radius: 4px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 38px;
+}
+
+.playerName {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.playerStats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.avgPoints {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.formBadges {
+  display: flex;
+  gap: 3px;
+}
+
+.formBadge {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.formBadge.excellent {
+  background: #00ff87;
+  color: #1a0d2e;
+}
+
+.formBadge.good {
+  background: rgba(0, 255, 135, 0.6);
+  color: #ffffff;
+}
+
+.formBadge.ok {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.formBadge.poor {
+  background: rgba(255, 0, 102, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.noDifferentials,
+.noDifferentialsText {
+  text-align: center;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  padding: 16px;
+}
+
+.noDifferentialsText {
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .differentialSection {
+    padding: 12px;
+  }
+
+  .differentialGrid {
+    gap: 16px;
+  }
+
+  .playerRow {
+    padding: 8px;
+  }
+
+  .playerName {
+    font-size: 0.75rem;
+  }
+
+  .avgPoints {
+    font-size: 0.6875rem;
+  }
+
+  .formBadge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.5625rem;
+  }
+}
+
+/* Small phones */
+@media (max-width: 375px) {
+  .differentialGrid {
+    gap: 12px;
+  }
+
+  .playerRow {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .position {
+    font-size: 0.5625rem;
+    min-width: 32px;
+    padding: 2px 4px;
+  }
+
+  .playerName {
+    font-size: 0.6875rem;
+  }
+
+  .formBadge {
+    width: 18px;
+    height: 18px;
+    font-size: 0.5rem;
+  }
+
+  .formBadges {
+    gap: 2px;
+  }
+}

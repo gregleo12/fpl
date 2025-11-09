@@ -231,8 +231,13 @@ export async function GET(
       getPlayerStats(entry2Id)
     ]);
 
-    // Calculate common players
+    // Calculate common players and differentials
     let commonPlayers = { count: 0, percentage: 0, players: [] as string[] };
+    let differentialPlayers = {
+      entry_1: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>,
+      entry_2: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>
+    };
+
     try {
       // Get current GW picks for both players
       const [picks1Data, picks2Data] = await Promise.all([
@@ -265,9 +270,76 @@ export async function GET(
           percentage: Math.round((commonPlayerIds.length / 15) * 100),
           players: playerNames
         };
+
+        // Calculate differential players (players one team has but the other doesn't)
+        const team1Differentials = team1Players.filter((id: number) => !team2Players.includes(id));
+        const team2Differentials = team2Players.filter((id: number) => !team1Players.includes(id));
+
+        // Get last 5 GWs (using completed gameweeks)
+        const lastCompletedGW = currentGW - 1;
+        const last5GWs = Array.from({ length: 5 }, (_, i) => lastCompletedGW - i).filter(gw => gw > 0).reverse();
+
+        // Fetch all GW data once (cache it) to avoid redundant API calls
+        const gwDataCache: Map<number, any> = new Map();
+        for (const gw of last5GWs) {
+          try {
+            const eventLiveData = await fplApi.getEventLive(gw);
+            gwDataCache.set(gw, eventLiveData);
+          } catch (error) {
+            console.error(`Error fetching live data for GW${gw}:`, error);
+            gwDataCache.set(gw, null);
+          }
+        }
+
+        // Helper to get player stats for differentials (now uses cached GW data)
+        const getPlayerDifferentialStats = (playerId: number) => {
+          const player = elements.find((p: any) => p.id === playerId) as any;
+          if (!player) return null;
+
+          // Fetch player's performance for last 5 GWs using cached data
+          const playerHistory: number[] = [];
+          for (const gw of last5GWs) {
+            const eventLiveData = gwDataCache.get(gw);
+            if (eventLiveData && eventLiveData.elements) {
+              const playerLiveData = eventLiveData.elements.find((e: any) => e.id === playerId);
+              const points = playerLiveData?.stats?.total_points || 0;
+              playerHistory.push(points);
+            } else {
+              playerHistory.push(0);
+            }
+          }
+
+          const avgPoints = playerHistory.length > 0
+            ? playerHistory.reduce((sum, pts) => sum + pts, 0) / playerHistory.length
+            : 0;
+
+          // Get position
+          const positionMap: { [key: number]: string } = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
+          const position = positionMap[player.element_type] || 'Unknown';
+
+          return {
+            playerName: player.web_name,
+            avgPoints: parseFloat(avgPoints.toFixed(1)),
+            form: playerHistory,
+            position
+          };
+        };
+
+        // Get stats for all differential players (now synchronous since we have cached data)
+        const team1DiffStats = team1Differentials.map(getPlayerDifferentialStats);
+        const team2DiffStats = team2Differentials.map(getPlayerDifferentialStats);
+
+        // Filter out nulls and sort by avg points (high to low)
+        differentialPlayers.entry_1 = team1DiffStats
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
+
+        differentialPlayers.entry_2 = team2DiffStats
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
       }
     } catch (error) {
-      console.log('Error calculating common players:', error);
+      console.log('Error calculating common players and differentials:', error);
     }
 
     // Add common players to both strategic intel objects
@@ -326,7 +398,8 @@ export async function GET(
           entry_1_score: h2hMatches[0].entry1_score,
           entry_2_score: h2hMatches[0].entry2_score
         } : null
-      }
+      },
+      differential_players: differentialPlayers
     });
   } catch (error: any) {
     console.error('Error fetching match details:', error);

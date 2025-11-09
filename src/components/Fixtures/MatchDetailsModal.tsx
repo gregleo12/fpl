@@ -46,14 +46,27 @@ interface H2HRecord {
   } | null;
 }
 
+interface DifferentialPlayer {
+  playerName: string;
+  avgPoints: number;
+  form: number[];
+  position: string;
+}
+
+interface DifferentialPlayers {
+  entry_1: DifferentialPlayer[];
+  entry_2: DifferentialPlayer[];
+}
+
 interface MatchDetailsModalProps {
   entry1: PlayerStats;
   entry2: PlayerStats;
   headToHead?: H2HRecord;
+  differentialPlayers?: DifferentialPlayers;
   onClose: () => void;
 }
 
-export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: MatchDetailsModalProps) {
+export function MatchDetailsModal({ entry1, entry2, headToHead, differentialPlayers, onClose }: MatchDetailsModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Prevent body scroll when modal is open
@@ -103,6 +116,7 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, onClose }: Match
             entry1={entry1}
             entry2={entry2}
             headToHead={headToHead}
+            differentialPlayers={differentialPlayers}
           />
         </div>
       </div>
