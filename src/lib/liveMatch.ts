@@ -109,6 +109,9 @@ function createSquadFromPicks(
       minutes: liveElement?.stats?.minutes || 0,
       points: liveElement?.stats?.total_points || 0,
       multiplier: pick.is_captain ? captainMultiplier : 1,
+      bps: liveElement?.stats?.bps || 0,
+      bonus: liveElement?.stats?.bonus || 0,
+      fixtureId: liveElement?.explain?.[0]?.fixture || undefined,
     };
 
     if (pick.position <= 11) {

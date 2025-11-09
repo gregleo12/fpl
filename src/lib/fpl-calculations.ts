@@ -17,6 +17,9 @@ export interface Player {
   minutes: number;
   points: number;
   multiplier: number; // 1=normal, 2=captain, 3=triple captain
+  bps?: number; // Bonus Point System score
+  bonus?: number; // Official bonus points (0 if not awarded yet)
+  fixtureId?: number; // Which match they're in
 }
 
 export interface Squad {
@@ -226,4 +229,165 @@ export function getReplacementPlayer(player: Player, squad: Squad): Player | nul
   const result = applyAutoSubstitutions(squad);
   const sub = result.substitutions.find(s => s.playerOut.id === player.id);
   return sub ? sub.playerIn : null;
+}
+
+/**
+ * Calculate provisional bonus points based on BPS (Bonus Point System)
+ *
+ * Top 3 BPS earners in each match get bonus points:
+ * - 1st place: 3 bonus points
+ * - 2nd place: 2 bonus points
+ * - 3rd place: 1 bonus point
+ *
+ * Ties: All tied players get the same bonus
+ */
+export interface ProvisionalBonus {
+  provisional: number; // Calculated from BPS
+  isOfficial: boolean; // Whether official bonus has been awarded
+  bps: number; // BPS score
+}
+
+export function calculateProvisionalBonus(
+  players: Player[]
+): Map<number, ProvisionalBonus> {
+  const bonusMap = new Map<number, ProvisionalBonus>();
+
+  // Group players by fixture (bonus awarded per match)
+  const byFixture = new Map<number, Player[]>();
+
+  for (const player of players) {
+    if (!player.fixtureId) continue; // Skip players without fixture info
+
+    if (!byFixture.has(player.fixtureId)) {
+      byFixture.set(player.fixtureId, []);
+    }
+    byFixture.get(player.fixtureId)!.push(player);
+  }
+
+  // Calculate bonus for each fixture
+  Array.from(byFixture.entries()).forEach(([fixtureId, fixturePlayers]) => {
+    // Sort by BPS descending
+    const sorted = fixturePlayers
+      .filter(p => p.bps !== undefined)
+      .sort((a, b) => (b.bps || 0) - (a.bps || 0));
+
+    if (sorted.length === 0) return;
+
+    // Get unique BPS values for top 3
+    const uniqueBPS = Array.from(new Set(sorted.map(p => p.bps || 0))).slice(0, 3);
+
+    // Award bonus based on BPS rank
+    for (const player of sorted) {
+      const rank = uniqueBPS.indexOf(player.bps || 0);
+      let provisionalBonus = 0;
+
+      if (rank === 0) {
+        provisionalBonus = 3;
+      } else if (rank === 1) {
+        provisionalBonus = 2;
+      } else if (rank === 2) {
+        provisionalBonus = 1;
+      }
+
+      bonusMap.set(player.id, {
+        provisional: provisionalBonus,
+        isOfficial: (player.bonus || 0) > 0, // Official if bonus > 0
+        bps: player.bps || 0,
+      });
+    }
+  });
+
+  // Add entries for players not in the bonus map (no fixture or BPS data)
+  for (const player of players) {
+    if (!bonusMap.has(player.id)) {
+      bonusMap.set(player.id, {
+        provisional: 0,
+        isOfficial: (player.bonus || 0) > 0,
+        bps: player.bps || 0,
+      });
+    }
+  }
+
+  return bonusMap;
+}
+
+/**
+ * Calculate live points with provisional bonus included
+ */
+export interface LivePointsWithBonus {
+  totalPoints: number;
+  basePoints: number; // Points without bonus
+  provisionalBonus: number; // Total provisional bonus
+  officialBonus: number; // Total official bonus
+  bonusBreakdown: Array<{
+    playerId: number;
+    playerName: string;
+    bps: number;
+    bonus: number;
+    isOfficial: boolean;
+  }>;
+}
+
+export function calculateLivePointsWithBonus(squad: Squad): LivePointsWithBonus {
+  // Apply auto-substitutions first
+  const { squad: adjustedSquad, substitutions } = applyAutoSubstitutions(squad);
+
+  // Calculate provisional bonus for starting 11 (after auto-subs)
+  const bonusMap = calculateProvisionalBonus(adjustedSquad.starting11);
+
+  let basePoints = 0;
+  let provisionalBonus = 0;
+  let officialBonus = 0;
+  const bonusBreakdown: Array<{
+    playerId: number;
+    playerName: string;
+    bps: number;
+    bonus: number;
+    isOfficial: boolean;
+  }> = [];
+
+  for (const player of adjustedSquad.starting11) {
+    const bonusInfo = bonusMap.get(player.id);
+
+    if (bonusInfo) {
+      const bonusPoints = bonusInfo.isOfficial
+        ? (player.bonus || 0)
+        : bonusInfo.provisional;
+
+      const bonusWithMultiplier = bonusPoints * player.multiplier;
+
+      if (bonusInfo.isOfficial) {
+        officialBonus += bonusWithMultiplier;
+      } else {
+        provisionalBonus += bonusWithMultiplier;
+      }
+
+      // Base points (without bonus)
+      basePoints += (player.points - (player.bonus || 0)) * player.multiplier;
+
+      // Track bonus breakdown for display
+      if (bonusPoints > 0) {
+        bonusBreakdown.push({
+          playerId: player.id,
+          playerName: player.name,
+          bps: bonusInfo.bps,
+          bonus: bonusWithMultiplier,
+          isOfficial: bonusInfo.isOfficial,
+        });
+      }
+    } else {
+      // No bonus info, just add base points
+      basePoints += player.points * player.multiplier;
+    }
+  }
+
+  const totalPoints = basePoints + provisionalBonus + officialBonus;
+
+  return {
+    totalPoints,
+    basePoints,
+    provisionalBonus,
+    officialBonus,
+    bonusBreakdown: bonusBreakdown.sort((a, b) => b.bonus - a.bonus),
+  };
 }
