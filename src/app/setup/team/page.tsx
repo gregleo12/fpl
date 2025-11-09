@@ -12,6 +12,7 @@ export default function TeamSelectionPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [sortedStandings, setSortedStandings] = useState<any[]>([]);
   const [savedTeamId, setSavedTeamId] = useState<string | null>(null);
+  const [savedTeamData, setSavedTeamData] = useState<any>(null);
 
   useEffect(() => {
     // Get temporary league data from sessionStorage
@@ -41,9 +42,10 @@ export default function TeamSelectionPage() {
         const [savedTeam] = standings.splice(savedTeamIndex, 1);
         standings.unshift(savedTeam);
 
-        // Auto-select the saved team and track it for badge display
+        // Auto-select the saved team and track it for badge display and recent section
         setSelectedTeam(savedState.myTeamId);
         setSavedTeamId(savedState.myTeamId);
+        setSavedTeamData(savedTeam);
       }
     }
 
@@ -90,6 +92,19 @@ export default function TeamSelectionPage() {
     router.push('/');
   }
 
+  function handleRecentTeamClick() {
+    if (!savedTeamData) return;
+
+    // Select the team
+    setSelectedTeam(savedTeamData.entry_id.toString());
+
+    // Scroll to the team in the list
+    const teamElement = document.querySelector(`input[value="${savedTeamData.entry_id}"]`);
+    if (teamElement) {
+      teamElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   if (!tempData) {
     return (
       <div className={styles.container}>
@@ -125,12 +140,28 @@ export default function TeamSelectionPage() {
                   {team.matches_won}W-{team.matches_drawn}D-{team.matches_lost}L
                 </span>
               </div>
-              {team.entry_id.toString() === savedTeamId && (
-                <span className={styles.savedTeamBadge}>YOUR TEAM</span>
-              )}
             </label>
           ))}
         </div>
+
+        {savedTeamData && (
+          <div className={styles.recentTeamSection}>
+            <h3 className={styles.recentTeamHeader}>RECENT TEAM</h3>
+            <div
+              className={styles.recentTeamCard}
+              onClick={handleRecentTeamClick}
+            >
+              <div className={styles.teamInfo}>
+                <span className={styles.manager}>{savedTeamData.player_name}</span>
+                <span className={styles.teamName}>{savedTeamData.team_name}</span>
+                <span className={styles.record}>
+                  {savedTeamData.matches_won}W-{savedTeamData.matches_drawn}D-{savedTeamData.matches_lost}L
+                </span>
+              </div>
+              <span className={styles.clickHint}>→</span>
+            </div>
+          </div>
+        )}
 
         <div className={styles.rememberMe}>
           <label>

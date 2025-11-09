@@ -158,6 +158,48 @@
   margin-left: auto;
 }
 
+.recentTeamSection {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.recentTeamHeader {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.recentTeamCard {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 255, 135, 0.08);
+  border: 2px solid rgba(0, 255, 135, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recentTeamCard:hover {
+  background: rgba(0, 255, 135, 0.15);
+  border-color: rgba(0, 255, 135, 0.4);
+  transform: translateX(4px);
+}
+
+.recentTeamCard .teamInfo {
+  flex: 1;
+}
+
+.clickHint {
+  font-size: 1.5rem;
+  color: #00ff87;
+  font-weight: 700;
+  margin-left: 1rem;
+}
+
 .rememberMe {
   margin-bottom: 1.5rem;
   padding: 1rem;
