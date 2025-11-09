@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { Position } from '@/lib/fpl-calculations';
 
 // Force dynamic rendering - prevent caching and static generation
 export const dynamic = 'force-dynamic';
@@ -8,6 +9,109 @@ export const revalidate = 0;
 interface MatchResult {
   result: 'W' | 'D' | 'L';
   event: number;
+}
+
+/**
+ * Calculate live score with auto-substitutions (same logic as fixtures API)
+ */
+function calculateLiveScoreWithAutoSubs(
+  picksData: any,
+  liveData: any,
+  bootstrapData: any,
+  activeChip: string | null,
+  transferCost: number,
+  applyAutoSubstitutions: any
+): number {
+  if (!liveData || !bootstrapData) {
+    // Fall back to entry_history if we don't have live data
+    return (picksData.entry_history?.points || 0) - transferCost;
+  }
+
+  const picks = picksData.picks;
+  const isBenchBoost = activeChip === 'bboost';
+  let liveScore = 0;
+
+  // Helper to get position from element_type
+  function getPosition(elementType: number): Position {
+    switch (elementType) {
+      case 1: return 'GK';
+      case 2: return 'DEF';
+      case 3: return 'MID';
+      case 4: return 'FWD';
+      default: return 'MID';
+    }
+  }
+
+  // Calculate base score (without auto-subs)
+  const captainMultiplier = activeChip === '3xc' ? 3 : 2;
+
+  picks.forEach((pick: any) => {
+    const liveElement = liveData.elements?.find((e: any) => e.id === pick.element);
+    const rawPoints = liveElement?.stats?.total_points || 0;
+
+    if (pick.position <= 11) {
+      // Starting 11
+      if (pick.is_captain) {
+        liveScore += rawPoints * captainMultiplier;
+      } else {
+        liveScore += rawPoints;
+      }
+    } else if (isBenchBoost) {
+      // Bench (with Bench Boost active)
+      liveScore += rawPoints;
+    }
+  });
+
+  // Apply auto-substitutions if Bench Boost is NOT active
+  if (!isBenchBoost && bootstrapData) {
+    // Create squad from picks
+    const starting11: any[] = [];
+    const bench: any[] = [];
+
+    picks.forEach((pick: any) => {
+      const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+      const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+
+      if (!element) return;
+
+      const player = {
+        id: pick.element,
+        name: element.web_name,
+        position: getPosition(element.element_type),
+        minutes: liveElement?.stats?.minutes || 0,
+        points: liveElement?.stats?.total_points || 0,
+        multiplier: pick.is_captain ? captainMultiplier : 1,
+        bps: liveElement?.stats?.bps || 0,
+        bonus: liveElement?.stats?.bonus || 0,
+        fixtureId: liveElement?.explain?.[0]?.fixture || undefined,
+      };
+
+      if (pick.position <= 11) {
+        starting11.push(player);
+      } else if (pick.position <= 14) {
+        bench.push(player);
+      }
+    });
+
+    // Sort bench by position
+    bench.sort((a, b) => {
+      const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
+      const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
+      return posA - posB;
+    });
+
+    const squad = { starting11, bench };
+    const autoSubResult = applyAutoSubstitutions(squad);
+
+    // Calculate score with auto-subs
+    // player.points already includes official bonus from API
+    liveScore = autoSubResult.squad.starting11.reduce((sum: number, player: any) => {
+      return sum + (player.points * player.multiplier);
+    }, 0);
+  }
+
+  // Subtract transfer cost
+  return liveScore - transferCost;
 }
 
 function calculateFormAndStreakFromMatches(entryId: number, matches: any[], upToGW: number) {
@@ -374,7 +478,26 @@ export async function GET(
             entryIds.add(match.entry_2_id);
           });
 
-          // Fetch live scores from FPL API
+          // Fetch live scores from FPL API (need to calculate with auto-subs)
+          // Import what we need from fixtures API logic
+          const { applyAutoSubstitutions } = require('@/lib/fpl-calculations');
+
+          // Fetch bootstrap and live data once for all entries
+          let bootstrapData: any = null;
+          let liveData: any = null;
+
+          try {
+            const [bootstrapResponse, liveResponse] = await Promise.all([
+              fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
+              fetch(`https://fantasy.premierleague.com/api/event/${currentGW}/live/`)
+            ]);
+
+            if (bootstrapResponse.ok) bootstrapData = await bootstrapResponse.json();
+            if (liveResponse.ok) liveData = await liveResponse.json();
+          } catch (error) {
+            console.error('Error fetching bootstrap/live data:', error);
+          }
+
           const liveScores = new Map<number, number>();
           const scorePromises = Array.from(entryIds).map(async (entryId) => {
             try {
@@ -382,10 +505,20 @@ export async function GET(
                 `https://fantasy.premierleague.com/api/entry/${entryId}/event/${currentGW}/picks/`
               );
               if (response.ok) {
-                const data = await response.json();
-                const grossScore = data.entry_history?.points || 0;
-                const transferCost = data.entry_history?.event_transfers_cost || 0;
-                const netScore = grossScore - transferCost;
+                const picksData = await response.json();
+                const transferCost = picksData.entry_history?.event_transfers_cost || 0;
+                const activeChip = picksData.active_chip;
+
+                // Use the same calculation as fixtures API
+                const netScore = await calculateLiveScoreWithAutoSubs(
+                  picksData,
+                  liveData,
+                  bootstrapData,
+                  activeChip,
+                  transferCost,
+                  applyAutoSubstitutions
+                );
+
                 return { entryId, score: netScore };
               }
             } catch (error) {
