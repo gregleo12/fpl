@@ -228,32 +228,22 @@ function calculateLiveStats(
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   console.log(`Transfer cost from API: ${transferCost}`);
 
-  // Use auto-substitution adjusted score if available (including provisional bonus)
+  // Use auto-substitution adjusted score if available
+  // IMPORTANT: Cannot calculate provisional bonus accurately because we only have
+  // BPS for user's players, not all 22 players in each match. This causes incorrect
+  // bonus calculations. We now rely on official bonus only (already in player.points).
   let finalLiveScore = liveScore;
-  let provisionalBonusTotal = 0;
   if (autoSubResult && !isBenchBoost) {
-    // Calculate score with auto-subs AND provisional bonus
+    // Calculate score with auto-subs (no provisional bonus)
     const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
     const autoSubsApplied = applyAutoSubstitutions(squad);
 
-    // Import and use calculateProvisionalBonus
-    const { calculateProvisionalBonus } = require('./fpl-calculations');
-    const bonusMap = calculateProvisionalBonus(autoSubsApplied.squad.starting11);
-
-    // Calculate final score with bonus
-    // IMPORTANT: player.points from API already includes official bonus!
-    // Only add provisional bonus if it's not official yet
+    // Calculate final score - player.points already includes official bonus from API
     finalLiveScore = autoSubsApplied.squad.starting11.reduce((sum, player) => {
-      const bonusInfo = bonusMap.get(player.id);
-      // If official bonus, it's already in player.points - don't add it again!
-      // Only add provisional bonus when it's not official
-      const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? 0 : bonusInfo.provisional) : 0;
-      const totalPlayerPoints = (player.points + bonusPoints) * player.multiplier;
-      provisionalBonusTotal += bonusPoints * player.multiplier;
-      return sum + totalPlayerPoints;
+      return sum + (player.points * player.multiplier);
     }, 0);
 
-    console.log(`Score with auto-subs + bonus: ${finalLiveScore} (${autoSubResult.substitutions.length} subs, +${provisionalBonusTotal} provisional bonus)`);
+    console.log(`Score with auto-subs: ${finalLiveScore} (${autoSubResult.substitutions.length} subs)`);
   }
 
   // Calculate final live score (subtract hits - API returns positive values)

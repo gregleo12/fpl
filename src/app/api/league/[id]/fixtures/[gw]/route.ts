@@ -325,32 +325,23 @@ async function fetchLiveScoresFromPicks(
         const isBenchBoost = activeChip === 'bboost';
 
         // Apply auto-substitutions ONLY if Bench Boost is NOT active
+        // IMPORTANT: Cannot calculate provisional bonus accurately because we only have
+        // BPS for user's players, not all 22 players in each match.
+        // We now rely on official bonus only (already in player.points from API).
         if (!isBenchBoost && bootstrapData) {
           const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
           const autoSubResult = applyAutoSubstitutions(squad);
 
-          // Import and calculate provisional bonus
-          const { calculateProvisionalBonus } = require('@/lib/fpl-calculations');
-          const bonusMap = calculateProvisionalBonus(autoSubResult.squad.starting11);
-
-          // Calculate score with auto-subs AND provisional bonus
-          // IMPORTANT: player.points from API already includes official bonus!
-          // Only add provisional bonus if it's not official yet
-          let provisionalBonusTotal = 0;
+          // Calculate score with auto-subs (no provisional bonus)
+          // player.points already includes official bonus from API
           liveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
-            const bonusInfo = bonusMap.get(player.id);
-            // If official bonus, it's already in player.points - don't add it again!
-            // Only add provisional bonus when it's not official
-            const bonusPoints = bonusInfo ? (bonusInfo.isOfficial ? 0 : bonusInfo.provisional) : 0;
-            const totalPlayerPoints = (player.points + bonusPoints) * player.multiplier;
-            provisionalBonusTotal += bonusPoints * player.multiplier;
-            return sum + totalPlayerPoints;
+            return sum + (player.points * player.multiplier);
           }, 0);
 
-          if (autoSubResult.substitutions.length > 0 || provisionalBonusTotal > 0) {
+          if (autoSubResult.substitutions.length > 0) {
             console.log(`Entry ${entryId}: Auto-subs applied - ${autoSubResult.substitutions.map(s =>
               `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
-            ).join(', ')} + ${provisionalBonusTotal} provisional bonus`);
+            ).join(', ')}`);
           }
         } else {
           // No auto-subs (Bench Boost active or bootstrap data unavailable)
