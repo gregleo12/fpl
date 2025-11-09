@@ -273,8 +273,13 @@ export function calculateProvisionalBonus(
 
     if (sorted.length === 0) return;
 
+    console.log(`\n=== FIXTURE ${fixtureId} BONUS CALCULATION ===`);
+    console.log(`Total players in fixture: ${fixturePlayers.length}`);
+    console.log(`Players with BPS: ${sorted.length}`);
+
     // Get unique BPS values for top 3
     const uniqueBPS = Array.from(new Set(sorted.map(p => p.bps || 0))).slice(0, 3);
+    console.log(`Top 3 unique BPS values: ${uniqueBPS.join(', ')}`);
 
     // Award bonus based on BPS rank
     for (const player of sorted) {
@@ -289,9 +294,15 @@ export function calculateProvisionalBonus(
         provisionalBonus = 1;
       }
 
+      const isOfficial = (player.bonus || 0) > 0;
+
+      if (provisionalBonus > 0 || isOfficial) {
+        console.log(`  ${player.name}: BPS=${player.bps}, Rank=${rank}, Bonus=${provisionalBonus} (${isOfficial ? 'OFFICIAL' : 'PROVISIONAL'})`);
+      }
+
       bonusMap.set(player.id, {
         provisional: provisionalBonus,
-        isOfficial: (player.bonus || 0) > 0, // Official if bonus > 0
+        isOfficial: isOfficial,
         bps: player.bps || 0,
       });
     }

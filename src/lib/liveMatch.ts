@@ -389,6 +389,11 @@ function calculateDifferentials(
       const finalBonusPoints = bonus * multiplier;
       const finalTotalPoints = finalBasePoints + finalBonusPoints;
 
+      // Debug logging for Player1 bonus calculation
+      if (bonus > 0 || officialBonus > 0) {
+        console.log(`[P1] ${element?.web_name} - totalPts=${totalPoints}, officialBonus=${officialBonus}, base=${basePointsWithoutBonus}, provisionalBonus=${bonus}, finalTotal=${finalTotalPoints}, inBonusMap=${bonusMap1.has(pick.element)}`);
+      }
+
       return {
         name: element?.web_name || 'Unknown',
         points: finalTotalPoints,
@@ -569,6 +574,11 @@ function calculateDifferentials(
       const finalBasePoints = basePointsWithoutBonus * multiplier;
       const finalBonusPoints = bonus * multiplier;
       const finalTotalPoints = finalBasePoints + finalBonusPoints;
+
+      // Debug logging for Player2 bonus calculation
+      if (bonus > 0 || officialBonus > 0) {
+        console.log(`[P2] ${element?.web_name} - totalPts=${totalPoints}, officialBonus=${officialBonus}, base=${basePointsWithoutBonus}, provisionalBonus=${bonus}, finalTotal=${finalTotalPoints}, inBonusMap=${bonusMap2.has(pick.element)}`);
+      }
 
       return {
         name: element?.web_name || 'Unknown',
