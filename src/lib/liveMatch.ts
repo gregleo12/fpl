@@ -291,6 +291,15 @@ function calculateDifferentials(
   const picks1 = picks1Data.picks;
   const picks2 = picks2Data.picks;
 
+  // Calculate provisional bonus for both teams (after auto-subs)
+  const { calculateProvisionalBonus } = require('./fpl-calculations');
+
+  // Create bonus maps for both teams
+  const bonusMap1 = autoSubs1 ? calculateProvisionalBonus(autoSubs1.squad.starting11) : new Map();
+  const bonusMap2 = autoSubs2 ? calculateProvisionalBonus(autoSubs2.squad.starting11) : new Map();
+
+  console.log(`Bonus map 1 has ${bonusMap1.size} entries, Bonus map 2 has ${bonusMap2.size} entries`);
+
   // Helper function to check if a player was auto-subbed in
   const wasSubbedIn = (playerId: number, autoSubs: any) => {
     if (!autoSubs || !autoSubs.substitutions) return false;
@@ -315,6 +324,19 @@ function calculateDifferentials(
     if (!autoSubs || !autoSubs.substitutions) return undefined;
     const sub = autoSubs.substitutions.find((s: any) => s.playerOut.id === playerId);
     return sub ? sub.playerIn.points : undefined;
+  };
+
+  // Helper function to get bonus info for a player
+  const getBonusInfo = (playerId: number, bonusMap: Map<number, any>, officialBonus: number) => {
+    const bonusInfo = bonusMap.get(playerId);
+    if (!bonusInfo) return { bonusPoints: 0 };
+
+    // Use official bonus if available, otherwise provisional
+    const bonus = bonusInfo.isOfficial
+      ? officialBonus // Use the actual official bonus from liveElement.stats.bonus
+      : bonusInfo.provisional;
+
+    return { bonusPoints: bonus };
   };
 
   // Get element IDs for both teams
@@ -343,22 +365,31 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      const totalPoints = liveElement?.stats?.total_points || 0;
+      const officialBonus = liveElement?.stats?.bonus || 0;
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
+      // Get bonus info (provisional or official)
+      const bonusInfo = getBonusInfo(pick.element, bonusMap1, officialBonus);
+      const bonus = bonusInfo.bonusPoints;
+
+      // Calculate base points (total_points already includes official bonus, so subtract it)
+      const basePointsWithoutBonus = totalPoints - officialBonus;
+
       // Apply captain multiplier if this is the captain
-      let finalPoints = basePoints;
-      if (pick.is_captain) {
-        const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = basePoints * multiplier;
-      }
+      const multiplier = pick.is_captain ? (picks1Data.active_chip === '3xc' ? 3 : 2) : 1;
+      const finalBasePoints = basePointsWithoutBonus * multiplier;
+      const finalBonusPoints = bonus * multiplier;
+      const finalTotalPoints = finalBasePoints + finalBonusPoints;
 
       return {
         name: element?.web_name || 'Unknown',
-        points: finalPoints,
+        points: finalTotalPoints,
+        basePoints: finalBasePoints,
+        bonusPoints: finalBonusPoints > 0 ? finalBonusPoints : undefined,
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
@@ -433,22 +464,31 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      const totalPoints = liveElement?.stats?.total_points || 0;
+      const officialBonus = liveElement?.stats?.bonus || 0;
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
+      // Get bonus info (provisional or official)
+      const bonusInfo = getBonusInfo(pick.element, bonusMap1, officialBonus);
+      const bonus = bonusInfo.bonusPoints;
+
+      // Calculate base points (total_points already includes official bonus, so subtract it)
+      const basePointsWithoutBonus = totalPoints - officialBonus;
+
       // Apply captain multiplier if this is the captain
-      let finalPoints = basePoints;
-      if (pick.is_captain) {
-        const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = basePoints * multiplier;
-      }
+      const multiplier = pick.is_captain ? (picks1Data.active_chip === '3xc' ? 3 : 2) : 1;
+      const finalBasePoints = basePointsWithoutBonus * multiplier;
+      const finalBonusPoints = bonus * multiplier;
+      const finalTotalPoints = finalBasePoints + finalBonusPoints;
 
       return {
         name: element?.web_name || 'Unknown',
-        points: finalPoints,
+        points: finalTotalPoints,
+        basePoints: finalBasePoints,
+        bonusPoints: finalBonusPoints > 0 ? finalBonusPoints : undefined,
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
@@ -506,22 +546,31 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      const totalPoints = liveElement?.stats?.total_points || 0;
+      const officialBonus = liveElement?.stats?.bonus || 0;
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
+      // Get bonus info (provisional or official)
+      const bonusInfo = getBonusInfo(pick.element, bonusMap2, officialBonus);
+      const bonus = bonusInfo.bonusPoints;
+
+      // Calculate base points (total_points already includes official bonus, so subtract it)
+      const basePointsWithoutBonus = totalPoints - officialBonus;
+
       // Apply captain multiplier if this is the captain
-      let finalPoints = basePoints;
-      if (pick.is_captain) {
-        const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = basePoints * multiplier;
-      }
+      const multiplier = pick.is_captain ? (picks2Data.active_chip === '3xc' ? 3 : 2) : 1;
+      const finalBasePoints = basePointsWithoutBonus * multiplier;
+      const finalBonusPoints = bonus * multiplier;
+      const finalTotalPoints = finalBasePoints + finalBonusPoints;
 
       return {
         name: element?.web_name || 'Unknown',
-        points: finalPoints,
+        points: finalTotalPoints,
+        basePoints: finalBasePoints,
+        bonusPoints: finalBonusPoints > 0 ? finalBonusPoints : undefined,
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,
@@ -596,22 +645,31 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      const totalPoints = liveElement?.stats?.total_points || 0;
+      const officialBonus = liveElement?.stats?.bonus || 0;
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
+      // Get bonus info (provisional or official)
+      const bonusInfo = getBonusInfo(pick.element, bonusMap2, officialBonus);
+      const bonus = bonusInfo.bonusPoints;
+
+      // Calculate base points (total_points already includes official bonus, so subtract it)
+      const basePointsWithoutBonus = totalPoints - officialBonus;
+
       // Apply captain multiplier if this is the captain
-      let finalPoints = basePoints;
-      if (pick.is_captain) {
-        const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
-        finalPoints = basePoints * multiplier;
-      }
+      const multiplier = pick.is_captain ? (picks2Data.active_chip === '3xc' ? 3 : 2) : 1;
+      const finalBasePoints = basePointsWithoutBonus * multiplier;
+      const finalBonusPoints = bonus * multiplier;
+      const finalTotalPoints = finalBasePoints + finalBonusPoints;
 
       return {
         name: element?.web_name || 'Unknown',
-        points: finalPoints,
+        points: finalTotalPoints,
+        basePoints: finalBasePoints,
+        bonusPoints: finalBonusPoints > 0 ? finalBonusPoints : undefined,
         position: pick.position,
         isCaptain: pick.is_captain,
         hasPlayed: hasPlayed || fixtureFinished || false,

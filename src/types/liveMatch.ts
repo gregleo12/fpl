@@ -1,6 +1,8 @@
 export interface DifferentialPlayer {
   name: string;
-  points: number;
+  points: number; // Total points (base + bonus)
+  basePoints?: number; // Points without bonus (for "10+3 pts" display)
+  bonusPoints?: number; // Bonus points (provisional or official)
   position: number; // 1-11 starting, 12-15 bench
   isCaptain: boolean;
   hasPlayed: boolean; // Whether the player has played (minutes > 0 or fixture finished)

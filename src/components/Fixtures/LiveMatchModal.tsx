@@ -183,7 +183,11 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                           {player.wasAutoSubbedIn && <span className={styles.autoSubInBadge}>IN</span>}
                         </span>
                         <span className={`${styles.playerPoints} ${player.wasAutoSubbedOut && player.points > 0 ? styles.substituted : player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
-                          {player.points < 0 ? `${player.points}` : player.points} pts
+                          {player.bonusPoints && player.bonusPoints > 0 ? (
+                            <>{player.basePoints}+{player.bonusPoints} pts</>
+                          ) : (
+                            <>{player.points < 0 ? `${player.points}` : player.points} pts</>
+                          )}
                         </span>
                       </div>
                     ))}
@@ -210,7 +214,11 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                           {player.wasAutoSubbedIn && <span className={styles.autoSubInBadge}>IN</span>}
                         </span>
                         <span className={`${styles.playerPoints} ${player.wasAutoSubbedOut && player.points > 0 ? styles.substituted : player.points > 0 ? styles.positive : player.points < 0 ? styles.negative : ''}`}>
-                          {player.points < 0 ? `${player.points}` : player.points} pts
+                          {player.bonusPoints && player.bonusPoints > 0 ? (
+                            <>{player.basePoints}+{player.bonusPoints} pts</>
+                          ) : (
+                            <>{player.points < 0 ? `${player.points}` : player.points} pts</>
+                          )}
                         </span>
                       </div>
                     ))}
