@@ -26,6 +26,7 @@ interface PlayerStats {
       count: number;
       breakdown: Array<{ gameweek: number; cost: number }>;
     };
+    overallRank: number;
     commonPlayers: {
       count: number;
       percentage: number;

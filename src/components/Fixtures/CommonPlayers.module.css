@@ -1,0 +1,57 @@
+.commonPlayersSection {
+  padding: 16px;
+  background: rgba(0, 255, 135, 0.05);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.commonPlayersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.commonPlayersEmoji {
+  font-size: 1.125rem;
+}
+
+.commonPlayersTitle {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.commonPlayersList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.commonPlayer {
+  display: inline;
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .commonPlayersTitle {
+    font-size: 0.6875rem;
+  }
+
+  .commonPlayersList {
+    font-size: 0.75rem;
+  }
+
+  .commonPlayersSection {
+    padding: 12px;
+  }
+}

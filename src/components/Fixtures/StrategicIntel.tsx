@@ -28,6 +28,7 @@ interface StrategicIntel {
   benchPoints: BenchPoints;
   teamValue: number;
   hitsTaken: HitsTaken;
+  overallRank: number;
   commonPlayers: CommonPlayers;
 }
 
@@ -95,14 +96,30 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
           </div>
         </div>
 
+        {/* OR Rank Row */}
+        <div className={styles.intelRow}>
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>OR RANK</div>
+            <div className={styles.orRank}>
+              {entry1.strategicIntel.overallRank > 0 ? entry1.strategicIntel.overallRank.toLocaleString() : 'N/A'}
+            </div>
+          </div>
+          <div className={styles.intelSection}>
+            <div className={styles.intelLabel}>OR RANK</div>
+            <div className={styles.orRank}>
+              {entry2.strategicIntel.overallRank > 0 ? entry2.strategicIntel.overallRank.toLocaleString() : 'N/A'}
+            </div>
+          </div>
+        </div>
+
         {/* Hits Taken Row */}
         <div className={styles.intelRow}>
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>HITS TAKEN</div>
             <div className={styles.hitsStats}>
-              {entry1.strategicIntel.hitsTaken.total < 0 ? (
+              {entry1.strategicIntel.hitsTaken.count > 0 ? (
                 <div className={styles.hitsTotal}>
-                  {entry1.strategicIntel.hitsTaken.total} pts ({entry1.strategicIntel.hitsTaken.count} hit{entry1.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
+                  {entry1.strategicIntel.hitsTaken.count} hit{entry1.strategicIntel.hitsTaken.count > 1 ? 's' : ''}
                 </div>
               ) : (
                 <div className={styles.noHits}>No hits</div>
@@ -112,9 +129,9 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
           <div className={styles.intelSection}>
             <div className={styles.intelLabel}>HITS TAKEN</div>
             <div className={styles.hitsStats}>
-              {entry2.strategicIntel.hitsTaken.total < 0 ? (
+              {entry2.strategicIntel.hitsTaken.count > 0 ? (
                 <div className={styles.hitsTotal}>
-                  {entry2.strategicIntel.hitsTaken.total} pts ({entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''})
+                  {entry2.strategicIntel.hitsTaken.count} hit{entry2.strategicIntel.hitsTaken.count > 1 ? 's' : ''}
                 </div>
               ) : (
                 <div className={styles.noHits}>No hits</div>
@@ -156,25 +173,6 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
         </div>
       </div>
 
-      {/* Common Players - Full Width */}
-      {entry1.strategicIntel.commonPlayers.count > 0 && (
-        <div className={styles.commonPlayersSection}>
-          <div className={styles.commonPlayersHeader}>
-            <span className={styles.commonPlayersEmoji}>⚡</span>
-            <span className={styles.commonPlayersTitle}>
-              COMMON PLAYERS ({entry1.strategicIntel.commonPlayers.count} shared - {entry1.strategicIntel.commonPlayers.percentage}% overlap)
-            </span>
-          </div>
-          <div className={styles.commonPlayersList}>
-            {entry1.strategicIntel.commonPlayers.players.map((player, i) => (
-              <span key={i} className={styles.commonPlayer}>
-                {player}
-                {i < entry1.strategicIntel.commonPlayers.players.length - 1 && ' • '}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -60,7 +60,7 @@ export function DifferentialPlayers({
                   </div>
                   <div className={styles.playerStats}>
                     <div className={styles.avgPoints}>
-                      {player.avgPoints} avg
+                      {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>
                       {player.form.map((pts, i) => (
@@ -99,7 +99,7 @@ export function DifferentialPlayers({
                   </div>
                   <div className={styles.playerStats}>
                     <div className={styles.avgPoints}>
-                      {player.avgPoints} avg
+                      {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>
                       {player.form.map((pts, i) => (

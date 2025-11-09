@@ -131,6 +131,13 @@
   color: #00ff87;
 }
 
+/* OR Rank */
+.orRank {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
 /* Hits Taken */
 .hitsStats {
   display: flex;
@@ -228,6 +235,7 @@
 
   .benchTotal,
   .teamValue,
+  .orRank,
   .hitsTotal {
     font-size: 1.125rem;
   }

@@ -1,6 +1,7 @@
 import styles from './MatchDetails.module.css';
 import { StrategicIntel } from './StrategicIntel';
 import { DifferentialPlayers } from './DifferentialPlayers';
+import { CommonPlayers } from './CommonPlayers';
 
 interface CaptainPick {
   playerName: string;
@@ -30,6 +31,7 @@ interface StrategicIntelData {
   benchPoints: BenchPoints;
   teamValue: number;
   hitsTaken: HitsTaken;
+  overallRank: number;
   commonPlayers: CommonPlayers;
 }
 
@@ -202,16 +204,11 @@ export function MatchDetails({ entry1, entry2, headToHead, differentialPlayers }
         </div>
       </div>
 
-      {/* Strategic Intel */}
-      <StrategicIntel
-        entry1={{
-          player_name: entry1.player_name,
-          strategicIntel: entry1.strategicIntel
-        }}
-        entry2={{
-          player_name: entry2.player_name,
-          strategicIntel: entry2.strategicIntel
-        }}
+      {/* Common Players */}
+      <CommonPlayers
+        count={entry1.strategicIntel.commonPlayers.count}
+        percentage={entry1.strategicIntel.commonPlayers.percentage}
+        players={entry1.strategicIntel.commonPlayers.players}
       />
 
       {/* Differential Players */}
@@ -223,6 +220,18 @@ export function MatchDetails({ entry1, entry2, headToHead, differentialPlayers }
           entry2Differentials={differentialPlayers.entry_2}
         />
       )}
+
+      {/* Strategic Intel */}
+      <StrategicIntel
+        entry1={{
+          player_name: entry1.player_name,
+          strategicIntel: entry1.strategicIntel
+        }}
+        entry2={{
+          player_name: entry2.player_name,
+          strategicIntel: entry2.strategicIntel
+        }}
+      />
 
       {/* H2H History (if available) */}
       {headToHead && headToHead.total_meetings > 0 && (

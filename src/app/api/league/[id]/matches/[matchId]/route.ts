@@ -103,6 +103,7 @@ export async function GET(
       let benchPoints = { total: 0, average: 0, breakdown: [] as number[] };
       let hitsTaken = { total: 0, count: 0, breakdown: [] as Array<{ gameweek: number; cost: number }> };
       let teamValue = 100.0;
+      let overallRank = 0;
 
       try {
         const historyData = await fplApi.getEntryHistory(entryId);
@@ -167,10 +168,15 @@ export async function GET(
           }
         }
 
-        // Get entry data for team value
+        // Get entry data for team value and overall rank
         const entryData = await fplApi.getEntry(entryId);
-        if (entryData && entryData.last_deadline_value) {
-          teamValue = entryData.last_deadline_value / 10;
+        if (entryData) {
+          if (entryData.last_deadline_value) {
+            teamValue = entryData.last_deadline_value / 10;
+          }
+          if (entryData.summary_overall_rank) {
+            overallRank = entryData.summary_overall_rank;
+          }
         }
 
         // Get captain history (last 5 completed GWs)
@@ -220,6 +226,7 @@ export async function GET(
           benchPoints,
           teamValue,
           hitsTaken,
+          overallRank,
           commonPlayers: { count: 0, percentage: 0, players: [] as string[] } // Calculated later
         }
       };

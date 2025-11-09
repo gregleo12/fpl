@@ -97,6 +97,7 @@ interface MatchDetailsData {
         count: number;
         breakdown: Array<{ gameweek: number; cost: number }>;
       };
+      overallRank: number;
       commonPlayers: {
         count: number;
         percentage: number;
@@ -125,6 +126,7 @@ interface MatchDetailsData {
         count: number;
         breakdown: Array<{ gameweek: number; cost: number }>;
       };
+      overallRank: number;
       commonPlayers: {
         count: number;
         percentage: number;
