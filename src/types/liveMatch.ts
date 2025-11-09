@@ -4,6 +4,9 @@ export interface DifferentialPlayer {
   position: number; // 1-11 starting, 12-15 bench
   isCaptain: boolean;
   hasPlayed: boolean; // Whether the player has played (minutes > 0 or fixture finished)
+  wasAutoSubbedIn?: boolean; // Player was auto-substituted in from bench
+  wasAutoSubbedOut?: boolean; // Player was auto-substituted out (didn't play)
+  replacedBy?: string; // Name of player who replaced this one
 }
 
 export interface CommonPlayer {

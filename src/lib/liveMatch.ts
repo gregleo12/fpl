@@ -1,4 +1,12 @@
 import { LiveMatchData } from '@/types/liveMatch';
+import {
+  Squad,
+  Player,
+  Position,
+  applyAutoSubstitutions,
+  calculateLivePoints,
+  getPointsBreakdown
+} from './fpl-calculations';
 
 export async function getLiveMatchData(
   entryId1: number,
@@ -58,6 +66,67 @@ export async function getLiveMatchData(
   }
 }
 
+/**
+ * Convert FPL element_type to Position
+ */
+function getPosition(elementType: number): Position {
+  switch (elementType) {
+    case 1: return 'GK';
+    case 2: return 'DEF';
+    case 3: return 'MID';
+    case 4: return 'FWD';
+    default: return 'MID';
+  }
+}
+
+/**
+ * Convert FPL picks data to Squad format for auto-substitutions
+ */
+function createSquadFromPicks(
+  picksData: any,
+  liveData: any,
+  bootstrapData: any
+): Squad {
+  const picks = picksData.picks;
+  const starting11: Player[] = [];
+  const bench: Player[] = [];
+
+  // Get captain multiplier
+  const captainMultiplier = picksData.active_chip === '3xc' ? 3 : 2;
+
+  picks.forEach((pick: any) => {
+    const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+    const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+
+    if (!element) return;
+
+    const player: Player = {
+      id: pick.element,
+      name: element.web_name,
+      position: getPosition(element.element_type),
+      minutes: liveElement?.stats?.minutes || 0,
+      points: liveElement?.stats?.total_points || 0,
+      multiplier: pick.is_captain ? captainMultiplier : 1,
+    };
+
+    if (pick.position <= 11) {
+      starting11.push(player);
+    } else if (pick.position <= 14) {
+      // Bench positions 12-14 (15 is typically not used for auto-subs)
+      bench.push(player);
+    }
+  });
+
+  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
+  bench.sort((a, b) => {
+    const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
+    const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
+    return posA - posB;
+  });
+
+  return { starting11, bench };
+}
+
 function calculateLiveStats(
   picksData: any,
   liveData: any,
@@ -93,6 +162,19 @@ function calculateLiveStats(
   let playersRemaining = 0;
   let benchPoints = 0;
   let liveScore = 0; // Calculate live score from individual players
+
+  // Apply auto-substitutions if Bench Boost is NOT active
+  let autoSubResult = null;
+  if (!isBenchBoost) {
+    const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+    autoSubResult = applyAutoSubstitutions(squad);
+
+    if (autoSubResult.substitutions.length > 0) {
+      console.log(`Auto-substitutions for ${manager}:`, autoSubResult.substitutions.map(s =>
+        `${s.playerOut.name} (0 min) → ${s.playerIn.name} (+${s.playerIn.points} pts)`
+      ));
+    }
+  }
 
   picks.forEach((pick: any) => {
     const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
@@ -141,9 +223,19 @@ function calculateLiveStats(
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   console.log(`Transfer cost from API: ${transferCost}`);
 
+  // Use auto-substitution adjusted score if available
+  let finalLiveScore = liveScore;
+  if (autoSubResult && !isBenchBoost) {
+    // Calculate score with auto-subs
+    finalLiveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
+      return sum + (player.points * player.multiplier);
+    }, 0);
+    console.log(`Score with auto-subs: ${finalLiveScore} (gained ${autoSubResult.pointsGained} from ${autoSubResult.substitutions.length} substitutions)`);
+  }
+
   // Calculate final live score (subtract hits - API returns positive values)
-  const currentScore = liveScore - Math.abs(transferCost);
-  console.log(`Live calculated score for ${manager}: ${currentScore} (${liveScore} from players - ${Math.abs(transferCost)} from hits)`);
+  const currentScore = finalLiveScore - Math.abs(transferCost);
+  console.log(`Live calculated score for ${manager}: ${currentScore} (${finalLiveScore} from players - ${Math.abs(transferCost)} from hits)`);
 
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
