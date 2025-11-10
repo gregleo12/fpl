@@ -60,45 +60,47 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   flex-shrink: 0;
+  position: relative;
 }
 
-.headerBadge {
+.matchupRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 16px;
+  flex: 1;
+  padding-right: 40px;
 }
 
-.modalTitle {
-  font-size: 1.125rem;
+.teamName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  flex: 1;
+}
+
+.teamName:first-child {
+  text-align: left;
+}
+
+.teamName:last-child {
+  text-align: right;
+}
+
+.scoreDisplay {
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #ff2882;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin: 0;
-}
-
-.liveIndicator {
-  font-size: 0.875rem;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-.completedIndicator {
-  font-size: 1.25rem;
-  color: #00ff87;
+  color: white;
+  text-align: center;
+  min-width: 80px;
 }
 
 .closeButton {
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -120,45 +122,48 @@
   color: #ff0066;
 }
 
-/* Score Section */
-.scoreSection {
-  margin-bottom: 24px;
+/* Status Badge */
+.statusBadge {
+  text-align: center;
+  margin-bottom: 20px;
   flex-shrink: 0;
 }
 
-.scoreDisplay {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 12px;
-}
-
-.teamScore {
-  flex: 1;
-  text-align: center;
-}
-
-.teamName {
+.liveBadge {
+  display: inline-block;
   font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 8px;
-  font-weight: 500;
-}
-
-.score {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #00ff87;
-}
-
-.vsLabel {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 600;
+  font-weight: 700;
+  color: #ef4444;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.ftBadge {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.upcomingBadge {
+  display: inline-block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* Scrollable Content */

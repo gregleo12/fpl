@@ -119,6 +119,15 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
     return '';
   }
 
+  function formatKickoffTime(kickoffTime: string): string {
+    const date = new Date(kickoffTime);
+    return date.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -127,41 +136,30 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
 
         {/* Modal header */}
         <div className={styles.modalHeader}>
-          <div className={styles.headerBadge}>
-            {fixture.status === 'live' ? (
-              <>
-                <span className={styles.liveIndicator}>🔴</span>
-                <span className={styles.modalTitle}>LIVE (GW{fixture.event})</span>
-              </>
-            ) : fixture.status === 'finished' ? (
-              <>
-                <span className={styles.completedIndicator}>✓</span>
-                <span className={styles.modalTitle}>COMPLETED (GW{fixture.event})</span>
-              </>
-            ) : (
-              <span className={styles.modalTitle}>GW{fixture.event}</span>
-            )}
+          <div className={styles.matchupRow}>
+            <span className={styles.teamName}>{fixture.home_team.short_name}</span>
+            <span className={styles.scoreDisplay}>
+              {fixture.status === 'not_started'
+                ? formatKickoffTime(fixture.kickoff_time)
+                : `${fixture.home_team.score ?? '-'}-${fixture.away_team.score ?? '-'}`
+              }
+            </span>
+            <span className={styles.teamName}>{fixture.away_team.short_name}</span>
           </div>
           <button className={styles.closeButton} onClick={onClose}>
             ✕
           </button>
         </div>
 
-        {/* Score Section */}
-        <div className={styles.scoreSection}>
-          <div className={styles.scoreDisplay}>
-            <div className={styles.teamScore}>
-              <div className={styles.teamName}>{fixture.home_team.short_name}</div>
-              <div className={styles.score}>{fixture.home_team.score ?? '-'}</div>
-            </div>
-
-            <div className={styles.vsLabel}>vs</div>
-
-            <div className={styles.teamScore}>
-              <div className={styles.teamName}>{fixture.away_team.short_name}</div>
-              <div className={styles.score}>{fixture.away_team.score ?? '-'}</div>
-            </div>
-          </div>
+        {/* Status Badge */}
+        <div className={styles.statusBadge}>
+          {fixture.status === 'live' ? (
+            <span className={styles.liveBadge}>🔴 LIVE</span>
+          ) : fixture.status === 'finished' ? (
+            <span className={styles.ftBadge}>FT</span>
+          ) : (
+            <span className={styles.upcomingBadge}>GW{fixture.event}</span>
+          )}
         </div>
 
         {/* Scrollable Content */}
