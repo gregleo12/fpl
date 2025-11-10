@@ -95,7 +95,6 @@
   align-items: center;
   gap: 8px;
   justify-content: flex-end;
-  flex-direction: row-reverse;
 }
 
 /* Team Name - Single Line Only */
