@@ -5,6 +5,7 @@ import {
   Player,
   Position,
   applyAutoSubstitutions,
+  calculateLivePointsWithBonus,
 } from '@/lib/fpl-calculations';
 
 // Force dynamic rendering and disable caching for live scores
@@ -316,7 +317,7 @@ async function fetchLiveScoresFromPicks(
       let liveScore = 0;
 
       // For completed gameweeks, use final score from entry_history
-      // For in-progress gameweeks, calculate from live player data WITH AUTO-SUBS
+      // For in-progress gameweeks, calculate from live player data WITH AUTO-SUBS AND PROVISIONAL BONUS
       if (status === 'completed') {
         // Use the final score for completed gameweeks
         liveScore = picksData.entry_history?.points || 0;
@@ -324,20 +325,22 @@ async function fetchLiveScoresFromPicks(
         // Calculate score from individual players for live gameweeks
         const isBenchBoost = activeChip === 'bboost';
 
-        // Apply auto-substitutions ONLY if Bench Boost is NOT active
-        // IMPORTANT: Cannot calculate provisional bonus accurately because we only have
-        // BPS for user's players, not all 22 players in each match.
-        // We now rely on official bonus only (already in player.points from API).
+        // Apply auto-substitutions AND provisional bonus
         if (!isBenchBoost && bootstrapData) {
           const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+
+          // Calculate score with auto-subs AND provisional bonus
+          const result = calculateLivePointsWithBonus(squad);
+          liveScore = result.totalPoints;
+
+          // Log provisional bonus if any
+          if (result.provisionalBonus > 0) {
+            console.log(`Entry ${entryId}: Provisional bonus: +${result.provisionalBonus} pts`);
+            console.log(`Bonus breakdown:`, result.bonusBreakdown);
+          }
+
+          // Log auto-subs if any
           const autoSubResult = applyAutoSubstitutions(squad);
-
-          // Calculate score with auto-subs (no provisional bonus)
-          // player.points already includes official bonus from API
-          liveScore = autoSubResult.squad.starting11.reduce((sum, player) => {
-            return sum + (player.points * player.multiplier);
-          }, 0);
-
           if (autoSubResult.substitutions.length > 0) {
             console.log(`Entry ${entryId}: Auto-subs applied - ${autoSubResult.substitutions.map(s =>
               `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
