@@ -1,75 +1,148 @@
+/* Container */
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
+/* Loading/Error/Empty States */
 .loading,
 .error,
 .empty {
   text-align: center;
-  padding: 3rem;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 3rem 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
 }
 
 .error {
-  color: #ff6b6b;
+  color: #ff2882;
 }
 
-/* Fixture Card */
+/* Date Group */
+.dateGroup {
+  margin-bottom: 8px;
+}
+
+/* Date Header */
+.dateHeader {
+  background: #00ff87;
+  color: #000000;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* Fixtures Group */
+.fixturesGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Fixture Card - Compact Single Line */
 .fixtureCard {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(147, 51, 234, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 16px;
-  transition: all 0.2s;
+  padding: 12px 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .fixtureCard:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  background: rgba(147, 51, 234, 0.2);
+  border-color: rgba(147, 51, 234, 0.4);
+  transform: translateY(-1px);
 }
 
-.liveCard {
-  border-color: rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.05);
+.fixtureCard:active {
+  transform: translateY(0);
 }
 
-/* Status Badge */
-.statusBadge {
+/* Fixture Content - Single Line Layout */
+.fixtureContent {
   display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.statusFinished {
-  color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 12px;
-  border-radius: 6px;
+/* Home Team (Left Aligned) */
+.homeTeam {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
-.statusLive {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  padding: 4px 12px;
-  border-radius: 6px;
+/* Away Team (Right Aligned) */
+.awayTeam {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+/* Team Abbreviation (TOT, MUN, etc.) */
+.teamAbbr {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+}
+
+/* Team Full Name */
+.teamFullName {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+/* Score Section (Center) */
+.scoreSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 80px;
+}
+
+/* Score Display */
+.scoreDisplay {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
 }
 
+.scoreValue {
+  min-width: 20px;
+  text-align: center;
+}
+
+.scoreSeparator {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+}
+
+/* Live Dot */
 .liveDot {
   width: 8px;
   height: 8px;
   background: #ef4444;
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes pulse {
@@ -83,70 +156,83 @@
   }
 }
 
-.statusNotStarted {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8rem;
-}
-
-/* Match Info */
-.matchInfo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.team {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-}
-
-.team:first-child {
-  justify-content: flex-end;
-}
-
-.team:last-child {
-  justify-content: flex-start;
-}
-
-.teamName {
-  font-size: 1rem;
+/* Live Minutes */
+.liveMinutes {
+  font-size: 0.75rem;
+  color: #ef4444;
   font-weight: 600;
-  color: white;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.score {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  text-align: center;
-  min-width: 60px;
-  flex-shrink: 0;
+/* Kickoff Time (Not Started) */
+.kickoffTime {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
 }
 
-/* Responsive */
+/* Mobile Responsive */
 @media (max-width: 768px) {
-  .fixtureCard {
-    padding: 14px;
+  .container {
+    gap: 12px;
   }
 
-  .teamName {
+  .dateHeader {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+
+  .fixtureCard {
+    padding: 10px 12px;
+  }
+
+  .teamAbbr {
+    font-size: 0.85rem;
+  }
+
+  .teamFullName {
+    font-size: 0.7rem;
+  }
+
+  .scoreDisplay {
+    font-size: 1.3rem;
+    gap: 4px;
+  }
+
+  .scoreValue {
+    min-width: 18px;
+  }
+
+  .scoreSeparator {
     font-size: 0.9rem;
   }
 
-  .score {
-    font-size: 1.3rem;
-    min-width: 50px;
+  .liveMinutes {
+    font-size: 0.7rem;
   }
 
-  .statusBadge {
+  .kickoffTime {
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .fixtureContent {
+    gap: 8px;
+  }
+
+  .teamAbbr {
+    font-size: 0.8rem;
+  }
+
+  .teamFullName {
+    font-size: 0.65rem;
+  }
+
+  .scoreDisplay {
+    font-size: 1.2rem;
+  }
+
+  .scoreSection {
+    min-width: 70px;
   }
 }

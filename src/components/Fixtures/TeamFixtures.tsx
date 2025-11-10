@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import styles from './TeamFixtures.module.css';
 import { FixtureDetailsModal } from './FixtureDetailsModal';
 
@@ -50,6 +50,10 @@ interface Props {
   gameweek: number;
 }
 
+interface FixturesByDate {
+  [date: string]: Fixture[];
+}
+
 export function TeamFixtures({ gameweek }: Props) {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,70 +87,61 @@ export function TeamFixtures({ gameweek }: Props) {
     }
   }
 
+  // Group fixtures by date
+  const fixturesByDate = useMemo(() => {
+    const grouped: FixturesByDate = {};
+
+    fixtures.forEach(fixture => {
+      const date = new Date(fixture.kickoff_time);
+      const dateKey = date.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short'
+      });
+
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(fixture);
+    });
+
+    return grouped;
+  }, [fixtures]);
+
   function formatKickoffTime(kickoffTime: string): string {
     const date = new Date(kickoffTime);
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const fixtureDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    const daysDiff = Math.floor((fixtureDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-    const timeStr = date.toLocaleTimeString('en-GB', {
+    return date.toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: false
     });
-
-    if (daysDiff === 0) {
-      return `Today ${timeStr}`;
-    } else if (daysDiff === 1) {
-      return `Tomorrow ${timeStr}`;
-    } else if (daysDiff === -1) {
-      return `Yesterday ${timeStr}`;
-    } else {
-      const dateStr = date.toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short'
-      });
-      return `${dateStr} ${timeStr}`;
-    }
   }
 
-  function getStatusDisplay(fixture: Fixture): JSX.Element {
-    if (fixture.status === 'finished') {
-      return <span className={styles.statusFinished}>FT</span>;
-    }
-
-    if (fixture.status === 'live') {
-      return (
-        <span className={styles.statusLive}>
-          <span className={styles.liveDot}></span>
-          {fixture.minutes}'
-        </span>
-      );
-    }
-
-    return (
-      <span className={styles.statusNotStarted}>
-        {formatKickoffTime(fixture.kickoff_time)}
-      </span>
-    );
-  }
-
-  function getScoreDisplay(fixture: Fixture): JSX.Element {
-    if (fixture.home_team.score !== null && fixture.away_team.score !== null) {
-      return (
-        <div className={styles.score}>
-          {fixture.home_team.score} - {fixture.away_team.score}
-        </div>
-      );
-    }
-
-    return (
-      <div className={styles.score}>
-        - : -
-      </div>
-    );
+  function getTeamAbbreviation(shortName: string): string {
+    // Convert team short names to 3-letter abbreviations
+    const abbrevMap: { [key: string]: string } = {
+      'Arsenal': 'ARS',
+      'Aston Villa': 'AVL',
+      'Bournemouth': 'BOU',
+      'Brentford': 'BRE',
+      'Brighton': 'BHA',
+      'Chelsea': 'CHE',
+      'Crystal Palace': 'CRY',
+      'Everton': 'EVE',
+      'Fulham': 'FUL',
+      'Ipswich': 'IPS',
+      'Leicester': 'LEI',
+      'Liverpool': 'LIV',
+      'Man City': 'MCI',
+      'Man Utd': 'MUN',
+      'Newcastle': 'NEW',
+      "Nott'm Forest": 'NFO',
+      'Southampton': 'SOU',
+      'Spurs': 'TOT',
+      'West Ham': 'WHU',
+      'Wolves': 'WOL'
+    };
+    return abbrevMap[shortName] || shortName.substring(0, 3).toUpperCase();
   }
 
   if (loading) {
@@ -175,31 +170,57 @@ export function TeamFixtures({ gameweek }: Props) {
 
   return (
     <div className={styles.container}>
-      {fixtures.map((fixture) => (
-        <div
-          key={fixture.id}
-          className={`${styles.fixtureCard} ${fixture.status === 'live' ? styles.liveCard : ''}`}
-          onClick={() => setSelectedFixture(fixture)}
-        >
-          {/* Status badge */}
-          <div className={styles.statusBadge}>
-            {getStatusDisplay(fixture)}
-          </div>
+      {Object.entries(fixturesByDate).map(([date, dateFixtures]) => (
+        <div key={date} className={styles.dateGroup}>
+          {/* Date Header */}
+          <div className={styles.dateHeader}>{date}</div>
 
-          {/* Match info */}
-          <div className={styles.matchInfo}>
-            {/* Home team */}
-            <div className={styles.team}>
-              <span className={styles.teamName}>{fixture.home_team.short_name}</span>
-            </div>
+          {/* Fixtures for this date */}
+          <div className={styles.fixturesGroup}>
+            {dateFixtures.map((fixture) => (
+              <div
+                key={fixture.id}
+                className={styles.fixtureCard}
+                onClick={() => setSelectedFixture(fixture)}
+              >
+                <div className={styles.fixtureContent}>
+                  {/* Home Team */}
+                  <div className={styles.homeTeam}>
+                    <div className={styles.teamAbbr}>{getTeamAbbreviation(fixture.home_team.short_name)}</div>
+                    <div className={styles.teamFullName}>{fixture.home_team.short_name}</div>
+                  </div>
 
-            {/* Score */}
-            {getScoreDisplay(fixture)}
+                  {/* Score/Status */}
+                  <div className={styles.scoreSection}>
+                    {fixture.status === 'not_started' ? (
+                      <div className={styles.kickoffTime}>{formatKickoffTime(fixture.kickoff_time)}</div>
+                    ) : (
+                      <>
+                        <div className={styles.scoreDisplay}>
+                          {fixture.status === 'live' && <span className={styles.liveDot}></span>}
+                          <span className={styles.scoreValue}>
+                            {fixture.home_team.score ?? '-'}
+                          </span>
+                          <span className={styles.scoreSeparator}>-</span>
+                          <span className={styles.scoreValue}>
+                            {fixture.away_team.score ?? '-'}
+                          </span>
+                        </div>
+                        {fixture.status === 'live' && (
+                          <div className={styles.liveMinutes}>{fixture.minutes}'</div>
+                        )}
+                      </>
+                    )}
+                  </div>
 
-            {/* Away team */}
-            <div className={styles.team}>
-              <span className={styles.teamName}>{fixture.away_team.short_name}</span>
-            </div>
+                  {/* Away Team */}
+                  <div className={styles.awayTeam}>
+                    <div className={styles.teamAbbr}>{getTeamAbbreviation(fixture.away_team.short_name)}</div>
+                    <div className={styles.teamFullName}>{fixture.away_team.short_name}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       ))}
