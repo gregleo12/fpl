@@ -90,6 +90,11 @@ export async function GET(
               red_cards: stats.find((s: any) => s.identifier === 'red_cards')?.value || 0,
               saves: stats.find((s: any) => s.identifier === 'saves')?.value || 0,
               minutes: el.stats.minutes || 0,
+              clean_sheets: stats.find((s: any) => s.identifier === 'clean_sheets')?.value || 0,
+              goals_conceded: stats.find((s: any) => s.identifier === 'goals_conceded')?.value || 0,
+              own_goals: stats.find((s: any) => s.identifier === 'own_goals')?.value || 0,
+              penalties_saved: stats.find((s: any) => s.identifier === 'penalties_saved')?.value || 0,
+              penalties_missed: stats.find((s: any) => s.identifier === 'penalties_missed')?.value || 0,
             };
           })
           .sort((a: any, b: any) => b.bps - a.bps); // Sort by BPS desc

@@ -16,6 +16,11 @@ interface PlayerStat {
   red_cards: number;
   saves: number;
   minutes: number;
+  clean_sheets: number;
+  goals_conceded: number;
+  own_goals: number;
+  penalties_saved: number;
+  penalties_missed: number;
 }
 
 interface Fixture {
