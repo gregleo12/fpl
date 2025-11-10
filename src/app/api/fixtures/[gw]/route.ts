@@ -15,27 +15,29 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid gameweek' }, { status: 400 });
     }
 
-    // Fetch fixtures for this gameweek
-    const fixturesResponse = await fetch(
-      `https://fantasy.premierleague.com/api/fixtures/?event=${gw}`
-    );
+    // Fetch fixtures for this gameweek and live player data in parallel
+    const [fixturesResponse, bootstrapResponse, liveResponse] = await Promise.all([
+      fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gw}`),
+      fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
+      fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`)
+    ]);
 
     if (!fixturesResponse.ok) {
       throw new Error('Failed to fetch fixtures from FPL API');
     }
 
-    const fixtures = await fixturesResponse.json();
-
-    // Fetch bootstrap-static for team names and details
-    const bootstrapResponse = await fetch(
-      'https://fantasy.premierleague.com/api/bootstrap-static/'
-    );
-
     if (!bootstrapResponse.ok) {
       throw new Error('Failed to fetch bootstrap data from FPL API');
     }
 
+    const fixtures = await fixturesResponse.json();
     const bootstrapData = await bootstrapResponse.json();
+
+    // Live data might not be available for upcoming gameweeks
+    let liveData = null;
+    if (liveResponse.ok) {
+      liveData = await liveResponse.json();
+    }
 
     // Create team lookup map
     const teamsMap = new Map<number, any>();
@@ -43,7 +45,13 @@ export async function GET(
       teamsMap.set(team.id, team);
     });
 
-    // Process fixtures
+    // Create player lookup map
+    const playersMap = new Map<number, any>();
+    bootstrapData.elements.forEach((player: any) => {
+      playersMap.set(player.id, player);
+    });
+
+    // Process fixtures with player stats
     const processedFixtures = fixtures.map((fixture: any) => {
       const homeTeam = teamsMap.get(fixture.team_h);
       const awayTeam = teamsMap.get(fixture.team_a);
@@ -54,6 +62,39 @@ export async function GET(
         status = 'finished';
       } else if (fixture.started && !fixture.finished) {
         status = 'live';
+      }
+
+      // Get player stats for this fixture (if live data available)
+      let playerStats = null;
+      if (liveData && fixture.started) {
+        // Filter players who played in this fixture
+        const fixturePlayers = liveData.elements
+          .filter((el: any) => {
+            const explain = el.explain || [];
+            return explain.some((exp: any) => exp.fixture === fixture.id);
+          })
+          .map((el: any) => {
+            const player = playersMap.get(el.id);
+            const fixtureExplain = el.explain.find((exp: any) => exp.fixture === fixture.id);
+            const stats = fixtureExplain?.stats || [];
+
+            return {
+              id: el.id,
+              name: player?.web_name || 'Unknown',
+              team_id: player?.team || 0,
+              bps: el.stats.bps || 0,
+              bonus: el.stats.bonus || 0,
+              goals_scored: stats.find((s: any) => s.identifier === 'goals_scored')?.value || 0,
+              assists: stats.find((s: any) => s.identifier === 'assists')?.value || 0,
+              yellow_cards: stats.find((s: any) => s.identifier === 'yellow_cards')?.value || 0,
+              red_cards: stats.find((s: any) => s.identifier === 'red_cards')?.value || 0,
+              saves: stats.find((s: any) => s.identifier === 'saves')?.value || 0,
+              minutes: el.stats.minutes || 0,
+            };
+          })
+          .sort((a: any, b: any) => b.bps - a.bps); // Sort by BPS desc
+
+        playerStats = fixturePlayers;
       }
 
       return {
@@ -76,6 +117,7 @@ export async function GET(
           score: fixture.team_a_score,
         },
         status,
+        player_stats: playerStats,
       };
     });
 

@@ -2,6 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import styles from './TeamFixtures.module.css';
+import { FixtureDetailsModal } from './FixtureDetailsModal';
+
+interface PlayerStat {
+  id: number;
+  name: string;
+  team_id: number;
+  bps: number;
+  bonus: number;
+  goals_scored: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  saves: number;
+  minutes: number;
+}
 
 interface Fixture {
   id: number;
@@ -23,6 +38,7 @@ interface Fixture {
     score: number | null;
   };
   status: 'finished' | 'live' | 'not_started';
+  player_stats: PlayerStat[] | null;
 }
 
 interface Props {
@@ -33,6 +49,7 @@ export function TeamFixtures({ gameweek }: Props) {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFixture, setSelectedFixture] = useState<Fixture | null>(null);
 
   useEffect(() => {
     fetchFixtures();
@@ -157,6 +174,7 @@ export function TeamFixtures({ gameweek }: Props) {
         <div
           key={fixture.id}
           className={`${styles.fixtureCard} ${fixture.status === 'live' ? styles.liveCard : ''}`}
+          onClick={() => setSelectedFixture(fixture)}
         >
           {/* Status badge */}
           <div className={styles.statusBadge}>
@@ -180,6 +198,12 @@ export function TeamFixtures({ gameweek }: Props) {
           </div>
         </div>
       ))}
+
+      {/* Fixture Details Modal */}
+      <FixtureDetailsModal
+        fixture={selectedFixture}
+        onClose={() => setSelectedFixture(null)}
+      />
     </div>
   );
 }
