@@ -1,0 +1,37 @@
+# FPL H2H Analytics - Development Rules
+
+## CRITICAL: Read Context First
+Before ANY task, read `CLAUDE_CODE_CONTEXT.md` for:
+- Past bugs and fixes
+- Architecture decisions
+- Deployment process
+- Testing requirements
+
+## Railway Deployment
+- Auto-deploys on `git push` to main branch
+- Database: PostgreSQL with connection pool (max: 10)
+- Domain: dedoume.pronos.xyz
+- Check Railway logs if 502 errors occur
+
+## Never Touch These
+1. `/src/hooks/usePullToRefresh.ts` - Breaks modal scrolling
+2. Global event listeners without modal detection
+3. Connection strings (use environment variables)
+
+## Always Do These
+1. Test locally: `npm run build`
+2. Unified calculations (no duplicate logic)
+3. Auto-subs BEFORE bonus calculations
+4. Bonus only for top 3 BPS PER MATCH (not global)
+5. Mobile testing in iOS simulator
+
+## Common Mistakes to Avoid
+- Don't create duplicate calculation logic in different files
+- Don't forget fixture grouping for bonus (per-match, not per-team)
+- Don't modify scores without updating ALL locations (fixture cards + modal + differential)
+- Don't assume - verify data structure with console.logs first
+
+## When Starting New Session
+1. Read CLAUDE_CODE_CONTEXT.md
+2. Check `git log --oneline -10` for recent changes
+3. Review any open issues from last session
