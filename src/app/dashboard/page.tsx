@@ -8,11 +8,11 @@ import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefresh
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
-import AwardsTab from '@/components/Awards/AwardsTab';
+import StatsTab from '@/components/Stats/StatsTab';
 import SettingsTab from '@/components/Settings/SettingsTab';
 import styles from './dashboard.module.css';
 
-type TabType = 'league' | 'fixtures' | 'myteam' | 'awards' | 'settings';
+type TabType = 'league' | 'fixtures' | 'myteam' | 'stats' | 'settings';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -134,11 +134,11 @@ export default function DashboardPage() {
             <span className={styles.tabLabel}>My Team</span>
           </button>
           <button
-            className={`${styles.tab} ${activeTab === 'awards' ? styles.active : ''}`}
-            onClick={() => setActiveTab('awards')}
+            className={`${styles.tab} ${activeTab === 'stats' ? styles.active : ''}`}
+            onClick={() => setActiveTab('stats')}
           >
-            <span className={styles.tabIcon}>🎖️</span>
-            <span className={styles.tabLabel}>Awards</span>
+            <span className={styles.tabIcon}>📈</span>
+            <span className={styles.tabLabel}>Stats</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
@@ -178,8 +178,8 @@ export default function DashboardPage() {
             leagueId={state.leagueId}
           />
         )}
-        {activeTab === 'awards' && (
-          <AwardsTab
+        {activeTab === 'stats' && (
+          <StatsTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
           />

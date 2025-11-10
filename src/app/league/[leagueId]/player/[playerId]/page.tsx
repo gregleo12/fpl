@@ -8,11 +8,11 @@ import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefresh
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
-import AwardsTab from '@/components/Awards/AwardsTab';
+import StatsTab from '@/components/Stats/StatsTab';
 import SettingsTab from '@/components/Settings/SettingsTab';
 import styles from './player.module.css';
 
-type TabType = 'league' | 'fixtures' | 'player' | 'awards' | 'settings';
+type TabType = 'league' | 'fixtures' | 'player' | 'stats' | 'settings';
 
 export default function PlayerProfilePage() {
   const params = useParams();
@@ -149,11 +149,11 @@ export default function PlayerProfilePage() {
             <span className={styles.tabLabel}>My Team</span>
           </button>
           <button
-            className={`${styles.tab} ${activeTab === 'awards' ? styles.active : ''}`}
-            onClick={() => setActiveTab('awards')}
+            className={`${styles.tab} ${activeTab === 'stats' ? styles.active : ''}`}
+            onClick={() => setActiveTab('stats')}
           >
-            <span className={styles.tabIcon}>🎖️</span>
-            <span className={styles.tabLabel}>Awards</span>
+            <span className={styles.tabIcon}>📈</span>
+            <span className={styles.tabLabel}>Stats</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
@@ -202,8 +202,8 @@ export default function PlayerProfilePage() {
             leagueId={leagueId}
           />
         )}
-        {activeTab === 'awards' && state?.myTeamId && (
-          <AwardsTab leagueId={leagueId} myTeamId={state.myTeamId} />
+        {activeTab === 'stats' && state?.myTeamId && (
+          <StatsTab leagueId={leagueId} myTeamId={state.myTeamId} />
         )}
         {activeTab === 'settings' && (
           <SettingsTab

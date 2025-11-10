@@ -1,0 +1,273 @@
+/* Section Container */
+.section {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1rem;
+}
+
+.noData {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9375rem;
+}
+
+/* List Layout (Captain Picks, Differentials) */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.item:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 255, 135, 0.3);
+}
+
+.itemRank {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #a78bfa;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+.itemStats {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.itemStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.statValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.statLabel {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Chip Grid Layout */
+.chipGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.chipCard {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.chipCard:hover {
+  border-color: rgba(0, 255, 135, 0.3);
+  transform: translateY(-2px);
+}
+
+.chipIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.chipName {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.chipCount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* Stats Grid Layout (Hits Taken) */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.statBox {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statBox .statValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #00ff87;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.statBox .statLabel {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Winners Grid Layout */
+.winnersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.winnerCard {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.winnerBadge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.winnerName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.winnerTeam {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.winnerScore {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-top: 0.25rem;
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .section {
+    padding: 1rem;
+  }
+
+  .item {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .itemStats {
+    gap: 1rem;
+  }
+
+  .itemStat {
+    gap: 0.125rem;
+  }
+
+  .statValue {
+    font-size: 0.9375rem;
+  }
+
+  .statLabel {
+    font-size: 0.625rem;
+  }
+
+  .chipGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .chipCard {
+    padding: 1rem 0.75rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .statBox {
+    padding: 1rem 0.75rem;
+  }
+
+  .statBox .statValue {
+    font-size: 1.5rem;
+  }
+
+  .winnersGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
