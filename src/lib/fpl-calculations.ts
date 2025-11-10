@@ -314,6 +314,72 @@ export function calculateProvisionalBonus(
 }
 
 /**
+ * Calculate provisional bonus using complete fixtures data (all 22 players per match)
+ * This is MORE accurate than calculateProvisionalBonus() which only uses squad players
+ */
+export function calculateProvisionalBonusFromFixtures(
+  players: Player[],
+  fixturesData: any[]
+): Map<number, ProvisionalBonus> {
+  const bonusMap = new Map<number, ProvisionalBonus>();
+
+  // For each player in the squad, find their fixture and check top 3 BPS
+  for (const player of players) {
+    if (!player.fixtureId || !player.bps) {
+      bonusMap.set(player.id, {
+        provisional: 0,
+        isOfficial: (player.bonus || 0) > 0,
+        bps: player.bps || 0,
+      });
+      continue;
+    }
+
+    // Find the fixture this player is in
+    const fixture = fixturesData.find((f: any) => f.id === player.fixtureId);
+    if (!fixture || !fixture.player_stats) {
+      bonusMap.set(player.id, {
+        provisional: 0,
+        isOfficial: (player.bonus || 0) > 0,
+        bps: player.bps || 0,
+      });
+      continue;
+    }
+
+    // Get ALL players in this fixture sorted by BPS
+    const allPlayersInFixture = fixture.player_stats
+      .filter((p: any) => p.bps > 0)
+      .sort((a: any, b: any) => b.bps - a.bps);
+
+    // Get unique BPS values for top 3
+    const uniqueBPS = Array.from(
+      new Set(allPlayersInFixture.map((p: any) => p.bps))
+    ).slice(0, 3);
+
+    // Check if this player is in top 3 BPS for this fixture
+    const rank = uniqueBPS.indexOf(player.bps);
+    let provisionalBonus = 0;
+
+    if (rank === 0) {
+      provisionalBonus = 3;
+    } else if (rank === 1) {
+      provisionalBonus = 2;
+    } else if (rank === 2) {
+      provisionalBonus = 1;
+    }
+
+    const isOfficial = (player.bonus || 0) > 0;
+
+    bonusMap.set(player.id, {
+      provisional: provisionalBonus,
+      isOfficial: isOfficial,
+      bps: player.bps,
+    });
+  }
+
+  return bonusMap;
+}
+
+/**
  * Calculate live points with provisional bonus included
  */
 export interface LivePointsWithBonus {
@@ -330,12 +396,18 @@ export interface LivePointsWithBonus {
   }>;
 }
 
-export function calculateLivePointsWithBonus(squad: Squad): LivePointsWithBonus {
+export function calculateLivePointsWithBonus(
+  squad: Squad,
+  fixturesData?: any[]
+): LivePointsWithBonus {
   // Apply auto-substitutions first
   const { squad: adjustedSquad, substitutions } = applyAutoSubstitutions(squad);
 
   // Calculate provisional bonus for starting 11 (after auto-subs)
-  const bonusMap = calculateProvisionalBonus(adjustedSquad.starting11);
+  // Use fixtures data if available (more accurate), otherwise fall back to squad-only calculation
+  const bonusMap = fixturesData
+    ? calculateProvisionalBonusFromFixtures(adjustedSquad.starting11, fixturesData)
+    : calculateProvisionalBonus(adjustedSquad.starting11);
 
   let basePoints = 0;
   let provisionalBonus = 0;

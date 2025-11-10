@@ -279,14 +279,44 @@ async function fetchLiveScoresFromPicks(
 
   // Only fetch live player data for in-progress gameweeks
   let liveData: any = null;
+  let fixturesData: any[] = [];
   if (status === 'in_progress') {
     try {
-      const liveResponse = await fetch(
-        `https://fantasy.premierleague.com/api/event/${gw}/live/`
-      );
+      const [liveResponse, fixturesResponse] = await Promise.all([
+        fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`),
+        fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gw}`)
+      ]);
+
       if (liveResponse.ok) {
         liveData = await liveResponse.json();
         console.log(`Fetched live data for GW${gw}`);
+      }
+
+      if (fixturesResponse.ok) {
+        const fplFixtures = await fixturesResponse.json();
+
+        // Process fixtures to extract player stats with BPS
+        // Each fixture has stats property that we need to convert to player_stats
+        fixturesData = fplFixtures.map((fixture: any) => {
+          // Get all players who played in this fixture from liveData
+          const playerStats = liveData?.elements
+            ?.filter((el: any) => {
+              const explain = el.explain || [];
+              return explain.some((exp: any) => exp.fixture === fixture.id);
+            })
+            .map((el: any) => ({
+              id: el.id,
+              bps: el.stats.bps || 0,
+              bonus: el.stats.bonus || 0,
+            })) || [];
+
+          return {
+            id: fixture.id,
+            player_stats: playerStats,
+          };
+        });
+
+        console.log(`Processed ${fixturesData.length} fixtures with player BPS data`);
       }
     } catch (error) {
       console.error('Error fetching live player data:', error);
@@ -330,7 +360,8 @@ async function fetchLiveScoresFromPicks(
           const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
 
           // Calculate score with auto-subs AND provisional bonus
-          const result = calculateLivePointsWithBonus(squad);
+          // Pass fixturesData for accurate provisional bonus calculation (all 22 players per match)
+          const result = calculateLivePointsWithBonus(squad, fixturesData);
           liveScore = result.totalPoints;
 
           // Log provisional bonus if any
