@@ -152,7 +152,7 @@
 
 /* Content */
 .content {
-  padding: 20px;
+  padding: 16px 12px;
 }
 
 .noDataMessage {
@@ -165,7 +165,7 @@
 
 /* Sections */
 .section {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .section:last-child {
@@ -173,127 +173,76 @@
 }
 
 .sectionTitle {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  letter-spacing: 0.05em;
-  margin-bottom: 12px;
+  color: #00ff87;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
   text-align: center;
+  padding: 8px;
+  background: rgba(0, 255, 135, 0.05);
+  border-bottom: 1px solid rgba(0, 255, 135, 0.2);
 }
 
-/* Stats Grid */
-.statsGrid {
+/* Two Column Layout */
+.twoColumnStat {
   display: grid;
-  gap: 12px;
-}
-
-.statCard {
-  background: rgba(255, 255, 255, 0.03);
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.statHeader {
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 12px;
-}
-
-.statRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.statValue {
-  flex: 1;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-}
-
-.statLabel {
-  flex-shrink: 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-  min-width: 60px;
-}
-
-.players {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.playersColumn {
-  flex: 1;
+.teamColumn {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  min-height: 40px;
+}
+
+.playerStatItem {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 4px 0;
+}
+
+.noData {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  padding: 4px 0;
+}
+
+/* BPS Player Items */
+.bpsPlayerItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.85rem;
+}
+
+.bpsPlayerName {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.bpsPlayerScore {
+  color: #a78bfa;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 
-.playerStat {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
-  text-align: center;
-}
-
-/* BPS List */
-.bpsList {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-}
-
-.bpsItem {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.bpsItem:last-child {
-  border-bottom: none;
-}
-
-.bpsRank {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  min-width: 24px;
-}
-
-.bpsPlayer {
-  flex: 1;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: white;
-}
-
-.bpsScore {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #a78bfa;
-  min-width: 60px;
-  text-align: right;
-}
-
-.bpsBonus {
-  font-size: 0.85rem;
-  font-weight: 500;
+.bonusBadge {
   color: #00ff87;
-  min-width: 80px;
-  text-align: right;
+  font-weight: 700;
+  font-size: 0.8rem;
 }
 
 /* Responsive */
@@ -309,24 +258,37 @@
     padding: 0;
   }
 
+  .content {
+    padding: 12px 10px;
+  }
+
   .teamName {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .score {
     font-size: 1.7rem;
   }
 
-  .statValue {
-    font-size: 1.3rem;
+  .section {
+    margin-bottom: 12px;
   }
 
-  .players {
-    flex-direction: column;
+  .sectionTitle {
+    font-size: 0.7rem;
+    padding: 6px;
   }
 
-  .playersColumn {
-    align-items: center;
+  .teamColumn {
+    padding: 10px 8px;
+  }
+
+  .playerStatItem {
+    font-size: 0.8rem;
+  }
+
+  .bpsPlayerItem {
+    font-size: 0.8rem;
   }
 }
 

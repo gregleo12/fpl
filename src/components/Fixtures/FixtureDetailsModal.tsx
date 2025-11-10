@@ -157,124 +157,171 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
 
           {hasStats && (
             <>
-              {/* Match Stats */}
-              <div className={styles.section}>
-                <h3 className={styles.sectionTitle}>MATCH STATS</h3>
-
-                <div className={styles.statsGrid}>
-                  {/* Goals */}
-                  <div className={styles.statCard}>
-                    <div className={styles.statHeader}>Goals Scored</div>
-                    <div className={styles.statRow}>
-                      <div className={styles.statValue}>{homeGoals}</div>
-                      <div className={styles.statLabel}>Goals</div>
-                      <div className={styles.statValue}>{awayGoals}</div>
+              {/* Goals Scored */}
+              {(homeGoals > 0 || awayGoals > 0) && (
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>GOALS SCORED</h3>
+                  <div className={styles.twoColumnStat}>
+                    <div className={styles.teamColumn}>
+                      {homeGoalScorers.length > 0 ? (
+                        homeGoalScorers.map(p => (
+                          <div key={p.id} className={styles.playerStatItem}>
+                            {p.name} ({p.goals_scored})
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
                     </div>
-                    {(homeGoalScorers.length > 0 || awayGoalScorers.length > 0) && (
-                      <div className={styles.players}>
-                        <div className={styles.playersColumn}>
-                          {homeGoalScorers.map(p => (
-                            <div key={p.id} className={styles.playerStat}>
-                              {p.name} ({p.goals_scored})
-                            </div>
-                          ))}
-                        </div>
-                        <div className={styles.playersColumn}>
-                          {awayGoalScorers.map(p => (
-                            <div key={p.id} className={styles.playerStat}>
-                              {p.name} ({p.goals_scored})
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className={styles.teamColumn}>
+                      {awayGoalScorers.length > 0 ? (
+                        awayGoalScorers.map(p => (
+                          <div key={p.id} className={styles.playerStatItem}>
+                            {p.name} ({p.goals_scored})
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Assists */}
-                  <div className={styles.statCard}>
-                    <div className={styles.statHeader}>Assists</div>
-                    <div className={styles.statRow}>
-                      <div className={styles.statValue}>{homeAssists}</div>
-                      <div className={styles.statLabel}>Assists</div>
-                      <div className={styles.statValue}>{awayAssists}</div>
-                    </div>
-                    {(homeAssisters.length > 0 || awayAssisters.length > 0) && (
-                      <div className={styles.players}>
-                        <div className={styles.playersColumn}>
-                          {homeAssisters.map(p => (
-                            <div key={p.id} className={styles.playerStat}>
-                              {p.name} ({p.assists})
-                            </div>
-                          ))}
-                        </div>
-                        <div className={styles.playersColumn}>
-                          {awayAssisters.map(p => (
-                            <div key={p.id} className={styles.playerStat}>
-                              {p.name} ({p.assists})
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Yellow Cards */}
-                  {(homeYellowCards > 0 || awayYellowCards > 0) && (
-                    <div className={styles.statCard}>
-                      <div className={styles.statHeader}>Yellow Cards</div>
-                      <div className={styles.statRow}>
-                        <div className={styles.statValue}>{homeYellowCards}</div>
-                        <div className={styles.statLabel}>🟨</div>
-                        <div className={styles.statValue}>{awayYellowCards}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Red Cards */}
-                  {(homeRedCards > 0 || awayRedCards > 0) && (
-                    <div className={styles.statCard}>
-                      <div className={styles.statHeader}>Red Cards</div>
-                      <div className={styles.statRow}>
-                        <div className={styles.statValue}>{homeRedCards}</div>
-                        <div className={styles.statLabel}>🟥</div>
-                        <div className={styles.statValue}>{awayRedCards}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Saves */}
-                  {(homeSaves > 0 || awaySaves > 0) && (
-                    <div className={styles.statCard}>
-                      <div className={styles.statHeader}>Saves</div>
-                      <div className={styles.statRow}>
-                        <div className={styles.statValue}>{homeSaves}</div>
-                        <div className={styles.statLabel}>🧤</div>
-                        <div className={styles.statValue}>{awaySaves}</div>
-                      </div>
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
+
+              {/* Assists */}
+              {(homeAssists > 0 || awayAssists > 0) && (
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>ASSISTS</h3>
+                  <div className={styles.twoColumnStat}>
+                    <div className={styles.teamColumn}>
+                      {homeAssisters.length > 0 ? (
+                        homeAssisters.map(p => (
+                          <div key={p.id} className={styles.playerStatItem}>
+                            {p.name} ({p.assists})
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                    <div className={styles.teamColumn}>
+                      {awayAssisters.length > 0 ? (
+                        awayAssisters.map(p => (
+                          <div key={p.id} className={styles.playerStatItem}>
+                            {p.name} ({p.assists})
+                          </div>
+                        ))
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Cards */}
+              {(homeYellowCards > 0 || awayYellowCards > 0 || homeRedCards > 0 || awayRedCards > 0) && (
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>CARDS</h3>
+                  <div className={styles.twoColumnStat}>
+                    <div className={styles.teamColumn}>
+                      {homeYellowCards > 0 && (
+                        <div className={styles.playerStatItem}>
+                          🟨 {homeYellowCards} Yellow
+                        </div>
+                      )}
+                      {homeRedCards > 0 && (
+                        <div className={styles.playerStatItem}>
+                          🟥 {homeRedCards} Red
+                        </div>
+                      )}
+                      {homeYellowCards === 0 && homeRedCards === 0 && (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                    <div className={styles.teamColumn}>
+                      {awayYellowCards > 0 && (
+                        <div className={styles.playerStatItem}>
+                          🟨 {awayYellowCards} Yellow
+                        </div>
+                      )}
+                      {awayRedCards > 0 && (
+                        <div className={styles.playerStatItem}>
+                          🟥 {awayRedCards} Red
+                        </div>
+                      )}
+                      {awayYellowCards === 0 && awayRedCards === 0 && (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Saves */}
+              {(homeSaves > 0 || awaySaves > 0) && (
+                <div className={styles.section}>
+                  <h3 className={styles.sectionTitle}>SAVES</h3>
+                  <div className={styles.twoColumnStat}>
+                    <div className={styles.teamColumn}>
+                      {homeSaves > 0 ? (
+                        <div className={styles.playerStatItem}>
+                          🧤 {homeSaves} saves
+                        </div>
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                    <div className={styles.teamColumn}>
+                      {awaySaves > 0 ? (
+                        <div className={styles.playerStatItem}>
+                          🧤 {awaySaves} saves
+                        </div>
+                      ) : (
+                        <div className={styles.noData}>-</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Bonus Points System */}
               {topBPSPlayers.length > 0 && (
                 <div className={styles.section}>
                   <h3 className={styles.sectionTitle}>BONUS POINTS SYSTEM</h3>
-                  <div className={styles.bpsList}>
-                    {topBPSPlayers.map((player, index) => (
-                      <div key={player.id} className={styles.bpsItem}>
-                        <span className={styles.bpsRank}>{index + 1}.</span>
-                        <span className={styles.bpsPlayer}>
-                          {player.name} ({getTeamName(player.team_id, fixture)})
-                        </span>
-                        <span className={styles.bpsScore}>{player.bps} BPS</span>
-                        {player.bonus > 0 && (
-                          <span className={styles.bpsBonus}>
-                            {getBonusDisplay(player.bonus)}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                  <div className={styles.twoColumnStat}>
+                    <div className={styles.teamColumn}>
+                      {homeStats
+                        .sort((a, b) => b.bps - a.bps)
+                        .slice(0, 5)
+                        .map((player) => (
+                          <div key={player.id} className={styles.bpsPlayerItem}>
+                            <span className={styles.bpsPlayerName}>{player.name}</span>
+                            <span className={styles.bpsPlayerScore}>
+                              {player.bps}
+                              {player.bonus > 0 && (
+                                <span className={styles.bonusBadge}> +{player.bonus}</span>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                    <div className={styles.teamColumn}>
+                      {awayStats
+                        .sort((a, b) => b.bps - a.bps)
+                        .slice(0, 5)
+                        .map((player) => (
+                          <div key={player.id} className={styles.bpsPlayerItem}>
+                            <span className={styles.bpsPlayerName}>{player.name}</span>
+                            <span className={styles.bpsPlayerScore}>
+                              {player.bps}
+                              {player.bonus > 0 && (
+                                <span className={styles.bonusBadge}> +{player.bonus}</span>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
                 </div>
               )}
