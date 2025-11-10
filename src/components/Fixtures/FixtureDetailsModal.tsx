@@ -136,30 +136,32 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
 
         {/* Modal header */}
         <div className={styles.modalHeader}>
-          <div className={styles.matchupRow}>
-            <span className={styles.teamName}>{fixture.home_team.short_name}</span>
-            <span className={styles.scoreDisplay}>
-              {fixture.status === 'not_started'
-                ? formatKickoffTime(fixture.kickoff_time)
-                : `${fixture.home_team.score ?? '-'}-${fixture.away_team.score ?? '-'}`
-              }
-            </span>
-            <span className={styles.teamName}>{fixture.away_team.short_name}</span>
-          </div>
           <button className={styles.closeButton} onClick={onClose}>
             ✕
           </button>
-        </div>
 
-        {/* Status Badge */}
-        <div className={styles.statusBadge}>
-          {fixture.status === 'live' ? (
-            <span className={styles.liveBadge}>🔴 LIVE</span>
-          ) : fixture.status === 'finished' ? (
-            <span className={styles.ftBadge}>FT</span>
-          ) : (
-            <span className={styles.upcomingBadge}>GW{fixture.event}</span>
-          )}
+          <div className={styles.scoreSection}>
+            <div className={styles.teamsRow}>
+              <span className={styles.teamName}>{fixture.home_team.short_name}</span>
+              <span className={styles.score}>
+                {fixture.status === 'not_started'
+                  ? formatKickoffTime(fixture.kickoff_time)
+                  : `${fixture.home_team.score ?? '-'}-${fixture.away_team.score ?? '-'}`
+                }
+              </span>
+              <span className={styles.teamName}>{fixture.away_team.short_name}</span>
+            </div>
+
+            <div className={styles.statusBadge}>
+              {fixture.status === 'live' ? (
+                <span className={styles.liveBadge}>🔴 LIVE</span>
+              ) : fixture.status === 'finished' ? (
+                <span className={styles.ftBadge}>FT</span>
+              ) : (
+                <span className={styles.upcomingBadge}>GW{fixture.event}</span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Scrollable Content */}

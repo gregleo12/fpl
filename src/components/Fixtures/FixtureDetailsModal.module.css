@@ -57,50 +57,15 @@
 
 /* Modal header */
 .modalHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  flex-shrink: 0;
   position: relative;
-}
-
-.matchupRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex: 1;
-  padding-right: 40px;
-}
-
-.teamName {
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  flex: 1;
-}
-
-.teamName:first-child {
-  text-align: left;
-}
-
-.teamName:last-child {
-  text-align: right;
-}
-
-.scoreDisplay {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  text-align: center;
-  min-width: 80px;
+  padding: 24px 20px 16px;
+  flex-shrink: 0;
 }
 
 .closeButton {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 16px;
+  right: 16px;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -113,7 +78,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  flex-shrink: 0;
+  z-index: 1;
 }
 
 .closeButton:hover {
@@ -122,16 +87,40 @@
   color: #ff0066;
 }
 
+/* Score Section - Centered */
+.scoreSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.teamsRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.teamName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
 /* Status Badge */
 .statusBadge {
   text-align: center;
-  margin-bottom: 20px;
-  flex-shrink: 0;
 }
 
 .liveBadge {
   display: inline-block;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #ef4444;
   text-transform: uppercase;
@@ -150,7 +139,7 @@
 
 .ftBadge {
   display: inline-block;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #00ff87;
   text-transform: uppercase;
@@ -159,7 +148,7 @@
 
 .upcomingBadge {
   display: inline-block;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
