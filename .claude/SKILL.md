@@ -15,13 +15,6 @@ Read this skill at the start of EVERY session, especially after:
 - Deployment workflows
 - Testing procedures
 - Common pitfalls to avoid
-
-## See Also
-- `.cursorrules` - Development rules
-- `CLAUDE_CODE_CONTEXT.md` - Detailed project context
-
----
-
 # FPL H2H Analytics - Project Context
 
 Last Updated: 2025-11-09
@@ -46,7 +39,8 @@ Last Updated: 2025-11-09
 - `/src/lib/fpl-calculations.ts` - Auto-subs + bonus calculations (CORE LOGIC)
 - `/src/lib/liveMatch.ts` - Live match data processing
 - `/src/app/api/league/[id]/route.ts` - Main league API
-- `/src/app/api/league/[id]/fixtures/[gw]/route.ts` - Fixtures API
+- `/src/app/api/league/[id]/fixtures/[gw]/route.ts` - Fixtures API with live scores
+- `/src/app/api/league/[id]/stats/route.ts` - Stats/rankings API with live calculations
 - `/src/components/Fixtures/LiveMatchModal.tsx` - Live match UI
 - `/src/components/Fixtures/FixturesTab.tsx` - Fixture cards
 
@@ -70,20 +64,28 @@ Last Updated: 2025-11-09
 - **Solution**: Added pool config (max: 10) + SIGTERM handlers
 - **Prevention**: Always use connection pooling
 
-### 🔧 IN PROGRESS: Auto-Substitution (v1.6.0+)
-- **Status**: Core logic working, UI showing substitutions
-- **Location**: `fpl-calculations.ts` → `applyAutoSubstitutions()`
+### ✅ FIXED: Auto-Substitution (v1.6.0-1.7.9)
+- **Problem**: Needed automatic substitution for non-playing players
+- **Solution**: Implemented in `fpl-calculations.ts` → `applyAutoSubstitutions()`
 - **Rules**:
   - Only for non-Bench Boost teams
   - Process bench in order (1st → 2nd → 3rd)
   - Skip non-playing bench (0 minutes)
   - Maintain formation (3+ DEF, 2+ MID, 1+ FWD)
+- **Status**: ✅ Working in fixtures API, live match modal, and rankings
 
-### 🔧 IN PROGRESS: Provisional Bonus (v1.7.0+)
-- **Status**: Calculations working, but giving bonus to wrong players
-- **Location**: `fpl-calculations.ts` → `calculateProvisionalBonus()`
-- **CRITICAL BUG**: Not grouping by fixture properly
-- **Must Fix**: Only top 3 BPS PER MATCH get bonus (not per team, not global)
+### ✅ FIXED: Provisional Bonus Issues (v1.7.0-1.7.7)
+- **Problem**: Bonus calculations giving incorrect points to players
+- **Root Cause**: Cannot calculate provisional bonus accurately - only have BPS for user's players, not all 22 in match
+- **Solution**: Removed all provisional bonus calculations, only use official bonus from FPL API
+- **Location**: `fpl-calculations.ts` and `liveMatch.ts`
+- **Never Do**: Try to calculate provisional bonus without complete match data
+
+### ✅ FIXED: Live Rankings Not Updating (v1.7.8)
+- **Problem**: Rankings in LIVE mode didn't reflect live fixture scores
+- **Root Cause**: Stats API using `entry_history.points` which doesn't include auto-substitutions
+- **Solution**: Added `calculateLiveScoreWithAutoSubs` helper to stats API
+- **Location**: `/src/app/api/league/[id]/stats/route.ts`
 
 ## Deployment Process
 
@@ -99,7 +101,7 @@ git push --tags
 
 ### Emergency Rollback
 ```bash
-git log --oneline -10      # Find last good commit
+git log --online -10      # Find last good commit
 git revert <commit-hash>   # Or git reset --hard
 git push --force           # Deploy rollback
 ```
@@ -154,6 +156,13 @@ git push --force           # Deploy rollback
 - v1.5.18 - Fixed database connection pooling
 - v1.6.0 - Implemented auto-substitution
 - v1.7.0 - Added provisional bonus (needs bug fixes)
+- v1.7.3 - Changed bonus display format (underlined total)
+- v1.7.4 - Fixed double-counting of official bonus
+- v1.7.5 - Added debug logging for bonus calculation
+- v1.7.6 - Removed incorrect provisional bonus for differentials
+- v1.7.7 - Removed all provisional bonus calculations
+- v1.7.8 - Fixed live rankings to calculate with auto-substitutions
+- v1.7.9 - Removed debug logging, added context files
 
 ## Questions to Ask When Unsure
 
