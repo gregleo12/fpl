@@ -116,37 +116,50 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.header}>
-          <div className={styles.matchHeader}>
-            <div className={styles.team}>
-              <span className={styles.teamName}>{fixture.home_team.name}</span>
-            </div>
-            <div className={styles.scoreBox}>
-              <div className={styles.score}>
-                {fixture.home_team.score ?? '-'} : {fixture.away_team.score ?? '-'}
-              </div>
-              {fixture.status === 'live' && (
-                <div className={styles.liveIndicator}>
-                  <span className={styles.liveDot}></span>
-                  {fixture.minutes}'
-                </div>
-              )}
-              {fixture.status === 'finished' && (
-                <div className={styles.statusBadge}>FT</div>
-              )}
-            </div>
-            <div className={styles.team}>
-              <span className={styles.teamName}>{fixture.away_team.name}</span>
-            </div>
+        {/* Drag handle */}
+        <div className={styles.dragHandle}></div>
+
+        {/* Modal header */}
+        <div className={styles.modalHeader}>
+          <div className={styles.headerBadge}>
+            {fixture.status === 'live' ? (
+              <>
+                <span className={styles.liveIndicator}>🔴</span>
+                <span className={styles.modalTitle}>LIVE (GW{fixture.event})</span>
+              </>
+            ) : fixture.status === 'finished' ? (
+              <>
+                <span className={styles.completedIndicator}>✓</span>
+                <span className={styles.modalTitle}>COMPLETED (GW{fixture.event})</span>
+              </>
+            ) : (
+              <span className={styles.modalTitle}>GW{fixture.event}</span>
+            )}
           </div>
           <button className={styles.closeButton} onClick={onClose}>
             ✕
           </button>
         </div>
 
-        {/* Content */}
-        <div className={styles.content}>
+        {/* Score Section */}
+        <div className={styles.scoreSection}>
+          <div className={styles.scoreDisplay}>
+            <div className={styles.teamScore}>
+              <div className={styles.teamName}>{fixture.home_team.short_name}</div>
+              <div className={styles.score}>{fixture.home_team.score ?? '-'}</div>
+            </div>
+
+            <div className={styles.vsLabel}>vs</div>
+
+            <div className={styles.teamScore}>
+              <div className={styles.teamName}>{fixture.away_team.short_name}</div>
+              <div className={styles.score}>{fixture.away_team.score ?? '-'}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className={styles.scrollableContent}>
           {!hasStats && (
             <div className={styles.noDataMessage}>
               {fixture.status === 'not_started'

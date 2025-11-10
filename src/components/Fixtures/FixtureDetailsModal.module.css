@@ -1,149 +1,117 @@
-/* Modal Overlay */
+/* Modal Overlay - Bottom drawer style */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 0.2s ease-out;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Modal Container */
+/* Modal Container - Drawer from bottom */
 .modal {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.98) 100%);
-  border: 1px solid rgba(147, 51, 234, 0.3);
-  border-radius: 16px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.3s ease-out;
+  max-height: 85vh;
+  overflow: hidden;
+  padding: 20px;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
-    opacity: 0;
+    transform: translateY(100%);
   }
   to {
     transform: translateY(0);
-    opacity: 1;
   }
 }
 
-/* Header */
-.header {
-  position: sticky;
-  top: 0;
-  background: rgba(17, 24, 39, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  z-index: 10;
+/* Drag handle */
+.dragHandle {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  margin: 0 auto 16px auto;
 }
 
-.matchHeader {
+/* Modal header */
+.modalHeader {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.team {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
-.teamName {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-}
-
-.scoreBox {
+.headerBadge {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 }
 
-.score {
-  font-size: 2rem;
+.modalTitle {
+  font-size: 1.125rem;
   font-weight: 700;
-  color: white;
+  color: #ff2882;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
 }
 
 .liveIndicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #ef4444;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.liveDot {
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
+  font-size: 0.875rem;
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
-    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(1.2);
+    opacity: 0.6;
   }
 }
 
-.statusBadge {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.85rem;
-  font-weight: 600;
+.completedIndicator {
+  font-size: 1.25rem;
+  color: #00ff87;
 }
 
 .closeButton {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   width: 32px;
   height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  color: white;
-  font-size: 1.2rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .closeButton:hover {
@@ -152,9 +120,63 @@
   color: #ff0066;
 }
 
-/* Content */
-.content {
-  padding: 16px;
+/* Score Section */
+.scoreSection {
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+.scoreDisplay {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.teamScore {
+  flex: 1;
+  text-align: center;
+}
+
+.teamName {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #00ff87;
+}
+
+.vsLabel {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Scrollable Content */
+.scrollableContent {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  flex: 1;
+  min-height: 0;
+  padding-top: 20px;
+  margin-top: -20px;
+}
+
+.scrollableContent > *:first-child {
+  margin-top: 20px;
 }
 
 .noDataMessage {
@@ -165,17 +187,9 @@
   line-height: 1.6;
 }
 
-/* Section Card */
+/* Section */
 .section {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.section:last-child {
-  margin-bottom: 0;
+  margin-bottom: 24px;
 }
 
 .sectionTitle {
@@ -186,6 +200,10 @@
   margin-bottom: 12px;
   text-align: center;
   text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Two Column Layout */
@@ -196,10 +214,13 @@
 }
 
 .teamColumn {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 40px;
 }
 
 .playerStatItem {
@@ -265,38 +286,28 @@
   border: 1px solid rgba(0, 255, 135, 0.3);
 }
 
-/* Responsive */
+/* Mobile Responsive */
 @media (max-width: 768px) {
   .modal {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
-    height: 100%;
+    padding: 16px;
+    max-height: 90vh;
   }
 
-  .overlay {
-    padding: 0;
-  }
-
-  .content {
-    padding: 12px;
-  }
-
-  .teamName {
-    font-size: 0.95rem;
+  .scoreDisplay {
+    padding: 16px;
+    gap: 12px;
   }
 
   .score {
-    font-size: 1.7rem;
+    font-size: 1.75rem;
   }
 
-  .section {
-    margin-bottom: 10px;
+  .teamName {
+    font-size: 0.8125rem;
+  }
+
+  .teamColumn {
     padding: 12px;
-  }
-
-  .sectionTitle {
-    font-size: 0.75rem;
   }
 
   .playerStatItem {
@@ -318,21 +329,25 @@
   }
 }
 
-/* Scrollbar Styling */
-.modal::-webkit-scrollbar {
-  width: 8px;
-}
+@media (max-width: 480px) {
+  .modal {
+    padding: 12px;
+  }
 
-.modal::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-}
+  .modalTitle {
+    font-size: 1rem;
+  }
 
-.modal::-webkit-scrollbar-thumb {
-  background: rgba(147, 51, 234, 0.5);
-  border-radius: 4px;
-}
+  .scoreDisplay {
+    padding: 12px;
+    gap: 8px;
+  }
 
-.modal::-webkit-scrollbar-thumb:hover {
-  background: rgba(147, 51, 234, 0.7);
+  .score {
+    font-size: 1.5rem;
+  }
+
+  .section {
+    margin-bottom: 20px;
+  }
 }
