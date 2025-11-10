@@ -55,6 +55,8 @@ Last Updated: 2025-11-10
 3. Store in PostgreSQL
 4. Display in UI (fixture cards + modal)
 
+**Note**: During live gameweeks, H2H fixture scores include provisional bonus calculated from complete fixture BPS data (all 22 players per match).
+
 #### Stats Hub (Two-Stage Loading)
 1. **Stage 1**: `/api/league/[id]/stats` → Get current GW info (maxGW, activeGW)
 2. **Stage 2**: `/api/league/[id]/stats/gameweek/[gw]` → Get detailed stats
@@ -87,15 +89,17 @@ Last Updated: 2025-11-10
 - **Status**: ✅ Working in fixtures API, live match modal, and rankings
 
 ### ✅ FIXED: Provisional Bonus Calculation (v1.9.8)
-- **Problem**: Could not calculate provisional bonus accurately with only user's squad data
-- **Root Cause**: Need BPS data for ALL 22 players in each match, not just user's 15 players
-- **Solution**:
-  - Fetch complete fixtures data from FPL API with all players' BPS
-  - Compare each user's player against ALL 22 players in their specific fixture
-  - Award bonus only if player is in top 3 BPS of complete match
-- **Implementation**: `calculateProvisionalBonusFromFixtures()` in `fpl-calculations.ts`
-- **Location**: `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
-- **Key Rule**: Always compare against complete match data (all 22 players), never just squad data
+- **Problem**: Old logic (v1.9.7) only compared user's 15 players, not all 22 in match
+- **Root Cause**: Didn't fetch complete fixtures data with ALL players' BPS per match
+- **Solution**: Created `calculateProvisionalBonusFromFixtures()` that fetches fixtures data
+- **How It Works**:
+  - Fetches fixtures from FPL API during live gameweeks
+  - Extracts ALL players' BPS for each match (not just user's squad)
+  - Groups by fixtureId, sorts by BPS descending
+  - Awards 3/2/1 bonus to top 3 BPS per match
+- **Location**: `/src/lib/fpl-calculations.ts` and `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
+- **Testing**: Verify against official FPL fixture details modal during live gameweeks
+- **Never Do**: Calculate bonus without complete fixture data (all 22 players)
 
 ### ✅ FIXED: Live Rankings Not Updating (v1.7.8)
 - **Problem**: Rankings in LIVE mode didn't reflect live fixture scores
