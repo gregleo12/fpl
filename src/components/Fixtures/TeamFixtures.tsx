@@ -34,12 +34,14 @@ interface Fixture {
     id: number;
     name: string;
     short_name: string;
+    code: number;
     score: number | null;
   };
   away_team: {
     id: number;
     name: string;
     short_name: string;
+    code: number;
     score: number | null;
   };
   status: 'finished' | 'live' | 'not_started';
@@ -117,31 +119,8 @@ export function TeamFixtures({ gameweek }: Props) {
     });
   }
 
-  function getTeamAbbreviation(shortName: string): string {
-    // Convert team short names to 3-letter abbreviations
-    const abbrevMap: { [key: string]: string } = {
-      'Arsenal': 'ARS',
-      'Aston Villa': 'AVL',
-      'Bournemouth': 'BOU',
-      'Brentford': 'BRE',
-      'Brighton': 'BHA',
-      'Chelsea': 'CHE',
-      'Crystal Palace': 'CRY',
-      'Everton': 'EVE',
-      'Fulham': 'FUL',
-      'Ipswich': 'IPS',
-      'Leicester': 'LEI',
-      'Liverpool': 'LIV',
-      'Man City': 'MCI',
-      'Man Utd': 'MUN',
-      'Newcastle': 'NEW',
-      "Nott'm Forest": 'NFO',
-      'Southampton': 'SOU',
-      'Spurs': 'TOT',
-      'West Ham': 'WHU',
-      'Wolves': 'WOL'
-    };
-    return abbrevMap[shortName] || shortName.substring(0, 3).toUpperCase();
+  function getTeamBadgeUrl(teamCode: number): string {
+    return `https://resources.premierleague.com/premierleague/badges/t${teamCode}.png`;
   }
 
   if (loading) {
@@ -186,8 +165,16 @@ export function TeamFixtures({ gameweek }: Props) {
                 <div className={styles.fixtureContent}>
                   {/* Home Team */}
                   <div className={styles.homeTeam}>
-                    <div className={styles.teamAbbr}>{getTeamAbbreviation(fixture.home_team.short_name)}</div>
-                    <div className={styles.teamFullName}>{fixture.home_team.short_name}</div>
+                    <span className={styles.teamName}>{fixture.home_team.short_name}</span>
+                    <img
+                      src={getTeamBadgeUrl(fixture.home_team.code)}
+                      alt={fixture.home_team.short_name}
+                      className={styles.teamBadge}
+                      onError={(e) => {
+                        // Fallback to colored shirt emoji if image fails
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
                   </div>
 
                   {/* Score/Status */}
@@ -215,8 +202,15 @@ export function TeamFixtures({ gameweek }: Props) {
 
                   {/* Away Team */}
                   <div className={styles.awayTeam}>
-                    <div className={styles.teamAbbr}>{getTeamAbbreviation(fixture.away_team.short_name)}</div>
-                    <div className={styles.teamFullName}>{fixture.away_team.short_name}</div>
+                    <img
+                      src={getTeamBadgeUrl(fixture.away_team.code)}
+                      alt={fixture.away_team.short_name}
+                      className={styles.teamBadge}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                    <span className={styles.teamName}>{fixture.away_team.short_name}</span>
                   </div>
                 </div>
               </div>
