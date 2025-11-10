@@ -1,0 +1,152 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.loading,
+.error,
+.empty {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+/* Fixture Card */
+.fixtureCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.fixtureCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.liveCard {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+/* Status Badge */
+.statusBadge {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.statusFinished {
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.statusLive {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 4px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.statusNotStarted {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+}
+
+/* Match Info */
+.matchInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.team:first-child {
+  justify-content: flex-end;
+}
+
+.team:last-child {
+  justify-content: flex-start;
+}
+
+.teamName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-align: center;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .fixtureCard {
+    padding: 14px;
+  }
+
+  .teamName {
+    font-size: 0.9rem;
+  }
+
+  .score {
+    font-size: 1.3rem;
+    min-width: 50px;
+  }
+
+  .statusBadge {
+    font-size: 0.8rem;
+  }
+}

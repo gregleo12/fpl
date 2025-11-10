@@ -9,6 +9,7 @@ import { StateBadge } from './StateBadge';
 import { LiveMatchModal } from './LiveMatchModal';
 import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
+import { TeamFixtures } from './TeamFixtures';
 
 interface Match {
   id: number;
@@ -675,13 +676,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
       {/* TEAM FIXTURES TAB CONTENT */}
       {activeTab === 'fixtures' && (
-        <div className={styles.matchesContainer}>
-          <div className={styles.placeholderMessage}>
-            Team Fixtures coming soon...
-            <br />
-            <small>Premier League fixtures for GW {currentGW}</small>
-          </div>
-        </div>
+        <TeamFixtures gameweek={currentGW} />
       )}
 
       {/* MODAL (Mobile) */}
