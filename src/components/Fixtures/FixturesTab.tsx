@@ -180,7 +180,17 @@ function getChipAbbreviation(chip: string | null): string {
 }
 
 export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Props) {
-  const [currentGW, setCurrentGW] = useState(defaultGW);
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'h2h' | 'fixtures'>('h2h');
+
+  // Independent gameweek states for each tab
+  const [h2hGameweek, setH2HGameweek] = useState(defaultGW);
+  const [fixturesGameweek, setFixturesGameweek] = useState(defaultGW);
+
+  // Use currentGW based on active tab
+  const currentGW = activeTab === 'h2h' ? h2hGameweek : fixturesGameweek;
+  const setCurrentGW = activeTab === 'h2h' ? setH2HGameweek : setFixturesGameweek;
+
   const [fixturesData, setFixturesData] = useState<FixturesData | null>(null);
   const [insights, setInsights] = useState<OpponentInsights | null>(null);
   const [loading, setLoading] = useState(true);
@@ -226,7 +236,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         // Priority 1: Find live GW
         const liveGW = validResults.find(r => r.status === 'in_progress');
         if (liveGW) {
-          setCurrentGW(liveGW.gw);
+          setH2HGameweek(liveGW.gw);
+          setFixturesGameweek(liveGW.gw);
           setInitialGWSet(true);
           return;
         }
@@ -236,7 +247,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         if (upcomingGWs.length > 0) {
           // Sort by proximity to defaultGW
           upcomingGWs.sort((a, b) => Math.abs(a.gw - defaultGW) - Math.abs(b.gw - defaultGW));
-          setCurrentGW(upcomingGWs[0].gw);
+          setH2HGameweek(upcomingGWs[0].gw);
+          setFixturesGameweek(upcomingGWs[0].gw);
           setInitialGWSet(true);
           return;
         }
@@ -428,6 +440,22 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   return (
     <div className={styles.container}>
+      {/* Sub-tabs: H2H Matches | Team Fixtures */}
+      <div className={styles.subTabsContainer}>
+        <button
+          className={`${styles.subTab} ${activeTab === 'h2h' ? styles.subTabActive : ''}`}
+          onClick={() => setActiveTab('h2h')}
+        >
+          ⚔️ H2H Matches
+        </button>
+        <button
+          className={`${styles.subTab} ${activeTab === 'fixtures' ? styles.subTabActive : ''}`}
+          onClick={() => setActiveTab('fixtures')}
+        >
+          ⚽ Team Fixtures
+        </button>
+      </div>
+
       {/* Gameweek Navigator - Compact Horizontal Layout */}
       <div className={styles.navigatorWrapper}>
         <div className={styles.navigator}>
@@ -503,8 +531,11 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         </div>
       )}
 
-      {/* Matches */}
-      <div className={styles.matchesContainer}>
+      {/* H2H MATCHES TAB CONTENT */}
+      {activeTab === 'h2h' && (
+        <>
+          {/* Matches */}
+          <div className={styles.matchesContainer}>
         {fixturesData.matches
           .sort((a, b) => {
             // Sort user's match to the top
@@ -638,7 +669,20 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             </div>
           );
         })}
-      </div>
+          </div>
+        </>
+      )}
+
+      {/* TEAM FIXTURES TAB CONTENT */}
+      {activeTab === 'fixtures' && (
+        <div className={styles.matchesContainer}>
+          <div className={styles.placeholderMessage}>
+            Team Fixtures coming soon...
+            <br />
+            <small>Premier League fixtures for GW {currentGW}</small>
+          </div>
+        </div>
+      )}
 
       {/* MODAL (Mobile) */}
       {showModal && modalData && (
