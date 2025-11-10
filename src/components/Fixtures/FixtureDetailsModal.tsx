@@ -9,6 +9,7 @@ interface PlayerStat {
   team_id: number;
   bps: number;
   bonus: number;
+  defensive_contribution: number;
   goals_scored: number;
   assists: number;
   yellow_cards: number;
@@ -91,18 +92,6 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
   const awayRedCards = awayStats.reduce((sum, p) => sum + p.red_cards, 0);
   const homeSaves = homeStats.reduce((sum, p) => sum + p.saves, 0);
   const awaySaves = awayStats.reduce((sum, p) => sum + p.saves, 0);
-
-  // Defensive stats
-  const homeCleanSheets = homeStats.reduce((sum, p) => sum + p.clean_sheets, 0);
-  const awayCleanSheets = awayStats.reduce((sum, p) => sum + p.clean_sheets, 0);
-  const homeGoalsConceded = homeStats.reduce((sum, p) => sum + p.goals_conceded, 0);
-  const awayGoalsConceded = awayStats.reduce((sum, p) => sum + p.goals_conceded, 0);
-  const homeOwnGoals = homeStats.reduce((sum, p) => sum + p.own_goals, 0);
-  const awayOwnGoals = awayStats.reduce((sum, p) => sum + p.own_goals, 0);
-  const homePenaltiesSaved = homeStats.reduce((sum, p) => sum + p.penalties_saved, 0);
-  const awayPenaltiesSaved = awayStats.reduce((sum, p) => sum + p.penalties_saved, 0);
-  const homePenaltiesMissed = homeStats.reduce((sum, p) => sum + p.penalties_missed, 0);
-  const awayPenaltiesMissed = awayStats.reduce((sum, p) => sum + p.penalties_missed, 0);
 
   // Get goal scorers
   const homeGoalScorers = homeStats.filter(p => p.goals_scored > 0);
@@ -357,67 +346,41 @@ export function FixtureDetailsModal({ fixture, onClose }: Props) {
               )}
 
               {/* Defensive Contribution */}
-              {(homeCleanSheets > 0 || awayCleanSheets > 0 || homeGoalsConceded > 0 || awayGoalsConceded > 0 || homeOwnGoals > 0 || awayOwnGoals > 0 || homePenaltiesSaved > 0 || awayPenaltiesSaved > 0 || homePenaltiesMissed > 0 || awayPenaltiesMissed > 0) && (
+              {hasStats && (homeStats.some(p => p.defensive_contribution > 0) || awayStats.some(p => p.defensive_contribution > 0)) && (
                 <div className={styles.section}>
                   <h3 className={styles.sectionTitle}>DEFENSIVE CONTRIBUTION</h3>
                   <div className={styles.twoColumnStat}>
                     <div className={styles.teamColumn}>
-                      {homeCleanSheets > 0 && (
-                        <div className={styles.playerStatItem}>
-                          🛡️ {homeCleanSheets} Clean sheet{homeCleanSheets > 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {homeGoalsConceded > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ⚠️ {homeGoalsConceded} Goal{homeGoalsConceded > 1 ? 's' : ''} conceded
-                        </div>
-                      )}
-                      {homeOwnGoals > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ❌ {homeOwnGoals} Own goal{homeOwnGoals > 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {homePenaltiesSaved > 0 && (
-                        <div className={styles.playerStatItem}>
-                          💪 {homePenaltiesSaved} Pen{homePenaltiesSaved > 1 ? 's' : ''} saved
-                        </div>
-                      )}
-                      {homePenaltiesMissed > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ❌ {homePenaltiesMissed} Pen{homePenaltiesMissed > 1 ? 's' : ''} missed
-                        </div>
-                      )}
-                      {homeCleanSheets === 0 && homeGoalsConceded === 0 && homeOwnGoals === 0 && homePenaltiesSaved === 0 && homePenaltiesMissed === 0 && (
+                      {homeStats
+                        .filter(p => p.defensive_contribution > 0)
+                        .sort((a, b) => b.defensive_contribution - a.defensive_contribution)
+                        .slice(0, 5)
+                        .map((player) => (
+                          <div key={player.id} className={styles.bpsPlayerItem}>
+                            <span className={styles.bpsPlayerName}>{player.name}</span>
+                            <span className={styles.bpsPlayerScore}>
+                              {player.defensive_contribution}
+                            </span>
+                          </div>
+                        ))}
+                      {!homeStats.some(p => p.defensive_contribution > 0) && (
                         <div className={styles.noData}>-</div>
                       )}
                     </div>
                     <div className={styles.teamColumn}>
-                      {awayCleanSheets > 0 && (
-                        <div className={styles.playerStatItem}>
-                          🛡️ {awayCleanSheets} Clean sheet{awayCleanSheets > 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {awayGoalsConceded > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ⚠️ {awayGoalsConceded} Goal{awayGoalsConceded > 1 ? 's' : ''} conceded
-                        </div>
-                      )}
-                      {awayOwnGoals > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ❌ {awayOwnGoals} Own goal{awayOwnGoals > 1 ? 's' : ''}
-                        </div>
-                      )}
-                      {awayPenaltiesSaved > 0 && (
-                        <div className={styles.playerStatItem}>
-                          💪 {awayPenaltiesSaved} Pen{awayPenaltiesSaved > 1 ? 's' : ''} saved
-                        </div>
-                      )}
-                      {awayPenaltiesMissed > 0 && (
-                        <div className={styles.playerStatItem}>
-                          ❌ {awayPenaltiesMissed} Pen{awayPenaltiesMissed > 1 ? 's' : ''} missed
-                        </div>
-                      )}
-                      {awayCleanSheets === 0 && awayGoalsConceded === 0 && awayOwnGoals === 0 && awayPenaltiesSaved === 0 && awayPenaltiesMissed === 0 && (
+                      {awayStats
+                        .filter(p => p.defensive_contribution > 0)
+                        .sort((a, b) => b.defensive_contribution - a.defensive_contribution)
+                        .slice(0, 5)
+                        .map((player) => (
+                          <div key={player.id} className={styles.bpsPlayerItem}>
+                            <span className={styles.bpsPlayerName}>{player.name}</span>
+                            <span className={styles.bpsPlayerScore}>
+                              {player.defensive_contribution}
+                            </span>
+                          </div>
+                        ))}
+                      {!awayStats.some(p => p.defensive_contribution > 0) && (
                         <div className={styles.noData}>-</div>
                       )}
                     </div>

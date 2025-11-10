@@ -10,6 +10,7 @@ interface PlayerStat {
   team_id: number;
   bps: number;
   bonus: number;
+  defensive_contribution: number;
   goals_scored: number;
   assists: number;
   yellow_cards: number;

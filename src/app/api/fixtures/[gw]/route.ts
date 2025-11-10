@@ -84,6 +84,7 @@ export async function GET(
               team_id: player?.team || 0,
               bps: el.stats.bps || 0,
               bonus: el.stats.bonus || 0,
+              defensive_contribution: el.stats.defensive_contribution || 0,
               goals_scored: stats.find((s: any) => s.identifier === 'goals_scored')?.value || 0,
               assists: stats.find((s: any) => s.identifier === 'assists')?.value || 0,
               yellow_cards: stats.find((s: any) => s.identifier === 'yellow_cards')?.value || 0,
