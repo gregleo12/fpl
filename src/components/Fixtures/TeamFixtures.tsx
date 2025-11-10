@@ -166,7 +166,6 @@ export function TeamFixtures({ gameweek }: Props) {
                 <div className={styles.fixtureContent}>
                   {/* Home Team */}
                   <div className={styles.homeTeam}>
-                    <span className={styles.teamName}>{fixture.home_team.short_name}</span>
                     <img
                       src={getTeamBadgeUrl(fixture.home_team.code)}
                       alt={fixture.home_team.short_name}
@@ -176,6 +175,7 @@ export function TeamFixtures({ gameweek }: Props) {
                         e.currentTarget.style.display = 'none';
                       }}
                     />
+                    <span className={styles.teamName}>{fixture.home_team.short_name}</span>
                   </div>
 
                   {/* Score/Status */}
@@ -203,6 +203,7 @@ export function TeamFixtures({ gameweek }: Props) {
 
                   {/* Away Team */}
                   <div className={styles.awayTeam}>
+                    <span className={styles.teamName}>{fixture.away_team.short_name}</span>
                     <img
                       src={getTeamBadgeUrl(fixture.away_team.code)}
                       alt={fixture.away_team.short_name}
@@ -211,7 +212,6 @@ export function TeamFixtures({ gameweek }: Props) {
                         e.currentTarget.style.display = 'none';
                       }}
                     />
-                    <span className={styles.teamName}>{fixture.away_team.short_name}</span>
                   </div>
                 </div>
               </div>
