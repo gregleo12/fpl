@@ -76,6 +76,7 @@ export default function StatsTab({ leagueId, myTeamId }: StatsTabProps) {
       leagueId={leagueId}
       currentGW={currentGW}
       maxGW={maxGW}
+      isCurrentGWLive={leagueData.isCurrentGWLive || false}
     />
   );
 }

@@ -73,9 +73,10 @@ interface Props {
   leagueId: string;
   currentGW: number;
   maxGW: number;
+  isCurrentGWLive: boolean;
 }
 
-export function StatsHub({ leagueId, currentGW, maxGW }: Props) {
+export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props) {
   const [view, setView] = useState<ViewType>('gameweek');
   const [selectedGW, setSelectedGW] = useState(currentGW);
   const [stats, setStats] = useState<GameweekStats | null>(null);
@@ -144,7 +145,7 @@ export function StatsHub({ leagueId, currentGW, maxGW }: Props) {
             <div className={styles.gwDisplay}>
               <span className={styles.gwLabel}>GW</span>
               <span className={styles.gwNumber}>{selectedGW}</span>
-              {selectedGW === currentGW && (
+              {selectedGW === currentGW && isCurrentGWLive && (
                 <span className={styles.liveBadge}>LIVE</span>
               )}
             </div>

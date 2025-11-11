@@ -147,7 +147,7 @@ async function calculateChipLeaderboard(
       AND hm2.league_id = $1
       AND hm2.event = ANY($2)
       AND hm2.active_chip_2 IS NOT NULL
-    WHERE hm1.entry_id IS NOT NULL OR hm2.entry_id IS NOT NULL
+    WHERE hm1.entry_1_id IS NOT NULL OR hm2.entry_2_id IS NOT NULL
   `, [leagueId, gameweeks]);
 
   // Aggregate chip points by manager
