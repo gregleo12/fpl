@@ -31,6 +31,7 @@ export async function GET(
 
     if (completedGameweeks.length === 0) {
       return NextResponse.json({
+        completedGameweeks: 0,
         leaderboards: {
           captainPoints: [],
           chipPerformance: [],
