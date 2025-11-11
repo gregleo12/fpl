@@ -317,7 +317,7 @@ async function calculateTrendsData(
 
   const scores = scoresData.rows.map((row: any) => ({
     gameweek: row.event,
-    average: parseFloat(row.avg_score?.toFixed(1) || '0'),
+    average: parseFloat((parseFloat(row.avg_score) || 0).toFixed(1)),
     highest: row.max_score || 0,
     lowest: row.min_score || 0,
   }));
