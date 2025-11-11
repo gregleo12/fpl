@@ -12,7 +12,7 @@ export function CaptainPicks({ data }: Props) {
     return (
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>⭐ Captain Picks</h3>
-        <div className={styles.noData}>No captain data available</div>
+        <div className={styles.noData}>Data not available - visit Rankings to sync</div>
       </div>
     );
   }

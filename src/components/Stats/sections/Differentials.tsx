@@ -12,7 +12,7 @@ export function Differentials({ data }: Props) {
     return (
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>💎 Differentials</h3>
-        <div className={styles.noData}>No differentials this gameweek</div>
+        <div className={styles.noData}>Data not available - visit Rankings to sync</div>
       </div>
     );
   }

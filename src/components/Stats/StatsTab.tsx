@@ -65,7 +65,10 @@ export default function StatsTab({ leagueId, myTeamId }: StatsTabProps) {
     return null;
   }
 
-  const currentGW = leagueData.activeGW || leagueData.maxGW || 1;
+  // Only show GW as "current" if it's actually live OR it's the last completed GW
+  const currentGW = leagueData.isCurrentGWLive
+    ? leagueData.liveGameweekNumber
+    : leagueData.activeGW || 1;
   const maxGW = leagueData.maxGW || 1;
 
   return (

@@ -615,8 +615,8 @@ export async function GET(
     const league = leagueResult.rows[0];
 
     // Determine the "active" GW (current or next upcoming)
-    // This is what Fixtures should default to
-    const activeGW = Math.min(maxCompletedGW + 1, maxGW);
+    // Only show as active if gameweek is actually live
+    const activeGW = isCurrentGWLive ? liveGameweekNumber : maxCompletedGW;
 
     const response = NextResponse.json({
       league,
@@ -625,7 +625,9 @@ export async function GET(
       currentGW,
       maxGW,
       activeGW,
-      isLive: mode === 'live' // Return the mode we're currently viewing, not the gameweek status
+      isCurrentGWLive, // NEW - actual live status from FPL API
+      liveGameweekNumber, // NEW - which GW is live
+      isLive: mode === 'live' // Keep for backwards compatibility
     });
 
     // Prevent caching to ensure fresh data

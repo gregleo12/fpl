@@ -19,7 +19,7 @@ export function ChipsPlayed({ data }: Props) {
     return (
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>🎮 Chips Played</h3>
-        <div className={styles.noData}>No chips played this gameweek</div>
+        <div className={styles.noData}>Chip data not synced yet - visit Rankings tab to refresh</div>
       </div>
     );
   }

@@ -12,7 +12,7 @@ export function GameweekWinners({ data }: Props) {
     return (
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>🏆 Gameweek Winners</h3>
-        <div className={styles.noData}>No winner data available</div>
+        <div className={styles.noData}>Data not available - visit Rankings to sync</div>
       </div>
     );
   }
