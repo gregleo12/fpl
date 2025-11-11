@@ -35,3 +35,11 @@ Before ANY task, read `CLAUDE_CODE_CONTEXT.md` for:
 1. Read CLAUDE_CODE_CONTEXT.md
 2. Check `git log --oneline -10` for recent changes
 3. Review any open issues from last session
+
+## Version Numbering (CRITICAL)
+- Major (X.0.0): Breaking changes, redesigns
+- Minor (0.X.0): New features, new components
+- Patch (0.0.X): Bug fixes, small improvements
+- ALWAYS: npm version [type] before git push
+- ALWAYS: Include (vX.Y.Z) in commit message
+- NEVER: Push without version bump

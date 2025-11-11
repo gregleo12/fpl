@@ -109,6 +109,76 @@ git revert <commit-hash>   # Or git reset --hard
 git push --force           # Deploy rollback
 ```
 
+## Version Numbering Rules
+
+ALWAYS follow semantic versioning (X.Y.Z format):
+
+### Major Version (X.0.0) - Breaking Changes
+Examples:
+- Complete redesign of a core feature
+- Database schema changes
+- API endpoint changes that break existing calls
+- Removing features entirely
+
+### Minor Version (0.X.0) - New Features
+Examples:
+- Adding new tabs/sections (Stats Hub, Team Fixtures)
+- New API endpoints
+- New components with significant functionality
+- Multi-component features
+
+### Patch Version (0.0.X) - Bug Fixes & Small Updates
+Examples:
+- Fixing bugs (provisional bonus calculation)
+- UI tweaks (button positioning, colors)
+- Text changes
+- Small improvements to existing features
+- Performance optimizations
+
+### Version Bump Workflow
+
+ALWAYS include version in commit messages:
+```bash
+# 1. Make your changes
+# 2. Determine version type (major/minor/patch)
+# 3. Bump version
+npm version patch  # or minor, or major
+# 4. Commit with version in message
+git commit -m "Fix navigation bug (v1.11.1)"
+# 5. Push
+git push
+```
+
+### Recent Version History Examples:
+- v1.11.0 - Added Season Stats (MINOR - new feature)
+- v1.10.0 - Added Stats Hub (MINOR - new feature)
+- v1.9.8 - Fixed provisional bonus (PATCH - bug fix)
+- v1.9.7 - Re-implemented bonus (PATCH - bug fix)
+- v1.8.0 - Added Team Fixtures tab (MINOR - new feature)
+
+### Commit Message Format:
+Always use: "[Description] (vX.Y.Z)"
+
+Good examples:
+✅ "Add Season Stats with leaderboards (v1.11.0)"
+✅ "Fix missing completedGameweeks field (v1.11.1)"
+✅ "Limit GW navigation to current GW (v1.11.2)"
+
+Bad examples:
+❌ "Fix bug" (no version)
+❌ "Update files" (vague + no version)
+❌ "v1.11.0" (no description)
+
+### Before EVERY Push:
+1. ✅ Determine if major/minor/patch
+2. ✅ Run: npm version [type] --no-git-tag-version
+3. ✅ Verify version in package.json
+4. ✅ Include version in commit message
+5. ✅ Update CLAUDE_CODE_CONTEXT.md version history
+6. ✅ Push to GitHub
+
+NEVER push without bumping version and documenting it!
+
 ## Testing Checklist
 
 ### Before Every Deploy
