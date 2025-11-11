@@ -93,7 +93,10 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
     team_name: '', // Not available from DB
     count: parseInt(row.count),
     percentage: (parseInt(row.count) / total) * 100,
-    avg_points: parseFloat(row.total_points) / parseInt(row.count),
+    // Handle case where captain_points might be NULL or 0 for older GWs
+    avg_points: row.total_points && parseFloat(row.total_points) > 0
+      ? parseFloat(row.total_points) / parseInt(row.count)
+      : 0,
   }));
 }
 

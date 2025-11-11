@@ -18,12 +18,14 @@ export async function GET(
     const db = await getDatabase();
 
     // Fetch all matches for the league to determine completed gameweeks
+    // Only count gameweeks where matches were actually played (points > 0)
     const matchesResult = await db.query(`
       SELECT DISTINCT event
       FROM h2h_matches
       WHERE league_id = $1
       AND entry_1_points IS NOT NULL
       AND entry_2_points IS NOT NULL
+      AND (entry_1_points > 0 OR entry_2_points > 0)
       ORDER BY event
     `, [leagueId]);
 
