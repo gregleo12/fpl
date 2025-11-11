@@ -7,6 +7,9 @@ import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
 import { GameweekWinners } from './sections/GameweekWinners';
 import { Differentials } from './sections/Differentials';
+import { SeasonView } from './SeasonView';
+
+type ViewType = 'gameweek' | 'season';
 
 export interface GameweekStats {
   event: number;
@@ -73,14 +76,17 @@ interface Props {
 }
 
 export function StatsHub({ leagueId, currentGW, maxGW }: Props) {
+  const [view, setView] = useState<ViewType>('gameweek');
   const [selectedGW, setSelectedGW] = useState(currentGW);
   const [stats, setStats] = useState<GameweekStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchGameweekStats(selectedGW);
-  }, [selectedGW, leagueId]);
+    if (view === 'gameweek') {
+      fetchGameweekStats(selectedGW);
+    }
+  }, [selectedGW, leagueId, view]);
 
   async function fetchGameweekStats(gw: number) {
     setIsLoading(true);
@@ -104,56 +110,85 @@ export function StatsHub({ leagueId, currentGW, maxGW }: Props) {
 
   return (
     <div className={styles.container}>
-      {/* Header with GW Selector */}
+      {/* Header with View Toggle and GW Selector */}
       <div className={styles.header}>
         <h2 className={styles.title}>Stats Hub</h2>
 
-        <div className={styles.gwSelector}>
+        {/* View Toggle */}
+        <div className={styles.viewToggle}>
           <button
-            className={styles.gwButton}
-            onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
-            disabled={selectedGW <= 1}
+            className={`${styles.viewButton} ${view === 'gameweek' ? styles.active : ''}`}
+            onClick={() => setView('gameweek')}
           >
-            ←
+            Gameweek
           </button>
-
-          <div className={styles.gwDisplay}>
-            <span className={styles.gwLabel}>GW</span>
-            <span className={styles.gwNumber}>{selectedGW}</span>
-            {selectedGW === currentGW && (
-              <span className={styles.liveBadge}>LIVE</span>
-            )}
-          </div>
-
           <button
-            className={styles.gwButton}
-            onClick={() => setSelectedGW(Math.min(maxGW, selectedGW + 1))}
-            disabled={selectedGW >= maxGW}
+            className={`${styles.viewButton} ${view === 'season' ? styles.active : ''}`}
+            onClick={() => setView('season')}
           >
-            →
+            Season
           </button>
         </div>
+
+        {/* GW Selector (only for gameweek view) */}
+        {view === 'gameweek' && (
+          <div className={styles.gwSelector}>
+            <button
+              className={styles.gwButton}
+              onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
+              disabled={selectedGW <= 1}
+            >
+              ←
+            </button>
+
+            <div className={styles.gwDisplay}>
+              <span className={styles.gwLabel}>GW</span>
+              <span className={styles.gwNumber}>{selectedGW}</span>
+              {selectedGW === currentGW && (
+                <span className={styles.liveBadge}>LIVE</span>
+              )}
+            </div>
+
+            <button
+              className={styles.gwButton}
+              onClick={() => setSelectedGW(Math.min(maxGW, selectedGW + 1))}
+              disabled={selectedGW >= maxGW}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className={styles.loading}>Loading gameweek stats...</div>
+      {/* Gameweek View */}
+      {view === 'gameweek' && (
+        <>
+          {/* Loading State */}
+          {isLoading && (
+            <div className={styles.loading}>Loading gameweek stats...</div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className={styles.error}>{error}</div>
+          )}
+
+          {/* Stats Sections */}
+          {!isLoading && !error && stats && (
+            <div className={styles.sections}>
+              <CaptainPicks data={stats.captainPicks} />
+              <ChipsPlayed data={stats.chipsPlayed} />
+              <HitsTaken data={stats.hitsTaken} />
+              <GameweekWinners data={stats.winners} />
+              <Differentials data={stats.differentials} />
+            </div>
+          )}
+        </>
       )}
 
-      {/* Error State */}
-      {error && (
-        <div className={styles.error}>{error}</div>
-      )}
-
-      {/* Stats Sections */}
-      {!isLoading && !error && stats && (
-        <div className={styles.sections}>
-          <CaptainPicks data={stats.captainPicks} />
-          <ChipsPlayed data={stats.chipsPlayed} />
-          <HitsTaken data={stats.hitsTaken} />
-          <GameweekWinners data={stats.winners} />
-          <Differentials data={stats.differentials} />
-        </div>
+      {/* Season View */}
+      {view === 'season' && (
+        <SeasonView leagueId={leagueId} />
       )}
     </div>
   );

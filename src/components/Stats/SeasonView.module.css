@@ -1,0 +1,90 @@
+.container {
+  padding-top: 1rem;
+}
+
+.seasonInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 135, 0.2);
+  margin-bottom: 2rem;
+}
+
+.seasonLabel {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.seasonGW {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #00ff87;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.leaderboards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.trends {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-size: 1rem;
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .seasonInfo {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .leaderboards {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .trends {
+    gap: 1.5rem;
+  }
+}

@@ -13,6 +13,40 @@
   gap: 1rem;
 }
 
+/* View Toggle */
+.viewToggle {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.viewButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.viewButton:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.viewButton.active {
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+  border: 1px solid rgba(0, 255, 135, 0.3);
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -139,6 +173,15 @@
   .title {
     font-size: 1.25rem;
     text-align: center;
+  }
+
+  .viewToggle {
+    justify-content: center;
+  }
+
+  .viewButton {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .gwSelector {

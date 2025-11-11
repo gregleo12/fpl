@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,8 @@
     "next": "^14.2.0",
     "pg": "^8.16.3",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "recharts": "^3.4.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.23",
