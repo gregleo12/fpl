@@ -151,8 +151,8 @@ export function StatsHub({ leagueId, currentGW, maxGW }: Props) {
 
             <button
               className={styles.gwButton}
-              onClick={() => setSelectedGW(Math.min(maxGW, selectedGW + 1))}
-              disabled={selectedGW >= maxGW}
+              onClick={() => setSelectedGW(Math.min(currentGW, selectedGW + 1))}
+              disabled={selectedGW >= currentGW}
             >
               →
             </button>
