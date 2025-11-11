@@ -79,24 +79,22 @@ export async function GET(
       ]);
     }
 
-    // Check which captain data we already have
-    const existingCaptains = await db.query(`
-      SELECT entry_id, event FROM entry_captains
-    `);
-    const captainCache = new Set(
-      existingCaptains.rows.map((r: any) => `${r.entry_id}_${r.event}`)
-    );
-
-    // Collect all picks we need to fetch (in parallel)
+    // For finished matches, always fetch picks to ensure chips data is current
+    // This is needed because chips might not have been populated in earlier syncs
     const picksToFetch: Array<{entryId: number, event: number}> = [];
+    const seen = new Set<string>();
+
     for (const match of matches) {
       const key1 = `${match.entry_1_entry}_${match.event}`;
       const key2 = `${match.entry_2_entry}_${match.event}`;
 
-      if (!captainCache.has(key1)) {
+      // Fetch picks for each unique entry+event combination
+      if (!seen.has(key1)) {
+        seen.add(key1);
         picksToFetch.push({ entryId: match.entry_1_entry, event: match.event });
       }
-      if (!captainCache.has(key2)) {
+      if (!seen.has(key2)) {
+        seen.add(key2);
         picksToFetch.push({ entryId: match.entry_2_entry, event: match.event });
       }
     }
