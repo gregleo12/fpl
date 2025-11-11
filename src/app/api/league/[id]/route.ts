@@ -79,22 +79,45 @@ export async function GET(
       ]);
     }
 
-    // For finished matches, always fetch picks to ensure chips data is current
-    // This is needed because chips might not have been populated in earlier syncs
-    const picksToFetch: Array<{entryId: number, event: number}> = [];
-    const seen = new Set<string>();
+    // Check which captain data we already have
+    const existingCaptains = await db.query(`
+      SELECT entry_id, event FROM entry_captains
+    `);
+    const captainCache = new Set(
+      existingCaptains.rows.map((r: any) => `${r.entry_id}_${r.event}`)
+    );
 
+    // Check which entries have been processed (chips data fetched, even if NULL)
+    // If h2h_match exists with entry_1_points, it means we've fetched picks for that entry
+    const processedEntries = await db.query(`
+      SELECT entry_1_id as entry_id, event
+      FROM h2h_matches
+      WHERE league_id = $1
+      AND entry_1_points IS NOT NULL
+
+      UNION
+
+      SELECT entry_2_id as entry_id, event
+      FROM h2h_matches
+      WHERE league_id = $1
+      AND entry_2_points IS NOT NULL
+    `, [leagueId, leagueId]);
+
+    const chipsCache = new Set(
+      processedEntries.rows.map((r: any) => `${r.entry_id}_${r.event}`)
+    );
+
+    // Collect all picks we need to fetch (fetch if EITHER captain OR chips missing)
+    const picksToFetch: Array<{entryId: number, event: number}> = [];
     for (const match of matches) {
       const key1 = `${match.entry_1_entry}_${match.event}`;
       const key2 = `${match.entry_2_entry}_${match.event}`;
 
-      // Fetch picks for each unique entry+event combination
-      if (!seen.has(key1)) {
-        seen.add(key1);
+      // Fetch if captain missing OR chips missing
+      if (!captainCache.has(key1) || !chipsCache.has(key1)) {
         picksToFetch.push({ entryId: match.entry_1_entry, event: match.event });
       }
-      if (!seen.has(key2)) {
-        seen.add(key2);
+      if (!captainCache.has(key2) || !chipsCache.has(key2)) {
         picksToFetch.push({ entryId: match.entry_2_entry, event: match.event });
       }
     }
