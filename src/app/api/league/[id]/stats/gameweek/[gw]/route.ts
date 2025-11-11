@@ -97,29 +97,43 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
   }));
 }
 
-// Fetch chips played from h2h_matches
+// Fetch chips played directly from FPL API (like My Team does)
 async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
-  const result = await db.query(`
-    SELECT
-      active_chip_1 as chip,
-      COUNT(*) as count
-    FROM h2h_matches
-    WHERE league_id = $1 AND event = $2 AND active_chip_1 IS NOT NULL
-    GROUP BY active_chip_1
-    UNION ALL
-    SELECT
-      active_chip_2 as chip,
-      COUNT(*) as count
-    FROM h2h_matches
-    WHERE league_id = $1 AND event = $2 AND active_chip_2 IS NOT NULL
-    GROUP BY active_chip_2
-  `, [leagueId, gw]);
+  // Get all managers in the league
+  const managers = await fetchManagers(db, leagueId);
 
-  // Aggregate chip counts
+  console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
+
+  // Fetch chip history from FPL API for each manager
+  const chipPromises = managers.map(async (manager: any) => {
+    try {
+      const response = await fetch(
+        `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/history/`
+      );
+
+      if (!response.ok) {
+        return [];
+      }
+
+      const data = await response.json();
+      // Filter chips for this specific gameweek
+      return (data.chips || []).filter((chip: any) => chip.event === gw);
+    } catch (error) {
+      console.error(`Failed to fetch chips for entry ${manager.entry_id}:`, error);
+      return [];
+    }
+  });
+
+  const allChipsArrays = await Promise.all(chipPromises);
+  const allChips = allChipsArrays.flat();
+
+  console.log(`Found ${allChips.length} chips played in GW${gw}`);
+
+  // Count chips by type
   const chipCounts: Record<string, number> = {};
-  result.rows.forEach((row: any) => {
-    const chip = row.chip;
-    chipCounts[chip] = (chipCounts[chip] || 0) + parseInt(row.count);
+  allChips.forEach((chip: any) => {
+    const chipName = chip.name; // "wildcard", "bboost", "3xc", "freehit"
+    chipCounts[chipName] = (chipCounts[chipName] || 0) + 1;
   });
 
   const CHIP_NAMES: Record<string, string> = {
