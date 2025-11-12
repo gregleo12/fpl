@@ -101,7 +101,7 @@ export async function GET(
       FROM h2h_matches
       WHERE league_id = $1
       AND entry_2_points IS NOT NULL
-    `, [leagueId, leagueId]);
+    `, [leagueId]);
 
     const chipsCache = new Set(
       processedEntries.rows.map((r: any) => `${r.entry_id}_${r.event}`)
