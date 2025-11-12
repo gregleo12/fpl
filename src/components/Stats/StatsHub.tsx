@@ -6,7 +6,7 @@ import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
 import { GameweekWinners } from './sections/GameweekWinners';
-import { Differentials } from './sections/Differentials';
+import { TopPerformers } from './sections/TopPerformers';
 import { SeasonView } from './SeasonView';
 
 type ViewType = 'gameweek' | 'season';
@@ -17,7 +17,7 @@ export interface GameweekStats {
   chipsPlayed: ChipData[];
   hitsTaken: HitData;
   winners: WinnersData;
-  differentials: DifferentialPlayer[];
+  topPerformers: TopPerformer[];
 }
 
 export interface CaptainPickData {
@@ -60,13 +60,12 @@ export interface WinnersData {
   average_score: number;
 }
 
-export interface DifferentialPlayer {
+export interface TopPerformer {
   player_id: number;
   player_name: string;
-  team_name: string;
+  points: number;
+  ownership_count: number;
   ownership_percentage: number;
-  avg_points: number;
-  selected_by_count: number;
 }
 
 interface Props {
@@ -181,7 +180,7 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
               <ChipsPlayed data={stats.chipsPlayed} />
               <HitsTaken data={stats.hitsTaken} />
               <GameweekWinners data={stats.winners} />
-              <Differentials data={stats.differentials} />
+              <TopPerformers data={stats.topPerformers} totalManagers={stats.hitsTaken.total_managers} />
             </div>
           )}
         </>

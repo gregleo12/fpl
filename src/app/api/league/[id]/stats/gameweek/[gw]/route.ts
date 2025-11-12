@@ -39,8 +39,8 @@ export async function GET(
     // Calculate winners/losers
     const winnersData = calculateWinners(scoresData);
 
-    // Calculate differentials
-    const differentialsData = calculateDifferentials(
+    // Calculate top performers
+    const topPerformersData = calculateTopPerformers(
       picksData,
       managersData.length,
       bootstrapData,
@@ -53,7 +53,7 @@ export async function GET(
       chipsPlayed: chipsData,
       hitsTaken: hitsData,
       winners: winnersData,
-      differentials: differentialsData,
+      topPerformers: topPerformersData,
     });
   } catch (error: any) {
     console.error('Error fetching gameweek stats:', error);
@@ -351,8 +351,8 @@ function calculateWinners(scoresData: any[]) {
   };
 }
 
-// Calculate differentials (low-owned players with high points)
-function calculateDifferentials(
+// Calculate top performers (highest scoring players this gameweek)
+function calculateTopPerformers(
   picksData: any[],
   totalManagers: number,
   bootstrapData: any,
@@ -372,15 +372,12 @@ function calculateDifferentials(
     });
   });
 
-  // Find players with ownership < 25% and points >= 7
-  const differentials: any[] = [];
+  // Find all players with their points
+  const topPerformers: any[] = [];
 
   Object.entries(playerOwnership).forEach(([playerIdStr, count]) => {
     const playerId = parseInt(playerIdStr);
     const ownershipPercentage = (count / totalManagers) * 100;
-
-    // Only include if ownership < 25%
-    if (ownershipPercentage >= 25) return;
 
     // Find player in bootstrap data
     const player = bootstrapData.elements?.find((e: any) => e.id === playerId);
@@ -390,30 +387,21 @@ function calculateDifferentials(
     const livePlayer = liveData.elements?.find((e: any) => e.id === playerId);
     const points = livePlayer?.stats?.total_points || 0;
 
-    // Only include if points >= 7
-    if (points < 7) return;
+    // Only include players who scored points
+    if (points <= 0) return;
 
-    // Find team name
-    const team = bootstrapData.teams?.find((t: any) => t.id === player.team);
-
-    differentials.push({
+    topPerformers.push({
       player_id: playerId,
       player_name: player.web_name,
-      team_name: team?.short_name || '',
+      points: points,
+      ownership_count: count,
       ownership_percentage: ownershipPercentage,
-      avg_points: points,
-      selected_by_count: count,
     });
   });
 
-  // Sort by points descending, then by ownership ascending
-  differentials.sort((a, b) => {
-    if (b.avg_points !== a.avg_points) {
-      return b.avg_points - a.avg_points;
-    }
-    return a.ownership_percentage - b.ownership_percentage;
-  });
+  // Sort by points descending
+  topPerformers.sort((a, b) => b.points - a.points);
 
   // Return top 10
-  return differentials.slice(0, 10);
+  return topPerformers.slice(0, 10);
 }
