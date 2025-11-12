@@ -64,40 +64,103 @@ export async function GET(
   }
 }
 
-// Fetch captain picks from database
+// Fetch captain picks from FPL API (same pattern as chips in v1.11.9)
 async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
-  const result = await db.query(`
-    SELECT
-      ec.captain_name as player_name,
-      COUNT(*) as count,
-      SUM(ec.captain_points) as total_points
-    FROM entry_captains ec
-    JOIN managers m ON ec.entry_id = m.entry_id
-    WHERE ec.event = $1
-    GROUP BY ec.captain_name
-    ORDER BY count DESC, total_points DESC
-    LIMIT 5
-  `, [gw]);
+  // Get all managers in the league
+  const managers = await fetchManagers(db, leagueId);
 
-  const totalManagers = await db.query(`
-    SELECT COUNT(DISTINCT entry_id) as count
-    FROM entry_captains
-    WHERE event = $1
-  `, [gw]);
+  console.log(`Fetching captain picks from FPL API for ${managers.length} managers in GW${gw}...`);
 
-  const total = totalManagers.rows[0]?.count || 1;
+  // Fetch live data once for this gameweek (performance optimization)
+  const liveResponse = await fetch(
+    `https://fantasy.premierleague.com/api/event/${gw}/live/`
+  );
 
-  return result.rows.map((row: any) => ({
-    player_id: 0, // Not available from DB
-    player_name: row.player_name,
-    team_name: '', // Not available from DB
-    count: parseInt(row.count),
-    percentage: (parseInt(row.count) / total) * 100,
-    // Handle case where captain_points might be NULL or 0 for older GWs
-    avg_points: row.total_points && parseFloat(row.total_points) > 0
-      ? parseFloat(row.total_points) / parseInt(row.count)
-      : 0,
-  }));
+  if (!liveResponse.ok) {
+    console.error(`Failed to fetch live data for GW${gw}`);
+    return [];
+  }
+
+  const liveData = await liveResponse.json();
+  const playerPointsMap = new Map<number, number>();
+
+  // Map player IDs to their points for this gameweek
+  if (liveData.elements && Array.isArray(liveData.elements)) {
+    for (const element of liveData.elements) {
+      playerPointsMap.set(element.id, element.stats.total_points);
+    }
+  }
+
+  // Fetch picks from FPL API for each manager
+  const picksPromises = managers.map(async (manager: any) => {
+    try {
+      const response = await fetch(
+        `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+
+      // Find captain (multiplier >= 2: normal captain = 2, triple captain = 3)
+      const captain = data.picks?.find((p: any) => p.multiplier >= 2);
+
+      if (!captain) return null;
+
+      const points = playerPointsMap.get(captain.element) || 0;
+
+      return {
+        captainId: captain.element,
+        captainPoints: captain.multiplier * points,
+      };
+    } catch (error) {
+      console.error(`Failed to fetch picks for entry ${manager.entry_id}:`, error);
+      return null;
+    }
+  });
+
+  const allPicks = (await Promise.all(picksPromises)).filter((p) => p !== null);
+
+  console.log(`Found ${allPicks.length} captain picks in GW${gw}`);
+
+  // Group by captain ID and calculate totals
+  const captainMap = new Map<number, { count: number; totalPoints: number }>();
+
+  for (const pick of allPicks) {
+    if (!pick) continue;
+
+    const current = captainMap.get(pick.captainId) || { count: 0, totalPoints: 0 };
+    captainMap.set(pick.captainId, {
+      count: current.count + 1,
+      totalPoints: current.totalPoints + pick.captainPoints,
+    });
+  }
+
+  // Fetch player names from FPL bootstrap-static
+  const playersResponse = await fetch(
+    'https://fantasy.premierleague.com/api/bootstrap-static/'
+  );
+  const playersData = await playersResponse.json();
+  const playersMap = new Map(
+    playersData.elements.map((p: any) => [p.id, p.web_name])
+  );
+
+  // Convert to array format expected by frontend
+  const result = Array.from(captainMap.entries())
+    .map(([captainId, data]) => ({
+      player_id: captainId,
+      player_name: playersMap.get(captainId) || 'Unknown',
+      team_name: '', // Not needed for captain picks
+      count: data.count,
+      percentage: (data.count / managers.length) * 100,
+      avg_points: data.totalPoints / data.count,
+    }))
+    .sort((a, b) => b.count - a.count) // Sort by popularity
+    .slice(0, 10); // Top 10 captains
+
+  return result;
 }
 
 // Fetch chips played directly from FPL API (like My Team does)
