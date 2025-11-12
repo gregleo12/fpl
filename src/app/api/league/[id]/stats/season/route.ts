@@ -50,12 +50,14 @@ export async function GET(
       });
     }
 
-    // Fetch all managers
+    // Fetch all managers in this league
     const managersResult = await db.query(`
-      SELECT entry_id, player_name, team_name
-      FROM managers
-      ORDER BY entry_id
-    `);
+      SELECT m.entry_id, m.player_name, m.team_name
+      FROM managers m
+      JOIN league_standings ls ON ls.entry_id = m.entry_id
+      WHERE ls.league_id = $1
+      ORDER BY m.entry_id
+    `, [leagueId]);
     const managers = managersResult.rows;
 
     // Calculate season statistics
@@ -232,7 +234,8 @@ async function calculateConsistency(
       const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
       const stdDev = Math.sqrt(variance);
 
-      const manager = managers.find(m => m.entry_id === parseInt(entryId));
+      const manager = managers.find(m => String(m.entry_id) === entryId);
+
       return {
         entry_id: parseInt(entryId),
         player_name: manager?.player_name || 'Unknown',
