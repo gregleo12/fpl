@@ -5,9 +5,10 @@ import styles from './Section.module.css';
 
 interface Props {
   data: CaptainPickData[];
+  totalManagers?: number;
 }
 
-export function CaptainPicks({ data }: Props) {
+export function CaptainPicks({ data, totalManagers }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>
@@ -30,8 +31,10 @@ export function CaptainPicks({ data }: Props) {
             </div>
             <div className={styles.itemStats}>
               <div className={styles.itemStat}>
-                <span className={styles.statValue}>{captain.percentage.toFixed(0)}%</span>
-                <span className={styles.statLabel}>owned</span>
+                <span className={styles.statValue}>
+                  {totalManagers ? `${captain.count}/${totalManagers}` : captain.count} ({captain.percentage.toFixed(0)}%)
+                </span>
+                <span className={styles.statLabel}>managers</span>
               </div>
               <div className={styles.itemStat}>
                 <span className={styles.statValue}>{captain.avg_points.toFixed(1)}</span>

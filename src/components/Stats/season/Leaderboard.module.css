@@ -1,3 +1,9 @@
+.streaksContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .card {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
   border-radius: 16px;
@@ -133,6 +139,10 @@
 
 /* Mobile Responsive */
 @media (max-width: 640px) {
+  .streaksContainer {
+    grid-template-columns: 1fr;
+  }
+
   .card {
     padding: 1rem;
   }

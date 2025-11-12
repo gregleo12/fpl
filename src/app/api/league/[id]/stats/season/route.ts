@@ -38,13 +38,11 @@ export async function GET(
           captainPoints: [],
           chipPerformance: [],
           hitEfficiency: [],
-          consistency: [],
+          streaks: { winning: [], losing: [] },
           bestGameweeks: [],
           worstGameweeks: [],
         },
         trends: {
-          scores: [],
-          captainPicks: [],
           chips: [],
         },
       });
@@ -65,14 +63,14 @@ export async function GET(
       captainLeaderboard,
       chipLeaderboard,
       hitEfficiencyData,
-      consistencyData,
+      streaksData,
       bestWorstGameweeks,
       trendsData
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateHitEfficiency(db, leagueId, completedGameweeks, managers),
-      calculateConsistency(db, leagueId, completedGameweeks, managers),
+      calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
     ]);
@@ -83,7 +81,7 @@ export async function GET(
         captainPoints: captainLeaderboard,
         chipPerformance: chipLeaderboard,
         hitEfficiency: hitEfficiencyData,
-        consistency: consistencyData,
+        streaks: streaksData,
         bestGameweeks: bestWorstGameweeks.best,
         worstGameweeks: bestWorstGameweeks.worst,
       },
@@ -192,64 +190,111 @@ async function calculateHitEfficiency(
   return [];
 }
 
-// Calculate consistency (lowest score variance)
-async function calculateConsistency(
+// Calculate winning and losing streaks
+async function calculateStreaks(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  // Get all scores for each manager
-  const scoresData = await db.query(`
+  // Get all match results for each manager
+  const matchesData = await db.query(`
     SELECT
-      entry_id,
+      entry_1_id as entry_id,
       event,
-      points
-    FROM (
-      SELECT entry_1_id as entry_id, event, entry_1_points as points
-      FROM h2h_matches
-      WHERE league_id = $1 AND event = ANY($2)
-      UNION ALL
-      SELECT entry_2_id as entry_id, event, entry_2_points as points
-      FROM h2h_matches
-      WHERE league_id = $1 AND event = ANY($2)
-    ) all_scores
-    ORDER BY entry_id, event
+      entry_1_points as own_points,
+      entry_2_points as opp_points,
+      CASE
+        WHEN entry_1_points > entry_2_points THEN 'W'
+        WHEN entry_1_points < entry_2_points THEN 'L'
+        ELSE 'D'
+      END as result
+    FROM h2h_matches
+    WHERE league_id = $1 AND event = ANY($2)
+    UNION ALL
+    SELECT
+      entry_2_id as entry_id,
+      event,
+      entry_2_points as own_points,
+      entry_1_points as opp_points,
+      CASE
+        WHEN entry_2_points > entry_1_points THEN 'W'
+        WHEN entry_2_points < entry_1_points THEN 'L'
+        ELSE 'D'
+      END as result
+    FROM h2h_matches
+    WHERE league_id = $1 AND event = ANY($2)
+    ORDER BY entry_id, event DESC
   `, [leagueId, gameweeks]);
 
-  // Group by manager and calculate variance
-  const managerScores: Record<number, number[]> = {};
-  scoresData.rows.forEach((row: any) => {
-    const entryId = row.entry_id;
-    if (!managerScores[entryId]) {
-      managerScores[entryId] = [];
+  // Group results by manager
+  const managerResults: Record<number, Array<{ event: number; result: string }>> = {};
+  matchesData.rows.forEach((row: any) => {
+    if (!managerResults[row.entry_id]) {
+      managerResults[row.entry_id] = [];
     }
-    managerScores[entryId].push(row.points || 0);
+    managerResults[row.entry_id].push({
+      event: row.event,
+      result: row.result,
+    });
   });
 
-  // Calculate variance for each manager
-  const consistencyData = Object.entries(managerScores)
-    .map(([entryId, scores]) => {
-      const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
-      const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
-      const stdDev = Math.sqrt(variance);
+  // Calculate streaks for each manager
+  const streakData = managers.map((manager) => {
+    const results = managerResults[manager.entry_id] || [];
 
-      const manager = managers.find(m => String(m.entry_id) === entryId);
-
+    if (results.length === 0) {
       return {
-        entry_id: parseInt(entryId),
-        player_name: manager?.player_name || 'Unknown',
-        team_name: manager?.team_name || '',
-        average_score: parseFloat(mean.toFixed(1)),
-        std_deviation: parseFloat(stdDev.toFixed(1)),
-        min_score: Math.min(...scores),
-        max_score: Math.max(...scores),
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        current_streak: 0,
+        streak_type: 'N/A',
+        form: '',
       };
-    })
-    .sort((a, b) => a.std_deviation - b.std_deviation) // Lower variance = more consistent
+    }
+
+    // Results are already sorted DESC by event
+    const recentResults = results.slice(0, 5);
+    const form = recentResults.map(r => r.result).join('');
+
+    // Calculate current streak
+    let streak = 0;
+    let streakType = results[0].result;
+
+    for (const match of results) {
+      if (match.result === streakType && streakType !== 'D') {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    return {
+      entry_id: manager.entry_id,
+      player_name: manager.player_name,
+      team_name: manager.team_name,
+      current_streak: streak,
+      streak_type: streakType,
+      form: form,
+    };
+  });
+
+  // Separate into winning and losing streaks
+  const winningStreaks = streakData
+    .filter(s => s.streak_type === 'W' && s.current_streak > 0)
+    .sort((a, b) => b.current_streak - a.current_streak)
     .slice(0, 10);
 
-  return consistencyData;
+  const losingStreaks = streakData
+    .filter(s => s.streak_type === 'L' && s.current_streak > 0)
+    .sort((a, b) => b.current_streak - a.current_streak)
+    .slice(0, 10);
+
+  return {
+    winning: winningStreaks,
+    losing: losingStreaks,
+  };
 }
 
 // Calculate best and worst gameweeks
@@ -300,59 +345,6 @@ async function calculateTrendsData(
   gameweeks: number[],
   managers: any[]
 ) {
-  // Scores over time (average per GW)
-  const scoresData = await db.query(`
-    SELECT
-      event,
-      AVG(points) as avg_score,
-      MAX(points) as max_score,
-      MIN(points) as min_score
-    FROM (
-      SELECT event, entry_1_points as points
-      FROM h2h_matches
-      WHERE league_id = $1 AND event = ANY($2)
-      UNION ALL
-      SELECT event, entry_2_points as points
-      FROM h2h_matches
-      WHERE league_id = $1 AND event = ANY($2)
-    ) all_scores
-    GROUP BY event
-    ORDER BY event
-  `, [leagueId, gameweeks]);
-
-  const scores = scoresData.rows.map((row: any) => ({
-    gameweek: row.event,
-    average: parseFloat((parseFloat(row.avg_score) || 0).toFixed(1)),
-    highest: row.max_score || 0,
-    lowest: row.min_score || 0,
-  }));
-
-  // Captain picks over time (most captained each GW)
-  const captainData = await db.query(`
-    SELECT
-      event,
-      captain_name,
-      COUNT(*) as count
-    FROM entry_captains
-    WHERE event = ANY($1)
-    GROUP BY event, captain_name
-    ORDER BY event, count DESC
-  `, [gameweeks]);
-
-  // Get top captain per GW
-  const captainsByGW: Record<number, any> = {};
-  captainData.rows.forEach((row: any) => {
-    if (!captainsByGW[row.event] || captainsByGW[row.event].count < row.count) {
-      captainsByGW[row.event] = {
-        gameweek: row.event,
-        captain: row.captain_name,
-        count: parseInt(row.count),
-      };
-    }
-  });
-
-  const captainPicks = Object.values(captainsByGW).sort((a: any, b: any) => a.gameweek - b.gameweek);
-
   // Chips usage timeline
   const chipsData = await db.query(`
     SELECT
@@ -389,8 +381,6 @@ async function calculateTrendsData(
   const chips = Object.values(chipsByGW).sort((a: any, b: any) => a.gameweek - b.gameweek);
 
   return {
-    scores,
-    captainPicks,
     chips,
   };
 }

@@ -20,6 +20,9 @@ export function HitsTaken({ data }: Props) {
   return (
     <div className={styles.section}>
       <h3 className={styles.sectionTitle}>💸 Hits Taken</h3>
+      <div className={styles.subtitle}>
+        Transfer cost deductions this gameweek
+      </div>
       <div className={styles.statsGrid}>
         <div className={styles.statBox}>
           <div className={styles.statValue}>{data.managers_with_hits}</div>

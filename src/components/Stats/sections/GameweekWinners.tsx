@@ -20,6 +20,9 @@ export function GameweekWinners({ data }: Props) {
   return (
     <div className={styles.section}>
       <h3 className={styles.sectionTitle}>🏆 Gameweek Winners</h3>
+      <div className={styles.subtitle}>
+        Highest and lowest scoring managers
+      </div>
       <div className={styles.winnersGrid}>
         {data.highest_score && (
           <div className={styles.winnerCard}>

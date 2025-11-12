@@ -176,7 +176,7 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
           {/* Stats Sections */}
           {!isLoading && !error && stats && (
             <div className={styles.sections}>
-              <CaptainPicks data={stats.captainPicks} />
+              <CaptainPicks data={stats.captainPicks} totalManagers={stats.hitsTaken.total_managers} />
               <ChipsPlayed data={stats.chipsPlayed} />
               <HitsTaken data={stats.hitsTaken} />
               <GameweekWinners data={stats.winners} />

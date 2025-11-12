@@ -4,10 +4,8 @@ import { useState, useEffect } from 'react';
 import styles from './SeasonView.module.css';
 import { CaptainLeaderboard } from './season/CaptainLeaderboard';
 import { ChipPerformance } from './season/ChipPerformance';
-import { Consistency } from './season/Consistency';
+import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
-import { ScoresTrend } from './season/ScoresTrend';
-import { CaptainTrend } from './season/CaptainTrend';
 import { ChipsTrend } from './season/ChipsTrend';
 
 export interface SeasonStats {
@@ -15,13 +13,14 @@ export interface SeasonStats {
   leaderboards: {
     captainPoints: CaptainLeaderboardData[];
     chipPerformance: ChipPerformanceData[];
-    consistency: ConsistencyData[];
+    streaks: {
+      winning: StreakData[];
+      losing: StreakData[];
+    };
     bestGameweeks: BestGameweekData[];
     worstGameweeks: BestGameweekData[];
   };
   trends: {
-    scores: ScoreTrendData[];
-    captainPicks: CaptainTrendData[];
     chips: ChipTrendData[];
   };
 }
@@ -41,15 +40,6 @@ export interface ChipPerformanceData {
   total_chip_points: number;
 }
 
-export interface ConsistencyData {
-  entry_id: number;
-  player_name: string;
-  team_name: string;
-  average_score: number;
-  std_deviation: number;
-  min_score: number;
-  max_score: number;
-}
 
 export interface BestGameweekData {
   entry_id: number;
@@ -57,19 +47,6 @@ export interface BestGameweekData {
   team_name: string;
   event: number;
   points: number;
-}
-
-export interface ScoreTrendData {
-  gameweek: number;
-  average: number;
-  highest: number;
-  lowest: number;
-}
-
-export interface CaptainTrendData {
-  gameweek: number;
-  captain: string;
-  count: number;
 }
 
 export interface ChipTrendData {
@@ -139,7 +116,10 @@ export function SeasonView({ leagueId }: Props) {
         <div className={styles.leaderboards}>
           <CaptainLeaderboard data={data.leaderboards.captainPoints} />
           <ChipPerformance data={data.leaderboards.chipPerformance} />
-          <Consistency data={data.leaderboards.consistency} />
+          <Streaks
+            winningStreaks={data.leaderboards.streaks.winning}
+            losingStreaks={data.leaderboards.streaks.losing}
+          />
           <BestWorstGW
             bestData={data.leaderboards.bestGameweeks}
             worstData={data.leaderboards.worstGameweeks}
@@ -151,8 +131,6 @@ export function SeasonView({ leagueId }: Props) {
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>📈 Historical Trends</h3>
         <div className={styles.trends}>
-          <ScoresTrend data={data.trends.scores} />
-          <CaptainTrend data={data.trends.captainPicks} />
           <ChipsTrend data={data.trends.chips} />
         </div>
       </div>
