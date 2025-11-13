@@ -21,29 +21,29 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
   const currentData = view === 'best' ? winningStreaks : losingStreaks;
   const isEmpty = !currentData || currentData.length === 0;
 
+  const title = view === 'best' ? '🔥 Best Streaks' : '💀 Worst Streaks';
+
   return (
     <div className={styles.card}>
-      <h4 className={styles.cardTitle}>
-        {view === 'best' ? '🔥' : '💀'} Streaks
-      </h4>
+      <div className={styles.cardHeader}>
+        <h4 className={styles.cardTitle}>{title}</h4>
+        <div className={styles.toggle}>
+          <button
+            className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
+            onClick={() => setView('best')}
+          >
+            Best
+          </button>
+          <button
+            className={`${styles.toggleButton} ${view === 'worst' ? styles.active : ''}`}
+            onClick={() => setView('worst')}
+          >
+            Worst
+          </button>
+        </div>
+      </div>
       <div className={styles.subtitle}>
         Longest {view === 'best' ? 'winning' : 'losing'} streaks in H2H matches
-      </div>
-
-      {/* Toggle */}
-      <div className={styles.toggle}>
-        <button
-          className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
-          onClick={() => setView('best')}
-        >
-          Best
-        </button>
-        <button
-          className={`${styles.toggleButton} ${view === 'worst' ? styles.active : ''}`}
-          onClick={() => setView('worst')}
-        >
-          Worst
-        </button>
       </div>
 
       {isEmpty ? (

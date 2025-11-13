@@ -112,6 +112,17 @@ async function calculateCaptainLeaderboard(
   try {
     console.log(`Calculating captain points for ${managers.length} managers across ${gameweeks.length} gameweeks...`);
 
+    // First, get total season points for each manager from league standings
+    const standingsResult = await db.query(`
+      SELECT entry_id, total
+      FROM league_standings
+      WHERE league_id = $1
+    `, [leagueId]);
+
+    const totalPointsMap = new Map(
+      standingsResult.rows.map((row: any) => [row.entry_id, row.total || 0])
+    );
+
     // Fetch captain points for all managers across all gameweeks
     const captainDataPromises = managers.map(async (manager) => {
       let totalCaptainPoints = 0;
@@ -151,11 +162,14 @@ async function calculateCaptainLeaderboard(
         }
       }
 
+      const totalSeasonPoints = totalPointsMap.get(manager.entry_id) || 0;
+
       return {
         entry_id: manager.entry_id,
         player_name: manager.player_name,
         team_name: manager.team_name,
         total_captain_points: totalCaptainPoints,
+        total_season_points: totalSeasonPoints as number,
         gameweeks_used: gameweeksUsed
       };
     });
@@ -169,6 +183,9 @@ async function calculateCaptainLeaderboard(
         player_name: manager.player_name,
         team_name: manager.team_name,
         total_points: manager.total_captain_points,
+        percentage: manager.total_season_points > 0
+          ? parseFloat((manager.total_captain_points / manager.total_season_points * 100).toFixed(1))
+          : 0,
         average_per_gw: manager.gameweeks_used > 0
           ? parseFloat((manager.total_captain_points / manager.gameweeks_used).toFixed(1))
           : 0
@@ -176,7 +193,7 @@ async function calculateCaptainLeaderboard(
       .sort((a, b) => b.total_points - a.total_points)
       .slice(0, 10);
 
-    console.log(`Captain leaderboard calculated. Top score: ${leaderboard[0]?.total_points || 0} pts`);
+    console.log(`Captain leaderboard calculated. Top score: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}%)`);
 
     return leaderboard;
 

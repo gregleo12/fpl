@@ -31,22 +31,22 @@ export function ChipPerformance({ data }: Props) {
 
   return (
     <div className={styles.card}>
-      <h4 className={styles.cardTitle}>🎮 Chip Performance</h4>
-
-      {/* Toggle */}
-      <div className={styles.toggle}>
-        <button
-          className={`${styles.toggleButton} ${view === 'played' ? styles.active : ''}`}
-          onClick={() => setView('played')}
-        >
-          Chips Played
-        </button>
-        <button
-          className={`${styles.toggleButton} ${view === 'faced' ? styles.active : ''}`}
-          onClick={() => setView('faced')}
-        >
-          Chips Faced
-        </button>
+      <div className={styles.cardHeader}>
+        <h4 className={styles.cardTitle}>🎮 Chip Performance</h4>
+        <div className={styles.toggle}>
+          <button
+            className={`${styles.toggleButton} ${view === 'played' ? styles.active : ''}`}
+            onClick={() => setView('played')}
+          >
+            Played
+          </button>
+          <button
+            className={`${styles.toggleButton} ${view === 'faced' ? styles.active : ''}`}
+            onClick={() => setView('faced')}
+          >
+            Faced
+          </button>
+        </div>
       </div>
 
       {isEmpty ? (
@@ -55,32 +55,23 @@ export function ChipPerformance({ data }: Props) {
         </div>
       ) : (
         <div className={styles.list}>
-          {view === 'played' && currentData.map((manager: any, index) => (
+          {currentData.map((manager: any, index) => (
             <div key={manager.entry_id} className={styles.listItem}>
               <div className={styles.rank}>{index + 1}</div>
               <div className={styles.info}>
                 <div className={styles.name}>{manager.player_name}</div>
                 <div className={styles.meta}>{manager.team_name}</div>
-                <div className={styles.chips}>{manager.chips_detail}</div>
+                <div className={styles.chips}>
+                  {view === 'played' ? manager.chips_detail : manager.chips_faced_detail}
+                </div>
               </div>
               <div className={styles.stats}>
-                <div className={styles.statValue}>{manager.chip_count}</div>
-                <div className={styles.statLabel}>chips</div>
-              </div>
-            </div>
-          ))}
-
-          {view === 'faced' && currentData.map((manager: any, index) => (
-            <div key={manager.entry_id} className={styles.listItem}>
-              <div className={styles.rank}>{index + 1}</div>
-              <div className={styles.info}>
-                <div className={styles.name}>{manager.player_name}</div>
-                <div className={styles.meta}>{manager.team_name}</div>
-                <div className={styles.chips}>{manager.chips_faced_detail}</div>
-              </div>
-              <div className={styles.stats}>
-                <div className={styles.statValue}>{manager.chips_faced_count}</div>
-                <div className={styles.statLabel}>faced</div>
+                <div className={styles.statValue}>
+                  {view === 'played' ? manager.chip_count : manager.chips_faced_count}
+                </div>
+                <div className={styles.statLabel}>
+                  {view === 'played' ? 'chips' : 'faced'}
+                </div>
               </div>
             </div>
           ))}

@@ -6,7 +6,6 @@ import { CaptainLeaderboard } from './season/CaptainLeaderboard';
 import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerformance';
 import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
-import { ChipsTrend } from './season/ChipsTrend';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -30,6 +29,7 @@ export interface CaptainLeaderboardData {
   player_name: string;
   team_name: string;
   total_points: number;
+  percentage: number;
   average_per_gw: number;
 }
 
@@ -117,14 +117,6 @@ export function SeasonView({ leagueId }: Props) {
             bestData={data.leaderboards.bestGameweeks}
             worstData={data.leaderboards.worstGameweeks}
           />
-        </div>
-      </div>
-
-      {/* Trends Section */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>📈 Historical Trends</h3>
-        <div className={styles.trends}>
-          <ChipsTrend data={data.trends.chips} />
         </div>
       </div>
     </div>

@@ -29,7 +29,10 @@ export function CaptainLeaderboard({ data }: Props) {
               <div className={styles.meta}>{item.team_name}</div>
             </div>
             <div className={styles.stats}>
-              <div className={styles.statValue}>{item.total_points}</div>
+              <div className={styles.statValue}>
+                {item.total_points}
+                <span className={styles.percentage}> ({item.percentage}%)</span>
+              </div>
               <div className={styles.statLabel}>pts</div>
             </div>
           </div>
