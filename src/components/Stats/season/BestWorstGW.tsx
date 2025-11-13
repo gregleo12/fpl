@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { BestGameweekData } from '../SeasonView';
 import styles from './Leaderboard.module.css';
+import { FullRankingModal } from './FullRankingModal';
 
 interface Props {
   bestData: BestGameweekData[];
@@ -11,9 +12,25 @@ interface Props {
 
 export function BestWorstGW({ bestData, worstData }: Props) {
   const [view, setView] = useState<'best' | 'worst'>('best');
+  const [showModal, setShowModal] = useState(false);
 
   const data = view === 'best' ? bestData : worstData;
   const title = view === 'best' ? '🔥 Best Gameweeks' : '💀 Worst Gameweeks';
+
+  // Render function for items (used by both card and modal)
+  const renderItem = (item: BestGameweekData, index: number) => (
+    <div className={styles.listItem}>
+      <div className={styles.rank}>{index + 1}</div>
+      <div className={styles.info}>
+        <div className={styles.name}>{item.player_name}</div>
+        <div className={styles.meta}>GW{item.event}</div>
+      </div>
+      <div className={styles.stats}>
+        <div className={styles.statValue}>{item.points}</div>
+        <div className={styles.statLabel}>pts</div>
+      </div>
+    </div>
+  );
 
   if (!data || data.length === 0) {
     return (
@@ -25,39 +42,43 @@ export function BestWorstGW({ bestData, worstData }: Props) {
   }
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h4 className={styles.cardTitle}>{title}</h4>
-        <div className={styles.toggle}>
-          <button
-            className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
-            onClick={() => setView('best')}
-          >
-            Best
-          </button>
-          <button
-            className={`${styles.toggleButton} ${view === 'worst' ? styles.active : ''}`}
-            onClick={() => setView('worst')}
-          >
-            Worst
-          </button>
-        </div>
-      </div>
-      <div className={styles.list}>
-        {data.slice(0, 5).map((item, index) => (
-          <div key={`${item.entry_id}-${item.event}`} className={styles.listItem}>
-            <div className={styles.rank}>{index + 1}</div>
-            <div className={styles.info}>
-              <div className={styles.name}>{item.player_name}</div>
-              <div className={styles.meta}>GW{item.event}</div>
-            </div>
-            <div className={styles.stats}>
-              <div className={styles.statValue}>{item.points}</div>
-              <div className={styles.statLabel}>pts</div>
-            </div>
+    <>
+      <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
+        <div className={styles.cardHeader}>
+          <h4 className={styles.cardTitle}>{title}</h4>
+          <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
+              onClick={() => setView('best')}
+            >
+              Best
+            </button>
+            <button
+              className={`${styles.toggleButton} ${view === 'worst' ? styles.active : ''}`}
+              onClick={() => setView('worst')}
+            >
+              Worst
+            </button>
           </div>
-        ))}
+        </div>
+        <div className={styles.list}>
+          {data.slice(0, 5).map((item, index) => (
+            <div key={`${item.entry_id}-${item.event}`}>
+              {renderItem(item, index)}
+            </div>
+          ))}
+        </div>
+        <div className={styles.clickHint}>Click to view full rankings</div>
       </div>
-    </div>
+
+      <FullRankingModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={`${view === 'best' ? 'Best' : 'Worst'} Gameweeks - Full Rankings`}
+        icon={view === 'best' ? '🔥' : '💀'}
+        data={data}
+        renderItem={renderItem}
+      />
+    </>
   );
 }
