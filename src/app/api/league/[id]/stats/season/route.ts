@@ -36,7 +36,10 @@ export async function GET(
         completedGameweeks: 0,
         leaderboards: {
           captainPoints: [],
-          chipPerformance: [],
+          chipPerformance: {
+            chipsPlayed: [],
+            chipsFaced: []
+          },
           hitEfficiency: [],
           streaks: { winning: [], losing: [] },
           bestGameweeks: [],
@@ -61,14 +64,14 @@ export async function GET(
     // Calculate season statistics
     const [
       captainLeaderboard,
-      chipLeaderboard,
+      chipPerformance,
       hitEfficiencyData,
       streaksData,
       bestWorstGameweeks,
       trendsData
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
-      calculateChipLeaderboard(db, leagueId, completedGameweeks, managers),
+      calculateChipPerformance(db, leagueId, completedGameweeks, managers),
       calculateHitEfficiency(db, leagueId, completedGameweeks, managers),
       calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
@@ -79,7 +82,10 @@ export async function GET(
       completedGameweeks: completedGameweeks.length,
       leaderboards: {
         captainPoints: captainLeaderboard,
-        chipPerformance: chipLeaderboard,
+        chipPerformance: {
+          chipsPlayed: chipPerformance.chipsPlayed,
+          chipsFaced: chipPerformance.chipsFaced
+        },
         hitEfficiency: hitEfficiencyData,
         streaks: streaksData,
         bestGameweeks: bestWorstGameweeks.best,
@@ -96,85 +102,201 @@ export async function GET(
   }
 }
 
-// Calculate captain points leaderboard
+// Calculate season-long captain points from FPL API
 async function calculateCaptainLeaderboard(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  const captainData = await db.query(`
-    SELECT
-      ec.entry_id,
-      SUM(ec.captain_points) as total_captain_points,
-      COUNT(*) as gameweeks_used
-    FROM entry_captains ec
-    WHERE ec.event = ANY($1)
-    GROUP BY ec.entry_id
-    ORDER BY total_captain_points DESC
-    LIMIT 10
-  `, [gameweeks]);
+  try {
+    console.log(`Calculating captain points for ${managers.length} managers across ${gameweeks.length} gameweeks...`);
 
-  return captainData.rows.map((row: any) => {
-    const manager = managers.find(m => m.entry_id === row.entry_id);
-    return {
-      entry_id: row.entry_id,
-      player_name: manager?.player_name || 'Unknown',
-      team_name: manager?.team_name || '',
-      total_points: parseInt(row.total_captain_points),
-      average_per_gw: parseFloat((parseInt(row.total_captain_points) / parseInt(row.gameweeks_used)).toFixed(1)),
-    };
-  });
+    // Fetch captain points for all managers across all gameweeks
+    const captainDataPromises = managers.map(async (manager) => {
+      let totalCaptainPoints = 0;
+      let gameweeksUsed = 0;
+
+      // Fetch picks for each gameweek
+      for (const gw of gameweeks) {
+        try {
+          // Fetch picks and live data for this gameweek
+          const [picksResponse, liveResponse] = await Promise.all([
+            fetch(`https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`),
+            fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`)
+          ]);
+
+          if (!picksResponse.ok || !liveResponse.ok) continue;
+
+          const [picksData, liveData] = await Promise.all([
+            picksResponse.json(),
+            liveResponse.json()
+          ]);
+
+          // Find captain (multiplier >= 2: normal captain = 2, triple captain = 3)
+          const captain = picksData.picks?.find((p: any) => p.multiplier >= 2);
+
+          if (captain) {
+            // Find player points from live data
+            const livePlayer = liveData.elements?.find((e: any) => e.id === captain.element);
+            const basePoints = livePlayer?.stats?.total_points || 0;
+
+            // Captain points = player points × multiplier
+            const captainPoints = basePoints * captain.multiplier;
+            totalCaptainPoints += captainPoints;
+            gameweeksUsed++;
+          }
+        } catch (error) {
+          console.error(`Error fetching GW${gw} for entry ${manager.entry_id}:`, error);
+        }
+      }
+
+      return {
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        total_captain_points: totalCaptainPoints,
+        gameweeks_used: gameweeksUsed
+      };
+    });
+
+    const captainData = await Promise.all(captainDataPromises);
+
+    // Sort by total captain points
+    const leaderboard = captainData
+      .map(manager => ({
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        total_points: manager.total_captain_points,
+        average_per_gw: manager.gameweeks_used > 0
+          ? parseFloat((manager.total_captain_points / manager.gameweeks_used).toFixed(1))
+          : 0
+      }))
+      .sort((a, b) => b.total_points - a.total_points)
+      .slice(0, 10);
+
+    console.log(`Captain leaderboard calculated. Top score: ${leaderboard[0]?.total_points || 0} pts`);
+
+    return leaderboard;
+
+  } catch (error) {
+    console.error('Error calculating captain leaderboard:', error);
+    return [];
+  }
 }
 
-// Calculate chip performance leaderboard
-async function calculateChipLeaderboard(
+// Calculate chip performance with two leaderboards
+async function calculateChipPerformance(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  // Get chip usage with scores
-  const chipData = await db.query(`
-    SELECT
-      m.entry_id,
-      COALESCE(hm1.active_chip_1, hm2.active_chip_2) as chip,
-      COALESCE(hm1.entry_1_points, hm2.entry_2_points) as points
-    FROM managers m
-    LEFT JOIN h2h_matches hm1 ON m.entry_id = hm1.entry_1_id
-      AND hm1.league_id = $1
-      AND hm1.event = ANY($2)
-      AND hm1.active_chip_1 IS NOT NULL
-    LEFT JOIN h2h_matches hm2 ON m.entry_id = hm2.entry_2_id
-      AND hm2.league_id = $1
-      AND hm2.event = ANY($2)
-      AND hm2.active_chip_2 IS NOT NULL
-    WHERE hm1.entry_1_id IS NOT NULL OR hm2.entry_2_id IS NOT NULL
-  `, [leagueId, gameweeks]);
+  try {
+    const CHIP_NAMES: Record<string, string> = {
+      'bboost': 'BB',
+      '3xc': 'TC',
+      'freehit': 'FH',
+      'wildcard': 'WC',
+    };
 
-  // Aggregate chip points by manager
-  const managerChipPoints: Record<number, number> = {};
-  chipData.rows.forEach((row: any) => {
-    const entryId = row.entry_id;
-    const points = row.points || 0;
-    managerChipPoints[entryId] = (managerChipPoints[entryId] || 0) + points;
-  });
+    // Fetch chip history from FPL API for each manager
+    const chipsPromises = managers.map(async (manager) => {
+      try {
+        const response = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/history/`
+        );
+        if (!response.ok) return { manager, chips: [] };
 
-  // Convert to leaderboard
-  const leaderboard = Object.entries(managerChipPoints)
-    .map(([entryId, points]) => {
-      const manager = managers.find(m => m.entry_id === parseInt(entryId));
-      return {
-        entry_id: parseInt(entryId),
-        player_name: manager?.player_name || 'Unknown',
-        team_name: manager?.team_name || '',
-        total_chip_points: points,
-      };
-    })
-    .sort((a, b) => b.total_chip_points - a.total_chip_points)
-    .slice(0, 10);
+        const data = await response.json();
+        const chips = (data.chips || []).filter(
+          (chip: any) => gameweeks.includes(chip.event)
+        );
 
-  return leaderboard;
+        return {
+          manager,
+          chips: chips.map((c: any) => ({
+            name: c.name,
+            event: c.event
+          }))
+        };
+      } catch (error) {
+        return { manager, chips: [] };
+      }
+    });
+
+    const allChipData = await Promise.all(chipsPromises);
+
+    // LEADERBOARD 1: Most Chips Played
+    const chipsPlayed = allChipData
+      .map(({ manager, chips }) => ({
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        chip_count: chips.length,
+        chips_detail: chips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', ')
+      }))
+      .filter(m => m.chip_count > 0)
+      .sort((a, b) => b.chip_count - a.chip_count)
+      .slice(0, 10);
+
+    // LEADERBOARD 2: Most Chips Faced
+    const chipsFaced = await Promise.all(
+      managers.map(async (manager) => {
+        // Get all matches where this manager played
+        const matchesResult = await db.query(`
+          SELECT
+            entry_1_id, entry_2_id,
+            active_chip_1, active_chip_2,
+            event
+          FROM h2h_matches
+          WHERE league_id = $1
+          AND event = ANY($2)
+          AND (entry_1_id = $3 OR entry_2_id = $3)
+        `, [leagueId, gameweeks, manager.entry_id]);
+
+        const matches = matchesResult.rows;
+        let opponentChips: string[] = [];
+
+        for (const match of matches) {
+          // If manager is entry_1, count entry_2's chip
+          if (match.entry_1_id === manager.entry_id && match.active_chip_2) {
+            opponentChips.push(`${CHIP_NAMES[match.active_chip_2] || match.active_chip_2} (GW${match.event})`);
+          }
+          // If manager is entry_2, count entry_1's chip
+          if (match.entry_2_id === manager.entry_id && match.active_chip_1) {
+            opponentChips.push(`${CHIP_NAMES[match.active_chip_1] || match.active_chip_1} (GW${match.event})`);
+          }
+        }
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          chips_faced_count: opponentChips.length,
+          chips_faced_detail: opponentChips.join(', ')
+        };
+      })
+    );
+
+    const chipsFacedLeaderboard = chipsFaced
+      .filter(m => m.chips_faced_count > 0)
+      .sort((a, b) => b.chips_faced_count - a.chips_faced_count)
+      .slice(0, 10);
+
+    return {
+      chipsPlayed,
+      chipsFaced: chipsFacedLeaderboard
+    };
+
+  } catch (error) {
+    console.error('Error calculating chip performance:', error);
+    return {
+      chipsPlayed: [],
+      chipsFaced: []
+    };
+  }
 }
 
 // Calculate hit efficiency (points gained vs hits taken)
@@ -190,20 +312,18 @@ async function calculateHitEfficiency(
   return [];
 }
 
-// Calculate winning and losing streaks
+// Calculate historical maximum winning and losing streaks
 async function calculateStreaks(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  // Get all match results for each manager
+  // Get all match results for each manager, ordered by gameweek ASC
   const matchesData = await db.query(`
     SELECT
       entry_1_id as entry_id,
       event,
-      entry_1_points as own_points,
-      entry_2_points as opp_points,
       CASE
         WHEN entry_1_points > entry_2_points THEN 'W'
         WHEN entry_1_points < entry_2_points THEN 'L'
@@ -211,12 +331,12 @@ async function calculateStreaks(
       END as result
     FROM h2h_matches
     WHERE league_id = $1 AND event = ANY($2)
+
     UNION ALL
+
     SELECT
       entry_2_id as entry_id,
       event,
-      entry_2_points as own_points,
-      entry_1_points as opp_points,
       CASE
         WHEN entry_2_points > entry_1_points THEN 'W'
         WHEN entry_2_points < entry_1_points THEN 'L'
@@ -224,7 +344,8 @@ async function calculateStreaks(
       END as result
     FROM h2h_matches
     WHERE league_id = $1 AND event = ANY($2)
-    ORDER BY entry_id, event DESC
+
+    ORDER BY entry_id, event ASC
   `, [leagueId, gameweeks]);
 
   // Group results by manager
@@ -239,7 +360,7 @@ async function calculateStreaks(
     });
   });
 
-  // Calculate streaks for each manager
+  // Calculate max streaks for each manager
   const streakData = managers.map((manager) => {
     const results = managerResults[manager.entry_id] || [];
 
@@ -248,25 +369,60 @@ async function calculateStreaks(
         entry_id: manager.entry_id,
         player_name: manager.player_name,
         team_name: manager.team_name,
-        current_streak: 0,
-        streak_type: 'N/A',
-        form: '',
+        max_win_streak: 0,
+        win_streak_range: '',
+        max_loss_streak: 0,
+        loss_streak_range: '',
       };
     }
 
-    // Results are already sorted DESC by event
-    const recentResults = results.slice(0, 5);
-    const form = recentResults.map(r => r.result).join('');
+    // Calculate max winning streak
+    let maxWinStreak = 0;
+    let currentWinStreak = 0;
+    let winStreakStart = 0;
+    let winStreakEnd = 0;
+    let tempWinStart = 0;
 
-    // Calculate current streak
-    let streak = 0;
-    let streakType = results[0].result;
+    // Calculate max losing streak
+    let maxLossStreak = 0;
+    let currentLossStreak = 0;
+    let lossStreakStart = 0;
+    let lossStreakEnd = 0;
+    let tempLossStart = 0;
 
-    for (const match of results) {
-      if (match.result === streakType && streakType !== 'D') {
-        streak++;
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+
+      // Winning streak logic
+      if (result.result === 'W') {
+        if (currentWinStreak === 0) {
+          tempWinStart = result.event;
+        }
+        currentWinStreak++;
+
+        if (currentWinStreak > maxWinStreak) {
+          maxWinStreak = currentWinStreak;
+          winStreakStart = tempWinStart;
+          winStreakEnd = result.event;
+        }
       } else {
-        break;
+        currentWinStreak = 0;
+      }
+
+      // Losing streak logic
+      if (result.result === 'L') {
+        if (currentLossStreak === 0) {
+          tempLossStart = result.event;
+        }
+        currentLossStreak++;
+
+        if (currentLossStreak > maxLossStreak) {
+          maxLossStreak = currentLossStreak;
+          lossStreakStart = tempLossStart;
+          lossStreakEnd = result.event;
+        }
+      } else {
+        currentLossStreak = 0;
       }
     }
 
@@ -274,22 +430,37 @@ async function calculateStreaks(
       entry_id: manager.entry_id,
       player_name: manager.player_name,
       team_name: manager.team_name,
-      current_streak: streak,
-      streak_type: streakType,
-      form: form,
+      max_win_streak: maxWinStreak,
+      win_streak_range: maxWinStreak > 0 ? `GW${winStreakStart} → GW${winStreakEnd}` : '',
+      max_loss_streak: maxLossStreak,
+      loss_streak_range: maxLossStreak > 0 ? `GW${lossStreakStart} → GW${lossStreakEnd}` : '',
     };
   });
 
   // Separate into winning and losing streaks
   const winningStreaks = streakData
-    .filter(s => s.streak_type === 'W' && s.current_streak > 0)
-    .sort((a, b) => b.current_streak - a.current_streak)
-    .slice(0, 10);
+    .filter(s => s.max_win_streak > 0)
+    .sort((a, b) => b.max_win_streak - a.max_win_streak)
+    .slice(0, 10)
+    .map(s => ({
+      entry_id: s.entry_id,
+      player_name: s.player_name,
+      team_name: s.team_name,
+      streak: s.max_win_streak,
+      gw_range: s.win_streak_range
+    }));
 
   const losingStreaks = streakData
-    .filter(s => s.streak_type === 'L' && s.current_streak > 0)
-    .sort((a, b) => b.current_streak - a.current_streak)
-    .slice(0, 10);
+    .filter(s => s.max_loss_streak > 0)
+    .sort((a, b) => b.max_loss_streak - a.max_loss_streak)
+    .slice(0, 10)
+    .map(s => ({
+      entry_id: s.entry_id,
+      player_name: s.player_name,
+      team_name: s.team_name,
+      streak: s.max_loss_streak,
+      gw_range: s.loss_streak_range
+    }));
 
   return {
     winning: winningStreaks,

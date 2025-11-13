@@ -1,73 +1,75 @@
 'use client';
-
+import { useState } from 'react';
 import styles from './Leaderboard.module.css';
 
 export interface StreakData {
   entry_id: number;
   player_name: string;
   team_name: string;
-  current_streak: number;
-  streak_type: string;
-  form: string;
+  streak: number;
+  gw_range: string;
 }
 
-interface Props {
+interface StreaksProps {
   winningStreaks: StreakData[];
   losingStreaks: StreakData[];
 }
 
-export function Streaks({ winningStreaks, losingStreaks }: Props) {
+export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
+  const [view, setView] = useState<'best' | 'worst'>('best');
+
+  const currentData = view === 'best' ? winningStreaks : losingStreaks;
+  const isEmpty = !currentData || currentData.length === 0;
+
   return (
-    <div className={styles.streaksContainer}>
-      {/* Winning Streaks */}
-      <div className={styles.card}>
-        <h4 className={styles.cardTitle}>🔥 Winning Streaks</h4>
-        <div className={styles.subtitle}>Current consecutive wins</div>
-        {!winningStreaks || winningStreaks.length === 0 ? (
-          <div className={styles.noData}>No active winning streaks</div>
-        ) : (
-          <div className={styles.list}>
-            {winningStreaks.slice(0, 5).map((item, index) => (
-              <div key={item.entry_id} className={styles.listItem}>
-                <div className={styles.rank}>{index + 1}</div>
-                <div className={styles.info}>
-                  <div className={styles.name}>{item.player_name}</div>
-                  <div className={styles.meta}>Form: {item.form}</div>
-                </div>
-                <div className={styles.stats}>
-                  <div className={styles.statValue}>{item.current_streak}</div>
-                  <div className={styles.statLabel}>wins</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className={styles.card}>
+      <h4 className={styles.cardTitle}>
+        {view === 'best' ? '🔥' : '💀'} Streaks
+      </h4>
+      <div className={styles.subtitle}>
+        Longest {view === 'best' ? 'winning' : 'losing'} streaks in H2H matches
       </div>
 
-      {/* Losing Streaks */}
-      <div className={styles.card}>
-        <h4 className={styles.cardTitle}>💀 Losing Streaks</h4>
-        <div className={styles.subtitle}>Current consecutive losses</div>
-        {!losingStreaks || losingStreaks.length === 0 ? (
-          <div className={styles.noData}>No active losing streaks</div>
-        ) : (
-          <div className={styles.list}>
-            {losingStreaks.slice(0, 5).map((item, index) => (
-              <div key={item.entry_id} className={styles.listItem}>
-                <div className={styles.rank}>{index + 1}</div>
-                <div className={styles.info}>
-                  <div className={styles.name}>{item.player_name}</div>
-                  <div className={styles.meta}>Form: {item.form}</div>
-                </div>
-                <div className={styles.stats}>
-                  <div className={styles.statValue}>{item.current_streak}</div>
-                  <div className={styles.statLabel}>losses</div>
+      {/* Toggle */}
+      <div className={styles.toggle}>
+        <button
+          className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
+          onClick={() => setView('best')}
+        >
+          Best
+        </button>
+        <button
+          className={`${styles.toggleButton} ${view === 'worst' ? styles.active : ''}`}
+          onClick={() => setView('worst')}
+        >
+          Worst
+        </button>
+      </div>
+
+      {isEmpty ? (
+        <div className={styles.noData}>
+          No {view === 'best' ? 'winning' : 'losing'} streaks yet
+        </div>
+      ) : (
+        <div className={styles.list}>
+          {currentData.map((manager, index) => (
+            <div key={manager.entry_id} className={styles.listItem}>
+              <div className={styles.rank}>{index + 1}</div>
+              <div className={styles.info}>
+                <div className={styles.name}>{manager.player_name}</div>
+                <div className={styles.meta}>{manager.team_name}</div>
+                <div className={styles.gwRange}>{manager.gw_range}</div>
+              </div>
+              <div className={styles.stats}>
+                <div className={styles.statValue}>{manager.streak}</div>
+                <div className={styles.statLabel}>
+                  {view === 'best' ? 'wins' : 'losses'}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

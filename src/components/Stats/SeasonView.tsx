@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './SeasonView.module.css';
 import { CaptainLeaderboard } from './season/CaptainLeaderboard';
-import { ChipPerformance } from './season/ChipPerformance';
+import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerformance';
 import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
 import { ChipsTrend } from './season/ChipsTrend';
@@ -12,7 +12,7 @@ export interface SeasonStats {
   completedGameweeks: number;
   leaderboards: {
     captainPoints: CaptainLeaderboardData[];
-    chipPerformance: ChipPerformanceData[];
+    chipPerformance: ChipPerformanceData;
     streaks: {
       winning: StreakData[];
       losing: StreakData[];
@@ -31,13 +31,6 @@ export interface CaptainLeaderboardData {
   team_name: string;
   total_points: number;
   average_per_gw: number;
-}
-
-export interface ChipPerformanceData {
-  entry_id: number;
-  player_name: string;
-  team_name: string;
-  total_chip_points: number;
 }
 
 
