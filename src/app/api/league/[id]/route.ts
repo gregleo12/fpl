@@ -244,14 +244,45 @@ export async function GET(
           eventTransfers, eventTransfersCost, benchPoints]);
     }
 
-    // Store matches (with chips from picks data)
+    // Store matches (with chips from history endpoint - more reliable than picks.active_chip)
+    // Build chips map by fetching chip history for all managers
+    const uniqueEntries = Array.from(new Set(
+      league.standings.results.map(s => s.entry)
+    ));
+
+    console.log(`Fetching chip history for ${uniqueEntries.length} managers...`);
+
     const chipsMap = new Map<string, string | null>();
-    for (const result of picksResults) {
-      if (result.status === 'fulfilled') {
-        const { entryId, event, data } = result.value;
-        chipsMap.set(`${entryId}_${event}`, data.active_chip || null);
+    const chipHistoryPromises = uniqueEntries.map(async (entryId) => {
+      try {
+        const response = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${entryId}/history/`
+        );
+        if (!response.ok) return null;
+
+        const data = await response.json();
+        return { entryId, chips: data.chips || [] };
+      } catch (error) {
+        console.error(`Failed to fetch chip history for entry ${entryId}:`, error);
+        return null;
+      }
+    });
+
+    const chipHistoryResults = await Promise.all(chipHistoryPromises);
+
+    // Build map: entry_id + event -> chip_name
+    for (const result of chipHistoryResults) {
+      if (!result) continue;
+
+      const { entryId, chips } = result;
+      for (const chip of chips) {
+        if (chip.event) {
+          chipsMap.set(`${entryId}_${chip.event}`, chip.name);
+        }
       }
     }
+
+    console.log(`Chips map built with ${chipsMap.size} entries`);
 
     // Store ALL matches (including future ones) but chip data only for finished matches
     for (const match of allMatches) {
