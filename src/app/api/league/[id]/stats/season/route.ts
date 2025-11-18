@@ -190,8 +190,7 @@ async function calculateCaptainLeaderboard(
           ? parseFloat((manager.total_captain_points / manager.gameweeks_used).toFixed(1))
           : 0
       }))
-      .sort((a, b) => b.total_points - a.total_points)
-      .slice(0, 10);
+      .sort((a, b) => b.total_points - a.total_points);
 
     console.log(`Captain leaderboard calculated. Top score: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}%)`);
 
@@ -255,8 +254,7 @@ async function calculateChipPerformance(
         chips_detail: chips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', ')
       }))
       .filter(m => m.chip_count > 0)
-      .sort((a, b) => b.chip_count - a.chip_count)
-      .slice(0, 10);
+      .sort((a, b) => b.chip_count - a.chip_count);
 
     // LEADERBOARD 2: Most Chips Faced
     const chipsFaced = await Promise.all(
@@ -299,8 +297,13 @@ async function calculateChipPerformance(
 
     const chipsFacedLeaderboard = chipsFaced
       .filter(m => m.chips_faced_count > 0)
-      .sort((a, b) => b.chips_faced_count - a.chips_faced_count)
-      .slice(0, 10);
+      .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
+
+    console.log('Chips Faced Debug:', {
+      totalManagers: managers.length,
+      withChipsFaced: chipsFacedLeaderboard.length,
+      sample: chipsFacedLeaderboard[0]
+    });
 
     return {
       chipsPlayed,
@@ -458,7 +461,6 @@ async function calculateStreaks(
   const winningStreaks = streakData
     .filter(s => s.max_win_streak > 0)
     .sort((a, b) => b.max_win_streak - a.max_win_streak)
-    .slice(0, 10)
     .map(s => ({
       entry_id: s.entry_id,
       player_name: s.player_name,
@@ -470,7 +472,6 @@ async function calculateStreaks(
   const losingStreaks = streakData
     .filter(s => s.max_loss_streak > 0)
     .sort((a, b) => b.max_loss_streak - a.max_loss_streak)
-    .slice(0, 10)
     .map(s => ({
       entry_id: s.entry_id,
       player_name: s.player_name,
@@ -521,8 +522,8 @@ async function calculateBestWorstGameweeks(
   });
 
   return {
-    best: allScores.slice(0, 10),
-    worst: allScores.reverse().slice(0, 10),
+    best: allScores,
+    worst: allScores.reverse(),
   };
 }
 

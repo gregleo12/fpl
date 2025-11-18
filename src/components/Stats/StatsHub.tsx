@@ -15,9 +15,10 @@ export interface GameweekStats {
   event: number;
   captainPicks: CaptainPickData[];
   chipsPlayed: ChipData[];
-  hitsTaken: HitData;
+  hitsTaken: HitData[];
   winners: WinnersData;
   topPerformers: TopPerformer[];
+  totalManagers: number;
 }
 
 export interface CaptainPickData {
@@ -30,18 +31,16 @@ export interface CaptainPickData {
 }
 
 export interface ChipData {
+  entry_id: number;
+  player_name: string;
   chip_name: string;
   chip_display: string;
-  count: number;
 }
 
 export interface HitData {
-  total_managers: number;
-  managers_with_hits: number;
-  percentage_with_hits: number;
-  total_hit_cost: number;
-  avg_hit_cost: number;
-  max_hit: number;
+  entry_id: number;
+  player_name: string;
+  hits_taken: number;
 }
 
 export interface WinnersData {
@@ -176,11 +175,11 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
           {/* Stats Sections */}
           {!isLoading && !error && stats && (
             <div className={styles.sections}>
-              <CaptainPicks data={stats.captainPicks} totalManagers={stats.hitsTaken.total_managers} />
+              <CaptainPicks data={stats.captainPicks} totalManagers={stats.totalManagers} />
               <ChipsPlayed data={stats.chipsPlayed} />
               <HitsTaken data={stats.hitsTaken} />
               <GameweekWinners data={stats.winners} />
-              <TopPerformers data={stats.topPerformers} totalManagers={stats.hitsTaken.total_managers} />
+              <TopPerformers data={stats.topPerformers} totalManagers={stats.totalManagers} />
             </div>
           )}
         </>

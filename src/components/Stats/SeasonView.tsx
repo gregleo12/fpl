@@ -105,7 +105,6 @@ export function SeasonView({ leagueId }: Props) {
 
       {/* Leaderboards Section */}
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>🏆 Season Leaderboards</h3>
         <div className={styles.leaderboards}>
           <CaptainLeaderboard data={data.leaderboards.captainPoints} />
           <ChipPerformance data={data.leaderboards.chipPerformance} />

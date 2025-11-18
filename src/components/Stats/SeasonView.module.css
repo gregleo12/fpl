@@ -1,5 +1,5 @@
 .container {
-  padding-top: 1rem;
+  padding-top: 0.25rem; /* Reduced by 75% from 1rem */
 }
 
 .seasonInfo {
@@ -10,7 +10,7 @@
   padding: 1rem 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 135, 0.2);
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem; /* Reduced by 75% from 2rem */
 }
 
 .seasonLabel {

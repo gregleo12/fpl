@@ -30,9 +30,11 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
     <div className={styles.listItem}>
       <div className={styles.rank}>{index + 1}</div>
       <div className={styles.info}>
-        <div className={styles.name}>{manager.player_name}</div>
+        <div className={styles.nameWithRange}>
+          <span className={styles.name}>{manager.player_name}</span>
+          <span className={styles.gwRangeInline}>{manager.gw_range}</span>
+        </div>
         <div className={styles.meta}>{manager.team_name}</div>
-        <div className={styles.gwRange}>{manager.gw_range}</div>
       </div>
       <div className={styles.stats}>
         <div className={styles.statValue}>{manager.streak}</div>

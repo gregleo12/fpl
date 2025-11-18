@@ -54,6 +54,7 @@ export async function GET(
       hitsTaken: hitsData,
       winners: winnersData,
       topPerformers: topPerformersData,
+      totalManagers: managersData.length,
     });
   } catch (error: any) {
     console.error('Error fetching gameweek stats:', error);
@@ -170,6 +171,13 @@ async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
 
   console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
 
+  const CHIP_NAMES: Record<string, string> = {
+    'bboost': 'BB',
+    '3xc': 'TC',
+    'freehit': 'FH',
+    'wildcard': 'WC',
+  };
+
   // Fetch chip history from FPL API for each manager
   const chipPromises = managers.map(async (manager: any) => {
     try {
@@ -178,42 +186,36 @@ async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
       );
 
       if (!response.ok) {
-        return [];
+        return null;
       }
 
       const data = await response.json();
       // Filter chips for this specific gameweek
-      return (data.chips || []).filter((chip: any) => chip.event === gw);
+      const chipsThisGW = (data.chips || []).filter((chip: any) => chip.event === gw);
+
+      if (chipsThisGW.length === 0) {
+        return null;
+      }
+
+      // Return manager with their chip
+      return {
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        chip_name: chipsThisGW[0].name,
+        chip_display: CHIP_NAMES[chipsThisGW[0].name] || chipsThisGW[0].name,
+      };
     } catch (error) {
       console.error(`Failed to fetch chips for entry ${manager.entry_id}:`, error);
-      return [];
+      return null;
     }
   });
 
-  const allChipsArrays = await Promise.all(chipPromises);
-  const allChips = allChipsArrays.flat();
+  const allResults = await Promise.all(chipPromises);
+  const managersWithChips = allResults.filter((r) => r !== null);
 
-  console.log(`Found ${allChips.length} chips played in GW${gw}`);
+  console.log(`Found ${managersWithChips.length} managers with chips played in GW${gw}`);
 
-  // Count chips by type
-  const chipCounts: Record<string, number> = {};
-  allChips.forEach((chip: any) => {
-    const chipName = chip.name; // "wildcard", "bboost", "3xc", "freehit"
-    chipCounts[chipName] = (chipCounts[chipName] || 0) + 1;
-  });
-
-  const CHIP_NAMES: Record<string, string> = {
-    'bboost': 'Bench Boost',
-    '3xc': 'Triple Captain',
-    'freehit': 'Free Hit',
-    'wildcard': 'Wildcard',
-  };
-
-  return Object.entries(chipCounts).map(([chip, count]) => ({
-    chip_name: chip,
-    chip_display: CHIP_NAMES[chip] || chip,
-    count: count,
-  }));
+  return managersWithChips;
 }
 
 // Fetch scores from h2h_matches
@@ -315,20 +317,16 @@ async function fetchAllPicks(managers: any[], gw: number) {
 
 // Calculate hits statistics
 function calculateHits(picksData: any[]) {
-  const totalManagers = picksData.length;
-  const managersWithHits = picksData.filter((p) => p.transfer_cost > 0).length;
-  const totalHitCost = picksData.reduce((sum, p) => sum + p.transfer_cost, 0);
-  const maxHit = Math.max(...picksData.map((p) => p.transfer_cost), 0);
-  const avgHitCost = managersWithHits > 0 ? totalHitCost / managersWithHits : 0;
+  const managersWithHitsData = picksData
+    .filter((p) => p.transfer_cost > 0)
+    .map((p) => ({
+      entry_id: p.entry_id,
+      player_name: p.player_name,
+      hits_taken: p.transfer_cost / 4, // Convert cost to number of hits
+    }))
+    .sort((a, b) => b.hits_taken - a.hits_taken); // Sort by most hits first
 
-  return {
-    total_managers: totalManagers,
-    managers_with_hits: managersWithHits,
-    percentage_with_hits: (managersWithHits / totalManagers) * 100,
-    total_hit_cost: totalHitCost,
-    avg_hit_cost: avgHitCost,
-    max_hit: maxHit,
-  };
+  return managersWithHitsData;
 }
 
 // Calculate winners/losers

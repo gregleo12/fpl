@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { TopPerformer } from '../StatsHub';
 import styles from './Section.module.css';
 
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export function TopPerformers({ data, totalManagers }: Props) {
+  const [expanded, setExpanded] = useState(false);
+
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>
@@ -18,6 +21,9 @@ export function TopPerformers({ data, totalManagers }: Props) {
     );
   }
 
+  const displayData = expanded ? data.slice(0, 10) : data.slice(0, 5);
+  const canExpand = data.length > 5;
+
   return (
     <div className={styles.section}>
       <h3 className={styles.sectionTitle}>🌟 Top Performers</h3>
@@ -25,7 +31,7 @@ export function TopPerformers({ data, totalManagers }: Props) {
         Highest scoring players this gameweek
       </div>
       <div className={styles.content}>
-        {data.map((player, index) => (
+        {displayData.map((player, index) => (
           <div key={player.player_id} className={styles.item}>
             <div className={styles.itemRank}>{index + 1}</div>
             <div className={styles.itemInfo}>
@@ -46,6 +52,15 @@ export function TopPerformers({ data, totalManagers }: Props) {
           </div>
         ))}
       </div>
+
+      {canExpand && (
+        <button
+          className={styles.expandButton}
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? 'Show Less' : 'Show Top 10'}
+        </button>
+      )}
     </div>
   );
 }
