@@ -31,6 +31,39 @@ Before ANY task, read `CLAUDE_CODE_CONTEXT.md` for:
 - Don't modify scores without updating ALL locations (fixture cards + modal + differential)
 - Don't assume - verify data structure with console.logs first
 
+## Stats Hub Patterns (v1.11.9-v1.14.0)
+
+### Data Fetching Priority
+- ALWAYS fetch from FPL API for accuracy (not database)
+- Database may have incomplete/stale data
+- Example: Captain points, chips data, bonus points
+
+### Modal Pattern
+- Use shared modal component (FullRankingModal.tsx)
+- Render function pattern: define once, use in card + modal
+- stopPropagation on toggles to prevent modal opening
+
+### Toggle Consistency
+- All toggles must use same CSS classes
+- Position in cardHeader (not standalone)
+- Active state with green highlight
+
+### Captain Points Calculation
+- Fetch from FPL API: picks + live data in parallel
+- Formula: base_points × multiplier
+- Get total season points from league_standings for percentage
+
+### Chip Performance
+- Two separate leaderboards: Chips Played vs Chips Faced
+- Fetch chip history from FPL API per manager
+- Chips Faced: query h2h_matches for opponent chips
+
+### Streaks Calculation
+- Historical maximum (not current active)
+- Track GW range: "GW5 → GW11"
+- Separate winning and losing streaks
+- Order by event ASC for proper tracking
+
 ## When Starting New Session
 1. Read CLAUDE_CODE_CONTEXT.md
 2. Check `git log --oneline -10` for recent changes
