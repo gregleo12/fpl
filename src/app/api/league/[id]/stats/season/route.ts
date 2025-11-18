@@ -112,23 +112,31 @@ async function calculateCaptainLeaderboard(
   try {
     console.log(`Calculating captain points for ${managers.length} managers across ${gameweeks.length} gameweeks...`);
 
-    // First, get total season points for each manager from league standings
-    const standingsResult = await db.query(`
-      SELECT entry_id, total
-      FROM league_standings
-      WHERE league_id = $1
-    `, [leagueId]);
-
-    const totalPointsMap = new Map(
-      standingsResult.rows.map((row: any) => [row.entry_id, row.total || 0])
-    );
-
-    // Fetch captain points for all managers across all gameweeks
+    // Fetch captain points AND total season points for all managers from FPL API
     const captainDataPromises = managers.map(async (manager) => {
       let totalCaptainPoints = 0;
       let gameweeksUsed = 0;
+      let totalSeasonPoints = 0;
 
-      // Fetch picks for each gameweek
+      // Fetch this manager's history to get accurate total season points
+      try {
+        const historyResponse = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/history/`
+        );
+
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          // Sum up points from all completed gameweeks in current season
+          totalSeasonPoints = historyData.current.reduce(
+            (sum: number, gw: any) => sum + (gw.points || 0),
+            0
+          );
+        }
+      } catch (error) {
+        console.error(`Error fetching history for entry ${manager.entry_id}:`, error);
+      }
+
+      // Fetch picks for each gameweek to calculate captain points
       for (const gw of gameweeks) {
         try {
           // Fetch picks and live data for this gameweek
@@ -162,14 +170,12 @@ async function calculateCaptainLeaderboard(
         }
       }
 
-      const totalSeasonPoints = totalPointsMap.get(manager.entry_id) || 0;
-
       return {
         entry_id: manager.entry_id,
         player_name: manager.player_name,
         team_name: manager.team_name,
         total_captain_points: totalCaptainPoints,
-        total_season_points: totalSeasonPoints as number,
+        total_season_points: totalSeasonPoints,
         gameweeks_used: gameweeksUsed
       };
     });
@@ -192,7 +198,7 @@ async function calculateCaptainLeaderboard(
       }))
       .sort((a, b) => b.total_points - a.total_points);
 
-    console.log(`Captain leaderboard calculated. Top score: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}%)`);
+    console.log(`Captain leaderboard calculated. Top: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}% of ${captainData[0]?.total_season_points || 0} total)`);
 
     return leaderboard;
 

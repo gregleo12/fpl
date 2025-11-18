@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem; /* Reduced from 2rem - Fix 2: Equal spacing */
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -45,13 +45,6 @@
   background: rgba(0, 255, 135, 0.2);
   color: #00ff87;
   border: 1px solid rgba(0, 255, 135, 0.3);
-}
-
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #00ff87;
-  margin: 0;
 }
 
 /* GW Selector */
@@ -168,11 +161,6 @@
   .header {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .title {
-    font-size: 1.25rem;
-    text-align: center;
   }
 
   .viewToggle {

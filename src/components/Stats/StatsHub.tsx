@@ -111,8 +111,6 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
     <div className={styles.container}>
       {/* Header with View Toggle and GW Selector */}
       <div className={styles.header}>
-        <h2 className={styles.title}>Stats Hub</h2>
-
         {/* View Toggle */}
         <div className={styles.viewToggle}>
           <button
