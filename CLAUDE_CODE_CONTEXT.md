@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-11-10
+Last Updated: 2025-11-18
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
