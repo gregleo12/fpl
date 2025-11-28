@@ -20,7 +20,8 @@
   left: 0;
   right: 0;
   z-index: 100;
-  background: transparent;
+  /* Solid background - NOT transparent */
+  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
 
   /* DEFAULT: Mobile position (bottom) - Mobile-first */
   bottom: 0;
@@ -33,7 +34,8 @@
   display: flex;
   gap: 6px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.03);
+  /* Solid background - NOT transparent */
+  background: rgba(26, 26, 46, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   max-width: 100%;
