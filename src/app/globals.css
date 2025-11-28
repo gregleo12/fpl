@@ -19,17 +19,20 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
-html,
+html {
+  width: 100%;
+  min-height: 100vh;
+  max-width: 100vw;
+  background: linear-gradient(135deg, #37003c 0%, #0f0f23 50%, #1a1a2e 100%) fixed;
+}
+
 body {
   width: 100%;
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #37003c 0%, #0f0f23 50%, #1a1a2e 100%);
+  background: transparent;
   color: white;
-}
-
-body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
