@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import styles from './admin.module.css';
 
 interface HealthData {
@@ -34,9 +35,12 @@ interface AnalyticsData {
   overview: {
     totalRequests: number;
     todayRequests: number;
+    todayTrend: number;
     weekRequests: number;
+    weekTrend: number;
     uniqueUsers: number;
     totalLeagues: number;
+    newLeaguesToday: number;
   };
   topLeagues: Array<{
     leagueId: number;
@@ -124,6 +128,18 @@ export default function AdminPage() {
     return date.toLocaleDateString();
   };
 
+  const renderTrend = (trend: number) => {
+    if (trend === 0) return null;
+    const isPositive = trend > 0;
+    const arrow = isPositive ? '↗' : '↘';
+    const color = isPositive ? '#00ff87' : '#ff4757';
+    return (
+      <span style={{ color, fontSize: '0.85rem', marginLeft: '0.5rem' }}>
+        {arrow} {Math.abs(trend)}%
+      </span>
+    );
+  };
+
   if (loading && !healthData && !analyticsData) {
     return (
       <div className={styles.container}>
@@ -176,29 +192,91 @@ export default function AdminPage() {
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>Total Requests</div>
                 <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.toLocaleString()}</div>
+                <div className={styles.overviewSubtext}>All time</div>
               </div>
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>Today</div>
-                <div className={styles.overviewValue}>{analyticsData.overview.todayRequests.toLocaleString()}</div>
+                <div className={styles.overviewValue}>
+                  {analyticsData.overview.todayRequests.toLocaleString()}
+                  {renderTrend(analyticsData.overview.todayTrend)}
+                </div>
+                <div className={styles.overviewSubtext}>
+                  {analyticsData.overview.totalRequests > 0
+                    ? `${((analyticsData.overview.todayRequests / analyticsData.overview.totalRequests) * 100).toFixed(1)}% of total`
+                    : 'vs yesterday'
+                  }
+                </div>
               </div>
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>This Week</div>
-                <div className={styles.overviewValue}>{analyticsData.overview.weekRequests.toLocaleString()}</div>
+                <div className={styles.overviewValue}>
+                  {analyticsData.overview.weekRequests.toLocaleString()}
+                  {renderTrend(analyticsData.overview.weekTrend)}
+                </div>
+                <div className={styles.overviewSubtext}>vs previous week</div>
               </div>
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>Unique Users</div>
                 <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.toLocaleString()}</div>
+                <div className={styles.overviewSubtext}>Anonymous hashes</div>
               </div>
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>Active Leagues</div>
                 <div className={styles.overviewValue}>{analyticsData.overview.totalLeagues.toLocaleString()}</div>
+                <div className={styles.overviewSubtext}>
+                  {analyticsData.overview.newLeaguesToday > 0
+                    ? `+${analyticsData.overview.newLeaguesToday} new today`
+                    : 'Tracked leagues'
+                  }
+                </div>
               </div>
             </div>
 
+            {/* Activity Chart */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>📈 Activity Last 24 Hours</div>
+              {analyticsData.hourlyActivity.length > 0 ? (
+                <div className={styles.chartWrapper}>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={analyticsData.hourlyActivity}>
+                      <XAxis
+                        dataKey="hour"
+                        stroke="rgba(255, 255, 255, 0.3)"
+                        tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 12 }}
+                        tickFormatter={(hour) => `${hour}:00`}
+                      />
+                      <YAxis
+                        stroke="rgba(255, 255, 255, 0.3)"
+                        tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 12 }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(26, 26, 46, 0.95)',
+                          border: '1px solid rgba(0, 255, 135, 0.3)',
+                          borderRadius: '8px',
+                          color: '#fff'
+                        }}
+                        labelFormatter={(hour) => `Hour: ${hour}:00`}
+                        formatter={(value: any) => [`${value} requests`, 'Count']}
+                      />
+                      <Bar
+                        dataKey="count"
+                        fill="#00ff87"
+                        radius={[8, 8, 0, 0]}
+                        opacity={0.8}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>No activity in the last 24 hours</div>
+              )}
+            </div>
+
             {/* Top Leagues */}
-            {analyticsData.topLeagues.length > 0 && (
-              <div className={styles.section}>
-                <div className={styles.sectionTitle}>🏆 Top Leagues by Usage</div>
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>🏆 Top Leagues by Usage</div>
+              {analyticsData.topLeagues.length > 0 ? (
                 <div className={styles.tableWrapper}>
                   <table className={styles.table}>
                     <thead>
@@ -226,13 +304,15 @@ export default function AdminPage() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className={styles.emptyState}>No leagues tracked yet</div>
+              )}
+            </div>
 
             {/* Recent Requests */}
-            {analyticsData.recentRequests.length > 0 && (
-              <div className={styles.section}>
-                <div className={styles.sectionTitle}>🕐 Recent Requests</div>
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>🕐 Recent Requests</div>
+              {analyticsData.recentRequests.length > 0 ? (
                 <div className={styles.requestsList}>
                   {analyticsData.recentRequests.map((req, idx) => (
                     <div key={idx} className={styles.requestItem}>
@@ -248,8 +328,10 @@ export default function AdminPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className={styles.emptyState}>No recent requests</div>
+              )}
+            </div>
           </>
         )}
 

@@ -9,9 +9,12 @@ export async function GET() {
     const [
       totalRequestsResult,
       todayRequestsResult,
+      yesterdayRequestsResult,
       weekRequestsResult,
+      previousWeekRequestsResult,
       uniqueUsersResult,
       totalLeaguesResult,
+      newLeaguesTodayResult,
       topLeaguesResult,
       recentRequestsResult
     ] = await Promise.all([
@@ -25,6 +28,14 @@ export async function GET() {
         WHERE timestamp >= CURRENT_DATE
       `),
 
+      // Requests yesterday (for trend comparison)
+      db.query(`
+        SELECT COUNT(*) as count
+        FROM analytics_requests
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '1 day'
+          AND timestamp < CURRENT_DATE
+      `),
+
       // Requests this week
       db.query(`
         SELECT COUNT(*) as count
@@ -32,11 +43,26 @@ export async function GET() {
         WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
       `),
 
+      // Requests previous week (for trend comparison)
+      db.query(`
+        SELECT COUNT(*) as count
+        FROM analytics_requests
+        WHERE timestamp >= CURRENT_DATE - INTERVAL '14 days'
+          AND timestamp < CURRENT_DATE - INTERVAL '7 days'
+      `),
+
       // Unique users (all time)
       db.query(`SELECT COUNT(DISTINCT user_hash) as count FROM analytics_requests`),
 
       // Total leagues tracked
       db.query(`SELECT COUNT(*) as count FROM analytics_leagues`),
+
+      // New leagues today
+      db.query(`
+        SELECT COUNT(*) as count
+        FROM analytics_leagues
+        WHERE first_seen >= CURRENT_DATE
+      `),
 
       // Top 5 leagues by requests
       db.query(`
@@ -78,13 +104,31 @@ export async function GET() {
       ORDER BY hour
     `);
 
+    const todayCount = parseInt(todayRequestsResult.rows[0]?.count || '0');
+    const yesterdayCount = parseInt(yesterdayRequestsResult.rows[0]?.count || '0');
+    const weekCount = parseInt(weekRequestsResult.rows[0]?.count || '0');
+    const previousWeekCount = parseInt(previousWeekRequestsResult.rows[0]?.count || '0');
+    const totalLeagues = parseInt(totalLeaguesResult.rows[0]?.count || '0');
+    const newLeaguesToday = parseInt(newLeaguesTodayResult.rows[0]?.count || '0');
+
+    // Calculate trends
+    const todayTrend = yesterdayCount > 0
+      ? Math.round(((todayCount - yesterdayCount) / yesterdayCount) * 100)
+      : 0;
+    const weekTrend = previousWeekCount > 0
+      ? Math.round(((weekCount - previousWeekCount) / previousWeekCount) * 100)
+      : 0;
+
     return NextResponse.json({
       overview: {
         totalRequests: parseInt(totalRequestsResult.rows[0]?.count || '0'),
-        todayRequests: parseInt(todayRequestsResult.rows[0]?.count || '0'),
-        weekRequests: parseInt(weekRequestsResult.rows[0]?.count || '0'),
+        todayRequests: todayCount,
+        todayTrend,
+        weekRequests: weekCount,
+        weekTrend,
         uniqueUsers: parseInt(uniqueUsersResult.rows[0]?.count || '0'),
-        totalLeagues: parseInt(totalLeaguesResult.rows[0]?.count || '0')
+        totalLeagues,
+        newLeaguesToday
       },
       topLeagues: topLeaguesResult.rows.map((row: any) => ({
         leagueId: row.league_id,
@@ -112,9 +156,12 @@ export async function GET() {
       overview: {
         totalRequests: 0,
         todayRequests: 0,
+        todayTrend: 0,
         weekRequests: 0,
+        weekTrend: 0,
         uniqueUsers: 0,
-        totalLeagues: 0
+        totalLeagues: 0,
+        newLeaguesToday: 0
       },
       topLeagues: [],
       recentRequests: [],
