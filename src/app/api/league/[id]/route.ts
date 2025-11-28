@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
+import { updateLeagueMetadata } from '@/lib/analytics';
 
 export async function GET(
   request: NextRequest,
@@ -39,6 +40,13 @@ export async function GET(
       VALUES ($1, $2, CURRENT_TIMESTAMP)
       ON CONFLICT (id) DO UPDATE SET name = $2, updated_at = CURRENT_TIMESTAMP
     `, [league.league.id, league.league.name]);
+
+    // Track league metadata for analytics
+    updateLeagueMetadata(
+      league.league.id,
+      league.league.name || `League ${league.league.id}`,
+      league.standings.results.length
+    ).catch(() => {}); // Silent fail
 
     // Store standings and managers
     for (const standing of league.standings.results) {
