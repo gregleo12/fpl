@@ -6,6 +6,13 @@
   padding: 0 2rem; /* Add it back for content */
 }
 
+/* Desktop: Add top padding to avoid overlap with fixed top nav */
+@media (min-width: 769px) {
+  .container {
+    padding-top: 1rem;
+  }
+}
+
 .loading,
 .error {
   text-align: center;
@@ -75,11 +82,18 @@
 /* Gameweek Navigator */
 .navigatorWrapper {
   position: sticky;
-  top: 70px; /* Nav height (60px) + 10px gap */
+  top: 10px; /* Mobile: Small gap from top */
   background: transparent;
   z-index: 80; /* Below tabs (90), above content */
   padding: 0;
   margin: 0;
+}
+
+/* Desktop: Position below fixed top nav */
+@media (min-width: 769px) {
+  .navigatorWrapper {
+    top: 90px; /* Desktop nav height (~80px) + gap */
+  }
 }
 
 .navigator {
