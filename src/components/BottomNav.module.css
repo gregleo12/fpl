@@ -1,18 +1,39 @@
 .bottomNav {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
-  height: 65px;
-  background: linear-gradient(180deg, rgba(26, 26, 46, 0.95) 0%, rgba(15, 15, 35, 0.98) 100%);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  /* Solid background - NO transparency */
+  background: #1a1a2e;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0.5rem 0;
-  backdrop-filter: blur(20px);
   z-index: 1000;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Mobile: Bottom position */
+@media (max-width: 768px) {
+  .bottomNav {
+    bottom: 0;
+    top: auto;
+    height: 65px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 0;
+    /* iPhone safe area for home indicator */
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Desktop: Top position */
+@media (min-width: 769px) {
+  .bottomNav {
+    top: 0;
+    bottom: auto;
+    height: 70px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.75rem 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
 }
 
 .navItem {
@@ -65,11 +86,4 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-/* Hide on desktop */
-@media (min-width: 769px) {
-  .bottomNav {
-    display: none;
-  }
 }

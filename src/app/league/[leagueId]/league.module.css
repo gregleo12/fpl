@@ -527,6 +527,14 @@
   }
 }
 
+/* Desktop: Add top padding for fixed top nav */
+@media (min-width: 769px) {
+  .container {
+    padding-top: 6rem; /* Space for top nav (70px nav + padding) */
+  }
+}
+
+/* Mobile: Add bottom margin for fixed bottom nav */
 @media (max-width: 768px) {
   .main {
     margin-bottom: 5rem; /* Space for bottom nav */
