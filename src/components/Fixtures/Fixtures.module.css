@@ -9,7 +9,7 @@
 /* Desktop: Add top padding to avoid overlap with fixed top nav */
 @media (min-width: 769px) {
   .container {
-    padding-top: 1rem;
+    padding-top: 2.5rem; /* Match spacing below for balance */
   }
 }
 
