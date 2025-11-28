@@ -20,8 +20,8 @@
   left: 0;
   right: 0;
   z-index: 100;
-  /* Solid background - NOT transparent */
-  background: linear-gradient(180deg, #1a1a2e 0%, #0f0f23 100%);
+  /* Transparent - floating nav bar effect */
+  background: transparent;
 
   /* DEFAULT: Mobile position (bottom) - Mobile-first */
   bottom: 0;
