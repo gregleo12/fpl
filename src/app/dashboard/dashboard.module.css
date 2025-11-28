@@ -184,16 +184,9 @@
     padding-bottom: 0.5rem; /* Override iPhone padding */
   }
 
-  /* Flip gradient for desktop (nav at top) */
+  /* Remove gradient on desktop */
   .tabsWrapper::before {
-    top: 0;
-    bottom: auto;
-    background: linear-gradient(
-      to top,
-      transparent 0%,
-      rgba(15, 15, 35, 0.5) 40%,
-      rgba(15, 15, 35, 0.9) 100%
-    );
+    display: none;
   }
 }
 
