@@ -70,7 +70,9 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
   // Get all managers in the league
   const managers = await fetchManagers(db, leagueId);
 
-  console.log(`Fetching captain picks from FPL API for ${managers.length} managers in GW${gw}...`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Fetching captain picks from FPL API for ${managers.length} managers in GW${gw}...`);
+  }
 
   // Fetch live data once for this gameweek (performance optimization)
   const liveResponse = await fetch(
@@ -124,7 +126,9 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
 
   const allPicks = (await Promise.all(picksPromises)).filter((p) => p !== null);
 
-  console.log(`Found ${allPicks.length} captain picks in GW${gw}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Found ${allPicks.length} captain picks in GW${gw}`);
+  }
 
   // Group by captain ID and calculate totals
   const captainMap = new Map<number, { count: number; totalPoints: number }>();
@@ -169,7 +173,9 @@ async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
   // Get all managers in the league
   const managers = await fetchManagers(db, leagueId);
 
-  console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
+  }
 
   const CHIP_NAMES: Record<string, string> = {
     'bboost': 'BB',
@@ -213,7 +219,9 @@ async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
   const allResults = await Promise.all(chipPromises);
   const managersWithChips = allResults.filter((r) => r !== null);
 
-  console.log(`Found ${managersWithChips.length} managers with chips played in GW${gw}`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Found ${managersWithChips.length} managers with chips played in GW${gw}`);
+  }
 
   return managersWithChips;
 }
@@ -285,7 +293,9 @@ async function fetchLiveData(gw: number) {
 
 // Fetch picks data from FPL API for all managers
 async function fetchAllPicks(managers: any[], gw: number) {
-  console.log(`Fetching picks for ${managers.length} managers in GW${gw}...`);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Fetching picks for ${managers.length} managers in GW${gw}...`);
+  }
 
   const pickPromises = managers.map(async (manager) => {
     try {

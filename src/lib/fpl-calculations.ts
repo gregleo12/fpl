@@ -148,7 +148,7 @@ export function applyAutoSubstitutions(squad: Squad): AutoSubResult {
     }
 
     // Log if substitution wasn't possible
-    if (!substituted && playingBench.length > 0) {
+    if (!substituted && playingBench.length > 0 && process.env.NODE_ENV === 'development') {
       console.log(
         `Could not substitute ${starter.name} - no valid formation-preserving substitution available`
       );

@@ -40,7 +40,6 @@ export async function GET(
             chipsPlayed: [],
             chipsFaced: []
           },
-          hitEfficiency: [],
           streaks: { winning: [], losing: [] },
           bestGameweeks: [],
           worstGameweeks: [],
@@ -65,14 +64,12 @@ export async function GET(
     const [
       captainLeaderboard,
       chipPerformance,
-      hitEfficiencyData,
       streaksData,
       bestWorstGameweeks,
       trendsData
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
-      calculateHitEfficiency(db, leagueId, completedGameweeks, managers),
       calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
@@ -86,7 +83,6 @@ export async function GET(
           chipsPlayed: chipPerformance.chipsPlayed,
           chipsFaced: chipPerformance.chipsFaced
         },
-        hitEfficiency: hitEfficiencyData,
         streaks: streaksData,
         bestGameweeks: bestWorstGameweeks.best,
         worstGameweeks: bestWorstGameweeks.worst,
@@ -110,7 +106,9 @@ async function calculateCaptainLeaderboard(
   managers: any[]
 ) {
   try {
-    console.log(`Calculating captain points for ${managers.length} managers across ${gameweeks.length} gameweeks...`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Calculating captain points for ${managers.length} managers across ${gameweeks.length} gameweeks...`);
+    }
 
     // Fetch captain points AND total season points for all managers from FPL API
     const captainDataPromises = managers.map(async (manager) => {
@@ -198,7 +196,9 @@ async function calculateCaptainLeaderboard(
       }))
       .sort((a, b) => b.total_points - a.total_points);
 
-    console.log(`Captain leaderboard calculated. Top: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}% of ${captainData[0]?.total_season_points || 0} total)`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Captain leaderboard calculated. Top: ${leaderboard[0]?.total_points || 0} pts (${leaderboard[0]?.percentage || 0}% of ${captainData[0]?.total_season_points || 0} total)`);
+    }
 
     return leaderboard;
 
@@ -305,12 +305,6 @@ async function calculateChipPerformance(
       .filter(m => m.chips_faced_count > 0)
       .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
 
-    console.log('Chips Faced Debug:', {
-      totalManagers: managers.length,
-      withChipsFaced: chipsFacedLeaderboard.length,
-      sample: chipsFacedLeaderboard[0]
-    });
-
     return {
       chipsPlayed,
       chipsFaced: chipsFacedLeaderboard
@@ -323,19 +317,6 @@ async function calculateChipPerformance(
       chipsFaced: []
     };
   }
-}
-
-// Calculate hit efficiency (points gained vs hits taken)
-async function calculateHitEfficiency(
-  db: any,
-  leagueId: number,
-  gameweeks: number[],
-  managers: any[]
-) {
-  // This would require picks data from FPL API
-  // For now, return placeholder
-  // TODO: Implement with picks data
-  return [];
 }
 
 // Calculate historical maximum winning and losing streaks

@@ -31,16 +31,6 @@ export function ChipPerformance({ data }: Props) {
   const currentData = view === 'played' ? data.chipsPlayed : data.chipsFaced;
   const isEmpty = !currentData || currentData.length === 0;
 
-  // Debug logging for v1.15.2
-  console.log('ChipPerformance Debug:', {
-    view,
-    chipsPlayedLength: data.chipsPlayed?.length || 0,
-    chipsFacedLength: data.chipsFaced?.length || 0,
-    currentDataLength: currentData?.length || 0,
-    isEmpty,
-    chipsFacedSample: data.chipsFaced?.[0]
-  });
-
   // Render function for items (used by both card and modal)
   const renderItem = (manager: any, index: number) => (
     <div className={styles.listItem}>
