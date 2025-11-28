@@ -529,7 +529,7 @@ async function calculateBestWorstGameweeks(
 
   return {
     best: allScores,
-    worst: allScores.reverse(),
+    worst: [...allScores].reverse(), // Create copy before reversing
   };
 }
 
