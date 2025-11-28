@@ -75,3 +75,112 @@ export async function updateLeagueMetadata(
     console.error('League metadata update error:', error);
   }
 }
+
+/**
+ * Aggregate yesterday's data into analytics_daily table
+ * Should be run daily via cron or manual trigger
+ */
+export async function aggregateDailyStats(targetDate?: string): Promise<{ success: boolean; date: string; stats: any }> {
+  try {
+    const db = await getDatabase();
+
+    // Default to yesterday if no date provided
+    const dateToAggregate = targetDate || 'CURRENT_DATE - INTERVAL \'1 day\'';
+    const dateString = targetDate || new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+    // Aggregate global stats (no league filter)
+    const globalStats = await db.query(`
+      INSERT INTO analytics_daily (date, league_id, unique_users, total_requests, avg_response_time_ms, error_count)
+      SELECT
+        ${targetDate ? `'${targetDate}'::DATE` : 'CURRENT_DATE - INTERVAL \'1 day\''},
+        NULL,
+        COUNT(DISTINCT user_hash),
+        COUNT(*),
+        AVG(response_time_ms)::INTEGER,
+        COUNT(*) FILTER (WHERE status_code >= 400)
+      FROM analytics_requests
+      WHERE DATE(timestamp) = ${targetDate ? `'${targetDate}'::DATE` : 'CURRENT_DATE - INTERVAL \'1 day\''}
+      ON CONFLICT (date, league_id) DO UPDATE SET
+        unique_users = EXCLUDED.unique_users,
+        total_requests = EXCLUDED.total_requests,
+        avg_response_time_ms = EXCLUDED.avg_response_time_ms,
+        error_count = EXCLUDED.error_count
+      RETURNING *
+    `);
+
+    // Aggregate per-league stats
+    const leagueStats = await db.query(`
+      INSERT INTO analytics_daily (date, league_id, unique_users, total_requests, avg_response_time_ms, error_count)
+      SELECT
+        ${targetDate ? `'${targetDate}'::DATE` : 'CURRENT_DATE - INTERVAL \'1 day\''},
+        league_id,
+        COUNT(DISTINCT user_hash),
+        COUNT(*),
+        AVG(response_time_ms)::INTEGER,
+        COUNT(*) FILTER (WHERE status_code >= 400)
+      FROM analytics_requests
+      WHERE DATE(timestamp) = ${targetDate ? `'${targetDate}'::DATE` : 'CURRENT_DATE - INTERVAL \'1 day\''}
+        AND league_id IS NOT NULL
+      GROUP BY league_id
+      ON CONFLICT (date, league_id) DO UPDATE SET
+        unique_users = EXCLUDED.unique_users,
+        total_requests = EXCLUDED.total_requests,
+        avg_response_time_ms = EXCLUDED.avg_response_time_ms,
+        error_count = EXCLUDED.error_count
+      RETURNING *
+    `);
+
+    // Update total unique users per league (lifetime)
+    await db.query(`
+      UPDATE analytics_leagues al
+      SET total_unique_users = (
+        SELECT COUNT(DISTINCT user_hash)
+        FROM analytics_requests ar
+        WHERE ar.league_id = al.league_id
+      )
+    `);
+
+    return {
+      success: true,
+      date: dateString,
+      stats: {
+        global: globalStats.rows[0] || null,
+        leagues: leagueStats.rows
+      }
+    };
+  } catch (error: any) {
+    console.error('Daily aggregation error:', error);
+    return {
+      success: false,
+      date: targetDate || 'yesterday',
+      stats: { error: error.message }
+    };
+  }
+}
+
+/**
+ * Clean up old request data (keep last 30 days)
+ * Should be run daily or weekly
+ */
+export async function cleanupOldRequests(daysToKeep: number = 30): Promise<{ success: boolean; deleted: number }> {
+  try {
+    const db = await getDatabase();
+
+    const result = await db.query(`
+      DELETE FROM analytics_requests
+      WHERE timestamp < CURRENT_DATE - INTERVAL '${daysToKeep} days'
+      RETURNING id
+    `);
+
+    return {
+      success: true,
+      deleted: result.rowCount || 0
+    };
+  } catch (error: any) {
+    console.error('Cleanup error:', error);
+    return {
+      success: false,
+      deleted: 0
+    };
+  }
+}

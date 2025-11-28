@@ -69,6 +69,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'health' | 'analytics'>('analytics');
+  const [aggregating, setAggregating] = useState(false);
+  const [aggregationResult, setAggregationResult] = useState<any>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -138,6 +140,29 @@ export default function AdminPage() {
         {arrow} {Math.abs(trend)}%
       </span>
     );
+  };
+
+  const runAggregation = async (withCleanup: boolean = false) => {
+    setAggregating(true);
+    setAggregationResult(null);
+    try {
+      const url = `/api/admin/aggregate${withCleanup ? '?cleanup=true' : ''}`;
+      const response = await fetch(url, { method: 'POST' });
+      const result = await response.json();
+      setAggregationResult(result);
+
+      // Refresh analytics data after aggregation
+      if (result.success) {
+        setTimeout(fetchData, 1000);
+      }
+    } catch (err: any) {
+      setAggregationResult({
+        success: false,
+        error: err.message || 'Failed to run aggregation'
+      });
+    } finally {
+      setAggregating(false);
+    }
   };
 
   if (loading && !healthData && !analyticsData) {
@@ -229,6 +254,89 @@ export default function AdminPage() {
                     : 'Tracked leagues'
                   }
                 </div>
+              </div>
+            </div>
+
+            {/* Aggregation Controls */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>⚙️ Data Management</div>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                <button
+                  onClick={() => runAggregation(false)}
+                  disabled={aggregating}
+                  style={{
+                    flex: 1,
+                    minWidth: '200px',
+                    padding: '0.75rem 1.5rem',
+                    background: 'rgba(0, 255, 135, 0.15)',
+                    color: '#00ff87',
+                    border: '1px solid rgba(0, 255, 135, 0.3)',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: aggregating ? 'not-allowed' : 'pointer',
+                    opacity: aggregating ? 0.5 : 1,
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {aggregating ? '⏳ Running...' : '📊 Run Daily Aggregation'}
+                </button>
+                <button
+                  onClick={() => runAggregation(true)}
+                  disabled={aggregating}
+                  style={{
+                    flex: 1,
+                    minWidth: '200px',
+                    padding: '0.75rem 1.5rem',
+                    background: 'rgba(255, 135, 0, 0.15)',
+                    color: '#ff8700',
+                    border: '1px solid rgba(255, 135, 0, 0.3)',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: aggregating ? 'not-allowed' : 'pointer',
+                    opacity: aggregating ? 0.5 : 1,
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {aggregating ? '⏳ Running...' : '🗑️ Aggregate + Cleanup'}
+                </button>
+              </div>
+
+              {aggregationResult && (
+                <div style={{
+                  padding: '1rem',
+                  background: aggregationResult.success
+                    ? 'rgba(0, 255, 135, 0.1)'
+                    : 'rgba(255, 71, 87, 0.1)',
+                  border: `1px solid ${aggregationResult.success ? 'rgba(0, 255, 135, 0.3)' : 'rgba(255, 71, 87, 0.3)'}`,
+                  borderRadius: '8px',
+                  fontSize: '0.85rem'
+                }}>
+                  <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+                    {aggregationResult.success ? '✅ Success' : '❌ Failed'}
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    {aggregationResult.message || aggregationResult.error}
+                  </div>
+                  {aggregationResult.duration && (
+                    <div style={{ color: 'rgba(255, 255, 255, 0.6)', marginTop: '0.5rem' }}>
+                      Completed in {aggregationResult.duration}ms
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: 'rgba(255, 255, 255, 0.02)',
+                borderRadius: '8px',
+                fontSize: '0.8rem',
+                color: 'rgba(255, 255, 255, 0.6)'
+              }}>
+                <strong>ℹ️ Info:</strong> Daily aggregation consolidates raw request data into daily summaries.
+                Cleanup removes requests older than 30 days (aggregated data is preserved).
               </div>
             </div>
 
