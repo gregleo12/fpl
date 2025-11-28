@@ -15,14 +15,18 @@
 }
 
 .tabsWrapper {
-  position: sticky;
-  top: 0;
+  /* Fixed position for all screens */
+  position: fixed;
   left: 0;
   right: 0;
   z-index: 100;
-  padding: 0.75rem 2rem 0.5rem 2rem; /* Reduced bottom padding from 12px to 8px */
-  margin-top: 0;
   background: transparent;
+
+  /* DEFAULT: Mobile position (bottom) - Mobile-first */
+  bottom: 0;
+  top: auto;
+  padding: 0.5rem 1rem;
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); /* iPhone safe area */
 }
 
 .tabs {
@@ -120,9 +124,18 @@
 }
 
 .content {
-  padding: 0.75rem 2rem 2rem 2rem; /* 12px top (0.75rem) to match fixture gaps */
   max-width: 1400px;
   margin: 0 auto;
+
+  /* DEFAULT: Mobile - bottom padding for fixed bottom nav */
+  padding: 0.75rem 1rem 6rem 1rem; /* Bottom padding for nav */
+}
+
+/* Desktop: Top padding for fixed top nav */
+@media (min-width: 769px) {
+  .content {
+    padding: 5rem 2rem 2rem 2rem; /* Top padding for nav */
+  }
 }
 
 .error {
@@ -136,9 +149,21 @@
   font-weight: 600;
 }
 
+/* Desktop: Override to top position */
+@media (min-width: 769px) {
+  .tabsWrapper {
+    top: 0;
+    bottom: auto;
+    padding: 0.75rem 2rem 0.5rem 2rem;
+    padding-bottom: 0.5rem; /* Override iPhone padding */
+  }
+}
+
 @media (max-width: 768px) {
   .tabsWrapper {
-    padding: calc(env(safe-area-inset-top, 0px) + 0.5rem) 1rem 0.375rem 1rem; /* Reduced bottom to 6px */
+    /* Mobile already has bottom position from base styles */
+    padding: 0.5rem 1rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 
   .tabs {
@@ -160,7 +185,7 @@
   }
 
   .content {
-    padding: 0.5rem 1rem 1rem 1rem; /* 8px top to match mobile fixture gaps */
+    padding: 0.5rem 1rem 6rem 1rem; /* Bottom padding for fixed bottom nav */
   }
 }
 
