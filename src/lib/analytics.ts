@@ -31,11 +31,17 @@ export async function trackRequest({
 }): Promise<void> {
   try {
     const db = await getDatabase();
-    await db.query(`
+
+    console.log('[Analytics] Tracking request:', { leagueId, endpoint, method, userHash });
+
+    const result = await db.query(`
       INSERT INTO analytics_requests
         (league_id, endpoint, method, user_hash, response_time_ms, status_code)
       VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING id
     `, [leagueId, endpoint, method, userHash, responseTimeMs || null, statusCode || 200]);
+
+    console.log('[Analytics] Request tracked successfully, ID:', result.rows[0]?.id);
 
     // Update league metadata if we have a league ID
     if (leagueId) {
@@ -47,10 +53,12 @@ export async function trackRequest({
           last_seen = NOW(),
           total_requests = analytics_leagues.total_requests + 1
       `, [leagueId]);
+
+      console.log('[Analytics] League metadata updated for league:', leagueId);
     }
   } catch (error) {
     // Silent fail - don't break the app for analytics
-    console.error('Analytics tracking error:', error);
+    console.error('[Analytics] Tracking error:', error);
   }
 }
 
