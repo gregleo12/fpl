@@ -4,6 +4,13 @@
   margin: 0 auto;
 }
 
+/* Desktop: Add extra top padding to match spacing below nav bar */
+@media (min-width: 769px) {
+  .container {
+    padding-top: 2.5rem;
+  }
+}
+
 .title {
   font-size: 1.75rem;
   font-weight: 700;

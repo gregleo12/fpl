@@ -5,6 +5,14 @@
   gap: 0.75rem; /* 12px to match fixtures container spacing */
 }
 
+/* Desktop: Add top padding to match spacing below nav bar */
+@media (min-width: 769px) {
+  .leagueTab,
+  .myTeamTab {
+    padding-top: 2.5rem;
+  }
+}
+
 .section {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
   padding: 2rem;
