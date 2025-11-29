@@ -9,8 +9,8 @@ export async function POST(request: Request) {
     // Create anonymous user hash
     const userHash = createUserHash(ip || 'unknown', userAgent || 'unknown');
 
-    // Track the request (fire and forget)
-    trackRequest({
+    // Track the request (MUST await to ensure DB insert completes)
+    await trackRequest({
       leagueId: leagueId ? parseInt(leagueId, 10) : null,
       endpoint,
       method,
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    // Silent fail for tracking
+    // Silent fail for tracking - but log for debugging
+    console.error('Track endpoint error:', error);
     return NextResponse.json({ success: false }, { status: 200 });
   }
 }
