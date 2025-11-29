@@ -2,46 +2,50 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const startTime = Date.now();
-  const pathname = request.nextUrl.pathname;
+  // TEMPORARILY DISABLED - Debugging deployment issue
+  // TODO: Re-enable after fixing
+  return NextResponse.next();
 
-  // Only track API routes (not static assets, not admin tracking endpoint itself)
-  if (!pathname.startsWith('/api/') || pathname.startsWith('/api/admin/track')) {
-    return NextResponse.next();
-  }
+  // const startTime = Date.now();
+  // const pathname = request.nextUrl.pathname;
 
-  // Get client info for hashing
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
-             request.headers.get('x-real-ip') ||
-             'unknown';
-  const userAgent = request.headers.get('user-agent') || 'unknown';
+  // // Only track API routes (not static assets, not admin tracking endpoint itself)
+  // if (!pathname.startsWith('/api/') || pathname.startsWith('/api/admin/track')) {
+  //   return NextResponse.next();
+  // }
 
-  // Extract league ID from path
-  const leagueMatch = pathname.match(/\/api\/league\/(\d+)/);
-  const leagueId = leagueMatch ? leagueMatch[1] : null;
+  // // Get client info for hashing
+  // const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+  //            request.headers.get('x-real-ip') ||
+  //            'unknown';
+  // const userAgent = request.headers.get('user-agent') || 'unknown';
 
-  // Create response
-  const response = NextResponse.next();
+  // // Extract league ID from path
+  // const leagueMatch = pathname.match(/\/api\/league\/(\d+)/);
+  // const leagueId = leagueMatch ? leagueMatch[1] : null;
 
-  // Track request asynchronously (don't block response)
-  const responseTime = Date.now() - startTime;
+  // // Create response
+  // const response = NextResponse.next();
 
-  // Call the tracking API endpoint
-  // (middleware runs on edge, can't use node pg directly)
-  fetch(`${request.nextUrl.origin}/api/admin/track`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      leagueId,
-      endpoint: pathname,
-      method: request.method,
-      ip,
-      userAgent,
-      responseTimeMs: responseTime
-    })
-  }).catch(() => {}); // Silent fail
+  // // Track request asynchronously (don't block response)
+  // const responseTime = Date.now() - startTime;
 
-  return response;
+  // // Call the tracking API endpoint
+  // // (middleware runs on edge, can't use node pg directly)
+  // fetch(`${request.nextUrl.origin}/api/admin/track`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({
+  //     leagueId,
+  //     endpoint: pathname,
+  //     method: request.method,
+  //     ip,
+  //     userAgent,
+  //     responseTimeMs: responseTime
+  //   })
+  // }).catch(() => {}); // Silent fail
+
+  // return response;
 }
 
 export const config = {
