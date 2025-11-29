@@ -61,6 +61,13 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
+/* Desktop: Match content max-width */
+@media (min-width: 769px) {
+  .tabs {
+    max-width: 1400px;
+  }
+}
+
 .tab {
   flex: 1;
   display: flex;
