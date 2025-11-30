@@ -5,6 +5,8 @@ export async function GET() {
   try {
     const db = await getDatabase();
 
+    console.log('[Stats] Fetching analytics stats...');
+
     // Get overall stats
     const [
       totalRequestsResult,
@@ -110,6 +112,16 @@ export async function GET() {
     const previousWeekCount = parseInt(previousWeekRequestsResult.rows[0]?.count || '0');
     const totalLeagues = parseInt(totalLeaguesResult.rows[0]?.count || '0');
     const newLeaguesToday = parseInt(newLeaguesTodayResult.rows[0]?.count || '0');
+
+    console.log('[Stats] Query results:', {
+      totalRequests: totalRequestsResult.rows[0]?.count,
+      today: todayCount,
+      week: weekCount,
+      uniqueUsers: uniqueUsersResult.rows[0]?.count,
+      totalLeagues,
+      topLeaguesCount: topLeaguesResult.rows.length,
+      recentRequestsCount: recentRequestsResult.rows.length
+    });
 
     // Calculate trends
     const todayTrend = yesterdayCount > 0
