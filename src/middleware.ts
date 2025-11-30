@@ -31,7 +31,12 @@ export async function middleware(request: NextRequest) {
   // Track request asynchronously AFTER response is created (don't block response)
   const responseTime = Date.now() - startTime;
 
-  const trackUrl = `${request.nextUrl.origin}/api/admin/track`;
+  // Use absolute URL with proper protocol and host from headers
+  // In production, request.nextUrl.origin may be localhost, so we build URL from headers
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || request.nextUrl.host;
+  const trackUrl = `${protocol}://${host}/api/admin/track`;
+
   console.log('[Middleware] Calling track endpoint:', trackUrl, { leagueId, endpoint: pathname });
 
   // Call the tracking API endpoint

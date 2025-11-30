@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fpl-h2h-v1.22.5';
+const CACHE_NAME = 'fpl-h2h-v1.22.6';
 const urlsToCache = [
   '/',
   '/manifest.json'
