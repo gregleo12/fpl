@@ -42,6 +42,86 @@ export interface AutoSubResult {
 }
 
 /**
+ * Convert FPL element_type to Position
+ */
+export function getPosition(elementType: number): Position {
+  switch (elementType) {
+    case 1: return 'GK';
+    case 2: return 'DEF';
+    case 3: return 'MID';
+    case 4: return 'FWD';
+    default: return 'MID';
+  }
+}
+
+/**
+ * Convert FPL picks data to Squad format for auto-substitutions
+ */
+export function createSquadFromPicks(
+  picksData: any,
+  liveData: any,
+  bootstrapData: any,
+  fixturesData?: any[]
+): Squad {
+  const picks = picksData.picks;
+  const starting11: Player[] = [];
+  const bench: Player[] = [];
+
+  // Get captain multiplier
+  const captainMultiplier = picksData.active_chip === '3xc' ? 3 : 2;
+
+  picks.forEach((pick: any) => {
+    const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
+    const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
+
+    if (!element) return;
+
+    // Get fixture status for this player (if fixtures data available)
+    const fixtureId = liveElement?.explain?.[0]?.fixture;
+    let fixtureStarted = undefined;
+    let fixtureFinished = undefined;
+
+    if (fixtureId && fixturesData && fixturesData.length > 0) {
+      const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+      if (fixture) {
+        fixtureStarted = fixture.started ?? false;
+        fixtureFinished = fixture.finished ?? fixture.finished_provisional ?? false;
+      }
+    }
+
+    const player: Player = {
+      id: pick.element,
+      name: element.web_name,
+      position: getPosition(element.element_type),
+      minutes: liveElement?.stats?.minutes || 0,
+      points: liveElement?.stats?.total_points || 0,
+      multiplier: pick.is_captain ? captainMultiplier : 1,
+      bps: liveElement?.stats?.bps || 0,
+      bonus: liveElement?.stats?.bonus || 0,
+      fixtureId: fixtureId,
+      fixtureStarted: fixtureStarted,
+      fixtureFinished: fixtureFinished,
+    };
+
+    if (pick.position <= 11) {
+      starting11.push(player);
+    } else if (pick.position <= 14) {
+      // Bench positions 12-14 (15 is typically not used for auto-subs)
+      bench.push(player);
+    }
+  });
+
+  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
+  bench.sort((a, b) => {
+    const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
+    const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
+    return posA - posB;
+  });
+
+  return { starting11, bench };
+}
+
+/**
  * Check if a player didn't play (0 minutes)
  * Only returns true if the fixture has started (to avoid subbing players before their match)
  */
