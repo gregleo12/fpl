@@ -33,12 +33,24 @@ interface HealthData {
 
 interface AnalyticsData {
   overview: {
-    totalRequests: number;
-    todayRequests: number;
-    todayTrend: number;
-    weekRequests: number;
-    weekTrend: number;
-    uniqueUsers: number;
+    totalRequests: {
+      allTime: number;
+      today: number;
+      last7Days: number;
+      last30Days: number;
+    };
+    leagueRequests: {
+      allTime: number;
+      today: number;
+      last7Days: number;
+      last30Days: number;
+    };
+    uniqueUsers: {
+      allTime: number;
+      today: number;
+      last7Days: number;
+      last30Days: number;
+    };
     totalLeagues: number;
     newLeaguesToday: number;
   };
@@ -212,39 +224,134 @@ export default function AdminPage() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && analyticsData && (
           <>
-            {/* Overview Cards */}
-            <div className={styles.overviewGrid}>
-              <div className={styles.overviewCard}>
-                <div className={styles.overviewLabel}>Total Requests</div>
-                <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.toLocaleString()}</div>
-                <div className={styles.overviewSubtext}>All time</div>
-              </div>
-              <div className={styles.overviewCard}>
-                <div className={styles.overviewLabel}>Today</div>
-                <div className={styles.overviewValue}>
-                  {analyticsData.overview.todayRequests.toLocaleString()}
-                  {renderTrend(analyticsData.overview.todayTrend)}
+            {/* TOTAL REQUESTS Section */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>📊 Total Requests</div>
+              <div className={styles.overviewGrid}>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>All Time</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.allTime.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>Total requests</div>
                 </div>
-                <div className={styles.overviewSubtext}>
-                  {analyticsData.overview.totalRequests > 0
-                    ? `${((analyticsData.overview.todayRequests / analyticsData.overview.totalRequests) * 100).toFixed(1)}% of total`
-                    : 'vs yesterday'
-                  }
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Today</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.today.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.totalRequests.allTime > 0
+                      ? `${((analyticsData.overview.totalRequests.today / analyticsData.overview.totalRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 7 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.last7Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.totalRequests.allTime > 0
+                      ? `${((analyticsData.overview.totalRequests.last7Days / analyticsData.overview.totalRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 30 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.totalRequests.last30Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.totalRequests.allTime > 0
+                      ? `${((analyticsData.overview.totalRequests.last30Days / analyticsData.overview.totalRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
                 </div>
               </div>
-              <div className={styles.overviewCard}>
-                <div className={styles.overviewLabel}>This Week</div>
-                <div className={styles.overviewValue}>
-                  {analyticsData.overview.weekRequests.toLocaleString()}
-                  {renderTrend(analyticsData.overview.weekTrend)}
+            </div>
+
+            {/* LEAGUE REQUESTS Section */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>🏆 League Requests</div>
+              <div className={styles.overviewGrid}>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>All Time</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.leagueRequests.allTime.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>League-specific</div>
                 </div>
-                <div className={styles.overviewSubtext}>vs previous week</div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Today</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.leagueRequests.today.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.leagueRequests.allTime > 0
+                      ? `${((analyticsData.overview.leagueRequests.today / analyticsData.overview.leagueRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 7 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.leagueRequests.last7Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.leagueRequests.allTime > 0
+                      ? `${((analyticsData.overview.leagueRequests.last7Days / analyticsData.overview.leagueRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 30 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.leagueRequests.last30Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.leagueRequests.allTime > 0
+                      ? `${((analyticsData.overview.leagueRequests.last30Days / analyticsData.overview.leagueRequests.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
               </div>
-              <div className={styles.overviewCard}>
-                <div className={styles.overviewLabel}>Unique Users</div>
-                <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.toLocaleString()}</div>
-                <div className={styles.overviewSubtext}>Anonymous hashes</div>
+            </div>
+
+            {/* UNIQUE USERS Section */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>👥 Unique Users</div>
+              <div className={styles.overviewGrid}>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>All Time</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.allTime.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>Total unique users</div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Today</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.today.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueUsers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueUsers.today / analyticsData.overview.uniqueUsers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 7 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.last7Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueUsers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueUsers.last7Days / analyticsData.overview.uniqueUsers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 30 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueUsers.last30Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueUsers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueUsers.last30Days / analyticsData.overview.uniqueUsers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Active Leagues Summary */}
+            <div className={styles.overviewGrid} style={{ marginTop: '1rem' }}>
               <div className={styles.overviewCard}>
                 <div className={styles.overviewLabel}>Active Leagues</div>
                 <div className={styles.overviewValue}>{analyticsData.overview.totalLeagues.toLocaleString()}</div>
