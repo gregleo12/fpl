@@ -33,10 +33,11 @@ export async function getLiveMatchData(
     const picks2Data = data.picks2;
     const liveData = data.live;
     const bootstrapData = data.bootstrap;
+    const fixturesData = data.fixtures || [];
 
-    // Calculate live stats for both teams (now returns auto-sub results too)
-    const { stats: player1Data, autoSubResult: autoSubs1 } = calculateLiveStats(picks1Data, liveData, bootstrapData, entryId1, manager1, team1);
-    const { stats: player2Data, autoSubResult: autoSubs2 } = calculateLiveStats(picks2Data, liveData, bootstrapData, entryId2, manager2, team2);
+    // Calculate live stats for both teams (now with fixtures data for auto-sub timing and provisional bonus)
+    const { stats: player1Data, autoSubResult: autoSubs1 } = calculateLiveStats(picks1Data, liveData, bootstrapData, fixturesData, entryId1, manager1, team1);
+    const { stats: player2Data, autoSubResult: autoSubs2 } = calculateLiveStats(picks2Data, liveData, bootstrapData, fixturesData, entryId2, manager2, team2);
 
     // Calculate differentials (pass auto-sub results to mark substituted players)
     const { player1Differentials, player2Differentials } = calculateDifferentials(
@@ -152,6 +153,7 @@ function calculateLiveStats(
   picksData: any,
   liveData: any,
   bootstrapData: any,
+  fixturesData: any[],
   entryId: number,
   manager: string,
   team: string
@@ -184,10 +186,10 @@ function calculateLiveStats(
   let benchPoints = 0;
   let liveScore = 0; // Calculate live score from individual players
 
-  // Apply auto-substitutions if Bench Boost is NOT active
+  // Apply auto-substitutions if Bench Boost is NOT active (with fixture status for timing)
   let autoSubResult = null;
   if (!isBenchBoost) {
-    const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+    const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
     autoSubResult = applyAutoSubstitutions(squad);
 
     if (autoSubResult.substitutions.length > 0) {
@@ -244,22 +246,21 @@ function calculateLiveStats(
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   console.log(`Transfer cost from API: ${transferCost}`);
 
-  // Use auto-substitution adjusted score if available
-  // IMPORTANT: Cannot calculate provisional bonus accurately because we only have
-  // BPS for user's players, not all 22 players in each match. This causes incorrect
-  // bonus calculations. We now rely on official bonus only (already in player.points).
+  // Use auto-substitution adjusted score if available (with provisional bonus from fixtures data)
   let finalLiveScore = liveScore;
   if (autoSubResult && !isBenchBoost) {
-    // Calculate score with auto-subs (no provisional bonus)
-    const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
-    const autoSubsApplied = applyAutoSubstitutions(squad);
+    // Calculate score with auto-subs AND provisional bonus (we now have fixtures data with all 22 players)
+    const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
 
-    // Calculate final score - player.points already includes official bonus from API
-    finalLiveScore = autoSubsApplied.squad.starting11.reduce((sum, player) => {
-      return sum + (player.points * player.multiplier);
-    }, 0);
+    // Use calculateLivePointsWithBonus for accurate provisional bonus calculation
+    const { calculateLivePointsWithBonus } = require('./fpl-calculations');
+    const result = calculateLivePointsWithBonus(squad, fixturesData);
+    finalLiveScore = result.totalPoints;
 
-    console.log(`Score with auto-subs: ${finalLiveScore} (${autoSubResult.substitutions.length} subs)`);
+    if (result.provisionalBonus > 0) {
+      console.log(`Provisional bonus for ${manager}: +${result.provisionalBonus} pts`);
+    }
+    console.log(`Score with auto-subs and bonus: ${finalLiveScore} (${autoSubResult.substitutions.length} subs)`);
   }
 
   // Calculate final live score (subtract hits - API returns positive values)
