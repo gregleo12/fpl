@@ -203,7 +203,8 @@ function getPosition(elementType: number): Position {
 function createSquadFromPicks(
   picksData: any,
   liveData: any,
-  bootstrapData: any
+  bootstrapData: any,
+  fixturesData?: any[]
 ): Squad {
   const picks = picksData.picks;
   const starting11: Player[] = [];
@@ -218,6 +219,19 @@ function createSquadFromPicks(
 
     if (!element) return;
 
+    // Get fixture status for this player
+    const fixtureId = liveElement?.explain?.[0]?.fixture;
+    let fixtureStarted = undefined;
+    let fixtureFinished = undefined;
+
+    if (fixtureId && fixturesData && fixturesData.length > 0) {
+      const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+      if (fixture) {
+        fixtureStarted = fixture.started ?? false;
+        fixtureFinished = fixture.finished ?? fixture.finished_provisional ?? false;
+      }
+    }
+
     const player: Player = {
       id: pick.element,
       name: element.web_name,
@@ -227,7 +241,9 @@ function createSquadFromPicks(
       multiplier: pick.is_captain ? captainMultiplier : 1,
       bps: liveElement?.stats?.bps || 0,
       bonus: liveElement?.stats?.bonus || 0,
-      fixtureId: liveElement?.explain?.[0]?.fixture || undefined,
+      fixtureId: fixtureId,
+      fixtureStarted: fixtureStarted,
+      fixtureFinished: fixtureFinished,
     };
 
     if (pick.position <= 11) {
@@ -295,7 +311,7 @@ async function fetchLiveScoresFromPicks(
       if (fixturesResponse.ok) {
         const fplFixtures = await fixturesResponse.json();
 
-        // Process fixtures to extract player stats with BPS
+        // Process fixtures to extract player stats with BPS AND fixture status
         // Each fixture has stats property that we need to convert to player_stats
         fixturesData = fplFixtures.map((fixture: any) => {
           // Get all players who played in this fixture from liveData
@@ -312,11 +328,13 @@ async function fetchLiveScoresFromPicks(
 
           return {
             id: fixture.id,
+            started: fixture.started ?? false,
+            finished: fixture.finished ?? fixture.finished_provisional ?? false,
             player_stats: playerStats,
           };
         });
 
-        console.log(`Processed ${fixturesData.length} fixtures with player BPS data`);
+        console.log(`Processed ${fixturesData.length} fixtures with player BPS data and status`);
       }
     } catch (error) {
       console.error('Error fetching live player data:', error);
@@ -357,7 +375,7 @@ async function fetchLiveScoresFromPicks(
 
         // Apply auto-substitutions AND provisional bonus
         if (!isBenchBoost && bootstrapData) {
-          const squad = createSquadFromPicks(picksData, liveData, bootstrapData);
+          const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
 
           // Calculate score with auto-subs AND provisional bonus
           // Pass fixturesData for accurate provisional bonus calculation (all 22 players per match)

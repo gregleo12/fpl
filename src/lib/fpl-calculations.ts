@@ -20,6 +20,8 @@ export interface Player {
   bps?: number; // Bonus Point System score
   bonus?: number; // Official bonus points (0 if not awarded yet)
   fixtureId?: number; // Which match they're in
+  fixtureStarted?: boolean; // Whether the fixture has started
+  fixtureFinished?: boolean; // Whether the fixture has finished
 }
 
 export interface Squad {
@@ -41,8 +43,21 @@ export interface AutoSubResult {
 
 /**
  * Check if a player didn't play (0 minutes)
+ * Only returns true if the fixture has started (to avoid subbing players before their match)
  */
 function didNotPlay(player: Player): boolean {
+  // If fixture hasn't started yet, player can't be considered "did not play"
+  if (player.fixtureStarted === false) {
+    return false;
+  }
+
+  // If fixture started but not finished, wait before subbing
+  // (Player might still come on as a sub in a live match)
+  if (player.fixtureStarted && !player.fixtureFinished && player.minutes === 0) {
+    return false;
+  }
+
+  // Fixture is finished and player has 0 minutes = did not play
   return player.minutes === 0;
 }
 
