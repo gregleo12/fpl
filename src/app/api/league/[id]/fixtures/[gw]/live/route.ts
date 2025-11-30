@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateScoreFromData } from '@/lib/scoreCalculator';
 
 export async function GET(
   request: NextRequest,
@@ -68,12 +69,48 @@ export async function GET(
       console.log(`[Live Modal] Processed ${fixturesData.length} fixtures with status and BPS data`);
     }
 
+    // Calculate scores using shared calculator for consistency
+    const score1 = calculateScoreFromData(
+      parseInt(entryId1),
+      picks1Data,
+      liveData,
+      bootstrapData,
+      fixturesData,
+      'in_progress'
+    );
+
+    const score2 = calculateScoreFromData(
+      parseInt(entryId2),
+      picks2Data,
+      liveData,
+      bootstrapData,
+      fixturesData,
+      'in_progress'
+    );
+
     return NextResponse.json({
       picks1: picks1Data,
       picks2: picks2Data,
       live: liveData,
       bootstrap: bootstrapData,
       fixtures: fixturesData,
+      // NEW: Pre-calculated scores from single source of truth
+      calculatedScores: {
+        entry1: {
+          score: score1.score,
+          breakdown: score1.breakdown,
+          captain: score1.captain,
+          chip: score1.chip,
+          autoSubs: score1.autoSubs,
+        },
+        entry2: {
+          score: score2.score,
+          breakdown: score2.breakdown,
+          captain: score2.captain,
+          chip: score2.chip,
+          autoSubs: score2.autoSubs,
+        },
+      },
     });
   } catch (error: any) {
     console.error('Error fetching live match data:', error);

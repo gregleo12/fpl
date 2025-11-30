@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import {
-  Squad,
-  Player,
-  Position,
-  applyAutoSubstitutions,
-  calculateLivePointsWithBonus,
-} from '@/lib/fpl-calculations';
+import { calculateMultipleManagerScores } from '@/lib/scoreCalculator';
 
 // Force dynamic rendering and disable caching for live scores
 export const dynamic = 'force-dynamic';
@@ -184,86 +178,6 @@ export async function GET(
   }
 }
 
-/**
- * Convert FPL element_type to Position
- */
-function getPosition(elementType: number): Position {
-  switch (elementType) {
-    case 1: return 'GK';
-    case 2: return 'DEF';
-    case 3: return 'MID';
-    case 4: return 'FWD';
-    default: return 'MID';
-  }
-}
-
-/**
- * Convert FPL picks data to Squad format for auto-substitutions
- */
-function createSquadFromPicks(
-  picksData: any,
-  liveData: any,
-  bootstrapData: any,
-  fixturesData?: any[]
-): Squad {
-  const picks = picksData.picks;
-  const starting11: Player[] = [];
-  const bench: Player[] = [];
-
-  // Get captain multiplier
-  const captainMultiplier = picksData.active_chip === '3xc' ? 3 : 2;
-
-  picks.forEach((pick: any) => {
-    const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
-    const liveElement = liveData?.elements?.find((e: any) => e.id === pick.element);
-
-    if (!element) return;
-
-    // Get fixture status for this player
-    const fixtureId = liveElement?.explain?.[0]?.fixture;
-    let fixtureStarted = undefined;
-    let fixtureFinished = undefined;
-
-    if (fixtureId && fixturesData && fixturesData.length > 0) {
-      const fixture = fixturesData.find((f: any) => f.id === fixtureId);
-      if (fixture) {
-        fixtureStarted = fixture.started ?? false;
-        fixtureFinished = fixture.finished ?? fixture.finished_provisional ?? false;
-      }
-    }
-
-    const player: Player = {
-      id: pick.element,
-      name: element.web_name,
-      position: getPosition(element.element_type),
-      minutes: liveElement?.stats?.minutes || 0,
-      points: liveElement?.stats?.total_points || 0,
-      multiplier: pick.is_captain ? captainMultiplier : 1,
-      bps: liveElement?.stats?.bps || 0,
-      bonus: liveElement?.stats?.bonus || 0,
-      fixtureId: fixtureId,
-      fixtureStarted: fixtureStarted,
-      fixtureFinished: fixtureFinished,
-    };
-
-    if (pick.position <= 11) {
-      starting11.push(player);
-    } else if (pick.position <= 14) {
-      // Bench positions 12-14 (15 is typically not used for auto-subs)
-      bench.push(player);
-    }
-  });
-
-  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
-  bench.sort((a, b) => {
-    const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
-    const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
-    return posA - posB;
-  });
-
-  return { starting11, bench };
-}
-
 // Helper function to fetch live scores from picks data during live and completed gameweeks
 async function fetchLiveScoresFromPicks(
   matches: any[],
@@ -273,179 +187,50 @@ async function fetchLiveScoresFromPicks(
   const scoresMap = new Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>();
 
   // Get unique entry IDs from all matches
-  const entryIds = new Set<number>();
-  matches.forEach((match: any) => {
-    entryIds.add(match.entry_1_id);
-    entryIds.add(match.entry_2_id);
-  });
+  const entryIds = Array.from(new Set(
+    matches.flatMap((match: any) => [match.entry_1_id, match.entry_2_id])
+  ));
 
-  console.log(`Fetching picks data for ${entryIds.size} entries in GW${gw}...`);
+  console.log(`Fetching picks data for ${entryIds.length} entries in GW${gw}...`);
 
-  // Fetch bootstrap data to get player names (for captain)
-  let bootstrapData: any = null;
-  try {
-    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-    if (bootstrapResponse.ok) {
-      bootstrapData = await bootstrapResponse.json();
-      console.log(`Fetched bootstrap data for player names`);
+  // Use the shared score calculator - this handles all calculation logic
+  const scores = await calculateMultipleManagerScores(entryIds, gw, status);
+
+  console.log(`Successfully calculated ${scores.size} scores using shared calculator`);
+
+  // Build the scores map in the format expected by the calling code
+  scores.forEach((scoreResult, entryId) => {
+    // Extract transfer cost from breakdown
+    const transferCost = scoreResult.breakdown.transferCost;
+    const hit = transferCost > 0 ? -transferCost : 0;
+
+    scoresMap.set(entryId, {
+      score: scoreResult.score,
+      hit,
+      chip: scoreResult.chip,
+      captain: scoreResult.captain?.name || null
+    });
+
+    // Log score details
+    const logParts = [`Entry ${entryId}: ${scoreResult.score} pts`];
+    if (transferCost > 0) {
+      logParts.push(`(${scoreResult.score + transferCost} from players - ${transferCost} hits)`);
     }
-  } catch (error) {
-    console.error('Error fetching bootstrap data:', error);
-  }
-
-  // Only fetch live player data for in-progress gameweeks
-  let liveData: any = null;
-  let fixturesData: any[] = [];
-  if (status === 'in_progress') {
-    try {
-      const [liveResponse, fixturesResponse] = await Promise.all([
-        fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`),
-        fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gw}`)
-      ]);
-
-      if (liveResponse.ok) {
-        liveData = await liveResponse.json();
-        console.log(`Fetched live data for GW${gw}`);
-      }
-
-      if (fixturesResponse.ok) {
-        const fplFixtures = await fixturesResponse.json();
-
-        // Process fixtures to extract player stats with BPS AND fixture status
-        // Each fixture has stats property that we need to convert to player_stats
-        fixturesData = fplFixtures.map((fixture: any) => {
-          // Get all players who played in this fixture from liveData
-          const playerStats = liveData?.elements
-            ?.filter((el: any) => {
-              const explain = el.explain || [];
-              return explain.some((exp: any) => exp.fixture === fixture.id);
-            })
-            .map((el: any) => ({
-              id: el.id,
-              bps: el.stats.bps || 0,
-              bonus: el.stats.bonus || 0,
-            })) || [];
-
-          return {
-            id: fixture.id,
-            started: fixture.started ?? false,
-            finished: fixture.finished ?? fixture.finished_provisional ?? false,
-            player_stats: playerStats,
-          };
-        });
-
-        console.log(`Processed ${fixturesData.length} fixtures with player BPS data and status`);
-      }
-    } catch (error) {
-      console.error('Error fetching live player data:', error);
+    if (scoreResult.chip) {
+      logParts.push(`chip: ${scoreResult.chip}`);
     }
-  }
+    if (scoreResult.captain) {
+      logParts.push(`captain: ${scoreResult.captain.name}`);
+    }
+    console.log(logParts.join(' '));
 
-  // Fetch picks data for all entries in parallel
-  const pickPromises = Array.from(entryIds).map(async (entryId) => {
-    try {
-      const url = `https://fantasy.premierleague.com/api/entry/${entryId}/event/${gw}/picks/`;
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        console.error(`Failed to fetch picks for entry ${entryId}: ${response.status}`);
-        return null;
-      }
-
-      const picksData = await response.json();
-      const picks = picksData.picks;
-      const activeChip = picksData.active_chip || null;
-      const transferCost = picksData.entry_history?.event_transfers_cost || 0;
-
-      // Find captain
-      const captainPick = picks.find((p: any) => p.is_captain);
-      const captainElement = bootstrapData?.elements?.find((e: any) => e.id === captainPick?.element);
-      const captainName = captainElement?.web_name || null;
-
-      let liveScore = 0;
-
-      // For completed gameweeks, use final score from entry_history
-      // For in-progress gameweeks, calculate from live player data WITH AUTO-SUBS AND PROVISIONAL BONUS
-      if (status === 'completed') {
-        // Use the final score for completed gameweeks
-        liveScore = picksData.entry_history?.points || 0;
-      } else if (liveData && liveData.elements) {
-        // Calculate score from individual players for live gameweeks
-        const isBenchBoost = activeChip === 'bboost';
-
-        // Apply auto-substitutions AND provisional bonus
-        if (!isBenchBoost && bootstrapData) {
-          const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
-
-          // Calculate score with auto-subs AND provisional bonus
-          // Pass fixturesData for accurate provisional bonus calculation (all 22 players per match)
-          const result = calculateLivePointsWithBonus(squad, fixturesData);
-          liveScore = result.totalPoints;
-
-          // Log provisional bonus if any
-          if (result.provisionalBonus > 0) {
-            console.log(`Entry ${entryId}: Provisional bonus: +${result.provisionalBonus} pts`);
-            console.log(`Bonus breakdown:`, result.bonusBreakdown);
-          }
-
-          // Log auto-subs if any
-          const autoSubResult = applyAutoSubstitutions(squad);
-          if (autoSubResult.substitutions.length > 0) {
-            console.log(`Entry ${entryId}: Auto-subs applied - ${autoSubResult.substitutions.map(s =>
-              `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
-            ).join(', ')}`);
-          }
-        } else {
-          // No auto-subs (Bench Boost active or bootstrap data unavailable)
-          const isTripleCaptain = activeChip === '3xc';
-
-          picks.forEach((pick: any) => {
-            const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-            const rawPoints = liveElement?.stats?.total_points || 0;
-
-            if (pick.position <= 11) {
-              // Starting 11
-              if (pick.is_captain) {
-                const multiplier = isTripleCaptain ? 3 : 2;
-                liveScore += rawPoints * multiplier;
-              } else {
-                liveScore += rawPoints;
-              }
-            } else {
-              // Bench (positions 12-15)
-              if (isBenchBoost) {
-                liveScore += rawPoints;
-              }
-            }
-          });
-        }
-      } else {
-        // Fallback to entry_history.points if live data unavailable
-        liveScore = picksData.entry_history?.points || 0;
-      }
-
-      // Calculate final score (subtract transfer hits)
-      const netScore = liveScore - transferCost;
-      // Convert hit to negative for display
-      const hit = transferCost > 0 ? -transferCost : 0;
-
-      console.log(`Entry ${entryId}: ${netScore} pts (${liveScore} from players - ${transferCost} hits) chip: ${activeChip} captain: ${captainName}`);
-      return { entryId, score: netScore, hit, chip: activeChip, captain: captainName };
-    } catch (error) {
-      console.error(`Error fetching picks for entry ${entryId}:`, error);
-      return null;
+    // Log auto-subs if any
+    if (scoreResult.autoSubs && scoreResult.autoSubs.substitutions.length > 0) {
+      console.log(`Entry ${entryId}: Auto-subs applied - ${scoreResult.autoSubs.substitutions.map(s =>
+        `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
+      ).join(', ')}`);
     }
   });
 
-  const results = await Promise.all(pickPromises);
-
-  // Build the scores map
-  results.forEach((result) => {
-    if (result) {
-      scoresMap.set(result.entryId, { score: result.score, hit: result.hit, chip: result.chip, captain: result.captain });
-    }
-  });
-
-  console.log(`Successfully fetched ${scoresMap.size} live scores`);
   return scoresMap;
 }
