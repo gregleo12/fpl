@@ -66,17 +66,19 @@ export async function GET() {
         WHERE first_seen >= CURRENT_DATE
       `),
 
-      // Top 5 leagues by requests
+      // Top 5 leagues by requests (with real-time unique users)
       db.query(`
         SELECT
-          league_id,
-          league_name,
-          team_count,
-          total_requests,
-          total_unique_users,
-          last_seen
-        FROM analytics_leagues
-        ORDER BY total_requests DESC
+          al.league_id,
+          al.league_name,
+          al.team_count,
+          al.total_requests,
+          al.last_seen,
+          COUNT(DISTINCT ar.user_hash) as total_unique_users
+        FROM analytics_leagues al
+        LEFT JOIN analytics_requests ar ON al.league_id = ar.league_id
+        GROUP BY al.league_id, al.league_name, al.team_count, al.total_requests, al.last_seen
+        ORDER BY al.total_requests DESC
         LIMIT 5
       `),
 
