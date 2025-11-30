@@ -353,40 +353,6 @@ function calculateDifferentials(
   const team1ElementIds = new Set(picks1.map((p: any) => p.element));
   const team2ElementIds = new Set(picks2.map((p: any) => p.element));
 
-  // Identify common players who were subbed with DIFFERENT substitutes
-  // These subs should appear in differentials, not be filtered out
-  const subsFromCommonPlayersWithDifferentSubs = new Set<number>();
-
-  if (autoSubs1 && autoSubs2) {
-    // Get starting 11 element IDs for both teams
-    const isBenchBoost1 = picks1Data.active_chip === 'bboost';
-    const isBenchBoost2 = picks2Data.active_chip === 'bboost';
-
-    const team1StartingIds = new Set(
-      picks1.filter((p: any) => p.position <= 11 || isBenchBoost1).map((p: any) => p.element)
-    );
-    const team2StartingIds = new Set(
-      picks2.filter((p: any) => p.position <= 11 || isBenchBoost2).map((p: any) => p.element)
-    );
-
-    // Find common starting players
-    const commonStartingIds = Array.from(team1StartingIds).filter((id: any) =>
-      team2StartingIds.has(id)
-    );
-
-    // For each common player, check if both teams subbed them with different subs
-    for (const commonId of commonStartingIds) {
-      const sub1 = autoSubs1.substitutions?.find((s: any) => s.playerOut.id === commonId);
-      const sub2 = autoSubs2.substitutions?.find((s: any) => s.playerOut.id === commonId);
-
-      if (sub1 && sub2 && sub1.playerIn.id !== sub2.playerIn.id) {
-        // Different subs - add both to the set
-        subsFromCommonPlayersWithDifferentSubs.add(sub1.playerIn.id);
-        subsFromCommonPlayersWithDifferentSubs.add(sub2.playerIn.id);
-      }
-    }
-  }
-
   // Check if Bench Boost is active for each team
   const isBenchBoost1 = picks1Data.active_chip === 'bboost';
   const isBenchBoost2 = picks2Data.active_chip === 'bboost';
@@ -569,13 +535,8 @@ function calculateDifferentials(
       })
       .filter((diff: any) => {
         // Remove bench players who came in as substitutes (they're shown in the subbed-out player's row)
-        // EXCEPT if they replaced a common player with different subs (then they should be shown)
         const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
-        if (diff.wasAutoSubbedIn && element && subbedInIds.has(element.id)) {
-          // Check if this is a sub from a common player with different subs
-          return subsFromCommonPlayersWithDifferentSubs.has(element.id);
-        }
-        return true;
+        return !(diff.wasAutoSubbedIn && element && subbedInIds.has(element.id));
       });
   }
 
@@ -755,13 +716,8 @@ function calculateDifferentials(
       })
       .filter((diff: any) => {
         // Remove bench players who came in as substitutes (they're shown in the subbed-out player's row)
-        // EXCEPT if they replaced a common player with different subs (then they should be shown)
         const element = bootstrapData.elements.find((e: any) => e.web_name === diff.name);
-        if (diff.wasAutoSubbedIn && element && subbedInIds.has(element.id)) {
-          // Check if this is a sub from a common player with different subs
-          return subsFromCommonPlayersWithDifferentSubs.has(element.id);
-        }
-        return true;
+        return !(diff.wasAutoSubbedIn && element && subbedInIds.has(element.id));
       });
   }
 
@@ -899,9 +855,40 @@ function calculateCommonPlayers(
             originalName: element?.web_name || 'Unknown',
           };
         } else {
-          // DIFFERENT substitutes → EXCLUDE from common players
-          // (they will appear in differentials)
-          return null;
+          // DIFFERENT substitutes → Keep in common, show each team's substitute
+          const sub1Element = bootstrapData.elements.find((e: any) => e.id === sub1.id);
+          const sub1LiveElement = liveData.elements.find((e: any) => e.id === sub1.id);
+          const sub1Points = sub1LiveElement?.stats?.total_points || 0;
+
+          const sub2Element = bootstrapData.elements.find((e: any) => e.id === sub2.id);
+          const sub2LiveElement = liveData.elements.find((e: any) => e.id === sub2.id);
+          const sub2Points = sub2LiveElement?.stats?.total_points || 0;
+
+          // Calculate points for each team (with captain multipliers if applicable)
+          let player1Points = sub1Points;
+          let player2Points = sub2Points;
+
+          if (player1Captain) {
+            const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
+            player1Points = sub1Points * multiplier;
+          }
+
+          if (player2Captain) {
+            const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
+            player2Points = sub2Points * multiplier;
+          }
+
+          return {
+            name: element?.web_name || 'Unknown',
+            points: basePoints,  // Original player's points (0)
+            player1Points,
+            player2Points,
+            player1Captain,
+            player2Captain,
+            isAutoSub: true,
+            player1SubName: sub1Element?.web_name || 'Unknown',
+            player2SubName: sub2Element?.web_name || 'Unknown',
+          };
         }
       }
 
@@ -929,7 +916,7 @@ function calculateCommonPlayers(
         player2Captain,
       };
     })
-    .filter((player): player is Exclude<typeof player, null> => player !== null); // Remove excluded players
+    .filter((player): player is Exclude<typeof player, null> => player !== null);
 
   return commonPlayers.sort((a: any, b: any) => b.points - a.points);
 }
