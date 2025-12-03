@@ -318,14 +318,34 @@ export async function GET(
     const managers = managersResult.rows;
 
     // Get ALL matches for this league
-    const allMatchesResult = await db.query(`
-      SELECT event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner
-      FROM h2h_matches
-      WHERE league_id = $1
-        AND (entry_1_points > 0 OR entry_2_points > 0)
-      ORDER BY event ASC
-    `, [leagueId]);
+    // For LIVE mode, include unscored matches from current GW
+    // For OFFICIAL mode, only include completed/scored matches
+    let matchQuery: string;
+    let matchParams: any[];
 
+    if (mode === 'live' && isCurrentGWLive && liveGameweekNumber > 0) {
+      // Include all matches up to and including current GW (even if unscored)
+      matchQuery = `
+        SELECT event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner
+        FROM h2h_matches
+        WHERE league_id = $1
+          AND event <= $2
+        ORDER BY event ASC
+      `;
+      matchParams = [leagueId, liveGameweekNumber];
+    } else {
+      // Only include scored matches
+      matchQuery = `
+        SELECT event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner
+        FROM h2h_matches
+        WHERE league_id = $1
+          AND (entry_1_points > 0 OR entry_2_points > 0)
+        ORDER BY event ASC
+      `;
+      matchParams = [leagueId];
+    }
+
+    const allMatchesResult = await db.query(matchQuery, matchParams);
     const allMatches = allMatchesResult.rows;
 
     // Find max GW in database
