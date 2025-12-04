@@ -33,8 +33,11 @@ export default function TeamSelectionPage() {
     console.log('Saved state:', savedState);
     console.log('Current league ID:', parsedData.leagueId);
 
-    // Sort standings to put saved team at top (if exists and matches this league)
-    const standings = [...parsedData.standings];
+    // Sort standings alphabetically by manager name
+    const standings = [...parsedData.standings].sort((a: any, b: any) =>
+      a.player_name.localeCompare(b.player_name)
+    );
+
     if (savedState && savedState.leagueId === parsedData.leagueId) {
       console.log('League IDs match!');
       const savedTeamIndex = standings.findIndex(
@@ -44,9 +47,7 @@ export default function TeamSelectionPage() {
       console.log('Looking for team ID:', savedState.myTeamId);
 
       if (savedTeamIndex > -1) {
-        // Move saved team to the top
-        const [savedTeam] = standings.splice(savedTeamIndex, 1);
-        standings.unshift(savedTeam);
+        const savedTeam = standings[savedTeamIndex];
 
         // Auto-select the saved team and track it for badge display and recent section
         setSelectedTeam(savedState.myTeamId);
@@ -142,6 +143,14 @@ export default function TeamSelectionPage() {
     }
   }
 
+  // Helper to capitalize words
+  function capitalizeWords(str: string): string {
+    return str
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
 
   if (!tempData) {
     return (
@@ -173,7 +182,7 @@ export default function TeamSelectionPage() {
               onClick={() => setSelectedTeam(team.entry_id.toString())}
             >
               <div className={styles.teamInfo}>
-                <div className={styles.manager}>{team.player_name}</div>
+                <div className={styles.manager}>{capitalizeWords(team.player_name)}</div>
                 <div className={styles.teamName}>{team.team_name}</div>
               </div>
             </button>
@@ -188,7 +197,7 @@ export default function TeamSelectionPage() {
               onClick={handleRecentTeamClick}
             >
               <div className={styles.teamInfo}>
-                <div className={styles.manager}>{savedTeamData.player_name}</div>
+                <div className={styles.manager}>{capitalizeWords(savedTeamData.player_name)}</div>
                 <div className={styles.teamName}>{savedTeamData.team_name}</div>
               </div>
               <span className={styles.clickHint}>→</span>
