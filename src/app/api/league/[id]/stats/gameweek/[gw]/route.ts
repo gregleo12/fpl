@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateMultipleManagerScores } from '@/lib/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,17 +19,32 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // Fetch all data in parallel
-    const [captainData, chipsData, scoresData, managersData] = await Promise.all([
-      fetchCaptainPicks(db, leagueId, gw),
-      fetchChipsPlayed(db, leagueId, gw),
-      fetchScores(db, leagueId, gw),
+    // Fetch managers and bootstrap data first to determine gameweek status
+    const [managersData, bootstrapData] = await Promise.all([
       fetchManagers(db, leagueId),
+      fetchBootstrapData(),
     ]);
 
-    // Fetch FPL API data needed for stats
-    const [bootstrapData, liveData, picksData] = await Promise.all([
-      fetchBootstrapData(),
+    // Determine gameweek status from FPL API
+    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    if (bootstrapData && bootstrapData.events) {
+      const currentEvent = bootstrapData.events.find((e: any) => e.id === gw);
+      if (currentEvent) {
+        if (currentEvent.finished) {
+          status = 'completed';
+        } else if (currentEvent.is_current || currentEvent.data_checked) {
+          status = 'in_progress';
+        }
+      }
+    }
+
+    console.log(`GW${gw} status: ${status}`);
+
+    // Fetch remaining data in parallel
+    const [captainData, chipsData, scoresData, liveData, picksData] = await Promise.all([
+      fetchCaptainPicks(db, leagueId, gw),
+      fetchChipsPlayed(db, leagueId, gw),
+      fetchScores(db, leagueId, gw, managersData, status),
       fetchLiveData(gw),
       fetchAllPicks(managersData, gw),
     ]);
@@ -226,8 +242,45 @@ async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
   return managersWithChips;
 }
 
-// Fetch scores from h2h_matches
-async function fetchScores(db: any, leagueId: number, gw: number) {
+// Fetch scores - uses live calculation for in-progress GWs, database for completed
+async function fetchScores(
+  db: any,
+  leagueId: number,
+  gw: number,
+  managersData: any[],
+  status: 'completed' | 'in_progress' | 'upcoming'
+) {
+  // For in-progress or upcoming gameweeks, calculate live scores
+  if (status === 'in_progress' || status === 'upcoming') {
+    console.log(`GW${gw} is ${status} - calculating live scores using shared calculator`);
+
+    const entryIds = managersData.map((m: any) => m.entry_id);
+
+    try {
+      // Use shared score calculator for live scores
+      const liveScores = await calculateMultipleManagerScores(entryIds, gw, status);
+
+      // Convert to expected format
+      const scoresData = Array.from(liveScores.entries()).map(([entryId, scoreResult]) => {
+        const manager = managersData.find((m: any) => m.entry_id === entryId);
+        return {
+          entry_id: entryId,
+          player_name: manager?.player_name || 'Unknown',
+          team_name: manager?.team_name || 'Unknown',
+          score: scoreResult.score,
+        };
+      });
+
+      console.log(`Calculated ${scoresData.length} live scores`);
+      return scoresData;
+    } catch (error) {
+      console.error('Error calculating live scores:', error);
+      // Fallback to database on error
+    }
+  }
+
+  // For completed gameweeks, use database scores
+  console.log(`GW${gw} is completed - using database scores`);
   const result = await db.query(`
     SELECT
       m1.entry_id,
