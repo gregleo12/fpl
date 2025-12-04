@@ -1,0 +1,237 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #37003c 0%, #0f0f23 50%, #1a1a2e 100%);
+  color: #ffffff;
+}
+
+.card {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  max-width: 600px;
+  width: 100%;
+  position: relative;
+}
+
+.backButton {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  transform: translateX(-2px);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.leaguesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.leaguesList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leaguesList::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.leaguesList::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 135, 0.3);
+  border-radius: 3px;
+}
+
+.leaguesList::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 135, 0.5);
+}
+
+.leagueCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.leagueCard:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 255, 135, 0.4);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 255, 135, 0.15);
+}
+
+.leagueCard:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.leagueCard.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.leagueInfo {
+  flex: 1;
+}
+
+.leagueName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+}
+
+.leagueRank {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.arrow {
+  font-size: 1.5rem;
+  color: rgba(0, 255, 135, 0.6);
+  transition: transform 0.3s ease;
+}
+
+.leagueCard:hover .arrow {
+  transform: translateX(4px);
+}
+
+.loadingSpinner {
+  font-size: 1.5rem;
+  color: rgba(0, 255, 135, 0.6);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.noLeagues {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.noLeagues p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 2rem;
+}
+
+.backToSetup {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.backToSetup:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(0, 255, 135, 0.4);
+  box-shadow: 0 4px 16px rgba(0, 255, 135, 0.2);
+  transform: translateY(-2px);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.2rem;
+  padding: 3rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .card {
+    padding: 2rem 1.5rem;
+  }
+
+  .backButton {
+    top: 1rem;
+    left: 1rem;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .leagueCard {
+    padding: 1rem;
+  }
+
+  .leagueName {
+    font-size: 1rem;
+  }
+
+  .leagueRank {
+    font-size: 0.8rem;
+  }
+}
