@@ -193,6 +193,71 @@
   font-weight: 500;
 }
 
+/* Quick Access Section */
+.quickAccessSection {
+  margin-top: 1.5rem;
+}
+
+.toggleButton {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.toggleButton:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.toggleIcon {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.quickAccessContent {
+  margin-top: 0.75rem;
+  padding-left: 0.5rem;
+}
+
+.quickSelectButton {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.15) 0%, rgba(200, 0, 100, 0.1) 100%);
+  color: #ff007f;
+  border: 1px solid rgba(255, 0, 127, 0.3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quickSelectButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 0, 127, 0.25) 0%, rgba(200, 0, 100, 0.2) 100%);
+  border-color: rgba(255, 0, 127, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 0, 127, 0.2);
+}
+
+.quickSelectButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .setupCard {
     padding: 1.5rem;

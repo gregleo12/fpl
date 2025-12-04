@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getRecentLeagues } from '@/lib/storage';
 import styles from './SetupFlow.module.css';
@@ -9,8 +9,22 @@ export default function LeagueInput() {
   const [leagueId, setLeagueId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showQuickAccess, setShowQuickAccess] = useState(() => {
+    // Remember user's preference in localStorage
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('show_quick_access') === 'true';
+    }
+    return false;
+  });
   const router = useRouter();
   const recentLeagues = getRecentLeagues();
+
+  // Persist Quick Access toggle state
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('show_quick_access', showQuickAccess.toString());
+    }
+  }, [showQuickAccess]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -98,21 +112,9 @@ export default function LeagueInput() {
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
           {isLoading ? 'Fetching...' : 'Continue'}
         </button>
-
-        <div className={styles.divider}>
-          <span>or</span>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleQuickSelect}
-          disabled={isLoading}
-          className={styles.quickSelect}
-        >
-          Dedoume FPL 9th Edition
-        </button>
       </form>
 
+      {/* Recent Leagues - Moved above Quick Access */}
       {recentLeagues.length > 0 && (
         <div className={styles.recentSection}>
           <h3>Recent Leagues</h3>
@@ -131,6 +133,32 @@ export default function LeagueInput() {
           </div>
         </div>
       )}
+
+      {/* Collapsible Quick Access Section */}
+      <div className={styles.quickAccessSection}>
+        <button
+          type="button"
+          onClick={() => setShowQuickAccess(!showQuickAccess)}
+          className={styles.toggleButton}
+          aria-expanded={showQuickAccess}
+        >
+          <span className={styles.toggleIcon}>{showQuickAccess ? '▼' : '►'}</span>
+          Quick Access
+        </button>
+
+        {showQuickAccess && (
+          <div className={styles.quickAccessContent}>
+            <button
+              type="button"
+              onClick={handleQuickSelect}
+              disabled={isLoading}
+              className={styles.quickSelectButton}
+            >
+              Dedoume FPL 9th Edition
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
