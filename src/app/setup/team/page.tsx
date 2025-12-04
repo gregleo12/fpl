@@ -151,6 +151,32 @@ export default function TeamSelectionPage() {
       .join(' ');
   }
 
+  // Helper to add smart line breaks for long team names
+  function breakAtCapital(teamName: string): JSX.Element {
+    // If team name is short, return as is
+    if (teamName.length <= 20) {
+      return <>{teamName}</>;
+    }
+
+    // Find a good break point at a capital letter (but not the first one)
+    const match = teamName.slice(1).match(/[A-Z]/);
+
+    if (match && match.index !== undefined) {
+      const breakPoint = match.index + 1;
+      const line1 = teamName.slice(0, breakPoint);
+      const line2 = teamName.slice(breakPoint);
+
+      return (
+        <>
+          {line1}<br />{line2}
+        </>
+      );
+    }
+
+    // No capital found, return as is
+    return <>{teamName}</>;
+  }
+
 
   if (!tempData) {
     return (
@@ -183,7 +209,7 @@ export default function TeamSelectionPage() {
             >
               <div className={styles.teamInfo}>
                 <div className={styles.manager}>{capitalizeWords(team.player_name)}</div>
-                <div className={styles.teamName}>{team.team_name}</div>
+                <div className={styles.teamName}>{breakAtCapital(team.team_name)}</div>
               </div>
             </button>
           ))}
@@ -198,7 +224,7 @@ export default function TeamSelectionPage() {
             >
               <div className={styles.teamInfo}>
                 <div className={styles.manager}>{capitalizeWords(savedTeamData.player_name)}</div>
-                <div className={styles.teamName}>{savedTeamData.team_name}</div>
+                <div className={styles.teamName}>{breakAtCapital(savedTeamData.team_name)}</div>
               </div>
               <span className={styles.clickHint}>→</span>
             </div>
