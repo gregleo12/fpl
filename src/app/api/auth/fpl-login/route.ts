@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
 
     const loginResponse = await fetch('https://users.premierleague.com/accounts/login/', {
       method: 'POST',
+      redirect: 'manual', // Don't follow redirects automatically
       headers: {
         'Content-Type': 'application/json',
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -42,9 +43,23 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('[FPL Login] Response status:', loginResponse.status);
+    console.log('[FPL Login] Response type:', loginResponse.type);
+    console.log('[FPL Login] Redirected?:', loginResponse.redirected);
+    console.log('[FPL Login] Final URL:', loginResponse.url);
     console.log('[FPL Login] Response headers:', Object.fromEntries(loginResponse.headers.entries()));
 
-    if (!loginResponse.ok) {
+    // Log the Location header if it's a redirect
+    if (loginResponse.status === 302 || loginResponse.status === 301) {
+      const location = loginResponse.headers.get('location');
+      console.log('[FPL Login] Redirect location:', location);
+      console.log('[FPL Login] 302 is EXPECTED - checking for cookies in redirect response...');
+    }
+
+    // 302 is the EXPECTED response from FPL login!
+    // Check for cookies in the redirect response
+    const isSuccess = loginResponse.status === 200 || loginResponse.status === 302;
+
+    if (!isSuccess) {
       const errorText = await loginResponse.text();
       console.error('[FPL Login] Login failed:', loginResponse.status, errorText);
       return NextResponse.json(
@@ -53,26 +68,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract session cookies
+    // Extract session cookies (FPL returns them even on 302)
     const setCookieHeader = loginResponse.headers.get('set-cookie');
+    const allCookies = loginResponse.headers.getSetCookie?.() || [];
+
     console.log('[FPL Login] Set-Cookie header:', setCookieHeader ? 'Present' : 'Missing');
+    console.log('[FPL Login] All Set-Cookie headers:', allCookies);
+    console.log('[FPL Login] Number of cookies:', allCookies.length);
 
-    if (!setCookieHeader) {
-      console.error('[FPL Login] No cookies in response');
+    if (!setCookieHeader && allCookies.length === 0) {
+      console.error('[FPL Login] No cookies in 302 response - authentication failed');
 
-      // Check for all cookie-related headers
-      const allCookies = loginResponse.headers.getSetCookie?.() || [];
-      console.log('[FPL Login] All Set-Cookie headers:', allCookies);
+      // Log full response for debugging
+      const responseText = await loginResponse.text();
+      console.error('[FPL Login] Response body:', responseText.substring(0, 500));
 
-      if (allCookies.length === 0) {
-        return NextResponse.json(
-          { error: 'Authentication failed - no session cookies received' },
-          { status: 401 }
-        );
-      }
+      return NextResponse.json(
+        { error: 'Authentication failed - no session cookies received' },
+        { status: 401 }
+      );
     }
 
-    const cookies = setCookieHeader || loginResponse.headers.getSetCookie?.()?.join('; ') || '';
+    // Use all cookies if available, otherwise fallback to set-cookie header
+    const cookies = allCookies.length > 0
+      ? allCookies.join('; ')
+      : setCookieHeader || '';
+
+    console.log('[FPL Login] Using cookies (first 100 chars):', cookies.substring(0, 100));
 
     // Step 2: Get user info with session cookies
     console.log('[FPL Login] Fetching user data with cookies');
