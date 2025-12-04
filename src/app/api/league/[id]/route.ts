@@ -45,23 +45,9 @@ export async function GET(
     }
 
     const allMatches = await fplApi.getAllH2HMatches(leagueId);
-    const bootstrap = await fplApi.getBootstrapData();
-
-    // Filter to only include FINISHED gameweeks
-    const finishedGameweeks = bootstrap.events
-      .filter(event => event.finished)
-      .map(event => event.id);
-    const matches = allMatches.filter(match => finishedGameweeks.includes(match.event));
-
-    console.log(`Total matches: ${allMatches.length}, Finished matches: ${matches.length}`);
+    console.log(`Fetched ${allMatches.length} total matches`);
 
     const db = await getDatabase();
-
-    // Create lookup maps for player data
-    const playerMap = new Map();
-    bootstrap.elements.forEach(player => {
-      playerMap.set(player.id, player.web_name);
-    });
 
     // Store league info
     await db.query(`
@@ -116,212 +102,8 @@ export async function GET(
       ]);
     }
 
-    // Check which captain data we already have
-    const existingCaptains = await db.query(`
-      SELECT entry_id, event FROM entry_captains
-    `);
-    const captainCache = new Set(
-      existingCaptains.rows.map((r: any) => `${r.entry_id}_${r.event}`)
-    );
-
-    // Check which entries have been processed (chips data fetched, even if NULL)
-    // If h2h_match exists with entry_1_points, it means we've fetched picks for that entry
-    const processedEntries = await db.query(`
-      SELECT entry_1_id as entry_id, event
-      FROM h2h_matches
-      WHERE league_id = $1
-      AND entry_1_points IS NOT NULL
-
-      UNION
-
-      SELECT entry_2_id as entry_id, event
-      FROM h2h_matches
-      WHERE league_id = $1
-      AND entry_2_points IS NOT NULL
-    `, [leagueId]);
-
-    const chipsCache = new Set(
-      processedEntries.rows.map((r: any) => `${r.entry_id}_${r.event}`)
-    );
-
-    // Collect all picks we need to fetch (fetch if EITHER captain OR chips missing)
-    const picksToFetch: Array<{entryId: number, event: number}> = [];
-    for (const match of matches) {
-      const key1 = `${match.entry_1_entry}_${match.event}`;
-      const key2 = `${match.entry_2_entry}_${match.event}`;
-
-      // Fetch if captain missing OR chips missing
-      if (!captainCache.has(key1) || !chipsCache.has(key1)) {
-        picksToFetch.push({ entryId: match.entry_1_entry, event: match.event });
-      }
-      if (!captainCache.has(key2) || !chipsCache.has(key2)) {
-        picksToFetch.push({ entryId: match.entry_2_entry, event: match.event });
-      }
-    }
-
-    // Fetch all picks in parallel (much faster!)
-    console.log(`Fetching ${picksToFetch.length} picks in parallel...`);
-    const picksResults = await Promise.allSettled(
-      picksToFetch.map(({entryId, event}) =>
-        fplApi.getEntryPicks(entryId, event)
-          .then(data => ({ entryId, event, data }))
-      )
-    );
-
-    // Fetch live event data for all unique gameweeks to get actual player points
-    // Since we filtered matches to only finished ones, all picks should be from finished GWs
-    const uniqueEvents = Array.from(new Set(picksToFetch.map(p => p.event)));
-    console.log(`Fetching live data for ${uniqueEvents.length} finished gameweeks:`, uniqueEvents);
-
-    const liveDataMap = new Map<number, Map<number, number>>(); // event -> (elementId -> points)
-
-    await Promise.all(
-      uniqueEvents.map(async (event) => {
-        try {
-          const liveData = await fplApi.getEventLive(event);
-          console.log(`GW${event}: Live data structure:`, {
-            hasElements: !!liveData.elements,
-            elementsLength: liveData.elements?.length,
-            keys: Object.keys(liveData).slice(0, 10)
-          });
-
-          const playerPointsMap = new Map<number, number>();
-
-          // Map each player's ID to their total points for this gameweek
-          if (liveData.elements && Array.isArray(liveData.elements)) {
-            for (const element of liveData.elements) {
-              playerPointsMap.set(element.id, element.stats.total_points);
-            }
-          }
-
-          liveDataMap.set(event, playerPointsMap);
-          console.log(`GW${event}: Loaded points for ${playerPointsMap.size} players`);
-        } catch (error) {
-          console.error(`Failed to fetch live data for GW${event}:`, error);
-        }
-      })
-    );
-
-    // Store captain data and manager history with actual points
-    const captainInserts: Array<any> = [];
-    const historyInserts: Array<any> = [];
-
-    for (const result of picksResults) {
-      if (result.status === 'fulfilled') {
-        const { entryId, event, data } = result.value;
-        const playerPoints = liveDataMap.get(event);
-
-        // Store captain with actual points
-        const captain = data.picks.find((p: any) => p.is_captain);
-        if (captain && playerPoints) {
-          const captainName = playerMap.get(captain.element) || 'Unknown';
-          const captainBasePoints = playerPoints.get(captain.element) || 0;
-          const captainPoints = captain.multiplier * captainBasePoints;
-          captainInserts.push([entryId, event, captain.element, captainName, captainPoints]);
-        }
-
-        // Store manager history with actual bench points
-        if (data.entry_history && playerPoints) {
-          const eh = data.entry_history;
-          const benchPoints = data.picks
-            .filter((p: any) => p.position > 11)
-            .reduce((sum: number, p: any) => {
-              const points = playerPoints.get(p.element) || 0;
-              return sum + points;
-            }, 0);
-
-          historyInserts.push([
-            entryId,
-            event,
-            eh.points || 0,
-            eh.total_points || 0,
-            eh.rank || null,
-            eh.rank_sort || null,
-            eh.overall_rank || null,
-            eh.bank || 0,
-            eh.value || 0,
-            eh.event_transfers || 0,
-            eh.event_transfers_cost || 0,
-            benchPoints
-          ]);
-        }
-      }
-    }
-
-    // Batch insert captains with points
-    for (const [entryId, event, captainElementId, captainName, captainPoints] of captainInserts) {
-      await db.query(`
-        INSERT INTO entry_captains (entry_id, event, captain_element_id, captain_name, captain_points)
-        VALUES ($1, $2, $3, $4, $5)
-        ON CONFLICT (entry_id, event) DO UPDATE SET captain_points = $5
-      `, [entryId, event, captainElementId, captainName, captainPoints]);
-    }
-
-    // Batch insert manager history (without rank for now - will calculate after)
-    for (const historyData of historyInserts) {
-      const [entryId, event, points, totalPoints, rank, rankSort, overallRank, bank, value, eventTransfers, eventTransfersCost, benchPoints] = historyData;
-
-      await db.query(`
-        INSERT INTO manager_history
-        (entry_id, event, points, total_points, rank, rank_sort, overall_rank, bank, value,
-         event_transfers, event_transfers_cost, points_on_bench, rank_change)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 0)
-        ON CONFLICT (entry_id, event) DO UPDATE SET
-          points = $3,
-          total_points = $4,
-          rank = $5,
-          rank_sort = $6,
-          overall_rank = $7,
-          bank = $8,
-          value = $9,
-          event_transfers = $10,
-          event_transfers_cost = $11,
-          points_on_bench = $12
-      `, [entryId, event, points, totalPoints, rank, rankSort, overallRank, bank, value,
-          eventTransfers, eventTransfersCost, benchPoints]);
-    }
-
-    // Store matches (with chips from history endpoint - more reliable than picks.active_chip)
-    // Build chips map by fetching chip history for all managers
-    const uniqueEntries = Array.from(new Set(
-      league.standings.results.map(s => s.entry)
-    ));
-
-    console.log(`Fetching chip history for ${uniqueEntries.length} managers...`);
-
-    const chipsMap = new Map<string, string | null>();
-    const chipHistoryPromises = uniqueEntries.map(async (entryId) => {
-      try {
-        const response = await fetch(
-          `https://fantasy.premierleague.com/api/entry/${entryId}/history/`
-        );
-        if (!response.ok) return null;
-
-        const data = await response.json();
-        return { entryId, chips: data.chips || [] };
-      } catch (error) {
-        console.error(`Failed to fetch chip history for entry ${entryId}:`, error);
-        return null;
-      }
-    });
-
-    const chipHistoryResults = await Promise.all(chipHistoryPromises);
-
-    // Build map: entry_id + event -> chip_name
-    for (const result of chipHistoryResults) {
-      if (!result) continue;
-
-      const { entryId, chips } = result;
-      for (const chip of chips) {
-        if (chip.event) {
-          chipsMap.set(`${entryId}_${chip.event}`, chip.name);
-        }
-      }
-    }
-
-    console.log(`Chips map built with ${chipsMap.size} entries`);
-
-    // Store ALL matches (including future ones) but chip data only for finished matches
+    // Store basic match data (without chips or captain details for now)
+    // This allows for quick initial load - detailed data can be fetched later
     for (const match of allMatches) {
       // Calculate winner based on points
       let winner = null;
@@ -331,19 +113,14 @@ export async function GET(
         winner = match.entry_2_entry;
       }
 
-      const activeChip1 = chipsMap.get(`${match.entry_1_entry}_${match.event}`) || null;
-      const activeChip2 = chipsMap.get(`${match.entry_2_entry}_${match.event}`) || null;
-
       await db.query(`
         INSERT INTO h2h_matches
-        (league_id, event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner, active_chip_1, active_chip_2)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        (league_id, event, entry_1_id, entry_1_points, entry_2_id, entry_2_points, winner)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (league_id, event, entry_1_id, entry_2_id) DO UPDATE SET
           entry_1_points = $4,
           entry_2_points = $6,
-          winner = $7,
-          active_chip_1 = $8,
-          active_chip_2 = $9
+          winner = $7
       `, [
         leagueId,
         match.event,
@@ -351,22 +128,19 @@ export async function GET(
         match.entry_1_points,
         match.entry_2_entry,
         match.entry_2_points,
-        winner,
-        activeChip1,
-        activeChip2
+        winner
       ]);
     }
 
-    // TODO: Optimize rank calculation - currently too slow for production
-    // For now, we'll skip calculating historical H2H ranks to avoid 3+ minute hangs
-    // Comeback Kid and Rank Crasher awards won't work until this is optimized
+    console.log('League data fetch completed successfully (minimal mode for fast loading)');
 
-    console.log('League data fetch completed successfully');
-
+    // Return minimal data for team selection - detailed stats loaded on-demand later
     return NextResponse.json({
-      league: league.league,
-      standings: league.standings.results,
-      matches: allMatches
+      league: {
+        id: league.league.id,
+        name: league.league.name
+      },
+      standings: league.standings.results
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);
