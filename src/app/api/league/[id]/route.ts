@@ -84,8 +84,22 @@ export async function GET(
       league.standings.results.length
     ).catch(() => {}); // Silent fail
 
-    // Store standings and managers
+    // Store standings and managers (skip entries with null entry_id)
+    console.log(`[League ${leagueId}] Processing ${league.standings.results.length} standings...`);
+    let skippedCount = 0;
+
     for (const standing of league.standings.results) {
+      // Skip entries with null/undefined entry_id (corrupted data from FPL)
+      if (!standing.entry || standing.entry === null || standing.entry === undefined) {
+        console.warn(`[League ${leagueId}] Skipping standing with null entry_id:`, {
+          rank: standing.rank,
+          player_name: standing.player_name,
+          entry_name: standing.entry_name
+        });
+        skippedCount++;
+        continue;
+      }
+
       // Store manager info
       await db.query(`
         INSERT INTO managers (entry_id, player_name, team_name)
@@ -123,9 +137,27 @@ export async function GET(
       ]);
     }
 
+    if (skippedCount > 0) {
+      console.warn(`[League ${leagueId}] Skipped ${skippedCount} standings with null entry_id`);
+    }
+
     // Store basic match data (without chips or captain details for now)
     // This allows for quick initial load - detailed data can be fetched later
+    console.log(`[League ${leagueId}] Processing ${allMatches.length} matches...`);
+    let skippedMatches = 0;
+
     for (const match of allMatches) {
+      // Skip matches with null entry_ids (corrupted data)
+      if (!match.entry_1_entry || !match.entry_2_entry) {
+        console.warn(`[League ${leagueId}] Skipping match with null entry_id:`, {
+          event: match.event,
+          entry_1: match.entry_1_entry,
+          entry_2: match.entry_2_entry
+        });
+        skippedMatches++;
+        continue;
+      }
+
       // Calculate winner based on points
       let winner = null;
       if (match.entry_1_points > match.entry_2_points) {
@@ -151,6 +183,10 @@ export async function GET(
         match.entry_2_points,
         winner
       ]);
+    }
+
+    if (skippedMatches > 0) {
+      console.warn(`[League ${leagueId}] Skipped ${skippedMatches} matches with null entry_id`);
     }
 
     console.log('League data fetch completed successfully (minimal mode for fast loading)');
