@@ -18,9 +18,18 @@ interface PositionHistoryData {
   totalTeams: number;
 }
 
+interface StandingEntry {
+  entry_id: number;
+  player_name: string;
+  entry_name: string;
+  rank: number;
+}
+
 interface Props {
   leagueId: string;
   entryId: string;
+  standings: StandingEntry[];
+  myManagerName: string;
 }
 
 // Helper to get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
@@ -40,11 +49,14 @@ function getOrdinalSuffix(num: number): string {
   return num + 'th';
 }
 
-export default function PositionHistory({ leagueId, entryId }: Props) {
+export default function PositionHistory({ leagueId, entryId, standings, myManagerName }: Props) {
   const [data, setData] = useState<PositionHistoryData | null>(null);
+  const [opponentData, setOpponentData] = useState<PositionHistoryData | null>(null);
+  const [selectedOpponentId, setSelectedOpponentId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Fetch user's position history
   useEffect(() => {
     async function fetchPositionHistory() {
       try {
@@ -69,6 +81,34 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
 
     fetchPositionHistory();
   }, [leagueId, entryId]);
+
+  // Fetch opponent's position history
+  useEffect(() => {
+    if (!selectedOpponentId) {
+      setOpponentData(null);
+      return;
+    }
+
+    async function fetchOpponentHistory() {
+      try {
+        const response = await fetch(
+          `/api/league/${leagueId}/stats/position-history?entryId=${selectedOpponentId}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch opponent history');
+        }
+
+        const result = await response.json();
+        setOpponentData(result);
+      } catch (err: any) {
+        console.error('Error fetching opponent history:', err);
+        setOpponentData(null);
+      }
+    }
+
+    fetchOpponentHistory();
+  }, [leagueId, selectedOpponentId]);
 
   if (loading) {
     return (
@@ -101,6 +141,20 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
     );
   }
 
+  // Get opponents list (excluding current user)
+  const opponents = standings.filter(s => s.entry_id.toString() !== entryId);
+  const selectedOpponent = opponents.find(s => s.entry_id.toString() === selectedOpponentId);
+
+  // Merge user and opponent data for chart
+  const chartData = data.positionHistory.map(userGW => {
+    const oppGW = opponentData?.positionHistory.find(o => o.gameweek === userGW.gameweek);
+    return {
+      gameweek: userGW.gameweek,
+      myRank: userGW.rank,
+      opponentRank: oppGW?.rank || null
+    };
+  });
+
   // Custom tooltip component
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -115,9 +169,19 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
             color: '#ffffff'
           }}
         >
-          <p style={{ margin: 0, fontWeight: 600 }}>
-            GW{data.gameweek}: {getOrdinalSuffix(data.rank)}
+          <p style={{ margin: 0, marginBottom: '6px', fontWeight: 600, fontSize: '0.9rem' }}>
+            GW{data.gameweek}
           </p>
+          {data.myRank && (
+            <p style={{ margin: 0, color: '#00ff87', fontSize: '0.85rem' }}>
+              You: {getOrdinalSuffix(data.myRank)}
+            </p>
+          )}
+          {data.opponentRank && selectedOpponent && (
+            <p style={{ margin: 0, color: '#ff4757', fontSize: '0.85rem' }}>
+              {selectedOpponent.player_name}: {getOrdinalSuffix(data.opponentRank)}
+            </p>
+          )}
         </div>
       );
     }
@@ -126,12 +190,36 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.sectionTitle}>League Position Over Time</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <h3 className={styles.sectionTitle} style={{ marginBottom: 0 }}>League Position Over Time</h3>
 
-      <div style={{ width: '100%', height: 300, marginTop: '1rem' }}>
+        <select
+          value={selectedOpponentId}
+          onChange={(e) => setSelectedOpponentId(e.target.value)}
+          style={{
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '6px',
+            padding: '0.5rem 0.75rem',
+            color: '#ffffff',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            outline: 'none'
+          }}
+        >
+          <option value="">Compare with...</option>
+          {opponents.map(opp => (
+            <option key={opp.entry_id} value={opp.entry_id.toString()}>
+              {opp.player_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ width: '100%', height: 300 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data.positionHistory}
+            data={chartData}
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
           >
             <CartesianGrid
@@ -155,9 +243,11 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
               )}
             />
             <Tooltip content={<CustomTooltip />} />
+
+            {/* User's line (green) */}
             <Line
               type="monotone"
-              dataKey="rank"
+              dataKey="myRank"
               stroke="#00ff87"
               strokeWidth={3}
               dot={{
@@ -172,7 +262,31 @@ export default function PositionHistory({ leagueId, entryId }: Props) {
                 stroke: '#ffffff',
                 strokeWidth: 2
               }}
+              connectNulls={false}
             />
+
+            {/* Opponent's line (red) */}
+            {selectedOpponentId && (
+              <Line
+                type="monotone"
+                dataKey="opponentRank"
+                stroke="#ff4757"
+                strokeWidth={3}
+                dot={{
+                  fill: '#ff4757',
+                  strokeWidth: 2,
+                  stroke: '#1a1a2e',
+                  r: 5
+                }}
+                activeDot={{
+                  r: 7,
+                  fill: '#ff4757',
+                  stroke: '#ffffff',
+                  strokeWidth: 2
+                }}
+                connectNulls={false}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>

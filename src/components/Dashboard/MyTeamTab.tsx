@@ -177,6 +177,14 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         </div>
       </div>
 
+      {/* League Position Over Time */}
+      <PositionHistory
+        leagueId={leagueId}
+        entryId={myTeamId}
+        standings={data.standings}
+        myManagerName={myManagerName}
+      />
+
       {/* Chips Played */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Chips Played</h3>
@@ -351,9 +359,6 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
           </table>
         </div>
       </div>
-
-      {/* League Position Over Time */}
-      <PositionHistory leagueId={leagueId} entryId={myTeamId} />
     </div>
   );
 }
