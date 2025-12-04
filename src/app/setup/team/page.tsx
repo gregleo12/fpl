@@ -152,19 +152,37 @@ export default function TeamSelectionPage() {
   }
 
   // Helper to add smart line breaks for long team names
-  function breakAtCapital(teamName: string): JSX.Element {
+  function breakAtCapital(teamName: string) {
     // If team name is short, return as is
-    if (teamName.length <= 20) {
-      return <>{teamName}</>;
+    if (teamName.length <= 18) {
+      return teamName;
     }
 
-    // Find a good break point at a capital letter (but not the first one)
-    const match = teamName.slice(1).match(/[A-Z]/);
+    // Find ALL capital letters in the string (excluding first character)
+    const capitals: number[] = [];
+    for (let i = 1; i < teamName.length; i++) {
+      if (teamName[i] === teamName[i].toUpperCase() && teamName[i] !== teamName[i].toLowerCase()) {
+        capitals.push(i);
+      }
+    }
 
-    if (match && match.index !== undefined) {
-      const breakPoint = match.index + 1;
-      const line1 = teamName.slice(0, breakPoint);
-      const line2 = teamName.slice(breakPoint);
+    // If we found capitals, break at one that's roughly in the middle
+    if (capitals.length > 0) {
+      // Prefer breaking around the middle (40-60% of length)
+      const midPoint = teamName.length / 2;
+      let bestBreak = capitals[0];
+      let bestDistance = Math.abs(capitals[0] - midPoint);
+
+      for (const cap of capitals) {
+        const distance = Math.abs(cap - midPoint);
+        if (distance < bestDistance) {
+          bestBreak = cap;
+          bestDistance = distance;
+        }
+      }
+
+      const line1 = teamName.slice(0, bestBreak);
+      const line2 = teamName.slice(bestBreak);
 
       return (
         <>
@@ -173,8 +191,20 @@ export default function TeamSelectionPage() {
       );
     }
 
-    // No capital found, return as is
-    return <>{teamName}</>;
+    // No capital found, try to break at space if it exists
+    const spaceIndex = teamName.lastIndexOf(' ', teamName.length / 2);
+    if (spaceIndex > 0) {
+      const line1 = teamName.slice(0, spaceIndex);
+      const line2 = teamName.slice(spaceIndex + 1);
+      return (
+        <>
+          {line1}<br />{line2}
+        </>
+      );
+    }
+
+    // No good break point, return as is
+    return teamName;
   }
 
 
