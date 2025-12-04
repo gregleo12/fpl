@@ -35,13 +35,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
     return null;
   }
 
-  const winRequirements = useMemo(
-    () => calculateWinRequirements(matchData, isMyMatch),
-    [matchData, isMyMatch]
-  );
-
-  const captainGap = matchData.player1.captain.points - matchData.player2.captain.points;
-
   function getChipDisplay(chip: string | null): string {
     if (!chip) return 'None';
     const chipMap: { [key: string]: string } = {
@@ -132,12 +125,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
               </div>
             </div>
           </div>
-
-          {Math.abs(captainGap) > 0 && (
-            <div className={`${styles.captainGap} ${captainGap < 0 ? styles.negative : styles.positive}`}>
-              {captainGap > 0 ? '✓' : '⚠️'} {Math.abs(captainGap)} pts gap
-            </div>
-          )}
         </div>
 
         {/* Differential Players Section */}
@@ -226,106 +213,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
             </div>
           </div>
         )}
-
-        {/* Win Requirements Section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>🎯</span>
-            <span className={styles.sectionTitle}>To Win</span>
-          </div>
-
-          <div className={styles.requirementsGrid}>
-            <div className={styles.requirementBox}>
-              <div className={styles.requirementStats}>
-                {winRequirements.status === 'winning' ? (
-                  <>
-                    <div className={styles.requirementMain}>Maintain Lead</div>
-                    <div className={styles.requirementDetail}>
-                      +{winRequirements.margin} diff pts
-                    </div>
-                  </>
-                ) : winRequirements.status === 'losing' ? (
-                  <>
-                    <div className={styles.requirementMain}>Needs +{winRequirements.pointsNeeded} diff pts</div>
-                    <div className={styles.requirementDetail}>
-                      Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/diff player
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className={styles.requirementMain}>Level on Differentials</div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.requirementBox}>
-              <div className={styles.requirementStats}>
-                {winRequirements.status === 'losing' ? (
-                  <>
-                    <div className={styles.requirementMain}>Maintain Lead</div>
-                    <div className={styles.requirementDetail}>
-                      +{winRequirements.margin} diff pts
-                    </div>
-                  </>
-                ) : winRequirements.status === 'winning' ? (
-                  <>
-                    <div className={styles.requirementMain}>Needs +{winRequirements.pointsNeeded} diff pts</div>
-                    <div className={styles.requirementDetail}>
-                      Avg {winRequirements.avgPerPlayer.toFixed(1)} pts/diff player
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className={styles.requirementMain}>Level on Differentials</div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Players Status Section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>⚽</span>
-            <span className={styles.sectionTitle}>Players Status</span>
-          </div>
-
-          <div className={styles.playersGrid}>
-            <div className={styles.playersBox}>
-              <div className={styles.playersStats}>
-                <div className={styles.playersPlayed}>
-                  {matchData.player1.playersPlayed}/{matchData.player1.totalPlayers} played
-                </div>
-                <div className={styles.playersRemaining}>
-                  {matchData.player1.playersRemaining} remaining
-                </div>
-                <div className={styles.avgPoints}>
-                  Avg: {matchData.player1.playersPlayed > 0
-                    ? (matchData.player1.currentScore / matchData.player1.playersPlayed).toFixed(1)
-                    : '0.0'} pts/player
-                </div>
-              </div>
-            </div>
-
-            <div className={styles.playersBox}>
-              <div className={styles.playersStats}>
-                <div className={styles.playersPlayed}>
-                  {matchData.player2.playersPlayed}/{matchData.player2.totalPlayers} played
-                </div>
-                <div className={styles.playersRemaining}>
-                  {matchData.player2.playersRemaining} remaining
-                </div>
-                <div className={styles.avgPoints}>
-                  Avg: {matchData.player2.playersPlayed > 0
-                    ? (matchData.player2.currentScore / matchData.player2.playersPlayed).toFixed(1)
-                    : '0.0'} pts/player
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Chips Section */}
         <div className={styles.section}>
