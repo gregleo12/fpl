@@ -258,28 +258,6 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
           </div>
         </div>
 
-        {/* Bench Points Section */}
-        <div className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>💺</span>
-            <span className={styles.sectionTitle}>Bench Points</span>
-          </div>
-
-          <div className={styles.benchGrid}>
-            <div className={styles.benchBox}>
-              <div className={styles.benchPoints}>
-                {matchData.player1.benchPoints} pts
-              </div>
-            </div>
-
-            <div className={styles.benchBox}>
-              <div className={styles.benchPoints}>
-                {matchData.player2.benchPoints} pts
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Common Players Section */}
         {matchData.commonPlayers.length > 0 && (
           <div className={styles.section}>
@@ -325,6 +303,28 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
             </div>
           </div>
         )}
+
+        {/* Bench Points Section */}
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <span className={styles.emoji}>💺</span>
+            <span className={styles.sectionTitle}>Bench Points</span>
+          </div>
+
+          <div className={styles.benchGrid}>
+            <div className={styles.benchBox}>
+              <div className={styles.benchPoints}>
+                {matchData.player1.benchPoints} pts
+              </div>
+            </div>
+
+            <div className={styles.benchBox}>
+              <div className={styles.benchPoints}>
+                {matchData.player2.benchPoints} pts
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
     </div>
