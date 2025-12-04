@@ -25,15 +25,11 @@ Last Updated: 2025-12-04
 - `/src/app/api/league/[id]/fixtures/[gw]/route.ts` - Fixtures API with live scores
 - `/src/app/api/league/[id]/stats/route.ts` - Stats/rankings API with live calculations
 - `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` - Gameweek stats API (captain picks, chips, hits, differentials)
-- `/src/app/api/auth/fpl-login/route.ts` - FPL authentication endpoint
-- `/src/app/api/auth/fpl-team-in-league/route.ts` - Find user's team in league
-- `/src/app/api/auth/logout/route.ts` - Session logout
 - `/src/components/Fixtures/LiveMatchModal.tsx` - Live match UI
 - `/src/components/Fixtures/FixturesTab.tsx` - Fixture cards
 - `/src/components/Stats/StatsHub.tsx` - Main Stats Hub component with GW selector
 - `/src/components/Stats/sections/` - Individual stat sections (CaptainPicks, ChipsPlayed, HitsTaken, GameweekWinners, Differentials)
-- `/src/components/auth/FPLLoginModal.tsx` - FPL login modal
-- `/src/app/setup/select-league/page.tsx` - League selection screen
+- `/src/components/SetupFlow/LeagueInput.tsx` - Simple league ID entry (proven approach)
 
 ### Data Flow
 
@@ -220,6 +216,70 @@ NEVER push without bumping version and documenting it!
 ### ❌ Not Testing on Mobile
 - **Wrong**: Only testing in desktop browser
 - **Right**: Always test in iOS simulator for touch/scroll issues
+
+## Abandoned Features (Lessons Learned)
+
+### ❌ ABANDONED: FPL OAuth Login (v1.26.0-v1.26.2, Dec 4 2025)
+
+**What We Tried:**
+- Direct FPL authentication via server-side API calls
+- POST credentials to `https://users.premierleague.com/accounts/login/`
+- Extract session cookies for authenticated API access
+- Auto-detect user's team in H2H leagues
+
+**The Problem:**
+```
+[FPL Login] Response status: 302
+[FPL Login] All Set-Cookie headers: []
+```
+- FPL returns 302 redirect to holding page
+- **No cookies in response** (authentication completely blocked)
+- Anti-bot protection detects server requests
+
+**Root Causes:**
+1. **Server-side auth blocked** - FPL requires real browser (WebView)
+2. **Anti-bot protection** - Server requests get redirected to holding page
+3. **No API-based auth** - Mobile apps use embedded browsers, not API calls
+4. **GitHub evidence** - FPL-Email-Bot marked auth as "obsolete" with note: "FPL no longer requires authentication"
+
+**Technical Details:**
+- Tried `redirect: 'manual'` to inspect 302 response
+- Added User-Agent, Referer, Origin headers
+- Correct redirect_uri: `https://fantasy.premierleague.com/a/login`
+- Status 302 is expected but **should include cookies** - it doesn't
+
+**Why League ID Entry Works:**
+- Public API endpoints don't require authentication
+- `/api/leagues-h2h/{id}/standings/` is public
+- `/api/entry/{id}/history/` is public
+- Simple, reliable, proven approach
+
+**The Solution:**
+- **Reverted to v1.25.3** setup flow (League ID entry only)
+- Deleted all FPL auth code (cleaner codebase)
+- Documented lessons learned for future
+
+**Alternatives Considered (Not Pursued):**
+1. **Browser Extension** - Users install extension to extract cookies
+2. **Manual Cookie Entry** - Users copy/paste session cookie from DevTools
+3. **Puppeteer/Playwright** - Headless browser (resource intensive, might get blocked)
+4. **Official Partnership** - Request API access from FPL (unlikely for small projects)
+
+**Key Lesson:**
+> When a simple public API approach works perfectly (League ID entry), don't overcomplicate with authentication that gets blocked. FPL's public endpoints provide everything we need.
+
+**Files Removed:**
+- `/src/app/api/auth/fpl-login/route.ts`
+- `/src/app/api/auth/fpl-team-in-league/route.ts`
+- `/src/app/api/auth/logout/route.ts`
+- `/src/components/auth/FPLLoginModal.tsx`
+- `/src/components/auth/FPLLoginModal.module.css`
+- `/src/app/setup/select-league/page.tsx`
+- `/src/app/setup/select-league/select-league.module.css`
+
+**Result:** Clean, simple, maintainable codebase with proven League ID entry flow.
+
+---
 
 ## When Starting New Session
 
@@ -1004,15 +1064,11 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Recent Features:**
-- v1.26.0 (Dec 4) - Add FPL login flow as alternative entry method
-  - FPL authentication with secure session cookies (7-day persistence)
-  - Auto-detect user's team in selected league (no manual selection needed)
-  - Show all H2H leagues for authenticated users
-  - Keep existing League ID entry as alternative quick access flow
-  - 3 new API endpoints: /api/auth/fpl-login, fpl-team-in-league, logout
-  - League selection screen with visual feedback and loading states
-  - Login modal with credentials privacy notice
-  - Track team selection through FPL login for analytics
+- v1.25.4 (Dec 4) - **Revert FPL login feature** (blocked by anti-bot protection)
+  - Restore clean League ID entry interface (simple, proven, works)
+  - Remove all FPL authentication code (see Abandoned Features section)
+  - Cleaner codebase with single entry flow
+- ~~v1.26.0-v1.26.2 (Dec 4)~~ - *REVERTED* - FPL login attempt (see Abandoned Features)
 - v1.25.0-v1.25.3 (Dec 4) - Team selection improvements + Position history graph
 
 **Stats Hub Journey:**

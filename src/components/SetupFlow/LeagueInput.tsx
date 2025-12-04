@@ -3,14 +3,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getRecentLeagues } from '@/lib/storage';
-import { FPLLoginModal } from '@/components/auth/FPLLoginModal';
 import styles from './SetupFlow.module.css';
 
 export default function LeagueInput() {
   const [leagueId, setLeagueId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
   const recentLeagues = getRecentLeagues();
 
@@ -80,91 +78,59 @@ export default function LeagueInput() {
   }
 
   return (
-    <>
-      <div className={styles.setupCard}>
-        {/* FPL Login Option */}
-        <div className={styles.loginSection}>
-          <h3 className={styles.sectionTitle}>🔐 Sign in with FPL Account</h3>
-          <p className={styles.sectionDesc}>
-            Access all your H2H leagues and auto-detect your team
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowLoginModal(true)}
+    <div className={styles.setupCard}>
+      <form onSubmit={handleSubmit}>
+        <div className={styles.inputGroup}>
+          <label htmlFor="leagueId">Enter League ID</label>
+          <input
+            id="leagueId"
+            type="text"
+            value={leagueId}
+            onChange={(e) => setLeagueId(e.target.value)}
+            placeholder="e.g., 804742"
             disabled={isLoading}
-            className={styles.loginButton}
-          >
-            Login with FPL
-          </button>
+            autoFocus
+          />
         </div>
+
+        {error && <p className={styles.error}>{error}</p>}
+
+        <button type="submit" disabled={isLoading} className={styles.submitButton}>
+          {isLoading ? 'Fetching...' : 'Continue'}
+        </button>
 
         <div className={styles.divider}>
           <span>or</span>
         </div>
 
-        {/* League ID Entry */}
-        <form onSubmit={handleSubmit}>
-          <h3 className={styles.sectionTitle}>🔢 Quick Access with League ID</h3>
-          <p className={styles.sectionDesc}>
-            Enter your league ID for instant access
-          </p>
+        <button
+          type="button"
+          onClick={handleQuickSelect}
+          disabled={isLoading}
+          className={styles.quickSelect}
+        >
+          Dedoume FPL 9th Edition
+        </button>
+      </form>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="leagueId">Enter League ID</label>
-            <input
-              id="leagueId"
-              type="text"
-              value={leagueId}
-              onChange={(e) => setLeagueId(e.target.value)}
-              placeholder="e.g., 804742"
-              disabled={isLoading}
-            />
+      {recentLeagues.length > 0 && (
+        <div className={styles.recentSection}>
+          <h3>Recent Leagues</h3>
+          <div className={styles.recentList}>
+            {recentLeagues.map((league) => (
+              <button
+                key={league.leagueId}
+                onClick={() => handleRecentClick(league.leagueId)}
+                className={styles.recentItem}
+                disabled={isLoading}
+              >
+                <span className={styles.recentName}>{league.leagueName}</span>
+                <span className={styles.recentId}>#{league.leagueId}</span>
+              </button>
+            ))}
           </div>
-
-          {error && <p className={styles.error}>{error}</p>}
-
-          <button type="submit" disabled={isLoading} className={styles.submitButton}>
-            {isLoading ? 'Fetching...' : 'Continue'}
-          </button>
-
-          <div className={styles.divider}>
-            <span>or</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleQuickSelect}
-            disabled={isLoading}
-            className={styles.quickSelect}
-          >
-            Dedoume FPL 9th Edition
-          </button>
-        </form>
-
-        {recentLeagues.length > 0 && (
-          <div className={styles.recentSection}>
-            <h3>Recent Leagues</h3>
-            <div className={styles.recentList}>
-              {recentLeagues.map((league) => (
-                <button
-                  key={league.leagueId}
-                  onClick={() => handleRecentClick(league.leagueId)}
-                  className={styles.recentItem}
-                  disabled={isLoading}
-                >
-                  <span className={styles.recentName}>{league.leagueName}</span>
-                  <span className={styles.recentId}>#{league.leagueId}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* FPL Login Modal */}
-      {showLoginModal && (
-        <FPLLoginModal onClose={() => setShowLoginModal(false)} />
+        </div>
       )}
-    </>
+    </div>
   );
 }
