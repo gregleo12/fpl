@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 interface StandingsEntry {
-  entry_id: number;
+  entry_id: string; // entry_id from database is string
   points: number;
   totalPointsFor: number;
   wins: number;
@@ -30,8 +30,8 @@ export async function GET(
       return NextResponse.json({ error: 'Missing entryId parameter' }, { status: 400 });
     }
 
-    const entryIdNum = parseInt(entryId);
-    if (isNaN(entryIdNum)) {
+    // Validate entryId is numeric (but keep as string for DB comparison)
+    if (!/^\d+$/.test(entryId)) {
       return NextResponse.json({ error: 'Invalid entryId' }, { status: 400 });
     }
 
@@ -135,8 +135,8 @@ export async function GET(
         return b.totalPointsFor - a.totalPointsFor;
       });
 
-      // Find user's rank
-      const userRank = sortedStandings.findIndex(s => s.entry_id === entryIdNum) + 1;
+      // Find user's rank (compare as strings since entry_id from DB is string)
+      const userRank = sortedStandings.findIndex(s => s.entry_id === entryId) + 1;
 
       if (userRank > 0) {
         positionHistory.push({
