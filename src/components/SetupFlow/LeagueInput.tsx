@@ -48,9 +48,28 @@ export default function LeagueInput() {
       console.log('League response status:', response.status);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('League fetch failed:', errorText);
-        throw new Error(`League fetch failed: ${response.status}`);
+        // Try to parse error as JSON for specific error types
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { error: 'unknown' };
+        }
+
+        console.error('League fetch failed:', errorData);
+
+        // Handle specific error types with friendly messages
+        if (errorData.error === 'classic_league') {
+          throw new Error('⚠️ This is a Classic league. Only H2H leagues are supported currently.');
+        } else if (errorData.error === 'no_standings') {
+          throw new Error('⚠️ This league has no H2H matches yet. Please try again after GW1.');
+        } else if (response.status === 404) {
+          throw new Error('League not found. Please check the League ID and try again.');
+        } else if (response.status === 400) {
+          throw new Error(errorData.message || 'Invalid league ID. Please verify this is an H2H league.');
+        } else {
+          throw new Error('⚠️ Unable to load league. Please verify this is an H2H league ID.');
+        }
       }
 
       const statsResponse = await fetch(`/api/league/${id}/stats`);

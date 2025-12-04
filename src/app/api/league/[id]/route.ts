@@ -14,7 +14,36 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    const league = await fplApi.getH2HLeague(leagueId);
+    // Try to fetch H2H league data
+    let league;
+    try {
+      league = await fplApi.getH2HLeague(leagueId);
+    } catch (error: any) {
+      // Check if this is a Classic league (404/not found in H2H endpoint)
+      if (error.response?.status === 404 || error.message?.includes('404')) {
+        return NextResponse.json(
+          {
+            error: 'classic_league',
+            message: 'This is a Classic league. Only H2H leagues are supported.'
+          },
+          { status: 400 }
+        );
+      }
+      // Other errors (network, etc)
+      throw error;
+    }
+
+    // Validate it's actually an H2H league with standings
+    if (!league.standings || !league.standings.results || league.standings.results.length === 0) {
+      return NextResponse.json(
+        {
+          error: 'no_standings',
+          message: 'This league has no H2H matches yet. Please try again after GW1.'
+        },
+        { status: 400 }
+      );
+    }
+
     const allMatches = await fplApi.getAllH2HMatches(leagueId);
     const bootstrap = await fplApi.getBootstrapData();
 
