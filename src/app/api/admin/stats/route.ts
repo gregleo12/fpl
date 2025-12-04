@@ -27,6 +27,12 @@ export async function GET() {
       uniqueUsers7Days,
       uniqueUsers30Days,
 
+      // UNIQUE MANAGERS
+      uniqueManagersAllTime,
+      uniqueManagersToday,
+      uniqueManagers7Days,
+      uniqueManagers30Days,
+
       // LEAGUE METADATA
       totalLeaguesResult,
       newLeaguesTodayResult,
@@ -50,6 +56,12 @@ export async function GET() {
       db.query(`SELECT COUNT(DISTINCT user_hash) as count FROM analytics_requests WHERE timestamp >= CURRENT_DATE`),
       db.query(`SELECT COUNT(DISTINCT user_hash) as count FROM analytics_requests WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'`),
       db.query(`SELECT COUNT(DISTINCT user_hash) as count FROM analytics_requests WHERE timestamp >= CURRENT_DATE - INTERVAL '30 days'`),
+
+      // === UNIQUE MANAGERS ===
+      db.query(`SELECT COUNT(DISTINCT selected_team_id) as count FROM analytics_requests WHERE selected_team_id IS NOT NULL`),
+      db.query(`SELECT COUNT(DISTINCT selected_team_id) as count FROM analytics_requests WHERE selected_team_id IS NOT NULL AND timestamp >= CURRENT_DATE`),
+      db.query(`SELECT COUNT(DISTINCT selected_team_id) as count FROM analytics_requests WHERE selected_team_id IS NOT NULL AND timestamp >= CURRENT_DATE - INTERVAL '7 days'`),
+      db.query(`SELECT COUNT(DISTINCT selected_team_id) as count FROM analytics_requests WHERE selected_team_id IS NOT NULL AND timestamp >= CURRENT_DATE - INTERVAL '30 days'`),
 
       // === LEAGUE METADATA ===
       db.query(`SELECT COUNT(*) as count FROM analytics_leagues`),
@@ -117,6 +129,12 @@ export async function GET() {
         today: parseInt(uniqueUsersToday.rows[0]?.count || '0'),
         last7Days: parseInt(uniqueUsers7Days.rows[0]?.count || '0'),
         last30Days: parseInt(uniqueUsers30Days.rows[0]?.count || '0')
+      },
+      uniqueManagers: {
+        allTime: parseInt(uniqueManagersAllTime.rows[0]?.count || '0'),
+        today: parseInt(uniqueManagersToday.rows[0]?.count || '0'),
+        last7Days: parseInt(uniqueManagers7Days.rows[0]?.count || '0'),
+        last30Days: parseInt(uniqueManagers30Days.rows[0]?.count || '0')
       },
       totalLeagues: parseInt(totalLeaguesResult.rows[0]?.count || '0'),
       newLeaguesToday: parseInt(newLeaguesTodayResult.rows[0]?.count || '0')

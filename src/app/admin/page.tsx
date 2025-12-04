@@ -51,6 +51,12 @@ interface AnalyticsData {
       last7Days: number;
       last30Days: number;
     };
+    uniqueManagers: {
+      allTime: number;
+      today: number;
+      last7Days: number;
+      last30Days: number;
+    };
     totalLeagues: number;
     newLeaguesToday: number;
   };
@@ -311,7 +317,7 @@ export default function AdminPage() {
 
             {/* UNIQUE USERS Section */}
             <div className={styles.section}>
-              <div className={styles.sectionTitle}>👥 Unique Users</div>
+              <div className={styles.sectionTitle}>👥 Users</div>
               <div className={styles.overviewGrid}>
                 <div className={styles.overviewCard}>
                   <div className={styles.overviewLabel}>All Time</div>
@@ -344,6 +350,48 @@ export default function AdminPage() {
                   <div className={styles.overviewSubtext}>
                     {analyticsData.overview.uniqueUsers.allTime > 0
                       ? `${((analyticsData.overview.uniqueUsers.last30Days / analyticsData.overview.uniqueUsers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* MANAGERS Section */}
+            <div className={styles.section}>
+              <div className={styles.sectionTitle}>👔 Managers</div>
+              <div className={styles.overviewGrid}>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>All Time</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueManagers.allTime.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>Total unique managers</div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Today</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueManagers.today.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueManagers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueManagers.today / analyticsData.overview.uniqueManagers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 7 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueManagers.last7Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueManagers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueManagers.last7Days / analyticsData.overview.uniqueManagers.allTime) * 100).toFixed(1)}% of total`
+                      : '0% of total'
+                    }
+                  </div>
+                </div>
+                <div className={styles.overviewCard}>
+                  <div className={styles.overviewLabel}>Last 30 Days</div>
+                  <div className={styles.overviewValue}>{analyticsData.overview.uniqueManagers.last30Days.toLocaleString()}</div>
+                  <div className={styles.overviewSubtext}>
+                    {analyticsData.overview.uniqueManagers.allTime > 0
+                      ? `${((analyticsData.overview.uniqueManagers.last30Days / analyticsData.overview.uniqueManagers.allTime) * 100).toFixed(1)}% of total`
                       : '0% of total'
                     }
                   </div>
