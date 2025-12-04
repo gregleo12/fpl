@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-11-18
+Last Updated: 2025-12-04
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -25,10 +25,15 @@ Last Updated: 2025-11-18
 - `/src/app/api/league/[id]/fixtures/[gw]/route.ts` - Fixtures API with live scores
 - `/src/app/api/league/[id]/stats/route.ts` - Stats/rankings API with live calculations
 - `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` - Gameweek stats API (captain picks, chips, hits, differentials)
+- `/src/app/api/auth/fpl-login/route.ts` - FPL authentication endpoint
+- `/src/app/api/auth/fpl-team-in-league/route.ts` - Find user's team in league
+- `/src/app/api/auth/logout/route.ts` - Session logout
 - `/src/components/Fixtures/LiveMatchModal.tsx` - Live match UI
 - `/src/components/Fixtures/FixturesTab.tsx` - Fixture cards
 - `/src/components/Stats/StatsHub.tsx` - Main Stats Hub component with GW selector
 - `/src/components/Stats/sections/` - Individual stat sections (CaptainPicks, ChipsPlayed, HitsTaken, GameweekWinners, Differentials)
+- `/src/components/auth/FPLLoginModal.tsx` - FPL login modal
+- `/src/app/setup/select-league/page.tsx` - League selection screen
 
 ### Data Flow
 
@@ -997,6 +1002,18 @@ const [data1, data2] = await Promise.all([
 ---
 
 ## Version History
+
+**Recent Features:**
+- v1.26.0 (Dec 4) - Add FPL login flow as alternative entry method
+  - FPL authentication with secure session cookies (7-day persistence)
+  - Auto-detect user's team in selected league (no manual selection needed)
+  - Show all H2H leagues for authenticated users
+  - Keep existing League ID entry as alternative quick access flow
+  - 3 new API endpoints: /api/auth/fpl-login, fpl-team-in-league, logout
+  - League selection screen with visual feedback and loading states
+  - Login modal with credentials privacy notice
+  - Track team selection through FPL login for analytics
+- v1.25.0-v1.25.3 (Dec 4) - Team selection improvements + Position history graph
 
 **Stats Hub Journey:**
 - v1.14.0 (Nov 18) - Clickable modals with full rankings
