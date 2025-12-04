@@ -142,15 +142,6 @@ export default function TeamSelectionPage() {
     }
   }
 
-  // Helper function to get initials
-  function getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  }
 
   if (!tempData) {
     return (
@@ -181,9 +172,6 @@ export default function TeamSelectionPage() {
               className={`${styles.teamTile} ${selectedTeam === team.entry_id.toString() ? styles.selected : ''}`}
               onClick={() => setSelectedTeam(team.entry_id.toString())}
             >
-              <div className={styles.teamIcon}>
-                {getInitials(team.player_name)}
-              </div>
               <div className={styles.teamInfo}>
                 <div className={styles.manager}>{team.player_name}</div>
                 <div className={styles.teamName}>{team.team_name}</div>
@@ -199,9 +187,6 @@ export default function TeamSelectionPage() {
               className={styles.recentTeamCard}
               onClick={handleRecentTeamClick}
             >
-              <div className={styles.teamIcon}>
-                {getInitials(savedTeamData.player_name)}
-              </div>
               <div className={styles.teamInfo}>
                 <div className={styles.manager}>{savedTeamData.player_name}</div>
                 <div className={styles.teamName}>{savedTeamData.team_name}</div>
