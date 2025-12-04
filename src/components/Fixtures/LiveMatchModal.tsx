@@ -311,17 +311,47 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
             <span className={styles.sectionTitle}>Bench Points</span>
           </div>
 
-          <div className={styles.benchGrid}>
-            <div className={styles.benchBox}>
-              <div className={styles.benchPoints}>
-                {matchData.player1.benchPoints} pts
-              </div>
+          <div className={styles.differentialsGrid}>
+            {/* Player 1 Bench */}
+            <div className={styles.differentialsBox}>
+              {matchData.player1.bench.length > 0 ? (
+                <div className={styles.playersList}>
+                  {matchData.player1.bench.map((player, idx) => (
+                    <div key={idx} className={styles.playerRow}>
+                      <span className={styles.playerName}>
+                        <span className={styles.positionBadge}>{player.position}</span>
+                        {player.name}
+                      </span>
+                      <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
+                        {player.points} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.noDifferentials}>No bench players</div>
+              )}
             </div>
 
-            <div className={styles.benchBox}>
-              <div className={styles.benchPoints}>
-                {matchData.player2.benchPoints} pts
-              </div>
+            {/* Player 2 Bench */}
+            <div className={styles.differentialsBox}>
+              {matchData.player2.bench.length > 0 ? (
+                <div className={styles.playersList}>
+                  {matchData.player2.bench.map((player, idx) => (
+                    <div key={idx} className={styles.playerRow}>
+                      <span className={styles.playerName}>
+                        <span className={styles.positionBadge}>{player.position}</span>
+                        {player.name}
+                      </span>
+                      <span className={`${styles.playerPoints} ${player.points > 0 ? styles.positive : ''}`}>
+                        {player.points} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.noDifferentials}>No bench players</div>
+              )}
             </div>
           </div>
         </div>

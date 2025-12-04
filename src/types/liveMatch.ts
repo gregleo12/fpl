@@ -20,6 +20,12 @@ export interface CommonPlayer {
   player2Captain: boolean;
 }
 
+export interface BenchPlayer {
+  name: string;
+  position: string; // 'GK', 'DEF', 'MID', 'FWD'
+  points: number;
+}
+
 export interface LiveMatchData {
   gameweek: number;
   player1: {
@@ -37,6 +43,7 @@ export interface LiveMatchData {
     };
     chipActive: string | null; // 'bboost', 'freehit', '3xc', 'wildcard'
     benchPoints: number;
+    bench: BenchPlayer[];
     transferCost: number;
     differentials: DifferentialPlayer[];
   };
@@ -55,6 +62,7 @@ export interface LiveMatchData {
     };
     chipActive: string | null;
     benchPoints: number;
+    bench: BenchPlayer[];
     transferCost: number;
     differentials: DifferentialPlayer[];
   };

@@ -374,6 +374,16 @@
   font-weight: 700;
 }
 
+/* Position Badge */
+.positionBadge {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.7rem;
+  color: rgba(147, 51, 234, 1);
+  font-weight: 700;
+  min-width: 32px;
+}
+
 /* Auto-Sub Badges */
 .autoSubBadge {
   display: inline-block;

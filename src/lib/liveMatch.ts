@@ -109,6 +109,7 @@ function calculateLiveStats(
   let playersRemaining = 0;
   let benchPoints = 0;
   let liveScore = 0; // Calculate live score from individual players
+  const benchPlayers: any[] = []; // Collect bench player details
 
   // Apply auto-substitutions if Bench Boost is NOT active (with fixture status for timing)
   let autoSubResult = null;
@@ -152,6 +153,13 @@ function calculateLiveStats(
       // Bench (positions 12-15)
       benchPoints += rawPoints;
       console.log(`BENCH ${bootstrapElement?.web_name}: ${rawPoints} pts`);
+
+      // Collect bench player details
+      benchPlayers.push({
+        name: bootstrapElement?.web_name || 'Unknown',
+        position: getPosition(bootstrapElement?.element_type),
+        points: rawPoints,
+      });
 
       // If Bench Boost is active, count bench players towards total
       if (isBenchBoost) {
@@ -209,6 +217,7 @@ function calculateLiveStats(
       },
       chipActive: picksData.active_chip,
       benchPoints,
+      bench: benchPlayers,
       transferCost,
     },
     autoSubResult,
