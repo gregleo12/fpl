@@ -15,10 +15,20 @@ export async function GET(
     }
 
     // Try to fetch H2H league data
+    console.log(`[League ${leagueId}] Starting fetch...`);
     let league;
     try {
+      console.log(`[League ${leagueId}] Fetching H2H league data...`);
       league = await fplApi.getH2HLeague(leagueId);
+      console.log(`[League ${leagueId}] Successfully fetched league: ${league?.league?.name}`);
     } catch (error: any) {
+      console.error(`[League ${leagueId}] Error fetching H2H league:`, {
+        status: error.response?.status,
+        message: error.message,
+        code: error.code,
+        fullError: error
+      });
+
       // Check if this is a Classic league (404/not found in H2H endpoint)
       if (error.response?.status === 404 || error.message?.includes('404')) {
         return NextResponse.json(
@@ -44,8 +54,19 @@ export async function GET(
       );
     }
 
-    const allMatches = await fplApi.getAllH2HMatches(leagueId);
-    console.log(`Fetched ${allMatches.length} total matches`);
+    console.log(`[League ${leagueId}] Fetching all H2H matches...`);
+    let allMatches;
+    try {
+      allMatches = await fplApi.getAllH2HMatches(leagueId);
+      console.log(`[League ${leagueId}] Fetched ${allMatches.length} total matches`);
+    } catch (error: any) {
+      console.error(`[League ${leagueId}] Error fetching matches:`, {
+        status: error.response?.status,
+        message: error.message,
+        code: error.code
+      });
+      throw error;
+    }
 
     const db = await getDatabase();
 
