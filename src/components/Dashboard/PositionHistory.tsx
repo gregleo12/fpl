@@ -155,6 +155,23 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
     };
   });
 
+  // Generate Y-axis ticks: show all ranks 1-30, then sparse after that
+  const generateYAxisTicks = (totalTeams: number) => {
+    if (totalTeams <= 30) {
+      // Show all ranks from 1 to totalTeams
+      return Array.from({ length: totalTeams }, (_, i) => i + 1);
+    } else {
+      // Show ranks 1-30, then add a few more evenly spaced
+      const firstThirty = Array.from({ length: 30 }, (_, i) => i + 1);
+      const remaining = [];
+      const step = Math.ceil((totalTeams - 30) / 5);
+      for (let i = 30 + step; i <= totalTeams; i += step) {
+        remaining.push(i);
+      }
+      return [...firstThirty, ...remaining];
+    }
+  };
+
   // Custom tooltip component
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -238,9 +255,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
               stroke="rgba(255, 255, 255, 0.7)"
               tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
               tickFormatter={(value) => getOrdinalSuffix(value)}
-              ticks={Array.from({ length: Math.min(data.totalTeams, 10) }, (_, i) =>
-                Math.ceil((i / 9) * (data.totalTeams - 1)) + 1
-              )}
+              ticks={generateYAxisTicks(data.totalTeams)}
             />
             <Tooltip content={<CustomTooltip />} />
 
