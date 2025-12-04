@@ -4,7 +4,7 @@ import { createUserHash, trackRequest } from '@/lib/analytics';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { leagueId, endpoint, method, ip, userAgent, responseTimeMs } = body;
+    const { leagueId, endpoint, method, ip, userAgent, responseTimeMs, selectedTeamId } = body;
 
     // Create anonymous user hash
     const userHash = createUserHash(ip || 'unknown', userAgent || 'unknown');
@@ -15,7 +15,8 @@ export async function POST(request: Request) {
       endpoint,
       method,
       userHash,
-      responseTimeMs
+      responseTimeMs,
+      selectedTeamId: selectedTeamId ? parseInt(selectedTeamId, 10) : null
     });
 
     return NextResponse.json({ success: true });

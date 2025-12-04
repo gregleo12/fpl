@@ -21,7 +21,7 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  max-width: 600px;
+  max-width: 900px;
   width: 100%;
 }
 
@@ -58,89 +58,93 @@
   font-weight: 600;
 }
 
-.teamList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.teamsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
   margin-bottom: 2rem;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
-  padding-right: 0.5rem;
+  padding: 0.5rem;
 }
 
-.teamList::-webkit-scrollbar {
+.teamsGrid::-webkit-scrollbar {
   width: 6px;
 }
 
-.teamList::-webkit-scrollbar-track {
+.teamsGrid::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;
 }
 
-.teamList::-webkit-scrollbar-thumb {
+.teamsGrid::-webkit-scrollbar-thumb {
   background: rgba(0, 255, 135, 0.3);
   border-radius: 3px;
 }
 
-.teamList::-webkit-scrollbar-thumb:hover {
+.teamsGrid::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 255, 135, 0.5);
 }
 
-.teamOption {
-  display: flex;
-  align-items: center;
-  padding: 1rem;
+.teamTile {
   background: rgba(255, 255, 255, 0.05);
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 12px;
+  padding: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.teamOption:hover {
+.teamTile:hover {
+  border-color: rgba(0, 255, 135, 0.5);
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(0, 255, 135, 0.3);
+  transform: translateY(-2px);
 }
 
-.teamOption input[type="radio"] {
-  margin-right: 1rem;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #00ff87;
-}
-
-.teamOption input[type="radio"]:checked ~ .teamInfo {
-  color: #00ff87;
-}
-
-.teamOption:has(input:checked) {
-  background: rgba(0, 255, 135, 0.1);
+.teamTile.selected {
   border-color: #00ff87;
+  background: rgba(0, 255, 135, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 255, 135, 0.2);
+}
+
+.teamIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(147, 51, 234, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: rgb(147, 51, 234);
+  flex-shrink: 0;
 }
 
 .teamInfo {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  flex: 1;
+  text-align: center;
+  width: 100%;
 }
 
 .manager {
-  font-weight: 700;
-  font-size: 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
   color: #ffffff;
+  line-height: 1.2;
 }
 
 .teamName {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.7);
-}
-
-.record {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.5);
-  font-weight: 500;
+  line-height: 1.2;
 }
 
 .savedTeamBadge {
@@ -175,6 +179,7 @@
 .recentTeamCard {
   display: flex;
   align-items: center;
+  gap: 1rem;
   padding: 1rem;
   background: rgba(0, 255, 135, 0.08);
   border: 2px solid rgba(0, 255, 135, 0.25);
@@ -189,8 +194,14 @@
   transform: translateX(4px);
 }
 
+.recentTeamCard .teamIcon {
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+}
+
 .recentTeamCard .teamInfo {
   flex: 1;
+  text-align: left;
 }
 
 .clickHint {
@@ -259,25 +270,41 @@
 
   .card {
     padding: 1.5rem;
+    max-width: 100%;
   }
 
   .title {
     font-size: 1.5rem;
   }
 
-  .teamList {
-    max-height: 300px;
+  .teamsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    max-height: 400px;
+    padding: 0.25rem;
   }
 
-  .teamOption {
-    padding: 0.875rem;
+  .teamTile {
+    padding: 0.75rem;
+  }
+
+  .teamIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 
   .manager {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .teamName {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
+  }
+
+  .recentTeamCard .teamIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
   }
 }

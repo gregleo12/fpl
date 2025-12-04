@@ -60,6 +60,7 @@ interface AnalyticsData {
     teamCount: number;
     totalRequests: number;
     uniqueUsers: number;
+    uniqueManagers: number;
     lastSeen: string;
   }>;
   recentRequests: Array<{
@@ -500,6 +501,7 @@ export default function AdminPage() {
                         <th>Teams</th>
                         <th>Requests</th>
                         <th>Users</th>
+                        <th>Managers</th>
                         <th>Last Seen</th>
                       </tr>
                     </thead>
@@ -513,6 +515,7 @@ export default function AdminPage() {
                           <td>{league.teamCount}</td>
                           <td>{league.totalRequests.toLocaleString()}</td>
                           <td>{league.uniqueUsers}</td>
+                          <td>{league.uniqueManagers}</td>
                           <td>{formatTimestamp(league.lastSeen)}</td>
                         </tr>
                       ))}

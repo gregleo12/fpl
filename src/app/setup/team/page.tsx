@@ -53,6 +53,16 @@ export default function TeamSelectionPage() {
         setSavedTeamId(savedState.myTeamId);
         setSavedTeamData(savedTeam);
         console.log('Saved team data set:', savedTeam);
+
+        // Auto-continue to dashboard if this team was remembered (saved to localStorage)
+        // Check if it's in localStorage (not just sessionStorage)
+        if (typeof window !== 'undefined' && localStorage.getItem('fpl_h2h_state')) {
+          console.log('Auto-continuing with saved team...');
+          // Small delay to let user see the selection
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 500);
+        }
       } else {
         console.log('Team not found in standings');
       }
@@ -93,6 +103,20 @@ export default function TeamSelectionPage() {
       sessionStorage.setItem('app_state', JSON.stringify(state));
     }
 
+    // Track team selection for managers analytics
+    fetch('/api/admin/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leagueId: tempData.leagueId,
+        endpoint: '/setup/team/select',
+        method: 'POST',
+        ip: 'unknown',
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        selectedTeamId: team.entry_id
+      })
+    }).catch((err) => console.error('Tracking error:', err));
+
     // Clear temporary data
     sessionStorage.removeItem('temp_league');
 
@@ -118,6 +142,16 @@ export default function TeamSelectionPage() {
     }
   }
 
+  // Helper function to get initials
+  function getInitials(name: string): string {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
   if (!tempData) {
     return (
       <div className={styles.container}>
@@ -140,24 +174,21 @@ export default function TeamSelectionPage() {
         <h1 className={styles.title}>Who are you in this league?</h1>
         <p className={styles.leagueName}>{tempData.leagueName}</p>
 
-        <div className={styles.teamList}>
+        <div className={styles.teamsGrid}>
           {sortedStandings.map((team: any) => (
-            <label key={team.entry_id} className={styles.teamOption}>
-              <input
-                type="radio"
-                name="team"
-                value={team.entry_id}
-                checked={selectedTeam === team.entry_id.toString()}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-              />
-              <div className={styles.teamInfo}>
-                <span className={styles.manager}>{team.player_name}</span>
-                <span className={styles.teamName}>{team.team_name}</span>
-                <span className={styles.record}>
-                  {team.matches_won}W-{team.matches_drawn}D-{team.matches_lost}L
-                </span>
+            <button
+              key={team.entry_id}
+              className={`${styles.teamTile} ${selectedTeam === team.entry_id.toString() ? styles.selected : ''}`}
+              onClick={() => setSelectedTeam(team.entry_id.toString())}
+            >
+              <div className={styles.teamIcon}>
+                {getInitials(team.player_name)}
               </div>
-            </label>
+              <div className={styles.teamInfo}>
+                <div className={styles.manager}>{team.player_name}</div>
+                <div className={styles.teamName}>{team.team_name}</div>
+              </div>
+            </button>
           ))}
         </div>
 
@@ -168,12 +199,12 @@ export default function TeamSelectionPage() {
               className={styles.recentTeamCard}
               onClick={handleRecentTeamClick}
             >
+              <div className={styles.teamIcon}>
+                {getInitials(savedTeamData.player_name)}
+              </div>
               <div className={styles.teamInfo}>
-                <span className={styles.manager}>{savedTeamData.player_name}</span>
-                <span className={styles.teamName}>{savedTeamData.team_name}</span>
-                <span className={styles.record}>
-                  {savedTeamData.matches_won}W-{savedTeamData.matches_drawn}D-{savedTeamData.matches_lost}L
-                </span>
+                <div className={styles.manager}>{savedTeamData.player_name}</div>
+                <div className={styles.teamName}>{savedTeamData.team_name}</div>
               </div>
               <span className={styles.clickHint}>→</span>
             </div>

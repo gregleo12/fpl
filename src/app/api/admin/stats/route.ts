@@ -55,7 +55,7 @@ export async function GET() {
       db.query(`SELECT COUNT(*) as count FROM analytics_leagues`),
       db.query(`SELECT COUNT(*) as count FROM analytics_leagues WHERE first_seen >= CURRENT_DATE`),
 
-      // Top 5 leagues by requests (with real-time unique users)
+      // Top 5 leagues by requests (with real-time unique users and managers)
       db.query(`
         SELECT
           al.league_id,
@@ -63,7 +63,8 @@ export async function GET() {
           al.team_count,
           al.total_requests,
           al.last_seen,
-          COUNT(DISTINCT ar.user_hash) as total_unique_users
+          COUNT(DISTINCT ar.user_hash) as total_unique_users,
+          COUNT(DISTINCT ar.selected_team_id) FILTER (WHERE ar.selected_team_id IS NOT NULL) as total_unique_managers
         FROM analytics_leagues al
         LEFT JOIN analytics_requests ar ON al.league_id = ar.league_id
         GROUP BY al.league_id, al.league_name, al.team_count, al.total_requests, al.last_seen
@@ -131,6 +132,7 @@ export async function GET() {
         teamCount: row.team_count,
         totalRequests: row.total_requests,
         uniqueUsers: row.total_unique_users,
+        uniqueManagers: parseInt(row.total_unique_managers || '0'),
         lastSeen: row.last_seen
       })),
       recentRequests: recentRequestsResult.rows.map((row: any) => ({

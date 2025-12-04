@@ -20,7 +20,8 @@ export async function trackRequest({
   method,
   userHash,
   responseTimeMs,
-  statusCode
+  statusCode,
+  selectedTeamId
 }: {
   leagueId: number | null;
   endpoint: string;
@@ -28,18 +29,19 @@ export async function trackRequest({
   userHash: string;
   responseTimeMs?: number;
   statusCode?: number;
+  selectedTeamId?: number | null;
 }): Promise<void> {
   try {
     const db = await getDatabase();
 
-    console.log('[Analytics] Tracking request:', { leagueId, endpoint, method, userHash });
+    console.log('[Analytics] Tracking request:', { leagueId, endpoint, method, userHash, selectedTeamId });
 
     const result = await db.query(`
       INSERT INTO analytics_requests
-        (league_id, endpoint, method, user_hash, response_time_ms, status_code)
-      VALUES ($1, $2, $3, $4, $5, $6)
+        (league_id, endpoint, method, user_hash, response_time_ms, status_code, selected_team_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING id
-    `, [leagueId, endpoint, method, userHash, responseTimeMs || null, statusCode || 200]);
+    `, [leagueId, endpoint, method, userHash, responseTimeMs || null, statusCode || 200, selectedTeamId || null]);
 
     console.log('[Analytics] Request tracked successfully, ID:', result.rows[0]?.id);
 
