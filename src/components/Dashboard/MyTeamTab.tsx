@@ -2,6 +2,7 @@
 
 import styles from './Dashboard.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
+import PositionHistory from './PositionHistory';
 
 interface Props {
   data: any;
@@ -42,7 +43,7 @@ function getOrdinalSuffix(num: number): string {
   return num + 'th';
 }
 
-export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName }: Props) {
+export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName, leagueId }: Props) {
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No team data available</div>;
   }
@@ -350,6 +351,9 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
           </table>
         </div>
       </div>
+
+      {/* League Position Over Time */}
+      <PositionHistory leagueId={leagueId} entryId={myTeamId} />
     </div>
   );
 }
