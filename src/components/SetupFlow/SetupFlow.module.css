@@ -60,6 +60,18 @@
   font-size: 0.9rem;
 }
 
+.loadingMessage {
+  background: linear-gradient(135deg, rgba(0, 136, 255, 0.15) 0%, rgba(0, 200, 255, 0.1) 100%);
+  color: #5eb3ff;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+  border: 1px solid rgba(94, 179, 255, 0.3);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
 .submitButton {
   width: 100%;
   padding: 1rem 2rem;

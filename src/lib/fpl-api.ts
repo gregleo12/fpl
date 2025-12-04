@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+// Configure axios for large leagues (up to 50 teams)
+axios.defaults.timeout = 90000; // 90 seconds
+axios.defaults.timeoutErrorMessage = 'Request timed out - league might be too large';
+
 const API_BASE_URL = process.env.FPL_API_BASE_URL || 'https://fantasy.premierleague.com/api';
 
 export interface BootstrapData {

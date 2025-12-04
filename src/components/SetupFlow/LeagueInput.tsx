@@ -9,6 +9,7 @@ export default function LeagueInput() {
   const [leagueId, setLeagueId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [showQuickAccess, setShowQuickAccess] = useState(() => {
     // Remember user's preference in localStorage
     if (typeof window !== 'undefined') {
@@ -40,6 +41,12 @@ export default function LeagueInput() {
   async function fetchAndNavigate(id: string) {
     setIsLoading(true);
     setError('');
+    setLoadingMessage('');
+
+    // For large leagues, show helpful message after 3 seconds
+    const timeoutId = setTimeout(() => {
+      setLoadingMessage('⏳ Large leagues take longer to load... please wait');
+    }, 3000);
 
     try {
       // Fetch league data from API
@@ -92,10 +99,27 @@ export default function LeagueInput() {
       }));
 
       // Navigate to team selection
+      clearTimeout(timeoutId);
       router.push(`/setup/team`);
     } catch (err: any) {
-      console.error('Full error:', err);
-      setError(err.message || 'Could not fetch league. Please check the ID and try again.');
+      clearTimeout(timeoutId);
+      console.error('League fetch error:', err);
+
+      let errorMessage = 'Could not load league. Please try again.';
+
+      // Specific error types
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        errorMessage = '⏱️ League took too long to load. Large leagues (30+ teams) may have issues. Please try again.';
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error. Please try again in a moment.';
+      } else if (err.message?.includes('Network Error')) {
+        errorMessage = '⚠️ Network error. Please check your connection.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      setLoadingMessage('');
       setIsLoading(false);
     }
   }
@@ -127,6 +151,7 @@ export default function LeagueInput() {
         </div>
 
         {error && <p className={styles.error}>{error}</p>}
+        {loadingMessage && <p className={styles.loadingMessage}>{loadingMessage}</p>}
 
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
           {isLoading ? 'Fetching...' : 'Continue'}
