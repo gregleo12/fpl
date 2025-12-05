@@ -93,22 +93,73 @@ Last Updated: 2025-01-04
 
 ## Deployment Process
 
-### Standard Deploy
-```bash
-npm run build              # Test locally
-git add .
-git commit -m "Description"
-git push                   # Triggers Railway auto-deploy
-npm version patch          # Bump version
-git push --tags
-```
+### Standard Deploy Workflow
+
+**CRITICAL: Follow this workflow for EVERY deployment**
+
+1. **Make Changes & Test**
+   ```bash
+   npm run build              # Test locally - MUST pass
+   ```
+
+2. **Bump Version**
+   ```bash
+   npm version patch --no-git-tag-version  # or minor, or major
+   ```
+   - **Patch (0.0.X)**: Bug fixes, small tweaks
+   - **Minor (0.X.0)**: New features
+   - **Major (X.0.0)**: Breaking changes
+
+3. **Update VERSION_HISTORY_COMPLETE.md** ⚠️ **MANDATORY**
+   - Add new version to the appropriate series section
+   - Include:
+     - Version number and date
+     - Brief description (1-2 sentences)
+     - Key changes/fixes (bullet points)
+     - Mark as ✅ if working/tested
+   - Update "Last Updated" date at bottom
+   - Update "Current Version" at top
+
+   **Example Entry:**
+   ```markdown
+   ### v1.26.7 - Feature Name (Jan 5, 2025)
+   Brief description of what this version does
+   - Key change 1
+   - Key change 2
+   - Fixed: Specific bug
+   ```
+
+4. **Commit Changes**
+   ```bash
+   git add .
+   git commit -m "vX.Y.Z: Clear description of changes
+
+   Detailed explanation if needed.
+   - Bullet points for multiple changes
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+   ```
+
+5. **Push to Deploy**
+   ```bash
+   git push                   # Triggers Railway auto-deploy
+   ```
+
+6. **Verify Deployment**
+   - Check Railway dashboard for successful build
+   - Test the deployed feature on live site
+   - Monitor for any errors in Railway logs
 
 ### Emergency Rollback
 ```bash
-git log --online -10      # Find last good commit
+git log --oneline -10      # Find last good commit
 git revert <commit-hash>   # Or git reset --hard
 git push --force           # Deploy rollback
 ```
+
+**Important:** If you rollback, also update VERSION_HISTORY_COMPLETE.md to note the rollback
 
 ## Version Numbering Rules
 
@@ -283,10 +334,23 @@ NEVER push without bumping version and documenting it!
 
 ## When Starting New Session
 
-1. **Read this file first**
-2. **Check recent commits**: `git log --oneline -10`
-3. **Check Railway logs** if user reports 502 errors
-4. **Ask user**: "What were we working on last? Any known issues?"
+1. **Read this file first** (CLAUDE_CODE_CONTEXT.md)
+2. **Check VERSION_HISTORY_COMPLETE.md** for recent changes
+3. **Check recent commits**: `git log --oneline -10`
+4. **Check Railway logs** if user reports 502 errors
+5. **Ask user**: "What were we working on last? Any known issues?"
+
+## When Ending Every Session (After Deployment)
+
+**MANDATORY CHECKLIST:**
+- [ ] VERSION_HISTORY_COMPLETE.md updated with new version
+- [ ] "Current Version" updated at top of VERSION_HISTORY
+- [ ] "Last Updated" date updated at bottom
+- [ ] README.md version badge updated (if changed)
+- [ ] CLAUDE_CODE_CONTEXT.md version history section updated
+- [ ] All documentation changes committed and pushed
+
+**Never skip updating VERSION_HISTORY - it's our project memory!**
 
 ## Stats Hub Complete Journey (v1.11.9 - v1.14.0)
 
