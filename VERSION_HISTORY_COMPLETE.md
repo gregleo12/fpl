@@ -2,11 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.2 (January 5, 2025)
+**Current Version:** v2.0.3 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.3 - My Leagues UI Polish (Jan 5, 2025)
+**UI IMPROVEMENT:** My Leagues section now visually matches Settings page theme
+- Updated: My Leagues CSS completely rewritten to match Settings page styling
+- Visual: Green theme matching action buttons (rgba(0, 255, 135, ...))
+- Visual: Title now uppercase with letter-spacing like other section titles
+- Visual: League items styled as cards with proper spacing and borders
+- Visual: Current league has green border matching app accent color
+- Visual: Hover effects with translateY(-2px) matching action buttons
+- Visual: Add button styled consistently with primary actions
+- Consistency: All colors changed from CSS variables to explicit rgba values
+- File: `/src/components/Settings/MyLeagues.module.css` (244 lines rewritten)
 
 ### v2.0.2 - Remember Team Selection Per League (Jan 5, 2025)
 **UX IMPROVEMENT:** App now remembers which team you are in each league
