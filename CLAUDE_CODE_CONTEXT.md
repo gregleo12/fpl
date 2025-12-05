@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-01-04
+Last Updated: 2025-01-05
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -30,6 +30,9 @@ Last Updated: 2025-01-04
 - `/src/components/Stats/StatsHub.tsx` - Main Stats Hub component with GW selector
 - `/src/components/Stats/sections/` - Individual stat sections (CaptainPicks, ChipsPlayed, HitsTaken, GameweekWinners, Differentials)
 - `/src/components/SetupFlow/LeagueInput.tsx` - Simple league ID entry (proven approach)
+- `/src/app/admin/page.tsx` - Admin dashboard with analytics overview
+- `/src/app/admin/leagues/page.tsx` - Sortable leagues page (v1.26.7)
+- `/src/app/api/admin/leagues/route.ts` - API endpoint for all leagues data
 
 ### Data Flow
 
@@ -122,11 +125,12 @@ Last Updated: 2025-01-04
 
    **Example Entry:**
    ```markdown
-   ### v1.26.7 - Feature Name (Jan 5, 2025)
-   Brief description of what this version does
-   - Key change 1
-   - Key change 2
-   - Fixed: Specific bug
+   ### v1.26.7 - Admin Leagues Page (Jan 5, 2025)
+   Added dedicated sortable leagues page in admin panel
+   - Created /admin/leagues page with full league list
+   - Sortable columns: click headers to sort by any field
+   - Smart sorting: desc for numbers, asc for text, toggleable direction
+   - Navigation: "View All" button from admin dashboard
    ```
 
 4. **Commit Changes**
@@ -1128,6 +1132,13 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v1.26.x Series - Jan 2025):**
+- **v1.26.7 (Jan 5)** - 📊 **NEW: Admin leagues page with sortable columns**
+  - Added `/admin/leagues` page showing all leagues in database
+  - Sortable columns: click any header to sort (smart defaults: desc for numbers, asc for text)
+  - Sort indicators: ⇅ (unsorted), ↑ (ascending), ↓ (descending)
+  - "View All →" button from admin dashboard
+  - API endpoint: `/api/admin/leagues` fetches complete league metadata
+
 - **v1.26.6 (Jan 4)** - 🎯 **CRITICAL FIX: Handle corrupted FPL data**
   - Fixed: League 754307 (32 teams) failing immediately with null entry_id error
   - Added null checks before database inserts for standings and matches
