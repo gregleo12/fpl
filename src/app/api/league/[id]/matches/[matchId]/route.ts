@@ -121,6 +121,11 @@ export async function GET(
             // Calculate free transfers by tracking through the season
             let ftBalance = 1; // Start of season
             for (const gw of currentGWs) {
+              // Stop before processing the current gameweek
+              if (gw.event >= currentGW) {
+                break;
+              }
+
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 

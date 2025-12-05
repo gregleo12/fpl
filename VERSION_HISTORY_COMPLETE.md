@@ -1,12 +1,20 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 171+ versions
-**Current Version:** v1.26.7 (January 5, 2025)
+**Total Releases:** 172+ versions
+**Current Version:** v1.26.8 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.8 - Fix FT Calculation Bug (Jan 5, 2025)
+**BUG FIX:** Free Transfers showing incorrect value in upcoming fixtures modal
+- Fixed: FT calculation loop processing current gameweek, causing off-by-one error
+- Root cause: Loop included current GW data from `historyData.current`
+- Solution: Added early break when reaching current gameweek
+- Impact: FTs now show correct value for current/upcoming gameweeks
+- Location: `/api/league/[id]/matches/[matchId]/route.ts:125-127`
 
 ### v1.26.7 - Admin Leagues Page (Jan 5, 2025)
 **NEW FEATURE:** Dedicated sortable leagues page in admin panel
