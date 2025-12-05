@@ -2,11 +2,20 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.0 (January 5, 2025)
+**Current Version:** v2.0.1 (January 5, 2025)
 
 ---
 
-## 🎉 v2.0.0 - Multi-League Support (Jan 5, 2025) - **MAJOR MILESTONE**
+## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.1 - Fix League Switching Flow (Jan 5, 2025)
+**BUG FIX:** Fixed league switching to include team selection step
+- Fixed: Clicking a saved league now redirects to team selection page
+- Fixed: No more "Team not found in league" error
+- Fixed: No more false error alert when switch succeeds
+- Flow: Click league → Select your team → Dashboard loads
+- Previous issue: Tried to auto-match team, failed if names didn't match
+- Uses same team selection flow as "Change Team" button
 
 ### v2.0.0 - My Leagues: Save & Switch Between Multiple Leagues (Jan 5, 2025)
 **MAJOR FEATURE:** Multi-league support - manage up to 5 leagues from Settings

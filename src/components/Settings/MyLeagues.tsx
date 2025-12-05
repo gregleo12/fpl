@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadState, saveState } from '@/lib/storage';
+import { loadState, saveState, clearState } from '@/lib/storage';
 import styles from './MyLeagues.module.css';
 
 interface SavedLeague {
@@ -58,12 +58,8 @@ export default function MyLeagues() {
   async function handleSwitchLeague(leagueId: string) {
     if (leagueId === currentLeagueId) return;
 
-    // Get current state to preserve myTeamId
-    const currentState = loadState();
-    if (!currentState) return;
-
     try {
-      // Fetch the league data to get league name
+      // Fetch the league data
       const response = await fetch(`/api/league/${leagueId}`);
       if (!response.ok) throw new Error('Failed to fetch league data');
 
@@ -79,25 +75,16 @@ export default function MyLeagues() {
       setSavedLeagues(updated);
       saveSavedLeagues(updated);
 
-      // Find the user's team in this league (try to match by team name or manager name)
-      const userTeam = statsData.standings?.find((team: any) =>
-        team.team_name === currentState.myTeamName ||
-        team.player_name === currentState.myManagerName
-      );
-
-      // Save new state
-      saveState({
+      // Store league data in sessionStorage for team selection
+      sessionStorage.setItem('temp_league', JSON.stringify({
         leagueId,
         leagueName: statsData.league?.name || `League ${leagueId}`,
-        myTeamId: userTeam?.entry_id?.toString() || currentState.myTeamId,
-        myTeamName: userTeam?.team_name || currentState.myTeamName,
-        myManagerName: userTeam?.player_name || currentState.myManagerName,
-        lastFetched: new Date().toISOString()
-      });
+        standings: statsData.standings
+      }));
 
-      // Reload to dashboard
-      router.push('/dashboard');
-      window.location.reload();
+      // Clear current state and go to team selection
+      clearState();
+      router.push('/setup/team');
     } catch (error) {
       alert('Failed to switch league. Please try again.');
     }
