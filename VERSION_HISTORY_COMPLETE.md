@@ -2,11 +2,22 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.10 (January 5, 2025)
+**Current Version:** v2.0.11 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.11 - Fix Analytics Tracking (Jan 5, 2025)
+**CRITICAL BUG FIX:** Analytics now saving to database - admin stats will populate
+- Fixed: Analytics tracking was failing silently trying to write to non-existent analytics_leagues table
+- Fixed: Removed all references to analytics_leagues from analytics.ts
+- Changed: trackRequest() now only writes to analytics_requests table
+- Changed: updateLeagueMetadata() is now a no-op (metadata computed on-demand)
+- Changed: aggregateDailyStats() no longer updates analytics_leagues
+- Impact: Analytics will now be tracked and saved to database
+- Impact: Admin dashboard will show real stats after this deployment
+- Files: `lib/analytics.ts`
 
 ### v2.0.10 - Fix Admin Dashboard Stats API (Jan 5, 2025)
 **CRITICAL BUG FIX:** Fixed admin dashboard showing "Cannot read properties of undefined"

@@ -44,20 +44,6 @@ export async function trackRequest({
     `, [leagueId, endpoint, method, userHash, responseTimeMs || null, statusCode || 200, selectedTeamId || null]);
 
     console.log('[Analytics] Request tracked successfully, ID:', result.rows[0]?.id);
-
-    // Update league metadata if we have a league ID
-    if (leagueId) {
-      await db.query(`
-        INSERT INTO analytics_leagues (league_id, last_seen, total_requests)
-        VALUES ($1, NOW(), 1)
-        ON CONFLICT (league_id)
-        DO UPDATE SET
-          last_seen = NOW(),
-          total_requests = analytics_leagues.total_requests + 1
-      `, [leagueId]);
-
-      console.log('[Analytics] League metadata updated for league:', leagueId);
-    }
   } catch (error) {
     // Silent fail - don't break the app for analytics
     console.error('[Analytics] Tracking error:', error);
@@ -65,25 +51,14 @@ export async function trackRequest({
 }
 
 // Update league metadata (name, team count)
+// NOTE: analytics_leagues table doesn't exist, this is a no-op for now
 export async function updateLeagueMetadata(
   leagueId: number,
   leagueName: string,
   teamCount: number
 ): Promise<void> {
-  try {
-    const db = await getDatabase();
-    await db.query(`
-      INSERT INTO analytics_leagues (league_id, league_name, team_count, first_seen, last_seen)
-      VALUES ($1, $2, $3, NOW(), NOW())
-      ON CONFLICT (league_id)
-      DO UPDATE SET
-        league_name = $2,
-        team_count = $3,
-        last_seen = NOW()
-    `, [leagueId, leagueName, teamCount]);
-  } catch (error) {
-    console.error('League metadata update error:', error);
-  }
+  // No-op - analytics_leagues table removed
+  // League metadata is now computed on-demand from analytics_requests
 }
 
 /**
@@ -140,15 +115,8 @@ export async function aggregateDailyStats(targetDate?: string): Promise<{ succes
       RETURNING *
     `);
 
-    // Update total unique users per league (lifetime)
-    await db.query(`
-      UPDATE analytics_leagues al
-      SET total_unique_users = (
-        SELECT COUNT(DISTINCT user_hash)
-        FROM analytics_requests ar
-        WHERE ar.league_id = al.league_id
-      )
-    `);
+    // Note: analytics_leagues table removed
+    // Unique users per league now computed on-demand from analytics_requests
 
     return {
       success: true,
