@@ -1,12 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 170+ versions
-**Current Version:** v1.26.6 (January 4, 2025)
+**Total Releases:** 171+ versions
+**Current Version:** v1.26.7 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.7 - Admin Leagues Page (Jan 5, 2025)
+**NEW FEATURE:** Dedicated sortable leagues page in admin panel
+- Added `/admin/leagues` page with full league list
+- Sortable columns: click headers to sort by any field
+- Smart sorting: desc for numbers, asc for text, toggleable direction
+- Sort indicators: ⇅ (unsorted), ↑ (ascending), ↓ (descending)
+- Visual enhancements: hover effects on sortable columns
+- Navigation: "View All" button from admin dashboard
+- API endpoint: `/api/admin/leagues` fetches all league metadata
 
 ### v1.26.6 - Null Entry Handling (Jan 4, 2025) ✅ **WORKING**
 **CRITICAL FIX:** Handle corrupted FPL data with null entry_ids

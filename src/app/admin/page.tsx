@@ -539,7 +539,33 @@ export default function AdminPage() {
 
             {/* Top Leagues */}
             <div className={styles.section}>
-              <div className={styles.sectionTitle}>🏆 Top Leagues by Usage</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div className={styles.sectionTitle}>🏆 Top Leagues by Usage</div>
+                <button
+                  onClick={() => window.location.href = '/admin/leagues'}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'rgba(0, 255, 135, 0.15)',
+                    color: '#00ff87',
+                    border: '1px solid rgba(0, 255, 135, 0.3)',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 255, 135, 0.25)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = 'rgba(0, 255, 135, 0.15)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  View All →
+                </button>
+              </div>
               {analyticsData.topLeagues.length > 0 ? (
                 <div className={styles.tableWrapper}>
                   <table className={styles.table}>
@@ -555,7 +581,11 @@ export default function AdminPage() {
                     </thead>
                     <tbody>
                       {analyticsData.topLeagues.map((league) => (
-                        <tr key={league.leagueId}>
+                        <tr
+                          key={league.leagueId}
+                          onClick={() => window.location.href = '/admin/leagues'}
+                          style={{ cursor: 'pointer' }}
+                        >
                           <td>
                             <div className={styles.leagueName}>{league.leagueName}</div>
                             <div className={styles.leagueId}>ID: {league.leagueId}</div>
