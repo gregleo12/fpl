@@ -8,6 +8,9 @@ import styles from './MyLeagues.module.css';
 interface SavedLeague {
   id: string;
   name: string;
+  myTeamId?: string;
+  myTeamName?: string;
+  myManagerName?: string;
 }
 
 const SAVED_LEAGUES_KEY = 'savedLeagues';
@@ -31,14 +34,27 @@ export default function MyLeagues() {
       // Load saved leagues from localStorage
       const saved = getSavedLeagues();
 
-      // Ensure current league is in the saved leagues
-      const currentExists = saved.some(l => l.id === state.leagueId);
+      // Ensure current league is in the saved leagues with team info
+      const currentExists = saved.find(l => l.id === state.leagueId);
       if (!currentExists) {
-        const updated = [...saved, { id: state.leagueId, name: state.leagueName }];
+        const updated = [...saved, {
+          id: state.leagueId,
+          name: state.leagueName,
+          myTeamId: state.myTeamId,
+          myTeamName: state.myTeamName,
+          myManagerName: state.myManagerName
+        }];
         setSavedLeagues(updated);
         saveSavedLeagues(updated);
       } else {
-        setSavedLeagues(saved);
+        // Update current league with latest team info if missing
+        const updated = saved.map(l =>
+          l.id === state.leagueId
+            ? { ...l, myTeamId: state.myTeamId, myTeamName: state.myTeamName, myManagerName: state.myManagerName }
+            : l
+        );
+        setSavedLeagues(updated);
+        saveSavedLeagues(updated);
       }
     }
   }, []);
@@ -58,8 +74,12 @@ export default function MyLeagues() {
   async function handleSwitchLeague(leagueId: string) {
     if (leagueId === currentLeagueId) return;
 
+    // Find the saved league
+    const savedLeague = savedLeagues.find(l => l.id === leagueId);
+    if (!savedLeague) return;
+
     try {
-      // Fetch the league data
+      // Fetch the league data to get fresh name
       const response = await fetch(`/api/league/${leagueId}`);
       if (!response.ok) throw new Error('Failed to fetch league data');
 
@@ -68,23 +88,43 @@ export default function MyLeagues() {
 
       const statsData = await statsResponse.json();
 
-      // Update saved leagues with the name if not already set
-      const updated = savedLeagues.map(l =>
-        l.id === leagueId && !l.name ? { ...l, name: statsData.league?.name || `League ${leagueId}` } : l
-      );
-      setSavedLeagues(updated);
-      saveSavedLeagues(updated);
+      const leagueName = statsData.league?.name || `League ${leagueId}`;
 
-      // Store league data in sessionStorage for team selection
-      sessionStorage.setItem('temp_league', JSON.stringify({
-        leagueId,
-        leagueName: statsData.league?.name || `League ${leagueId}`,
-        standings: statsData.standings
-      }));
+      // Check if we have saved team info for this league
+      if (savedLeague.myTeamId && savedLeague.myTeamName && savedLeague.myManagerName) {
+        // We have team info - switch directly
+        saveState({
+          leagueId,
+          leagueName,
+          myTeamId: savedLeague.myTeamId,
+          myTeamName: savedLeague.myTeamName,
+          myManagerName: savedLeague.myManagerName,
+          lastFetched: new Date().toISOString()
+        });
 
-      // Clear current state and go to team selection
-      clearState();
-      router.push('/setup/team');
+        // Reload dashboard
+        router.push('/dashboard');
+        window.location.reload();
+      } else {
+        // No team info - need to select team first
+        // Update saved leagues with the name
+        const updated = savedLeagues.map(l =>
+          l.id === leagueId ? { ...l, name: leagueName } : l
+        );
+        setSavedLeagues(updated);
+        saveSavedLeagues(updated);
+
+        // Store league data in sessionStorage for team selection
+        sessionStorage.setItem('temp_league', JSON.stringify({
+          leagueId,
+          leagueName,
+          standings: statsData.standings
+        }));
+
+        // Clear current state and go to team selection
+        clearState();
+        router.push('/setup/team');
+      }
     } catch (error) {
       alert('Failed to switch league. Please try again.');
     }

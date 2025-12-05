@@ -2,11 +2,20 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.1 (January 5, 2025)
+**Current Version:** v2.0.2 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.2 - Remember Team Selection Per League (Jan 5, 2025)
+**UX IMPROVEMENT:** App now remembers which team you are in each league
+- Fixed: Saved leagues now store team info (myTeamId, myTeamName, myManagerName)
+- Feature: First time switching to a league → team selection required
+- Feature: Subsequent switches → instant switch, no team re-selection
+- Smart: Auto-updates team info whenever you're in Settings
+- Storage: savedLeagues now includes `{id, name, myTeamId, myTeamName, myManagerName}`
+- UX: Much faster league switching for frequently used leagues
 
 ### v2.0.1 - Fix League Switching Flow (Jan 5, 2025)
 **BUG FIX:** Fixed league switching to include team selection step
