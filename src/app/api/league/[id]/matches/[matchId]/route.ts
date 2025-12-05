@@ -120,30 +120,36 @@ export async function GET(
 
             // Calculate free transfers by tracking through the season
             let ftBalance = 0;
+            console.log(`[FT DEBUG] Starting calculation for entry ${entryId}, currentGW=${currentGW}`);
 
             for (const gw of currentGWs) {
-              // Stop before processing the current gameweek
               if (gw.event >= currentGW) {
+                console.log(`[FT DEBUG] Breaking at GW${gw.event} (>= currentGW ${currentGW})`);
                 break;
               }
 
-              // Skip GW1 - just sets ftBalance to 1 for GW2
               if (gw.event === 1) {
                 ftBalance = 1;
+                console.log(`[FT DEBUG] GW1: Set ftBalance=1, continue`);
                 continue;
               }
 
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
+              const beforeTransfers = ftBalance;
+
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
-                // WC/FH: No FT consumed, no +1 added
+                console.log(`[FT DEBUG] GW${gw.event}: ${chipUsed} used, ftBalance stays ${ftBalance}`);
               } else {
                 ftBalance = Math.max(0, ftBalance - transfers);
+                const afterTransfers = ftBalance;
                 ftBalance = Math.min(5, ftBalance + 1);
+                console.log(`[FT DEBUG] GW${gw.event}: transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, +1 = ${ftBalance}`);
               }
             }
 
+            console.log(`[FT DEBUG] FINAL ftBalance=${ftBalance}`);
             freeTransfers = ftBalance;
 
             // Bench points (last 5 GWs)
