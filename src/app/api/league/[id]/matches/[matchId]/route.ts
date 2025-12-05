@@ -122,32 +122,25 @@ export async function GET(
             // IMPORTANT: This calculates FT available FOR the current/upcoming GW,
             // NOT what you'll have after it completes
             let ftBalance = 0;
-            console.log(`[FT DEBUG] Starting calculation for entry ${entryId}, currentGW=${currentGW}`);
 
             for (const gw of currentGWs) {
               if (gw.event >= currentGW) {
-                console.log(`[FT DEBUG] Breaking at GW${gw.event} (>= currentGW ${currentGW})`);
                 break;
               }
 
               if (gw.event === 1) {
                 ftBalance = 1;
-                console.log(`[FT DEBUG] GW1: Set ftBalance=1, continue`);
                 continue;
               }
 
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
-              const beforeTransfers = ftBalance;
-
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
-                console.log(`[FT DEBUG] GW${gw.event}: ${chipUsed} used, ftBalance stays ${ftBalance}`);
                 // WC/FH: Transfers don't consume FT, and no +1 FT for next GW
               } else {
                 // First consume transfers
                 ftBalance = Math.max(0, ftBalance - transfers);
-                const afterTransfers = ftBalance;
 
                 // Then add +1 FT for the NEXT gameweek (but NOT if this is the last completed GW)
                 // We check if the NEXT gw exists and is before currentGW
@@ -157,16 +150,18 @@ export async function GET(
                 if (nextGW && nextGW.event < currentGW) {
                   // There's another completed GW after this one, so add the +1 FT
                   ftBalance = Math.min(5, ftBalance + 1);
-                  console.log(`[FT DEBUG] GW${gw.event}: transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, +1 = ${ftBalance}`);
                 } else {
                   // This is the last completed GW, DON'T add +1 FT
                   // (because that would show FT for AFTER currentGW, not FOR currentGW)
-                  console.log(`[FT DEBUG] GW${gw.event} (LAST): transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, NO +1 (last GW)`);
                 }
               }
             }
 
-            console.log(`[FT DEBUG] FINAL ftBalance=${ftBalance}`);
+            // Special rule: AFCON break - everyone gets 5 FT for GW16
+            if (currentGW === 16) {
+              ftBalance = 5;
+            }
+
             freeTransfers = ftBalance;
 
             // Bench points (last 5 GWs)

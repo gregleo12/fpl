@@ -2,11 +2,19 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v1.26.12 (January 5, 2025)
+**Current Version:** v1.26.13 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.13 - Add AFCON Special Rule for GW16 (Jan 5, 2025)
+**NEW FEATURE:** Special AFCON rule - everyone gets 5 FT for GW16
+- Added: Special rule override for GW16 due to AFCON break
+- Reason: FPL is giving all managers 5 FT to adjust for African players unavailable
+- Implementation: After normal FT calculation, if currentGW === 16, set ftBalance to 5
+- Also cleaned up: Removed all debug logging from FT calculation
+- Location: `/api/league/[id]/matches/[matchId]/route.ts:160-163`
 
 ### v1.26.12 - Fix FT Showing Wrong Gameweek (Jan 5, 2025) ✅ **ACTUAL FIX**
 **CRITICAL FIX:** FT now shows correctly for current gameweek (not next gameweek)
