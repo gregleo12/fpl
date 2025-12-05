@@ -2,11 +2,19 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.7 (January 5, 2025)
+**Current Version:** v2.0.8 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.8 - Fix Admin Panel Type Casting (Jan 5, 2025)
+**BUG FIX:** Fixed client-side error in admin panel caused by type mismatch
+- Fixed: Admin panel showing "client-side exception has occurred" error
+- Fixed: PostgreSQL COUNT() returns bigint (string), frontend expects number
+- Added: Explicit ::integer casts for all numeric fields in query
+- Fields cast: league_id, team_count, total_requests, unique_users, unique_managers
+- Files: `api/admin/leagues/route.ts`
 
 ### v2.0.7 - Fix Admin Panel (Jan 5, 2025)
 **BUG FIX:** Admin panel now works - fixed missing league_metadata table error

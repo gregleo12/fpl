@@ -27,12 +27,12 @@ export async function GET() {
         GROUP BY league_id
       )
       SELECT
-        ls.league_id,
+        ls.league_id::integer,
         'League ' || ls.league_id as league_name,
-        COALESCE(lt.team_count, 0) as team_count,
-        ls.total_requests,
-        ls.unique_users,
-        ls.unique_managers,
+        COALESCE(lt.team_count, 0)::integer as team_count,
+        ls.total_requests::integer,
+        ls.unique_users::integer,
+        ls.unique_managers::integer,
         ls.last_seen,
         ls.first_seen,
         ls.first_seen as created_at
