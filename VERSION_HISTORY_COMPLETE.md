@@ -1,12 +1,20 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 172+ versions
-**Current Version:** v1.26.8 (January 5, 2025)
+**Total Releases:** 173+ versions
+**Current Version:** v1.26.9 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.9 - Reverse Form Display Order (Jan 5, 2025)
+**UX IMPROVEMENT:** Form (W/L/D) now displays oldest→newest (left to right)
+- Changed: Form badges now show chronologically (oldest GW on left, newest on right)
+- Previous: Newest→oldest (confusing for users expecting timeline flow)
+- Locations: League standings table + Match details modal
+- Implementation: Reversed arrays in 2 API endpoints for consistent display
+- Files: `/api/league/[id]/stats/route.ts:52` + `/api/league/[id]/matches/[matchId]/route.ts:94`
 
 ### v1.26.8 - Fix FT Calculation Bug (Jan 5, 2025)
 **BUG FIX:** Free Transfers showing incorrect value in upcoming fixtures modal

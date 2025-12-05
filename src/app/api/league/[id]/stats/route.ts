@@ -49,7 +49,7 @@ function calculateFormAndStreakFromMatches(entryId: number, matches: any[], upTo
 
   // Get last 5 for form
   const last5 = results.slice(0, 5);
-  const formArray = last5.map(r => r.result);
+  const formArray = last5.map(r => r.result).reverse(); // Oldest to newest (left to right)
   const form = formArray.join('-');
 
   // Calculate streak (consecutive same results from most recent)

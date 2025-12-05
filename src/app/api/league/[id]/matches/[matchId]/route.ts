@@ -91,7 +91,7 @@ export async function GET(
 
       // Calculate recent form (last 5)
       const last5 = matches.slice(0, 5);
-      const recentForm = last5.map((m: any) => ({ result: m.result, event: m.event }));
+      const recentForm = last5.map((m: any) => ({ result: m.result, event: m.event })).reverse(); // Oldest to newest (left to right)
       const avgPointsLast5 = last5.length > 0
         ? (last5.reduce((sum: number, m: any) => sum + (m.points || 0), 0) / last5.length).toFixed(1)
         : '0.0';
