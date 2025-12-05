@@ -4,7 +4,18 @@
 
 This project is deployed on **Railway** with automatic deployments from GitHub.
 
-**Database:** PostgreSQL (hosted on Railway)
+**Database:** Internal PostgreSQL (`postgres.railway.internal`)
+
+---
+
+## 🌍 Environments
+
+| Environment | URL | Branch | Auto-deploy |
+|-------------|-----|--------|-------------|
+| **Staging** | fpl-staging-production.up.railway.app | `staging` | ✅ Yes |
+| **Production** | dedoume.pronos.xyz | `main` | ❌ Needs approval |
+
+**Database:** All environments use internal Postgres in FPL project (`postgres.railway.internal`)
 
 ---
 
@@ -12,24 +23,43 @@ This project is deployed on **Railway** with automatic deployments from GitHub.
 
 ### CRITICAL: Deployment Workflow
 
-**✅ CORRECT WORKFLOW:**
+**✅ STAGING WORKFLOW (No approval needed):**
 1. Make code changes locally
 2. Build and test locally: `npm run build`
 3. Bump version: `npm version patch --no-git-tag-version`
 4. Commit changes: `git add . && git commit -m "..."`
-5. Push to GitHub: `git push`
-6. Railway automatically detects the push and deploys
+5. Push to staging: `git push origin staging`
+6. Test on staging URL: `fpl-staging-production.up.railway.app`
+
+**⚠️ PRODUCTION WORKFLOW (Requires approval):**
+1. Complete staging workflow above
+2. **STOP - Ask Greg for approval:** "Ready to merge staging to main and deploy to production?"
+3. **Wait for explicit approval**
+4. Only after approval:
+   ```bash
+   git checkout main
+   git merge staging
+   git push origin main
+   ```
 
 **❌ DO NOT:**
+- Push directly to `main` branch without Greg's approval
+- Skip testing on staging first
 - Run any deployment scripts (none exist)
 - Attempt to SSH into servers
 - Use rsync, scp, or any file transfer tools
 - Look for NAS, Docker, or manual deployment methods
-- Deploy anywhere except via `git push`
+
+### Key Rules
+- ✅ Push to `staging` branch freely - no approval needed
+- ❌ NEVER push directly to `main` without Greg's approval
+- 📈 Version numbers stay sequential (main may jump versions after merge)
+- 🧪 Always test on staging first before requesting production deploy
 
 ### Quick Reference
-- **Deploy:** `git push` (Railway auto-deploys from main branch)
-- **Check status:** Check Railway dashboard (user will provide link if needed)
+- **Staging Deploy:** `git push origin staging` (auto-deploys, OK if it breaks)
+- **Production Deploy:** `git push origin main` (**requires approval first**)
+- **Check status:** Railway dashboard
 - **Database:** PostgreSQL connection string in Railway environment variables
 - **Environment:** All env vars managed in Railway dashboard
 
@@ -102,8 +132,8 @@ All environment variables are managed in Railway dashboard:
 
 ## 📝 Version History
 
-- **v1.1.25** - Current version
-- See git commit history for full changelog
+- **v1.26.7** - Current version (Admin Leagues Page)
+- See VERSION_HISTORY_COMPLETE.md for full changelog
 
 ---
 

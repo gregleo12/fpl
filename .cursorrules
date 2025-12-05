@@ -8,9 +8,25 @@ Before ANY task, read `CLAUDE_CODE_CONTEXT.md` for:
 - Testing requirements
 
 ## Railway Deployment
-- Auto-deploys on `git push` to main branch
-- Database: PostgreSQL with connection pool (max: 10)
-- Domain: dedoume.pronos.xyz
+
+### Environments
+- **Staging:** `fpl-staging-production.up.railway.app` (branch: `staging`)
+  - Auto-deploys on `git push origin staging`
+  - OK if it breaks - testing environment
+- **Production:** `dedoume.pronos.xyz` (branch: `main`)
+  - ⚠️ **REQUIRES GREG'S APPROVAL** before deploying
+  - NEVER push to `main` without explicit approval
+
+### Deployment Rules
+- ✅ Push to `staging` freely for testing
+- ❌ NEVER push to `main` without Greg's approval
+- 🧪 Always test on staging first
+- 📈 Ask: "Ready to merge staging to main and deploy to production?"
+
+### Database
+- PostgreSQL with connection pool (max: 10)
+- Internal connection: `postgres.railway.internal`
+- Shared across staging and production
 - Check Railway logs if 502 errors occur
 
 ## Never Touch These

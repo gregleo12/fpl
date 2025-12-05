@@ -96,11 +96,20 @@ Last Updated: 2025-01-05
 
 ## Deployment Process
 
+### Environments
+
+| Environment | URL | Branch | Auto-deploy |
+|-------------|-----|--------|-------------|
+| **Staging** | fpl-staging-production.up.railway.app | `staging` | ✅ Yes |
+| **Production** | dedoume.pronos.xyz | `main` | ❌ Needs approval |
+
+**Database:** All environments use internal Postgres in FPL project (`postgres.railway.internal`)
+
 ### Standard Deploy Workflow
 
 **CRITICAL: Follow this workflow for EVERY deployment**
 
-1. **Make Changes & Test**
+1. **Make Changes & Test Locally**
    ```bash
    npm run build              # Test locally - MUST pass
    ```
@@ -146,15 +155,35 @@ Last Updated: 2025-01-05
    Co-Authored-By: Claude <noreply@anthropic.com>"
    ```
 
-5. **Push to Deploy**
+5. **Deploy to Staging**
    ```bash
-   git push                   # Triggers Railway auto-deploy
+   git push origin staging    # Auto-deploys to staging - OK if it breaks
    ```
+   - Test on staging URL: `fpl-staging-production.up.railway.app`
+   - Verify all features work as expected
+   - Check Railway logs for errors
 
-6. **Verify Deployment**
-   - Check Railway dashboard for successful build
-   - Test the deployed feature on live site
+6. **⚠️ STOP - Request Approval for Production**
+   - **NEVER push directly to `main` without Greg's approval**
+   - Ask Greg: "Ready to merge staging to main and deploy to production?"
+   - Wait for explicit approval
+
+7. **Deploy to Production** (Only after approval)
+   ```bash
+   git checkout main
+   git merge staging
+   git push origin main
+   ```
+   - Monitor Railway dashboard for successful build
+   - Test on production URL: `dedoume.pronos.xyz`
    - Monitor for any errors in Railway logs
+
+### Key Rules
+
+- ✅ Push to `staging` branch freely - no approval needed
+- ❌ NEVER push directly to `main` without Greg's approval
+- 📈 Version numbers stay sequential (main may jump versions after merge)
+- 🧪 Always test on staging first before requesting production deploy
 
 ### Emergency Rollback
 ```bash
