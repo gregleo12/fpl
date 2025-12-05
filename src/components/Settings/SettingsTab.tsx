@@ -125,6 +125,29 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           fixtures, awards, and detailed statistics.
         </p>
       </div>
+
+      <div className={styles.footer}>
+        <h4 className={styles.footerTitle}>Contact</h4>
+        <p className={styles.footerText}>Found a bug? Have feedback?</p>
+        <div className={styles.footerLinks}>
+          <a
+            href="https://reddit.com/u/gregleo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            Reddit: u/gregleo
+          </a>
+          <a
+            href="https://x.com/greglienart"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            X: @greglienart
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

@@ -2,11 +2,22 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.3 (January 5, 2025)
+**Current Version:** v2.0.4 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.4 - Add Contact Footer to Settings (Jan 5, 2025)
+**FEATURE:** Added contact information footer to Settings page
+- Added: Contact footer section at bottom of Settings page
+- Content: "Found a bug? Have feedback?" with Reddit and X links
+- Link: Reddit u/gregleo (https://reddit.com/u/gregleo)
+- Link: X @greglienart (https://x.com/greglienart)
+- Styling: Subtle muted colors, small text, center aligned
+- UX: Links open in new tab with proper security attributes
+- Visual: Separated from content with border and extra spacing
+- Files: `SettingsTab.tsx`, `SettingsTab.module.css`
 
 ### v2.0.3 - My Leagues UI Polish (Jan 5, 2025)
 **UI IMPROVEMENT:** My Leagues section now visually matches Settings page theme
