@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { loadState, clearState } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
+import MyLeagues from './MyLeagues';
 import styles from './SettingsTab.module.css';
 
 interface SettingsTabProps {
@@ -56,6 +57,10 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Settings</h2>
+
+      <div className={styles.section}>
+        <MyLeagues />
+      </div>
 
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Current Setup</h3>

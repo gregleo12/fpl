@@ -2,7 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v1.26.14 (January 5, 2025)
+**Current Version:** v2.0.0 (January 5, 2025)
+
+---
+
+## 🎉 v2.0.0 - Multi-League Support (Jan 5, 2025) - **MAJOR MILESTONE**
+
+### v2.0.0 - My Leagues: Save & Switch Between Multiple Leagues (Jan 5, 2025)
+**MAJOR FEATURE:** Multi-league support - manage up to 5 leagues from Settings
+- Added: "My Leagues" section in Settings page
+- Feature: Save up to 5 leagues with names and IDs in localStorage
+- Feature: Current league highlighted with green border and checkmark
+- Feature: Click any league to switch (reloads dashboard with new league)
+- Feature: Remove leagues with confirmation (cannot remove current league)
+- Feature: Add new leagues by entering league ID (fetches name automatically)
+- Storage: Uses new 'savedLeagues' localStorage key (array of {id, name})
+- UX: Shows max limit message when 5 leagues saved
+- Files: `/src/components/Settings/MyLeagues.tsx` + CSS module
 
 ---
 
