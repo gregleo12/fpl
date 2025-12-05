@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
@@ -9,25 +8,15 @@ interface Props {
   data: any;
   myTeamId: string;
   leagueId: string;
-  onPlayerClick?: (playerId: string) => void;
 }
 
-export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPlayerClick }: Props) {
-  const router = useRouter();
+export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Props) {
   // Smart default: Show LIVE when GW is active, OFFICIAL when finished
   // Default to OFFICIAL (false) if isLive is undefined
   const [showLiveRankings, setShowLiveRankings] = useState(initialData?.isLive ?? false);
   const [data, setData] = useState(initialData);
   const [isLoadingToggle, setIsLoadingToggle] = useState(false);
   const [userHasToggledManually, setUserHasToggledManually] = useState(false);
-
-  const handlePlayerClick = (playerId: string) => {
-    if (onPlayerClick) {
-      onPlayerClick(playerId);
-    } else {
-      router.push(`/league/${leagueId}/player/${playerId}`);
-    }
-  };
 
   const handleToggleLiveRankings = async () => {
     setIsLoadingToggle(true);
@@ -108,7 +97,6 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onPla
                   <tr
                     key={team.entry_id}
                     className={isMyTeam ? styles.myTeamRow : ''}
-                    onClick={() => handlePlayerClick(team.entry_id.toString())}
                   >
                     <td className={styles.rankCol}>
                       <div className={styles.rankCell}>

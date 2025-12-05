@@ -2,11 +2,21 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v1.26.13 (January 5, 2025)
+**Current Version:** v1.26.14 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.14 - Remove Legacy League Route (Jan 5, 2025)
+**CODE CLEANUP:** Removed old legacy `/league/[leagueId]` route and related code
+- Deleted: `/src/app/league/[leagueId]/` directory (legacy league and player pages)
+- Deleted: `/src/components/BottomNav.tsx` (old bottom navigation)
+- Deleted: `/src/components/BottomNav.module.css` (old nav styling)
+- Fixed: Removed broken navigation in LeagueTab component
+- Result: `/league/804742` now returns 404 (as expected)
+- Impact: Cleaner codebase, no dead code, /dashboard is the only league viewing route
+- Note: Main app flow unchanged - users still access via /dashboard
 
 ### v1.26.13 - Add AFCON Special Rule for GW16 (Jan 5, 2025)
 **NEW FEATURE:** Special AFCON rule - everyone gets 5 FT for GW16
