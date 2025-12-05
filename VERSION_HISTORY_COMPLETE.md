@@ -2,11 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.5 (January 5, 2025)
+**Current Version:** v2.0.6 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.6 - Fix Gameweek Stats Showing ALL Leagues (Jan 5, 2025)
+**CRITICAL BUG FIX:** Gameweek stats now correctly filtered by current league only
+- Fixed: Gameweek stats (Captain Picks, Chips, Hits, Winners, Top Performers) were showing data from ALL leagues in database
+- Fixed: `fetchManagers` function now filters by leagueId using EXISTS subquery
+- Fixed: SQL query now joins h2h_matches to get only managers in selected league
+- Impact: Captain Picks - now shows only captains from current league managers
+- Impact: Chips Played - now shows only chips from current league managers
+- Impact: Hits Taken - now shows only hits from current league managers
+- Impact: Gameweek Winners - now shows only highest/lowest scores from current league
+- Impact: Top Performers - now shows only players owned by current league managers
+- Files: `api/league/[id]/stats/gameweek/[gw]/route.ts:313-326`
 
 ### v2.0.5 - Fix Season Stats Showing Multiple Leagues (Jan 5, 2025)
 **CRITICAL BUG FIX:** Season stats now correctly filtered by current league only

@@ -312,10 +312,15 @@ async function fetchScores(
 // Fetch managers in league
 async function fetchManagers(db: any, leagueId: number) {
   const result = await db.query(`
-    SELECT entry_id, player_name, team_name
-    FROM managers
-    ORDER BY entry_id
-  `);
+    SELECT DISTINCT m.entry_id, m.player_name, m.team_name
+    FROM managers m
+    WHERE EXISTS (
+      SELECT 1 FROM h2h_matches hm
+      WHERE hm.league_id = $1
+      AND (hm.entry_1_id = m.entry_id OR hm.entry_2_id = m.entry_id)
+    )
+    ORDER BY m.entry_id
+  `, [leagueId]);
 
   return result.rows;
 }
