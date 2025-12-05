@@ -43,6 +43,7 @@ export async function GET(
     const bootstrapData = await fplApi.getBootstrapData();
     const currentEvent = bootstrapData.events.find(e => e.is_current || e.is_next);
     const currentGW = currentEvent?.id || 1;
+    console.log(`[FT DEBUG] Match ${matchId}: currentGW set to ${currentGW} (is_current: ${currentEvent?.is_current}, is_next: ${currentEvent?.is_next})`);
 
     // Helper function to calculate remaining chips
     const calculateRemainingChips = (chipsUsed: any[], currentGW: number): string[] => {
@@ -118,30 +119,46 @@ export async function GET(
           if (historyData.current && historyData.current.length > 0) {
             const currentGWs = historyData.current;
 
+            console.log(`[FT DEBUG] Entry ${entryId}: currentGW = ${currentGW}`);
+            console.log(`[FT DEBUG] Entry ${entryId}: historyData.current has ${currentGWs.length} gameweeks`);
+            console.log(`[FT DEBUG] Entry ${entryId}: GW events in data: ${currentGWs.map((g: any) => g.event).join(', ')}`);
+
             // Calculate free transfers by tracking through the season
             let ftBalance = 1; // Start of season
+            console.log(`[FT DEBUG] Entry ${entryId}: Starting ftBalance = ${ftBalance}`);
+
             for (const gw of currentGWs) {
               // Stop before processing the current gameweek
               if (gw.event >= currentGW) {
+                console.log(`[FT DEBUG] Entry ${entryId}: Breaking at GW${gw.event} (>= currentGW ${currentGW})`);
                 break;
               }
 
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
+              console.log(`[FT DEBUG] Entry ${entryId}: Processing GW${gw.event}: transfers=${transfers}, chip=${chipUsed || 'none'}, ftBalance before=${ftBalance}`);
+
               // Wildcard/Free Hit don't consume FTs
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
                 // FT balance is preserved, transfers don't consume FTs
+                console.log(`[FT DEBUG] Entry ${entryId}:   -> Chip used, FTs preserved`);
               } else {
                 // Normal transfers consume FTs
                 if (transfers > 0) {
+                  const oldBalance = ftBalance;
                   ftBalance = Math.max(0, ftBalance - transfers);
+                  console.log(`[FT DEBUG] Entry ${entryId}:   -> ${transfers} transfers made, ftBalance ${oldBalance} -> ${ftBalance}`);
                 }
               }
 
               // Add 1 FT for next GW (capped at 2)
+              const beforeAdd = ftBalance;
               ftBalance = Math.min(2, ftBalance + 1);
+              console.log(`[FT DEBUG] Entry ${entryId}:   -> After GW${gw.event} completes, ftBalance ${beforeAdd} -> ${ftBalance} (for next GW)`);
             }
+
+            console.log(`[FT DEBUG] Entry ${entryId}: FINAL ftBalance = ${ftBalance}`);
             freeTransfers = ftBalance;
 
             // Bench points (last 5 GWs)
