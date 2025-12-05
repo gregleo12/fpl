@@ -2,13 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v1.26.11 (January 5, 2025)
+**Current Version:** v1.26.12 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
 
-### v1.26.11 - Fix GW1 Special Case in FT Calculation (Jan 5, 2025) ✅ **FINAL FIX**
+### v1.26.12 - Fix FT Showing Wrong Gameweek (Jan 5, 2025) ✅ **ACTUAL FIX**
+**CRITICAL FIX:** FT now shows correctly for current gameweek (not next gameweek)
+- Issue: When viewing GW14 fixture, app showed FT for AFTER GW14 (2 FT) instead of FOR GW14 (1 FT)
+- Root cause: Calculation added +1 FT after last completed GW, showing FT for next period
+- Previous logic: Process through GW13 → add +1 FT → show 2 FT (for GW15)
+- New logic: Process through GW13 → DON'T add +1 FT → show 1 FT (for GW14)
+- Implementation: Only add +1 FT if there's another completed GW after current one
+- Debug logging: Added comprehensive logging to trace calculations in production
+- Location: `/api/league/[id]/matches/[matchId]/route.ts:122-170`
+
+### v1.26.11 - Fix GW1 Special Case in FT Calculation (Jan 5, 2025) ❌ **INCOMPLETE**
 **CRITICAL FIX:** Fixed GW1 double-counting issue in FT calculation
 - Issue: GW1 was being processed as normal GW, adding +1 FT incorrectly
 - Root cause: GW1 has no FT available (0), but after it ends you get 1 FT for GW2

@@ -119,6 +119,8 @@ export async function GET(
             const currentGWs = historyData.current;
 
             // Calculate free transfers by tracking through the season
+            // IMPORTANT: This calculates FT available FOR the current/upcoming GW,
+            // NOT what you'll have after it completes
             let ftBalance = 0;
             console.log(`[FT DEBUG] Starting calculation for entry ${entryId}, currentGW=${currentGW}`);
 
@@ -141,11 +143,26 @@ export async function GET(
 
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
                 console.log(`[FT DEBUG] GW${gw.event}: ${chipUsed} used, ftBalance stays ${ftBalance}`);
+                // WC/FH: Transfers don't consume FT, and no +1 FT for next GW
               } else {
+                // First consume transfers
                 ftBalance = Math.max(0, ftBalance - transfers);
                 const afterTransfers = ftBalance;
-                ftBalance = Math.min(5, ftBalance + 1);
-                console.log(`[FT DEBUG] GW${gw.event}: transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, +1 = ${ftBalance}`);
+
+                // Then add +1 FT for the NEXT gameweek (but NOT if this is the last completed GW)
+                // We check if the NEXT gw exists and is before currentGW
+                const nextGWIndex = currentGWs.findIndex((g: any) => g.event === gw.event) + 1;
+                const nextGW = currentGWs[nextGWIndex];
+
+                if (nextGW && nextGW.event < currentGW) {
+                  // There's another completed GW after this one, so add the +1 FT
+                  ftBalance = Math.min(5, ftBalance + 1);
+                  console.log(`[FT DEBUG] GW${gw.event}: transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, +1 = ${ftBalance}`);
+                } else {
+                  // This is the last completed GW, DON'T add +1 FT
+                  // (because that would show FT for AFTER currentGW, not FOR currentGW)
+                  console.log(`[FT DEBUG] GW${gw.event} (LAST): transfers=${transfers}, ${beforeTransfers} - ${transfers} = ${afterTransfers}, NO +1 (last GW)`);
+                }
               }
             }
 
