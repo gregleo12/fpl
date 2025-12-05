@@ -2,11 +2,22 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.9 (January 5, 2025)
+**Current Version:** v2.0.10 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.10 - Fix Admin Dashboard Stats API (Jan 5, 2025)
+**CRITICAL BUG FIX:** Fixed admin dashboard showing "Cannot read properties of undefined"
+- Fixed: Admin stats API was querying non-existent `analytics_leagues` table
+- Fixed: Error handler was missing `uniqueManagers` field in fallback response
+- Changed: Rewrote queries to use only `analytics_requests` table
+- Changed: Aggregate league stats directly from analytics_requests
+- Added: Proper integer casting for all numeric fields
+- Impact: Admin dashboard now loads without client-side errors
+- Impact: Stats display correctly even when database is empty
+- Files: `api/admin/stats/route.ts`
 
 ### v2.0.9 - Fix Admin Panel Sort Handler (Jan 5, 2025)
 **BUG FIX:** Fixed client-side error in admin panel sort logic

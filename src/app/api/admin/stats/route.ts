@@ -64,37 +64,44 @@ export async function GET() {
       db.query(`SELECT COUNT(DISTINCT selected_team_id) as count FROM analytics_requests WHERE selected_team_id IS NOT NULL AND timestamp >= CURRENT_DATE - INTERVAL '30 days'`),
 
       // === LEAGUE METADATA ===
-      db.query(`SELECT COUNT(*) as count FROM analytics_leagues`),
-      db.query(`SELECT COUNT(*) as count FROM analytics_leagues WHERE first_seen >= CURRENT_DATE`),
+      db.query(`SELECT COUNT(DISTINCT league_id) as count FROM analytics_requests WHERE league_id IS NOT NULL`),
+      db.query(`
+        SELECT COUNT(*) as count FROM (
+          SELECT DISTINCT league_id
+          FROM analytics_requests
+          WHERE league_id IS NOT NULL
+          AND timestamp >= CURRENT_DATE
+          GROUP BY league_id
+        ) as new_leagues
+      `),
 
       // Top 5 leagues by requests (with real-time unique users and managers)
       db.query(`
         SELECT
-          al.league_id,
-          al.league_name,
-          al.team_count,
-          al.total_requests,
-          al.last_seen,
-          COUNT(DISTINCT ar.user_hash) as total_unique_users,
-          COUNT(DISTINCT ar.selected_team_id) FILTER (WHERE ar.selected_team_id IS NOT NULL) as total_unique_managers
-        FROM analytics_leagues al
-        LEFT JOIN analytics_requests ar ON al.league_id = ar.league_id
-        GROUP BY al.league_id, al.league_name, al.team_count, al.total_requests, al.last_seen
-        ORDER BY al.total_requests DESC
+          league_id,
+          'League ' || league_id as league_name,
+          COUNT(*) as total_requests,
+          COUNT(DISTINCT user_hash) as total_unique_users,
+          COUNT(DISTINCT selected_team_id) FILTER (WHERE selected_team_id IS NOT NULL) as total_unique_managers,
+          MAX(timestamp) as last_seen,
+          0 as team_count
+        FROM analytics_requests
+        WHERE league_id IS NOT NULL
+        GROUP BY league_id
+        ORDER BY total_requests DESC
         LIMIT 5
       `),
 
       // Recent 10 requests
       db.query(`
         SELECT
-          ar.endpoint,
-          ar.method,
-          ar.timestamp,
-          ar.response_time_ms,
-          al.league_name
-        FROM analytics_requests ar
-        LEFT JOIN analytics_leagues al ON ar.league_id = al.league_id
-        ORDER BY ar.timestamp DESC
+          endpoint,
+          method,
+          timestamp,
+          response_time_ms,
+          'League ' || league_id as league_name
+        FROM analytics_requests
+        ORDER BY timestamp DESC
         LIMIT 10
       `)
     ]);
@@ -145,11 +152,11 @@ export async function GET() {
     return NextResponse.json({
       overview: stats,
       topLeagues: topLeaguesResult.rows.map((row: any) => ({
-        leagueId: row.league_id,
+        leagueId: parseInt(row.league_id),
         leagueName: row.league_name || `League ${row.league_id}`,
-        teamCount: row.team_count,
-        totalRequests: row.total_requests,
-        uniqueUsers: row.total_unique_users,
+        teamCount: parseInt(row.team_count || '0'),
+        totalRequests: parseInt(row.total_requests),
+        uniqueUsers: parseInt(row.total_unique_users),
         uniqueManagers: parseInt(row.total_unique_managers || '0'),
         lastSeen: row.last_seen
       })),
@@ -172,6 +179,7 @@ export async function GET() {
         totalRequests: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
         leagueRequests: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
         uniqueUsers: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
+        uniqueManagers: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
         totalLeagues: 0,
         newLeaguesToday: 0
       },
