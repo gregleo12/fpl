@@ -1,12 +1,21 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 173+ versions
-**Current Version:** v1.26.9 (January 5, 2025)
+**Total Releases:** 174+ versions
+**Current Version:** v1.26.10 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
+
+### v1.26.10 - Fix FT Calculation Logic (Jan 5, 2025) ✅ **CORRECT FIX**
+**CRITICAL FIX:** Corrected Free Transfers calculation with proper FPL rules
+- Fixed: GW1 starts with 0 FT (not 1)
+- Fixed: Cap is 5 FT (not 2)
+- Fixed: Wildcard/Free Hit don't add +1 FT for next GW (was adding incorrectly)
+- Fixed: Only normal GWs (including BB/TC) add +1 FT after consuming transfers
+- Rules: Start 0 FT → Each normal GW: consume transfers, then +1 FT (max 5)
+- Location: `/api/league/[id]/matches/[matchId]/route.ts:122-144`
 
 ### v1.26.9 - Reverse Form Display Order (Jan 5, 2025)
 **UX IMPROVEMENT:** Form (W/L/D) now displays oldest→newest (left to right)
