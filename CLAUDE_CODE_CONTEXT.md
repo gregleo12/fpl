@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-04
+Last Updated: 2025-01-04
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -1063,11 +1063,51 @@ const [data1, data2] = await Promise.all([
 
 ## Version History
 
-**Recent Features:**
+**Latest (v1.26.x Series - Jan 2025):**
+- **v1.26.6 (Jan 4)** - 🎯 **CRITICAL FIX: Handle corrupted FPL data**
+  - Fixed: League 754307 (32 teams) failing immediately with null entry_id error
+  - Added null checks before database inserts for standings and matches
+  - Skip corrupted entries (deleted/removed teams) with warning logs
+  - Gracefully handle leagues with deleted accounts in standings
+
+- **v1.26.5 (Jan 4)** - 🐛 Debug logging for investigation
+  - Added comprehensive error logging to identify failure points
+  - Log each API call attempt with success/failure details
+  - Helped diagnose v1.26.6 null entry issue
+
+- **v1.26.4 (Jan 4)** - ⚡ **MAJOR: Performance optimization for large leagues**
+  - Strip down `/api/league/[id]` to fetch ONLY essential data
+  - Remove 832+ API calls (captain picks, chips, manager history)
+  - Processing time: 60-90s → <5s for 32-team leagues
+  - Enables support for leagues up to 50 teams
+  - Bypass Railway's 30-second timeout limit
+
+- **v1.26.3 (Jan 4)** - ⏱️ Increase timeout for large leagues
+  - Axios timeout: 90 seconds
+  - Added loading message: "⏳ Large leagues take longer..."
+  - Enhanced error handling for timeouts
+
+- **v1.26.2 (Jan 3)** - 🚨 **URGENT: Clear error messages for Classic leagues**
+  - Reddit launch fix for confusing "500 error" messages
+  - API-side detection: catch 404 from H2H endpoint
+  - Friendly messages: "⚠️ This is a Classic league. Only H2H leagues supported."
+  - Impact: 84 users, 28 leagues at deployment
+
+- **v1.26.1 (Jan 2)** - 📊 Fix Y-axis visibility on position graph
+  - Show all ranks 1-30, then sparse above 30
+  - Created `generateYAxisTicks()` function
+  - Better rank visibility for top 20 teams
+
+- **v1.26.0 (Jan 2)** - 📈 **NEW: Position comparison feature**
+  - Compare position history vs any opponent
+  - Dual-line chart: green (you) vs red (opponent)
+  - Opponent selector dropdown with all league teams
+  - Enhanced tooltip showing both positions per gameweek
+
+**Recent Features (v1.25.x - Dec 2024):**
+- v1.25.6 (Jan 2) - Fix position history type mismatch bug (string vs number)
+- v1.25.5 (Jan 2) - Collapsible Quick Access for Reddit launch
 - v1.25.4 (Dec 4) - **Revert FPL login feature** (blocked by anti-bot protection)
-  - Restore clean League ID entry interface (simple, proven, works)
-  - Remove all FPL authentication code (see Abandoned Features section)
-  - Cleaner codebase with single entry flow
 - ~~v1.26.0-v1.26.2 (Dec 4)~~ - *REVERTED* - FPL login attempt (see Abandoned Features)
 - v1.25.0-v1.25.3 (Dec 4) - Team selection improvements + Position history graph
 

@@ -4,13 +4,30 @@ A modern Next.js web application for analyzing Fantasy Premier League Head-to-He
 
 ## ✨ Features
 
+### Core Features
 - 📊 Real-time H2H league standings and match results
 - 🎯 Individual player profiles with detailed statistics
 - 📈 Match history tracking and performance analytics
 - 🏆 Recent form indicators with win/draw/loss streaks
 - 🔮 Future opponent insights for upcoming gameweeks
-- 📱 Fully responsive mobile-first design
-- ⚡ Fast, optimized, and modern UI
+
+### Advanced Analytics
+- 📉 **League Position Over Time** - Track your position across all gameweeks with comparison graphs
+- 🎯 **Position Comparison** - Compare your position history vs any opponent (green vs red lines)
+- 📊 **Stats Hub** - Comprehensive gameweek and season statistics
+  - Captain picks analysis
+  - Chip usage tracking (played & faced)
+  - Win/loss streaks with historical maximums
+  - Best/worst gameweek performances
+- 🔴 **Live Match Tracking** - Real-time scores with auto-subs and provisional bonus
+- 📱 **Admin Dashboard** - Analytics tracking with user metrics and league stats
+
+### Technical Features
+- 📱 Fully responsive mobile-first design with PWA support
+- ⚡ Optimized for large leagues (supports 50+ teams)
+- 🚀 Fast initial load (<5 seconds even for 32-team leagues)
+- 💾 Recent leagues history for quick access
+- 🛡️ Robust error handling (Classic league detection, corrupted data handling)
 
 ## 🚀 Tech Stack
 
@@ -111,11 +128,18 @@ The application uses **PostgreSQL** for data persistence.
 
 ### Database Schema
 
+**Core Tables:**
 - **leagues**: League information
 - **managers**: Manager/team information and statistics
-- **h2h_matches**: Match results and history
+- **h2h_matches**: Match results with chip tracking
 - **league_standings**: Current league standings and rankings
-- **match_history**: Historical match data for analytics
+
+**Analytics Tables:**
+- **entry_captains**: Captain picks with actual points scored
+- **manager_history**: Historical manager data per gameweek
+- **api_requests**: Request tracking for analytics
+- **daily_stats**: Aggregated daily statistics
+- **league_metadata**: League tracking and metrics
 
 ## 📱 Usage
 
@@ -204,23 +228,24 @@ postgresql://user:password@host:port/database
 
 ## 📡 API Endpoints
 
-### GET /api/league/[id]
-Fetches league data from FPL API and stores in database.
+### League Endpoints
+- `GET /api/league/[id]` - Fetches league data (optimized for large leagues)
+- `GET /api/league/[id]/stats` - Retrieves league statistics
+- `GET /api/league/[id]/stats/position-history` - Position history across gameweeks
+- `GET /api/league/[id]/stats/season` - Season-long statistics and leaderboards
+- `GET /api/league/[id]/stats/gameweek/[gw]` - Detailed gameweek stats
 
-### GET /api/league/[id]/stats
-Retrieves league statistics.
+### Fixtures & Matches
+- `GET /api/league/[id]/fixtures/[gw]` - Fixtures and results for gameweek
+- `GET /api/league/[id]/fixtures/[gw]/live` - Live scores with auto-subs
+- `GET /api/league/[id]/fixtures/[gw]/completed` - Completed fixtures
+- `GET /api/league/[id]/matches/[matchId]` - Individual match details
 
-### GET /api/league/[id]/fixtures/[gw]
-Gets fixtures and results for a specific gameweek.
-
-### GET /api/league/[id]/insights/[entryId]
-Gets opponent insights and head-to-head statistics.
-
-### GET /api/player/[id]
-Fetches detailed player/team statistics.
-
-### GET /api/version
-Returns current app version.
+### Player & Analytics
+- `GET /api/league/[id]/insights/[entryId]` - Opponent insights and H2H stats
+- `GET /api/player/[id]` - Detailed player/team statistics
+- `GET /api/version` - Current app version
+- `GET /api/admin/stats` - Analytics dashboard data (admin only)
 
 ## 🤝 Contributing
 
@@ -240,4 +265,6 @@ For issues or questions, please open an issue on GitHub.
 
 ---
 
-**Current Version:** v1.1.25
+**Current Version:** v1.26.6
+
+See [VERSION_HISTORY_1.15-1.26.md](./VERSION_HISTORY_1.15-1.26.md) for detailed changelog.
