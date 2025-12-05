@@ -55,7 +55,9 @@ export default function AdminLeaguesPage() {
     } else {
       // New field, default to desc for numbers, asc for strings
       setSortField(field);
-      const isNumber = typeof leagues[0]?.[field] === 'number';
+      // Check if field is numeric based on field name
+      const numericFields: SortField[] = ['league_id', 'team_count', 'total_requests', 'unique_users', 'unique_managers'];
+      const isNumber = numericFields.includes(field);
       setSortDirection(isNumber ? 'desc' : 'asc');
     }
   };

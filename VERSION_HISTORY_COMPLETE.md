@@ -2,11 +2,19 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.8 (January 5, 2025)
+**Current Version:** v2.0.9 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.9 - Fix Admin Panel Sort Handler (Jan 5, 2025)
+**BUG FIX:** Fixed client-side error in admin panel sort logic
+- Fixed: handleSort trying to access leagues[0] when array is empty
+- Fixed: Changed to check field name instead of runtime type checking
+- Changed: Use predefined list of numeric fields instead of leagues[0]?.[field]
+- Impact: Admin panel no longer crashes on initial load
+- Files: `app/admin/leagues/page.tsx:51-63`
 
 ### v2.0.8 - Fix Admin Panel Type Casting (Jan 5, 2025)
 **BUG FIX:** Fixed client-side error in admin panel caused by type mismatch
