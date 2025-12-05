@@ -54,7 +54,7 @@ export default function DashboardPage() {
             'Cache-Control': 'no-cache'
           }
         }),
-        fetch(`/api/player/${playerId}?t=${Date.now()}`, {
+        fetch(`/api/player/${playerId}?leagueId=${leagueId}&t=${Date.now()}`, {
           cache: 'no-store',
           headers: {
             'Cache-Control': 'no-cache'

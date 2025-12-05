@@ -2,11 +2,21 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.4 (January 5, 2025)
+**Current Version:** v2.0.5 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.5 - Fix Season Stats Showing Multiple Leagues (Jan 5, 2025)
+**CRITICAL BUG FIX:** Season stats now correctly filtered by current league only
+- Fixed: Season stats were aggregating data across ALL leagues user is in
+- Fixed: Player API now requires and filters by leagueId parameter
+- Fixed: SQL query now includes `WHERE league_id = $2` filter
+- Updated: Dashboard passes leagueId when fetching player data
+- Impact: Highest Score, Lowest Score, Biggest Win, Biggest Loss now league-specific
+- Impact: Match history, chips played, and all stats now scoped to current league
+- Files: `api/player/[id]/route.ts`, `dashboard/page.tsx`
 
 ### v2.0.4 - Add Contact Footer to Settings (Jan 5, 2025)
 **FEATURE:** Added contact information footer to Settings page

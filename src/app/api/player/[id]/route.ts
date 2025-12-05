@@ -13,6 +13,14 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid entry ID' }, { status: 400 });
     }
 
+    // Get leagueId from query params
+    const { searchParams } = new URL(request.url);
+    const leagueId = searchParams.get('leagueId');
+
+    if (!leagueId) {
+      return NextResponse.json({ error: 'League ID is required' }, { status: 400 });
+    }
+
     const db = await getDatabase();
 
     // Get basic entry info
@@ -32,7 +40,7 @@ export async function GET(
       return NextResponse.json({ error: 'Manager not found' }, { status: 404 });
     }
 
-    // Get all matches for this player
+    // Get all matches for this player in this league
     const matchesResult = await db.query(`
       SELECT
         hm.*,
@@ -46,9 +54,10 @@ export async function GET(
         END = m1.entry_id
       )
       WHERE (hm.entry_1_id = $1 OR hm.entry_2_id = $1)
+        AND hm.league_id = $2
         AND (hm.entry_1_points > 0 OR hm.entry_2_points > 0)
       ORDER BY hm.event ASC
-    `, [entryId]);
+    `, [entryId, leagueId]);
 
     const matches = matchesResult.rows;
 
