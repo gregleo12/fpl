@@ -1,14 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 174+ versions
-**Current Version:** v1.26.10 (January 5, 2025)
+**Total Releases:** 175+ versions
+**Current Version:** v1.26.11 (January 5, 2025)
 
 ---
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
 
-### v1.26.10 - Fix FT Calculation Logic (Jan 5, 2025) ✅ **CORRECT FIX**
+### v1.26.11 - Fix GW1 Special Case in FT Calculation (Jan 5, 2025) ✅ **FINAL FIX**
+**CRITICAL FIX:** Fixed GW1 double-counting issue in FT calculation
+- Issue: GW1 was being processed as normal GW, adding +1 FT incorrectly
+- Root cause: GW1 has no FT available (0), but after it ends you get 1 FT for GW2
+- Previous logic: Process GW1 as (0-0+1=1), then GW2 as (1-1+1=1) - double-counted
+- New logic: Skip GW1 processing, just set ftBalance=1 for GW2, then process GW2+
+- Location: `/api/league/[id]/matches/[matchId]/route.ts:130-134`
+
+### v1.26.10 - Fix FT Calculation Logic (Jan 5, 2025) ❌ **INCOMPLETE**
 **CRITICAL FIX:** Corrected Free Transfers calculation with proper FPL rules
 - Fixed: GW1 starts with 0 FT (not 1)
 - Fixed: Cap is 5 FT (not 2)

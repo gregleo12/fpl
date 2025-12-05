@@ -119,7 +119,7 @@ export async function GET(
             const currentGWs = historyData.current;
 
             // Calculate free transfers by tracking through the season
-            let ftBalance = 0; // GW1 has 0 FT
+            let ftBalance = 0;
 
             for (const gw of currentGWs) {
               // Stop before processing the current gameweek
@@ -127,14 +127,18 @@ export async function GET(
                 break;
               }
 
+              // Skip GW1 - just sets ftBalance to 1 for GW2
+              if (gw.event === 1) {
+                ftBalance = 1;
+                continue;
+              }
+
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
-                // WC/FH: Transfers don't consume FT, NO +1 for next GW
-                // ftBalance stays the same
+                // WC/FH: No FT consumed, no +1 added
               } else {
-                // Normal GW (including BB, TC): Consume FTs, then add +1 for next GW
                 ftBalance = Math.max(0, ftBalance - transfers);
                 ftBalance = Math.min(5, ftBalance + 1);
               }
