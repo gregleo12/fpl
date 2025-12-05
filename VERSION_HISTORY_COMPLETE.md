@@ -2,11 +2,21 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.6 (January 5, 2025)
+**Current Version:** v2.0.7 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.7 - Fix Admin Panel (Jan 5, 2025)
+**BUG FIX:** Admin panel now works - fixed missing league_metadata table error
+- Fixed: Admin panel `/admin/leagues` was broken - returning 500 error
+- Fixed: Rewrote query to use existing tables instead of non-existent `league_metadata`
+- Changed: Now uses CTEs to aggregate data from `analytics_requests` and `h2h_matches`
+- Changed: League names now show as "League {id}" (metadata table didn't exist)
+- Data: Total requests, unique users, unique managers from analytics_requests
+- Data: Team count from h2h_matches
+- Files: `api/admin/leagues/route.ts`
 
 ### v2.0.6 - Fix Gameweek Stats Showing ALL Leagues (Jan 5, 2025)
 **CRITICAL BUG FIX:** Gameweek stats now correctly filtered by current league only
