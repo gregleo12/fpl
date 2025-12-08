@@ -38,6 +38,7 @@ export async function middleware(request: NextRequest) {
   const trackUrl = `${protocol}://${host}/api/admin/track`;
 
   console.log('[Middleware] Calling track endpoint:', trackUrl, { leagueId, endpoint: pathname });
+  console.log('[Middleware] Request headers - protocol:', protocol, 'host:', host);
 
   // Call the tracking API endpoint
   // (middleware runs on edge, can't use node pg directly)
@@ -53,8 +54,15 @@ export async function middleware(request: NextRequest) {
       responseTimeMs: responseTime
     })
   })
-  .then(() => console.log('[Middleware] Track fetch completed for:', pathname))
-  .catch((err) => console.error('[Middleware] Track fetch error:', err)); // Log errors instead of silent fail
+  .then((res) => {
+    console.log('[Middleware] Track fetch response status:', res.status, 'for:', pathname);
+    return res.json();
+  })
+  .then((data) => console.log('[Middleware] Track fetch completed:', data, 'for:', pathname))
+  .catch((err) => {
+    console.error('[Middleware] Track fetch error for', pathname, ':', err);
+    console.error('[Middleware] Track URL was:', trackUrl);
+  });
 
   return response;
 }

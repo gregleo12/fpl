@@ -2,11 +2,20 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 175+ versions
-**Current Version:** v2.0.11 (January 5, 2025)
+**Current Version:** v2.0.12 (January 5, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.12 - Add Enhanced Analytics Debug Logging (Jan 5, 2025)
+**DEBUG:** Added detailed logging to diagnose analytics tracking issue
+- Added: Log track URL construction (protocol, host)
+- Added: Log fetch response status
+- Added: Log parsed response JSON
+- Added: More detailed error logging with URL
+- Purpose: Diagnose why analytics not being tracked since Friday
+- Files: `src/middleware.ts`
 
 ### v2.0.11 - Fix Analytics Tracking (Jan 5, 2025)
 **CRITICAL BUG FIX:** Analytics now saving to database - admin stats will populate
