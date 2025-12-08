@@ -174,7 +174,11 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error('Analytics stats error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
     return NextResponse.json({
+      error: error.message,
+      stack: error.stack,
       overview: {
         totalRequests: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
         leagueRequests: { allTime: 0, today: 0, last7Days: 0, last30Days: 0 },
