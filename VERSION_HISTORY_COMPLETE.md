@@ -1,12 +1,69 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 175+ versions
-**Current Version:** v2.0.12 (January 5, 2025)
+**Total Releases:** 181+ versions
+**Current Version:** v2.0.18 (December 8, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+
+### v2.0.18 - Update Documentation to v2.0.18 (Dec 8, 2025)
+**DOCUMENTATION:** Updated all version documentation to reflect current state
+- Updated: VERSION_HISTORY_COMPLETE.md with versions 2.0.13-2.0.17
+- Updated: README.md current version from v1.26.6 to v2.0.18
+- Updated: README.md changelog reference to VERSION_HISTORY_COMPLETE.md
+- Added: Complete documentation of admin panel debug and fix process
+- Context: Versions 2.0.13-2.0.17 fixed admin panel showing zeros issue
+- Files: `VERSION_HISTORY_COMPLETE.md`, `README.md`
+
+### v2.0.17 - Clean Up Debug Endpoints (Dec 8, 2025)
+**CLEANUP:** Removed temporary debug files after fixing admin panel
+- Removed: `/api/debug/db-info` endpoint (temporary debugging)
+- Removed: `/api/debug/table-info` endpoint (temporary debugging)
+- Removed: `test-queries.js` script (temporary debugging)
+- Status: Admin panel now working correctly with real analytics data
+- Note: Debug endpoints were only needed to diagnose the build-time database connection issue
+- Files: Deleted `src/app/api/debug/*`, `test-queries.js`
+
+### v2.0.16 - Fix Admin Panel - Add force-dynamic (Dec 8, 2025)
+**CRITICAL FIX:** Admin panel now displays real analytics data instead of zeros
+- Problem: Admin panel showing all zeros despite database having 23,958 records
+- Root Cause: Next.js tried to prerender admin routes during build, but `postgres.railway.internal` hostname only available at runtime
+- Error: `getaddrinfo ENOTFOUND postgres.railway.internal`
+- Fixed: Added `export const dynamic = 'force-dynamic'` to admin API routes
+- Routes: `/api/admin/stats/route.ts`, `/api/admin/leagues/route.ts`
+- Impact: Routes now execute only at request time when database connection available
+- Result: Admin panel displays correct data (23,958 requests, 385 users, 107 leagues)
+- Files: `api/admin/stats/route.ts`, `api/admin/leagues/route.ts`
+
+### v2.0.15 - Add Error Details to Admin Stats Response (Dec 8, 2025)
+**DEBUG:** Added detailed error information to identify failing queries
+- Added: Return error message in JSON response
+- Added: Return error stack trace in JSON response
+- Purpose: Identify which specific query was failing in admin stats
+- Result: Revealed "getaddrinfo ENOTFOUND postgres.railway.internal" error during build
+- Files: `api/admin/stats/route.ts`
+
+### v2.0.14 - Add Table Structure Debug Endpoint (Dec 8, 2025)
+**DEBUG:** Created endpoint to verify database table structure
+- Added: `/api/debug/table-info` endpoint
+- Checks: Table existence via information_schema.columns
+- Checks: Column names and data types
+- Tests: Simple COUNT query and sample row retrieval
+- Result: Confirmed analytics_requests table exists with 23,912 rows
+- Result: Confirmed all expected columns present (id, league_id, endpoint, method, timestamp, user_hash, response_time_ms, status_code, selected_team_id)
+- Files: `src/app/api/debug/table-info/route.ts`
+
+### v2.0.13 - Add Debug Endpoint for Database Connection (Dec 8, 2025)
+**DEBUG:** Created endpoint to check production DATABASE_URL
+- Added: `/api/debug/db-info` endpoint
+- Shows: Masked DATABASE_URL being used by production
+- Shows: Analytics requests count and last record timestamp
+- Purpose: Verify which database production is actually connecting to
+- Result: Confirmed production uses `postgres.railway.internal:5432`
+- Result: Confirmed database has 23,895 rows of analytics data
+- Files: `src/app/api/debug/db-info/route.ts`
 
 ### v2.0.12 - Add Enhanced Analytics Debug Logging (Jan 5, 2025)
 **DEBUG:** Added detailed logging to diagnose analytics tracking issue
