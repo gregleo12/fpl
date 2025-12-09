@@ -53,6 +53,7 @@ This project is deployed on **Railway** with automatic deployments from GitHub.
 ### Key Rules
 - ✅ Push to `staging` branch freely - no approval needed
 - ❌ NEVER push directly to `main` without Greg's approval
+- ✅ **Exception:** `/admin` and `/api/admin` changes can go directly to `main` (admin-only, no user impact)
 - 📈 Version numbers stay sequential (main may jump versions after merge)
 - 🧪 Always test on staging first before requesting production deploy
 
