@@ -433,7 +433,7 @@ async function calculateStreaks(
       }
     }
 
-    return {
+    const streakResult = {
       entry_id: manager.entry_id,
       player_name: manager.player_name,
       team_name: manager.team_name,
@@ -442,6 +442,8 @@ async function calculateStreaks(
       max_loss_streak: maxLossStreak,
       loss_streak_range: maxLossStreak > 0 ? `GW${lossStreakStart} → GW${lossStreakEnd}` : '',
     };
+
+    return streakResult;
   });
 
   // Separate into winning and losing streaks
