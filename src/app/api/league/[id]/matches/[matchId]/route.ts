@@ -39,6 +39,14 @@ export async function GET(
     const entry1Id = match.entry_1_id;
     const entry2Id = match.entry_2_id;
 
+    // Check if either entry is AVERAGE (odd-numbered leagues)
+    if (entry1Id === -1 || entry2Id === -1) {
+      return NextResponse.json({
+        error: 'Match details not available for AVERAGE opponent',
+        isAverageMatch: true
+      }, { status: 400 });
+    }
+
     // Get current gameweek for chip calculations
     const bootstrapData = await fplApi.getBootstrapData();
     const currentEvent = bootstrapData.events.find(e => e.is_current || e.is_next);

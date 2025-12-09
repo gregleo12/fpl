@@ -557,12 +557,15 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           const details = matchDetails[match.id];
           const isLoading = loadingDetails[match.id];
 
+          // Detect if either entry is AVERAGE (odd-numbered leagues)
+          const isAverageMatch = match.entry_1.id === -1 || match.entry_2.id === -1;
+
           return (
             <div
               key={match.id}
               className={`${styles.matchCard} ${isMyMatch ? styles.myMatch : ''} ${isExpanded ? styles.expanded : ''}`}
-              onClick={() => handleCardClick(match.id, match)}
-              style={{ cursor: 'pointer' }}
+              onClick={isAverageMatch ? undefined : () => handleCardClick(match.id, match)}
+              style={{ cursor: isAverageMatch ? 'default' : 'pointer', opacity: isAverageMatch ? 0.8 : 1 }}
             >
               <div className={styles.matchHeader}>
                 {/* LEFT TEAM */}

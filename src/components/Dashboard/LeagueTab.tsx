@@ -90,6 +90,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Pro
             <tbody>
               {data.standings.map((team: any) => {
                 const isMyTeam = team.entry_id.toString() === myTeamId;
+                const isAverage = team.entry_id === -1 || team.player_name === 'AVERAGE';
                 const differential = team.points_for - team.points_against;
                 const rankChange = team.rankChange || 0;
 
@@ -97,6 +98,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Pro
                   <tr
                     key={team.entry_id}
                     className={isMyTeam ? styles.myTeamRow : ''}
+                    style={isAverage ? { opacity: 0.6, fontStyle: 'italic', cursor: 'default', pointerEvents: 'none' } : {}}
                   >
                     <td className={styles.rankCol}>
                       <div className={styles.rankCell}>
