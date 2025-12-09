@@ -6,7 +6,7 @@
 
 ---
 
-## 🎉 v2.0.x - Multi-League Support (Jan 2025) - **MAJOR MILESTONE**
+## 🎉 v2.0.x - Multi-League Support (Dec 2025) - **MAJOR MILESTONE**
 
 ### v2.0.18 - Update Documentation to v2.0.18 (Dec 8, 2025)
 **DOCUMENTATION:** Updated all version documentation to reflect current state
@@ -65,7 +65,7 @@
 - Result: Confirmed database has 23,895 rows of analytics data
 - Files: `src/app/api/debug/db-info/route.ts`
 
-### v2.0.12 - Add Enhanced Analytics Debug Logging (Jan 5, 2025)
+### v2.0.12 - Add Enhanced Analytics Debug Logging (Dec 5, 2025)
 **DEBUG:** Added detailed logging to diagnose analytics tracking issue
 - Added: Log track URL construction (protocol, host)
 - Added: Log fetch response status
@@ -74,7 +74,7 @@
 - Purpose: Diagnose why analytics not being tracked since Friday
 - Files: `src/middleware.ts`
 
-### v2.0.11 - Fix Analytics Tracking (Jan 5, 2025)
+### v2.0.11 - Fix Analytics Tracking (Dec 5, 2025)
 **CRITICAL BUG FIX:** Analytics now saving to database - admin stats will populate
 - Fixed: Analytics tracking was failing silently trying to write to non-existent analytics_leagues table
 - Fixed: Removed all references to analytics_leagues from analytics.ts
@@ -85,7 +85,7 @@
 - Impact: Admin dashboard will show real stats after this deployment
 - Files: `lib/analytics.ts`
 
-### v2.0.10 - Fix Admin Dashboard Stats API (Jan 5, 2025)
+### v2.0.10 - Fix Admin Dashboard Stats API (Dec 5, 2025)
 **CRITICAL BUG FIX:** Fixed admin dashboard showing "Cannot read properties of undefined"
 - Fixed: Admin stats API was querying non-existent `analytics_leagues` table
 - Fixed: Error handler was missing `uniqueManagers` field in fallback response
@@ -96,7 +96,7 @@
 - Impact: Stats display correctly even when database is empty
 - Files: `api/admin/stats/route.ts`
 
-### v2.0.9 - Fix Admin Panel Sort Handler (Jan 5, 2025)
+### v2.0.9 - Fix Admin Panel Sort Handler (Dec 5, 2025)
 **BUG FIX:** Fixed client-side error in admin panel sort logic
 - Fixed: handleSort trying to access leagues[0] when array is empty
 - Fixed: Changed to check field name instead of runtime type checking
@@ -104,7 +104,7 @@
 - Impact: Admin panel no longer crashes on initial load
 - Files: `app/admin/leagues/page.tsx:51-63`
 
-### v2.0.8 - Fix Admin Panel Type Casting (Jan 5, 2025)
+### v2.0.8 - Fix Admin Panel Type Casting (Dec 5, 2025)
 **BUG FIX:** Fixed client-side error in admin panel caused by type mismatch
 - Fixed: Admin panel showing "client-side exception has occurred" error
 - Fixed: PostgreSQL COUNT() returns bigint (string), frontend expects number
@@ -112,7 +112,7 @@
 - Fields cast: league_id, team_count, total_requests, unique_users, unique_managers
 - Files: `api/admin/leagues/route.ts`
 
-### v2.0.7 - Fix Admin Panel (Jan 5, 2025)
+### v2.0.7 - Fix Admin Panel (Dec 5, 2025)
 **BUG FIX:** Admin panel now works - fixed missing league_metadata table error
 - Fixed: Admin panel `/admin/leagues` was broken - returning 500 error
 - Fixed: Rewrote query to use existing tables instead of non-existent `league_metadata`
@@ -122,7 +122,7 @@
 - Data: Team count from h2h_matches
 - Files: `api/admin/leagues/route.ts`
 
-### v2.0.6 - Fix Gameweek Stats Showing ALL Leagues (Jan 5, 2025)
+### v2.0.6 - Fix Gameweek Stats Showing ALL Leagues (Dec 5, 2025)
 **CRITICAL BUG FIX:** Gameweek stats now correctly filtered by current league only
 - Fixed: Gameweek stats (Captain Picks, Chips, Hits, Winners, Top Performers) were showing data from ALL leagues in database
 - Fixed: `fetchManagers` function now filters by leagueId using EXISTS subquery
@@ -134,7 +134,7 @@
 - Impact: Top Performers - now shows only players owned by current league managers
 - Files: `api/league/[id]/stats/gameweek/[gw]/route.ts:313-326`
 
-### v2.0.5 - Fix Season Stats Showing Multiple Leagues (Jan 5, 2025)
+### v2.0.5 - Fix Season Stats Showing Multiple Leagues (Dec 5, 2025)
 **CRITICAL BUG FIX:** Season stats now correctly filtered by current league only
 - Fixed: Season stats were aggregating data across ALL leagues user is in
 - Fixed: Player API now requires and filters by leagueId parameter
@@ -144,7 +144,7 @@
 - Impact: Match history, chips played, and all stats now scoped to current league
 - Files: `api/player/[id]/route.ts`, `dashboard/page.tsx`
 
-### v2.0.4 - Add Contact Footer to Settings (Jan 5, 2025)
+### v2.0.4 - Add Contact Footer to Settings (Dec 5, 2025)
 **FEATURE:** Added contact information footer to Settings page
 - Added: Contact footer section at bottom of Settings page
 - Content: "Found a bug? Have feedback?" with Reddit and X links
@@ -155,7 +155,7 @@
 - Visual: Separated from content with border and extra spacing
 - Files: `SettingsTab.tsx`, `SettingsTab.module.css`
 
-### v2.0.3 - My Leagues UI Polish (Jan 5, 2025)
+### v2.0.3 - My Leagues UI Polish (Dec 5, 2025)
 **UI IMPROVEMENT:** My Leagues section now visually matches Settings page theme
 - Updated: My Leagues CSS completely rewritten to match Settings page styling
 - Visual: Green theme matching action buttons (rgba(0, 255, 135, ...))
@@ -167,7 +167,7 @@
 - Consistency: All colors changed from CSS variables to explicit rgba values
 - File: `/src/components/Settings/MyLeagues.module.css` (244 lines rewritten)
 
-### v2.0.2 - Remember Team Selection Per League (Jan 5, 2025)
+### v2.0.2 - Remember Team Selection Per League (Dec 5, 2025)
 **UX IMPROVEMENT:** App now remembers which team you are in each league
 - Fixed: Saved leagues now store team info (myTeamId, myTeamName, myManagerName)
 - Feature: First time switching to a league → team selection required
@@ -176,7 +176,7 @@
 - Storage: savedLeagues now includes `{id, name, myTeamId, myTeamName, myManagerName}`
 - UX: Much faster league switching for frequently used leagues
 
-### v2.0.1 - Fix League Switching Flow (Jan 5, 2025)
+### v2.0.1 - Fix League Switching Flow (Dec 5, 2025)
 **BUG FIX:** Fixed league switching to include team selection step
 - Fixed: Clicking a saved league now redirects to team selection page
 - Fixed: No more "Team not found in league" error
@@ -185,7 +185,7 @@
 - Previous issue: Tried to auto-match team, failed if names didn't match
 - Uses same team selection flow as "Change Team" button
 
-### v2.0.0 - My Leagues: Save & Switch Between Multiple Leagues (Jan 5, 2025)
+### v2.0.0 - My Leagues: Save & Switch Between Multiple Leagues (Dec 5, 2025)
 **MAJOR FEATURE:** Multi-league support - manage up to 5 leagues from Settings
 - Added: "My Leagues" section in Settings page
 - Feature: Save up to 5 leagues with names and IDs in localStorage
@@ -201,7 +201,7 @@
 
 ## v1.26.x Series - Large League Support & Error Handling (Jan 2025)
 
-### v1.26.14 - Remove Legacy League Route (Jan 5, 2025)
+### v1.26.14 - Remove Legacy League Route (Dec 5, 2025)
 **CODE CLEANUP:** Removed old legacy `/league/[leagueId]` route and related code
 - Deleted: `/src/app/league/[leagueId]/` directory (legacy league and player pages)
 - Deleted: `/src/components/BottomNav.tsx` (old bottom navigation)
@@ -211,7 +211,7 @@
 - Impact: Cleaner codebase, no dead code, /dashboard is the only league viewing route
 - Note: Main app flow unchanged - users still access via /dashboard
 
-### v1.26.13 - Add AFCON Special Rule for GW16 (Jan 5, 2025)
+### v1.26.13 - Add AFCON Special Rule for GW16 (Dec 5, 2025)
 **NEW FEATURE:** Special AFCON rule - everyone gets 5 FT for GW16
 - Added: Special rule override for GW16 due to AFCON break
 - Reason: FPL is giving all managers 5 FT to adjust for African players unavailable
@@ -219,7 +219,7 @@
 - Also cleaned up: Removed all debug logging from FT calculation
 - Location: `/api/league/[id]/matches/[matchId]/route.ts:160-163`
 
-### v1.26.12 - Fix FT Showing Wrong Gameweek (Jan 5, 2025) ✅ **ACTUAL FIX**
+### v1.26.12 - Fix FT Showing Wrong Gameweek (Dec 5, 2025) ✅ **ACTUAL FIX**
 **CRITICAL FIX:** FT now shows correctly for current gameweek (not next gameweek)
 - Issue: When viewing GW14 fixture, app showed FT for AFTER GW14 (2 FT) instead of FOR GW14 (1 FT)
 - Root cause: Calculation added +1 FT after last completed GW, showing FT for next period
@@ -229,7 +229,7 @@
 - Debug logging: Added comprehensive logging to trace calculations in production
 - Location: `/api/league/[id]/matches/[matchId]/route.ts:122-170`
 
-### v1.26.11 - Fix GW1 Special Case in FT Calculation (Jan 5, 2025) ❌ **INCOMPLETE**
+### v1.26.11 - Fix GW1 Special Case in FT Calculation (Dec 5, 2025) ❌ **INCOMPLETE**
 **CRITICAL FIX:** Fixed GW1 double-counting issue in FT calculation
 - Issue: GW1 was being processed as normal GW, adding +1 FT incorrectly
 - Root cause: GW1 has no FT available (0), but after it ends you get 1 FT for GW2
@@ -237,7 +237,7 @@
 - New logic: Skip GW1 processing, just set ftBalance=1 for GW2, then process GW2+
 - Location: `/api/league/[id]/matches/[matchId]/route.ts:130-134`
 
-### v1.26.10 - Fix FT Calculation Logic (Jan 5, 2025) ❌ **INCOMPLETE**
+### v1.26.10 - Fix FT Calculation Logic (Dec 5, 2025) ❌ **INCOMPLETE**
 **CRITICAL FIX:** Corrected Free Transfers calculation with proper FPL rules
 - Fixed: GW1 starts with 0 FT (not 1)
 - Fixed: Cap is 5 FT (not 2)
@@ -246,7 +246,7 @@
 - Rules: Start 0 FT → Each normal GW: consume transfers, then +1 FT (max 5)
 - Location: `/api/league/[id]/matches/[matchId]/route.ts:122-144`
 
-### v1.26.9 - Reverse Form Display Order (Jan 5, 2025)
+### v1.26.9 - Reverse Form Display Order (Dec 5, 2025)
 **UX IMPROVEMENT:** Form (W/L/D) now displays oldest→newest (left to right)
 - Changed: Form badges now show chronologically (oldest GW on left, newest on right)
 - Previous: Newest→oldest (confusing for users expecting timeline flow)
@@ -254,7 +254,7 @@
 - Implementation: Reversed arrays in 2 API endpoints for consistent display
 - Files: `/api/league/[id]/stats/route.ts:52` + `/api/league/[id]/matches/[matchId]/route.ts:94`
 
-### v1.26.8 - Fix FT Calculation Bug (Jan 5, 2025)
+### v1.26.8 - Fix FT Calculation Bug (Dec 5, 2025)
 **BUG FIX:** Free Transfers showing incorrect value in upcoming fixtures modal
 - Fixed: FT calculation loop processing current gameweek, causing off-by-one error
 - Root cause: Loop included current GW data from `historyData.current`
@@ -262,7 +262,7 @@
 - Impact: FTs now show correct value for current/upcoming gameweeks
 - Location: `/api/league/[id]/matches/[matchId]/route.ts:125-127`
 
-### v1.26.7 - Admin Leagues Page (Jan 5, 2025)
+### v1.26.7 - Admin Leagues Page (Dec 5, 2025)
 **NEW FEATURE:** Dedicated sortable leagues page in admin panel
 - Added `/admin/leagues` page with full league list
 - Sortable columns: click headers to sort by any field
@@ -889,7 +889,7 @@ Added comprehensive error logging to diagnose failures
 ## Summary Statistics
 
 **Total Versions:** 170+ releases
-**Development Period:** October 23, 2024 - January 4, 2025 (~10 weeks)
+**Development Period:** October 23, 2024 - December 8, 2025 (~14 months)
 **Average Release Frequency:** ~2.4 versions per day
 
 **Major Milestones:**
@@ -917,5 +917,5 @@ Added comprehensive error logging to diagnose failures
 
 ---
 
-**Last Updated:** January 4, 2025
+**Last Updated:** December 8, 2025
 **Maintained By:** Claude Code (automated after every deployment)

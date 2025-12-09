@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-01-05
+Last Updated: 2025-12-08
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -68,6 +68,19 @@ export const dynamic = 'force-dynamic';
    - Aggregates: Across all league managers for comprehensive stats
 
 ## Known Issues & Solutions
+
+### ✅ FIXED: Admin Panel Showing Zeros (v2.0.16)
+- **Problem**: Admin dashboard showed 0 for all stats despite database having 23,958 records
+- **Root Cause**: Next.js pre-rendered API routes at build time, but `postgres.railway.internal` only resolves at runtime
+- **Solution**: Added `export const dynamic = 'force-dynamic'` to admin API routes
+- **Location**: `/api/admin/stats/route.ts`, `/api/admin/leagues/route.ts`
+- **Never Do**: Create database API routes without `export const dynamic = 'force-dynamic'`
+
+### ✅ FIXED: Analytics Not Tracking (v2.0.11)
+- **Problem**: Analytics stopped recording on Dec 5 after admin panel fixes
+- **Root Cause**: `analytics.ts` still referenced deleted `analytics_leagues` table, failing silently
+- **Solution**: Removed all `analytics_leagues` references from `/src/lib/analytics.ts`
+- **Never Do**: Reference non-existent database tables
 
 ### ✅ FIXED: iOS Scroll Bug (v1.14.30)
 - **Problem**: Couldn't scroll up in modals on mobile
@@ -150,7 +163,7 @@ export const dynamic = 'force-dynamic';
 
    **Example Entry:**
    ```markdown
-   ### v1.26.7 - Admin Leagues Page (Jan 5, 2025)
+   ### v1.26.7 - Admin Leagues Page (Dec 5, 2025)
    Added dedicated sortable leagues page in admin panel
    - Created /admin/leagues page with full league list
    - Sortable columns: click headers to sort by any field
@@ -1176,57 +1189,41 @@ const [data1, data2] = await Promise.all([
 
 ## Version History
 
-**Latest (v1.26.x Series - Jan 2025):**
-- **v1.26.7 (Jan 5)** - 📊 **NEW: Admin leagues page with sortable columns**
-  - Added `/admin/leagues` page showing all leagues in database
-  - Sortable columns: click any header to sort (smart defaults: desc for numbers, asc for text)
-  - Sort indicators: ⇅ (unsorted), ↑ (ascending), ↓ (descending)
-  - "View All →" button from admin dashboard
-  - API endpoint: `/api/admin/leagues` fetches complete league metadata
+**Latest (v2.0.x Series - Dec 2025):**
+- **v2.0.18 (Dec 8)** - 📝 Documentation update
+- **v2.0.16 (Dec 8)** - 🔧 **CRITICAL: Admin panel force-dynamic fix**
+- **v2.0.11 (Dec 5)** - 🔧 Fix analytics tracking
+- **v2.0.0 (Dec 5)** - 🎉 **MAJOR: Multi-league support**
 
-- **v1.26.6 (Jan 4)** - 🎯 **CRITICAL FIX: Handle corrupted FPL data**
-  - Fixed: League 754307 (32 teams) failing immediately with null entry_id error
-  - Added null checks before database inserts for standings and matches
-  - Skip corrupted entries (deleted/removed teams) with warning logs
-  - Gracefully handle leagues with deleted accounts in standings
+See VERSION_HISTORY_COMPLETE.md for full changelog.
 
-- **v1.26.5 (Jan 4)** - 🐛 Debug logging for investigation
-  - Added comprehensive error logging to identify failure points
-  - Log each API call attempt with success/failure details
-  - Helped diagnose v1.26.6 null entry issue
-
-- **v1.26.4 (Jan 4)** - ⚡ **MAJOR: Performance optimization for large leagues**
-  - Strip down `/api/league/[id]` to fetch ONLY essential data
-  - Remove 832+ API calls (captain picks, chips, manager history)
-  - Processing time: 60-90s → <5s for 32-team leagues
-  - Enables support for leagues up to 50 teams
-  - Bypass Railway's 30-second timeout limit
-
-- **v1.26.3 (Jan 4)** - ⏱️ Increase timeout for large leagues
-  - Axios timeout: 90 seconds
+**Previous Series (v1.26.x - Dec 2024):**
+- **v1.26.7 (Dec 5)** - 📊 Admin leagues page with sortable columns
+- **v1.26.6 (Dec 5)** - 🎯 Handle corrupted FPL data (null entry_id checks)
+- **v1.26.4 (Dec 5)** - ⚡ **MAJOR: Performance optimization for large leagues** (60-90s → <5s)
   - Added loading message: "⏳ Large leagues take longer..."
   - Enhanced error handling for timeouts
 
-- **v1.26.2 (Jan 3)** - 🚨 **URGENT: Clear error messages for Classic leagues**
+- **v1.26.2 (Dec 3)** - 🚨 **URGENT: Clear error messages for Classic leagues**
   - Reddit launch fix for confusing "500 error" messages
   - API-side detection: catch 404 from H2H endpoint
   - Friendly messages: "⚠️ This is a Classic league. Only H2H leagues supported."
   - Impact: 84 users, 28 leagues at deployment
 
-- **v1.26.1 (Jan 2)** - 📊 Fix Y-axis visibility on position graph
+- **v1.26.1 (Dec 2)** - 📊 Fix Y-axis visibility on position graph
   - Show all ranks 1-30, then sparse above 30
   - Created `generateYAxisTicks()` function
   - Better rank visibility for top 20 teams
 
-- **v1.26.0 (Jan 2)** - 📈 **NEW: Position comparison feature**
+- **v1.26.0 (Dec 2)** - 📈 **NEW: Position comparison feature**
   - Compare position history vs any opponent
   - Dual-line chart: green (you) vs red (opponent)
   - Opponent selector dropdown with all league teams
   - Enhanced tooltip showing both positions per gameweek
 
 **Recent Features (v1.25.x - Dec 2024):**
-- v1.25.6 (Jan 2) - Fix position history type mismatch bug (string vs number)
-- v1.25.5 (Jan 2) - Collapsible Quick Access for Reddit launch
+- v1.25.6 (Dec 2) - Fix position history type mismatch bug (string vs number)
+- v1.25.5 (Dec 2) - Collapsible Quick Access for Reddit launch
 - v1.25.4 (Dec 4) - **Revert FPL login feature** (blocked by anti-bot protection)
 - ~~v1.26.0-v1.26.2 (Dec 4)~~ - *REVERTED* - FPL login attempt (see Abandoned Features)
 - v1.25.0-v1.25.3 (Dec 4) - Team selection improvements + Position history graph
