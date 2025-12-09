@@ -11,6 +11,8 @@ interface Props {
   myManagerName: string;
   myTeamName: string;
   leagueId: string;
+  isViewingOther?: boolean;
+  onBackToMyTeam?: () => void;
 }
 
 // Helper to get chip abbreviation
@@ -43,7 +45,7 @@ function getOrdinalSuffix(num: number): string {
   return num + 'th';
 }
 
-export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName, leagueId }: Props) {
+export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName, leagueId, isViewingOther, onBackToMyTeam }: Props) {
   if (!data || !data.standings) {
     return <div className={styles.emptyState}>No team data available</div>;
   }
@@ -63,6 +65,36 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
 
   return (
     <div className={styles.myTeamTab}>
+      {/* Back to My Team button */}
+      {isViewingOther && onBackToMyTeam && (
+        <button
+          onClick={onBackToMyTeam}
+          className={styles.backButton}
+          style={{
+            marginBottom: '1rem',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: 'rgba(0, 255, 135, 0.1)',
+            color: '#00ff87',
+            border: '1px solid rgba(0, 255, 135, 0.3)',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '0.9rem',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 255, 135, 0.2)';
+            e.currentTarget.style.borderColor = 'rgba(0, 255, 135, 0.5)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(0, 255, 135, 0.1)';
+            e.currentTarget.style.borderColor = 'rgba(0, 255, 135, 0.3)';
+          }}
+        >
+          ← Back to My Team
+        </button>
+      )}
+
       {/* Team Overview with Rank */}
       <div className={styles.section}>
         <div className={styles.teamHeader}>

@@ -23,6 +23,13 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // State for viewing other players
+  const [viewingPlayerId, setViewingPlayerId] = useState<string | null>(null);
+  const [viewingPlayerData, setViewingPlayerData] = useState<any>(null);
+  const [viewingPlayerName, setViewingPlayerName] = useState<string>('');
+  const [viewingTeamName, setViewingTeamName] = useState<string>('');
+  const [isLoadingViewing, setIsLoadingViewing] = useState(false);
+
   // Scroll to top when tab changes
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -88,6 +95,52 @@ export default function DashboardPage() {
     await fetchAllData(state.leagueId, state.myTeamId);
     // Small delay for better UX feedback
     await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  async function handleTeamClick(entryId: number, playerName: string, teamName: string) {
+    if (!state) return;
+
+    // If clicking own team, just switch to myteam tab
+    if (entryId.toString() === state.myTeamId) {
+      setViewingPlayerId(null);
+      setViewingPlayerData(null);
+      setActiveTab('myteam');
+      return;
+    }
+
+    setIsLoadingViewing(true);
+    setViewingPlayerName(playerName);
+    setViewingTeamName(teamName);
+
+    try {
+      const response = await fetch(`/api/player/${entryId}?leagueId=${state.leagueId}&t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch player data');
+      }
+
+      const data = await response.json();
+      setViewingPlayerId(entryId.toString());
+      setViewingPlayerData(data);
+      setActiveTab('myteam');
+    } catch (err: any) {
+      console.error('Error fetching player data:', err);
+      setError(err.message || 'Failed to load player data');
+    } finally {
+      setIsLoadingViewing(false);
+    }
+  }
+
+  function handleBackToMyTeam() {
+    setViewingPlayerId(null);
+    setViewingPlayerData(null);
+    setViewingPlayerName('');
+    setViewingTeamName('');
   }
 
   const { isRefreshing: isPullingToRefresh, pullDistance } = usePullToRefresh({
@@ -163,6 +216,7 @@ export default function DashboardPage() {
             data={leagueData}
             myTeamId={state.myTeamId}
             leagueId={state.leagueId}
+            onTeamClick={handleTeamClick}
           />
         )}
         {activeTab === 'fixtures' && leagueData && (
@@ -173,16 +227,20 @@ export default function DashboardPage() {
             defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
           />
         )}
-        {activeTab === 'myteam' && (
+        {activeTab === 'myteam' && (isLoadingViewing ? (
+          <div className={styles.loading}>Loading player data...</div>
+        ) : (
           <MyTeamTab
             data={leagueData}
-            playerData={playerData}
-            myTeamId={state.myTeamId}
-            myManagerName={state.myManagerName}
-            myTeamName={state.myTeamName}
+            playerData={viewingPlayerId ? viewingPlayerData : playerData}
+            myTeamId={viewingPlayerId || state.myTeamId}
+            myManagerName={viewingPlayerId ? viewingPlayerName : state.myManagerName}
+            myTeamName={viewingPlayerId ? viewingTeamName : state.myTeamName}
             leagueId={state.leagueId}
+            isViewingOther={!!viewingPlayerId}
+            onBackToMyTeam={handleBackToMyTeam}
           />
-        )}
+        ))}
         {activeTab === 'stats' && (
           <StatsTab
             leagueId={state.leagueId}

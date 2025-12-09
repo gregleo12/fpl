@@ -8,9 +8,10 @@ interface Props {
   data: any;
   myTeamId: string;
   leagueId: string;
+  onTeamClick?: (entryId: number, playerName: string, teamName: string) => void;
 }
 
-export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Props) {
+export default function LeagueTab({ data: initialData, myTeamId, leagueId, onTeamClick }: Props) {
   // Smart default: Show LIVE when GW is active, OFFICIAL when finished
   // Default to OFFICIAL (false) if isLive is undefined
   const [showLiveRankings, setShowLiveRankings] = useState(initialData?.isLive ?? false);
@@ -94,11 +95,22 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Pro
                 const differential = team.points_for - team.points_against;
                 const rankChange = team.rankChange || 0;
 
+                const handleRowClick = () => {
+                  if (!isAverage && onTeamClick) {
+                    onTeamClick(team.entry_id, team.player_name, team.team_name);
+                  }
+                };
+
                 return (
                   <tr
                     key={team.entry_id}
                     className={isMyTeam ? styles.myTeamRow : ''}
-                    style={isAverage ? { opacity: 0.6, fontStyle: 'italic' } : {}}
+                    onClick={handleRowClick}
+                    style={
+                      isAverage
+                        ? { opacity: 0.6, fontStyle: 'italic', cursor: 'default' }
+                        : { cursor: 'pointer' }
+                    }
                   >
                     <td className={styles.rankCol}>
                       <div className={styles.rankCell}>
