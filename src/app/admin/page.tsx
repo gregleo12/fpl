@@ -233,150 +233,6 @@ export default function AdminPage() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && analyticsData && (
           <>
-            {/* Activity Dashboard Toggles */}
-            <div className={styles.section}>
-              <div className={styles.sectionTitle}>📊 Activity Dashboard</div>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem', alignItems: 'center' }}>
-                {/* Metric Type Toggle */}
-                <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0, 0, 0, 0.3)', padding: '0.125rem', borderRadius: '8px' }}>
-                  <button
-                    onClick={() => setMetricType('users')}
-                    style={{
-                      background: metricType === 'users' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
-                      border: 'none',
-                      color: metricType === 'users' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    Users
-                  </button>
-                  <button
-                    onClick={() => setMetricType('requests')}
-                    style={{
-                      background: metricType === 'requests' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
-                      border: 'none',
-                      color: metricType === 'requests' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    Requests
-                  </button>
-                </div>
-
-                {/* Time Period Toggle */}
-                <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0, 0, 0, 0.3)', padding: '0.125rem', borderRadius: '8px' }}>
-                  <button
-                    onClick={() => setTimePeriod('24h')}
-                    style={{
-                      background: timePeriod === '24h' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
-                      border: 'none',
-                      color: timePeriod === '24h' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    24h
-                  </button>
-                  <button
-                    onClick={() => setTimePeriod('7days')}
-                    style={{
-                      background: timePeriod === '7days' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
-                      border: 'none',
-                      color: timePeriod === '7days' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    7 days
-                  </button>
-                  <button
-                    onClick={() => setTimePeriod('30days')}
-                    style={{
-                      background: timePeriod === '30days' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
-                      border: 'none',
-                      color: timePeriod === '30days' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
-                      padding: '0.375rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8125rem',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    30 days
-                  </button>
-                </div>
-              </div>
-
-              {/* Activity Stats Cards */}
-              <div className={styles.overviewGrid}>
-                <div className={styles.overviewCard}>
-                  <div className={styles.overviewLabel}>All Time</div>
-                  <div className={styles.overviewValue}>
-                    {metricType === 'users'
-                      ? analyticsData.overview.uniqueUsers.allTime.toLocaleString()
-                      : analyticsData.overview.totalRequests.allTime.toLocaleString()
-                    }
-                  </div>
-                  <div className={styles.overviewSubtext}>
-                    {metricType === 'users' ? 'Total unique users' : 'Total requests'}
-                  </div>
-                </div>
-                <div className={styles.overviewCard}>
-                  <div className={styles.overviewLabel}>
-                    {timePeriod === '24h' ? 'Today' : timePeriod === '7days' ? 'Last 7 Days' : 'Last 30 Days'}
-                  </div>
-                  <div className={styles.overviewValue}>
-                    {metricType === 'users'
-                      ? (timePeriod === '24h'
-                          ? analyticsData.overview.uniqueUsers.today
-                          : timePeriod === '7days'
-                            ? analyticsData.overview.uniqueUsers.last7Days
-                            : analyticsData.overview.uniqueUsers.last30Days
-                        ).toLocaleString()
-                      : (timePeriod === '24h'
-                          ? analyticsData.overview.totalRequests.today
-                          : timePeriod === '7days'
-                            ? analyticsData.overview.totalRequests.last7Days
-                            : analyticsData.overview.totalRequests.last30Days
-                        ).toLocaleString()
-                    }
-                  </div>
-                  <div className={styles.overviewSubtext}>
-                    {metricType === 'users' ? 'Active users' : 'Total requests'}
-                  </div>
-                </div>
-                <div className={styles.overviewCard}>
-                  <div className={styles.overviewLabel}>Leagues</div>
-                  <div className={styles.overviewValue}>{analyticsData.overview.totalLeagues.toLocaleString()}</div>
-                  <div className={styles.overviewSubtext}>
-                    {analyticsData.overview.newLeaguesToday > 0
-                      ? `+${analyticsData.overview.newLeaguesToday} new today`
-                      : 'Active leagues'
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* TOTAL REQUESTS Section */}
             <div className={styles.section}>
               <div className={styles.sectionTitle}>📊 Total Requests</div>
@@ -644,7 +500,100 @@ export default function AdminPage() {
 
             {/* Activity Chart */}
             <div className={styles.section}>
-              <div className={styles.sectionTitle}>📈 Activity Last 24 Hours</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div className={styles.sectionTitle}>
+                  📈 Activity {timePeriod === '24h' ? 'Last 24 Hours' : timePeriod === '7days' ? 'Last 7 Days' : 'Last 30 Days'}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {/* Metric Type Toggle */}
+                  <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0, 0, 0, 0.3)', padding: '0.125rem', borderRadius: '8px' }}>
+                    <button
+                      onClick={() => setMetricType('users')}
+                      style={{
+                        background: metricType === 'users' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        border: 'none',
+                        color: metricType === 'users' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Users
+                    </button>
+                    <button
+                      onClick={() => setMetricType('requests')}
+                      style={{
+                        background: metricType === 'requests' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        border: 'none',
+                        color: metricType === 'requests' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Requests
+                    </button>
+                  </div>
+
+                  {/* Time Period Toggle */}
+                  <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0, 0, 0, 0.3)', padding: '0.125rem', borderRadius: '8px' }}>
+                    <button
+                      onClick={() => setTimePeriod('24h')}
+                      style={{
+                        background: timePeriod === '24h' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        border: 'none',
+                        color: timePeriod === '24h' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      24h
+                    </button>
+                    <button
+                      onClick={() => setTimePeriod('7days')}
+                      style={{
+                        background: timePeriod === '7days' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        border: 'none',
+                        color: timePeriod === '7days' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      7 days
+                    </button>
+                    <button
+                      onClick={() => setTimePeriod('30days')}
+                      style={{
+                        background: timePeriod === '30days' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        border: 'none',
+                        color: timePeriod === '30days' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        padding: '0.375rem 0.75rem',
+                        borderRadius: '6px',
+                        fontSize: '0.8125rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      30 days
+                    </button>
+                  </div>
+                </div>
+              </div>
               {analyticsData.hourlyActivity.length > 0 ? (
                 <div className={styles.chartWrapper}>
                   <ResponsiveContainer width="100%" height={250}>
@@ -667,7 +616,7 @@ export default function AdminPage() {
                           color: '#fff'
                         }}
                         labelFormatter={(hour) => `Hour: ${hour}:00`}
-                        formatter={(value: any) => [`${value} requests`, 'Count']}
+                        formatter={(value: any) => [`${value} ${metricType}`, 'Count']}
                       />
                       <Bar
                         dataKey="count"
@@ -679,7 +628,9 @@ export default function AdminPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className={styles.emptyState}>No activity in the last 24 hours</div>
+                <div className={styles.emptyState}>
+                  No activity in the {timePeriod === '24h' ? 'last 24 hours' : timePeriod === '7days' ? 'last 7 days' : 'last 30 days'}
+                </div>
               )}
             </div>
 
