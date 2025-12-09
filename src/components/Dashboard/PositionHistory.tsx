@@ -271,6 +271,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
               tick={{ fill: 'rgba(255, 255, 255, 0.7)', fontSize: 12 }}
               tickFormatter={(value) => getOrdinalSuffix(value)}
               ticks={generateYAxisTicks(data.totalTeams)}
+              interval={0}
             />
             <Tooltip content={<CustomTooltip />} />
 
