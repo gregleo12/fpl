@@ -98,7 +98,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId }: Pro
                   <tr
                     key={team.entry_id}
                     className={isMyTeam ? styles.myTeamRow : ''}
-                    style={isAverage ? { opacity: 0.6, fontStyle: 'italic', cursor: 'default', pointerEvents: 'none' } : {}}
+                    style={isAverage ? { opacity: 0.6, fontStyle: 'italic' } : {}}
                   >
                     <td className={styles.rankCol}>
                       <div className={styles.rankCell}>

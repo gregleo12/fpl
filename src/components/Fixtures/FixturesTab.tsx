@@ -296,7 +296,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
       const data = await response.json();
       setFixturesData(data);
 
-      // If upcoming, fetch opponent insights
+      // If upcoming, fetch opponent insights (unless opponent is AVERAGE)
       if (data.status === 'upcoming') {
         const myMatch = data.matches.find((m: Match) =>
           m.entry_1.id.toString() === myTeamId || m.entry_2.id.toString() === myTeamId
@@ -307,13 +307,19 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             ? myMatch.entry_2.id
             : myMatch.entry_1.id;
 
-          const insightsResponse = await fetch(
-            `/api/league/${leagueId}/insights/${opponentId}?myId=${myTeamId}`
-          );
+          // Skip fetching insights for AVERAGE opponent (odd-numbered leagues)
+          if (opponentId !== -1) {
+            const insightsResponse = await fetch(
+              `/api/league/${leagueId}/insights/${opponentId}?myId=${myTeamId}`
+            );
 
-          if (insightsResponse.ok) {
-            const insightsData = await insightsResponse.json();
-            setInsights(insightsData);
+            if (insightsResponse.ok) {
+              const insightsData = await insightsResponse.json();
+              setInsights(insightsData);
+            }
+          } else {
+            console.log('Skipping insights for AVERAGE opponent');
+            setInsights(null);
           }
         }
       } else {
@@ -380,6 +386,12 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   }
 
   async function handleCardClick(matchId: number, match: Match) {
+    // Prevent clicks on AVERAGE matches (odd-numbered leagues)
+    if (match.entry_1.id === -1 || match.entry_2.id === -1) {
+      console.log('Ignoring click on AVERAGE match');
+      return;
+    }
+
     // Check if this is a live or completed match - use same modal for both
     if (fixturesData?.status === 'in_progress' || fixturesData?.status === 'completed') {
       // Fetch live match data (works for both live and completed)
