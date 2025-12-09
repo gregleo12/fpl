@@ -303,17 +303,23 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         );
 
         if (myMatch) {
-          const opponentId = myMatch.entry_1.id.toString() === myTeamId
-            ? myMatch.entry_2.id
-            : myMatch.entry_1.id;
+          const opponent = myMatch.entry_1.id.toString() === myTeamId
+            ? myMatch.entry_2
+            : myMatch.entry_1;
 
-          console.log('[INSIGHTS] Opponent check:', { opponentId, isAverage: opponentId === -1 });
+          const isOpponentAverage = opponent.player_name === 'AVERAGE';
+
+          console.log('[INSIGHTS] Opponent check:', {
+            opponentId: opponent.id,
+            opponentName: opponent.player_name,
+            isAverage: isOpponentAverage
+          });
 
           // Skip fetching insights for AVERAGE opponent (odd-numbered leagues)
-          if (opponentId !== -1) {
-            console.log('[INSIGHTS] Fetching insights for opponent:', opponentId);
+          if (!isOpponentAverage) {
+            console.log('[INSIGHTS] Fetching insights for opponent:', opponent.id);
             const insightsResponse = await fetch(
-              `/api/league/${leagueId}/insights/${opponentId}?myId=${myTeamId}`
+              `/api/league/${leagueId}/insights/${opponent.id}?myId=${myTeamId}`
             );
 
             if (insightsResponse.ok) {
@@ -396,7 +402,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     });
 
     // Prevent clicks on AVERAGE matches (odd-numbered leagues)
-    if (match.entry_1.id === -1 || match.entry_2.id === -1) {
+    // Use player_name check instead of entry_id because database may have AVERAGE with real IDs
+    if (match.entry_1.player_name === 'AVERAGE' || match.entry_2.player_name === 'AVERAGE') {
       console.log('[CLICK] Ignoring click on AVERAGE match');
       return;
     }
@@ -579,7 +586,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           const isLoading = loadingDetails[match.id];
 
           // Detect if either entry is AVERAGE (odd-numbered leagues)
-          const isAverageMatch = match.entry_1.id === -1 || match.entry_2.id === -1;
+          // Use player_name check instead of entry_id because database may have AVERAGE with real IDs
+          const isAverageMatch =
+            match.entry_1.player_name === 'AVERAGE' ||
+            match.entry_2.player_name === 'AVERAGE';
 
           if (isAverageMatch) {
             console.log('[AVERAGE] Match detected:', {

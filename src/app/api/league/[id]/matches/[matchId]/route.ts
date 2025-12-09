@@ -40,7 +40,8 @@ export async function GET(
     const entry2Id = match.entry_2_id;
 
     // Check if either entry is AVERAGE (odd-numbered leagues)
-    if (entry1Id === -1 || entry2Id === -1) {
+    // Use player_name check instead of entry_id because database may have AVERAGE with real IDs
+    if (match.entry_1_player === 'AVERAGE' || match.entry_2_player === 'AVERAGE') {
       return NextResponse.json({
         error: 'Match details not available for AVERAGE opponent',
         isAverageMatch: true
