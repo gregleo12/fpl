@@ -167,7 +167,11 @@ export async function GET(
             }
 
             // Special rule: AFCON break - everyone gets 5 FT for GW16
-            if (currentGW === 16) {
+            // Only apply once GW16 has actually started (not when it's just upcoming)
+            const gw16Event = bootstrapData.events.find((e: any) => e.id === 16);
+            const gw16HasStarted = gw16Event?.is_current || gw16Event?.finished;
+
+            if (currentGW >= 16 && gw16HasStarted) {
               ftBalance = 5;
             }
 
