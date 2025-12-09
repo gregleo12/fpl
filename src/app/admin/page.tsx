@@ -79,17 +79,17 @@ interface AnalyticsData {
   activityLast24h: Array<{
     hour: number;
     request_count: number;
-    unique_users: number;
+    unique_managers: number;
   }>;
   activityLast7Days: Array<{
     day: string;
     request_count: number;
-    unique_users: number;
+    unique_managers: number;
   }>;
   activityLast30Days: Array<{
     day: string;
     request_count: number;
-    unique_users: number;
+    unique_managers: number;
   }>;
 }
 
@@ -101,7 +101,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'health' | 'analytics'>('analytics');
   const [aggregating, setAggregating] = useState(false);
   const [aggregationResult, setAggregationResult] = useState<any>(null);
-  const [metricType, setMetricType] = useState<'users' | 'requests'>('users');
+  const [metricType, setMetricType] = useState<'managers' | 'requests'>('managers');
   const [timePeriod, setTimePeriod] = useState<'24h' | '7days' | '30days'>('7days');
 
   const fetchData = async () => {
@@ -178,7 +178,7 @@ export default function AdminPage() {
   const getActivityData = () => {
     if (!analyticsData) return [];
 
-    let rawData: Array<{ hour?: number; day?: string; request_count: number; unique_users: number }> = [];
+    let rawData: Array<{ hour?: number; day?: string; request_count: number; unique_managers: number }> = [];
 
     // Select data based on time period
     if (timePeriod === '24h') {
@@ -192,7 +192,7 @@ export default function AdminPage() {
     // Transform data based on metric type
     return rawData.map((item) => ({
       label: item.hour !== undefined ? item.hour : item.day || '',
-      value: metricType === 'users' ? item.unique_users : item.request_count
+      value: metricType === 'managers' ? item.unique_managers : item.request_count
     }));
   };
 
@@ -541,11 +541,11 @@ export default function AdminPage() {
                   {/* Metric Type Toggle */}
                   <div style={{ display: 'flex', gap: '0.25rem', background: 'rgba(0, 0, 0, 0.3)', padding: '0.125rem', borderRadius: '8px' }}>
                     <button
-                      onClick={() => setMetricType('users')}
+                      onClick={() => setMetricType('managers')}
                       style={{
-                        background: metricType === 'users' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
+                        background: metricType === 'managers' ? 'rgba(0, 255, 135, 0.2)' : 'transparent',
                         border: 'none',
-                        color: metricType === 'users' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
+                        color: metricType === 'managers' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)',
                         padding: '0.375rem 0.75rem',
                         borderRadius: '6px',
                         fontSize: '0.8125rem',
@@ -554,7 +554,7 @@ export default function AdminPage() {
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      Users
+                      Managers
                     </button>
                     <button
                       onClick={() => setMetricType('requests')}

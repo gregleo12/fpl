@@ -108,36 +108,36 @@ export async function GET() {
       `)
     ]);
 
-    // Activity by hour (last 24 hours) - both users and requests
+    // Activity by hour (last 24 hours) - both managers and requests
     const activityLast24hResult = await db.query(`
       SELECT
         EXTRACT(HOUR FROM timestamp) as hour,
         COUNT(*) as request_count,
-        COUNT(DISTINCT user_hash) as unique_users
+        COUNT(DISTINCT selected_team_id) FILTER (WHERE selected_team_id IS NOT NULL) as unique_managers
       FROM analytics_requests
       WHERE timestamp >= NOW() - INTERVAL '24 hours'
       GROUP BY EXTRACT(HOUR FROM timestamp)
       ORDER BY hour
     `);
 
-    // Activity by day (last 7 days) - both users and requests
+    // Activity by day (last 7 days) - both managers and requests
     const activityLast7DaysResult = await db.query(`
       SELECT
         TO_CHAR(DATE(timestamp), 'Mon DD') as day,
         COUNT(*) as request_count,
-        COUNT(DISTINCT user_hash) as unique_users
+        COUNT(DISTINCT selected_team_id) FILTER (WHERE selected_team_id IS NOT NULL) as unique_managers
       FROM analytics_requests
       WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
       GROUP BY DATE(timestamp)
       ORDER BY DATE(timestamp)
     `);
 
-    // Activity by day (last 30 days) - both users and requests
+    // Activity by day (last 30 days) - both managers and requests
     const activityLast30DaysResult = await db.query(`
       SELECT
         TO_CHAR(DATE(timestamp), 'Mon DD') as day,
         COUNT(*) as request_count,
-        COUNT(DISTINCT user_hash) as unique_users
+        COUNT(DISTINCT selected_team_id) FILTER (WHERE selected_team_id IS NOT NULL) as unique_managers
       FROM analytics_requests
       WHERE timestamp >= CURRENT_DATE - INTERVAL '30 days'
       GROUP BY DATE(timestamp)
@@ -197,17 +197,17 @@ export async function GET() {
       activityLast24h: activityLast24hResult.rows.map((row: any) => ({
         hour: parseInt(row.hour),
         request_count: parseInt(row.request_count),
-        unique_users: parseInt(row.unique_users)
+        unique_managers: parseInt(row.unique_managers || '0')
       })),
       activityLast7Days: activityLast7DaysResult.rows.map((row: any) => ({
         day: row.day,
         request_count: parseInt(row.request_count),
-        unique_users: parseInt(row.unique_users)
+        unique_managers: parseInt(row.unique_managers || '0')
       })),
       activityLast30Days: activityLast30DaysResult.rows.map((row: any) => ({
         day: row.day,
         request_count: parseInt(row.request_count),
-        unique_users: parseInt(row.unique_users)
+        unique_managers: parseInt(row.unique_managers || '0')
       }))
     });
   } catch (error: any) {
