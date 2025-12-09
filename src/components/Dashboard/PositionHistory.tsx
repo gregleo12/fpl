@@ -155,21 +155,36 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
     };
   });
 
-  // Generate Y-axis ticks: show all ranks 1-30, then sparse after that
+  /**
+   * Generate Y-axis ticks for position history graph
+   * - Small leagues (≤20 teams): show all ranks
+   * - Large leagues (>20 teams): show ~20 evenly distributed ticks
+   */
   const generateYAxisTicks = (totalTeams: number) => {
-    if (totalTeams <= 30) {
-      // Show all ranks from 1 to totalTeams
+    // For small leagues, show all ranks
+    if (totalTeams <= 20) {
       return Array.from({ length: totalTeams }, (_, i) => i + 1);
-    } else {
-      // Show ranks 1-30, then add a few more evenly spaced
-      const firstThirty = Array.from({ length: 30 }, (_, i) => i + 1);
-      const remaining = [];
-      const step = Math.ceil((totalTeams - 30) / 5);
-      for (let i = 30 + step; i <= totalTeams; i += step) {
-        remaining.push(i);
-      }
-      return [...firstThirty, ...remaining];
     }
+
+    // For large leagues, show exactly 20 ticks spread across the range
+    const maxTicks = 20;
+    const ticks: number[] = [1]; // Always include rank 1 (top)
+
+    // Calculate step size for middle ticks
+    const step = (totalTeams - 1) / (maxTicks - 1);
+
+    for (let i = 1; i < maxTicks - 1; i++) {
+      const tick = Math.round(1 + (step * i));
+      // Avoid duplicates
+      if (tick !== ticks[ticks.length - 1] && tick !== totalTeams) {
+        ticks.push(tick);
+      }
+    }
+
+    // Always include last rank (bottom)
+    ticks.push(totalTeams);
+
+    return ticks;
   };
 
   // Custom tooltip component
