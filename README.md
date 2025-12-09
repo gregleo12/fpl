@@ -265,6 +265,6 @@ For issues or questions, please open an issue on GitHub.
 
 ---
 
-**Current Version:** v2.0.18
+**Current Version:** v2.0.20
 
 See [VERSION_HISTORY_COMPLETE.md](./VERSION_HISTORY_COMPLETE.md) for detailed changelog.

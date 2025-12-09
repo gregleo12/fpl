@@ -2,11 +2,25 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 181+ versions
-**Current Version:** v2.0.18 (December 8, 2025)
+**Current Version:** v2.0.20 (December 9, 2025)
 
 ---
 
 ## 🎉 v2.0.x - Multi-League Support (Dec 2025) - **MAJOR MILESTONE**
+
+### v2.0.20 - Odd-Numbered League Support + Cleanup (Dec 9, 2025)
+**FEATURE:** Support for H2H leagues with odd number of teams (AVERAGE opponent)
+- Added: AVERAGE entries stored with entry_id = -1 in database
+- Added: Matches vs AVERAGE now captured and stored in h2h_matches table
+- Added: AVERAGE row appears in League Rankings (italic, 60% opacity styling)
+- Fixed: No longer skips AVERAGE as "corrupted data" from FPL API
+- Backend: Updated `/api/league/[id]/route.ts` to handle null entry_id (AVERAGE)
+- Frontend: Updated LeagueTab to detect and style AVERAGE entries
+- Test League: 754307 (Powerleague 2025, 31 teams)
+- Also: Documented admin deployment exception for `/admin` and `/api/admin` routes
+- Also: Activity toggle (Managers/Requests) with dynamic data filtering in admin panel
+- Note: Package version was 2.0.19, now properly bumped to 2.0.20
+- Files: `src/app/api/league/[id]/route.ts`, `src/components/Dashboard/LeagueTab.tsx`, `DEPLOYMENT.md`, `CLAUDE.md`
 
 ### v2.0.18 - Update Documentation to v2.0.18 (Dec 8, 2025)
 **DOCUMENTATION:** Updated all version documentation to reflect current state
