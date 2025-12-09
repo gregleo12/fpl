@@ -307,8 +307,11 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             ? myMatch.entry_2.id
             : myMatch.entry_1.id;
 
+          console.log('[INSIGHTS] Opponent check:', { opponentId, isAverage: opponentId === -1 });
+
           // Skip fetching insights for AVERAGE opponent (odd-numbered leagues)
           if (opponentId !== -1) {
+            console.log('[INSIGHTS] Fetching insights for opponent:', opponentId);
             const insightsResponse = await fetch(
               `/api/league/${leagueId}/insights/${opponentId}?myId=${myTeamId}`
             );
@@ -318,7 +321,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               setInsights(insightsData);
             }
           } else {
-            console.log('Skipping insights for AVERAGE opponent');
+            console.log('[INSIGHTS] Skipping insights for AVERAGE opponent');
             setInsights(null);
           }
         }
@@ -386,9 +389,15 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   }
 
   async function handleCardClick(matchId: number, match: Match) {
+    console.log('[CLICK] Handle card click:', {
+      matchId,
+      entry1: { id: match.entry_1.id, name: match.entry_1.player_name },
+      entry2: { id: match.entry_2.id, name: match.entry_2.player_name }
+    });
+
     // Prevent clicks on AVERAGE matches (odd-numbered leagues)
     if (match.entry_1.id === -1 || match.entry_2.id === -1) {
-      console.log('Ignoring click on AVERAGE match');
+      console.log('[CLICK] Ignoring click on AVERAGE match');
       return;
     }
 
@@ -571,6 +580,14 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
           // Detect if either entry is AVERAGE (odd-numbered leagues)
           const isAverageMatch = match.entry_1.id === -1 || match.entry_2.id === -1;
+
+          if (isAverageMatch) {
+            console.log('[AVERAGE] Match detected:', {
+              matchId: match.id,
+              entry1: { id: match.entry_1.id, name: match.entry_1.player_name },
+              entry2: { id: match.entry_2.id, name: match.entry_2.player_name }
+            });
+          }
 
           return (
             <div
