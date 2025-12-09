@@ -76,9 +76,20 @@ interface AnalyticsData {
     responseTime: number | null;
     leagueName: string | null;
   }>;
-  hourlyActivity: Array<{
+  activityLast24h: Array<{
     hour: number;
-    count: number;
+    request_count: number;
+    unique_users: number;
+  }>;
+  activityLast7Days: Array<{
+    day: string;
+    request_count: number;
+    unique_users: number;
+  }>;
+  activityLast30Days: Array<{
+    day: string;
+    request_count: number;
+    unique_users: number;
   }>;
 }
 
@@ -161,6 +172,28 @@ export default function AdminPage() {
         {arrow} {Math.abs(trend)}%
       </span>
     );
+  };
+
+  // Get activity data based on selected time period and metric type
+  const getActivityData = () => {
+    if (!analyticsData) return [];
+
+    let rawData: Array<{ hour?: number; day?: string; request_count: number; unique_users: number }> = [];
+
+    // Select data based on time period
+    if (timePeriod === '24h') {
+      rawData = analyticsData.activityLast24h;
+    } else if (timePeriod === '7days') {
+      rawData = analyticsData.activityLast7Days;
+    } else if (timePeriod === '30days') {
+      rawData = analyticsData.activityLast30Days;
+    }
+
+    // Transform data based on metric type
+    return rawData.map((item) => ({
+      label: item.hour !== undefined ? item.hour : item.day || '',
+      value: metricType === 'users' ? item.unique_users : item.request_count
+    }));
   };
 
   const runAggregation = async (withCleanup: boolean = false) => {
@@ -594,15 +627,15 @@ export default function AdminPage() {
                   </div>
                 </div>
               </div>
-              {analyticsData.hourlyActivity.length > 0 ? (
+              {getActivityData().length > 0 ? (
                 <div className={styles.chartWrapper}>
                   <ResponsiveContainer width="100%" height={250}>
-                    <BarChart data={analyticsData.hourlyActivity}>
+                    <BarChart data={getActivityData()}>
                       <XAxis
-                        dataKey="hour"
+                        dataKey="label"
                         stroke="rgba(255, 255, 255, 0.3)"
                         tick={{ fill: 'rgba(255, 255, 255, 0.6)', fontSize: 12 }}
-                        tickFormatter={(hour) => `${hour}:00`}
+                        tickFormatter={(label) => timePeriod === '24h' ? `${label}:00` : label}
                       />
                       <YAxis
                         stroke="rgba(255, 255, 255, 0.3)"
@@ -615,11 +648,11 @@ export default function AdminPage() {
                           borderRadius: '8px',
                           color: '#fff'
                         }}
-                        labelFormatter={(hour) => `Hour: ${hour}:00`}
+                        labelFormatter={(label) => timePeriod === '24h' ? `Hour: ${label}:00` : label}
                         formatter={(value: any) => [`${value} ${metricType}`, 'Count']}
                       />
                       <Bar
-                        dataKey="count"
+                        dataKey="value"
                         fill="#00ff87"
                         radius={[8, 8, 0, 0]}
                         opacity={0.8}

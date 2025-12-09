@@ -108,15 +108,40 @@ export async function GET() {
       `)
     ]);
 
-    // Requests by hour (last 24 hours)
-    const hourlyResult = await db.query(`
+    // Activity by hour (last 24 hours) - both users and requests
+    const activityLast24hResult = await db.query(`
       SELECT
         EXTRACT(HOUR FROM timestamp) as hour,
-        COUNT(*) as count
+        COUNT(*) as request_count,
+        COUNT(DISTINCT user_hash) as unique_users
       FROM analytics_requests
       WHERE timestamp >= NOW() - INTERVAL '24 hours'
       GROUP BY EXTRACT(HOUR FROM timestamp)
       ORDER BY hour
+    `);
+
+    // Activity by day (last 7 days) - both users and requests
+    const activityLast7DaysResult = await db.query(`
+      SELECT
+        TO_CHAR(DATE(timestamp), 'Mon DD') as day,
+        COUNT(*) as request_count,
+        COUNT(DISTINCT user_hash) as unique_users
+      FROM analytics_requests
+      WHERE timestamp >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY DATE(timestamp)
+      ORDER BY DATE(timestamp)
+    `);
+
+    // Activity by day (last 30 days) - both users and requests
+    const activityLast30DaysResult = await db.query(`
+      SELECT
+        TO_CHAR(DATE(timestamp), 'Mon DD') as day,
+        COUNT(*) as request_count,
+        COUNT(DISTINCT user_hash) as unique_users
+      FROM analytics_requests
+      WHERE timestamp >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY DATE(timestamp)
+      ORDER BY DATE(timestamp)
     `);
 
     // Parse results
@@ -169,9 +194,20 @@ export async function GET() {
         responseTime: row.response_time_ms,
         leagueName: row.league_name
       })),
-      hourlyActivity: hourlyResult.rows.map((row: any) => ({
+      activityLast24h: activityLast24hResult.rows.map((row: any) => ({
         hour: parseInt(row.hour),
-        count: parseInt(row.count)
+        request_count: parseInt(row.request_count),
+        unique_users: parseInt(row.unique_users)
+      })),
+      activityLast7Days: activityLast7DaysResult.rows.map((row: any) => ({
+        day: row.day,
+        request_count: parseInt(row.request_count),
+        unique_users: parseInt(row.unique_users)
+      })),
+      activityLast30Days: activityLast30DaysResult.rows.map((row: any) => ({
+        day: row.day,
+        request_count: parseInt(row.request_count),
+        unique_users: parseInt(row.unique_users)
       }))
     });
   } catch (error: any) {
@@ -187,7 +223,9 @@ export async function GET() {
       },
       topLeagues: [],
       recentRequests: [],
-      hourlyActivity: []
+      activityLast24h: [],
+      activityLast7Days: [],
+      activityLast30Days: []
     });
   }
 }
