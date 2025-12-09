@@ -84,39 +84,28 @@ export async function GET(
       league.standings.results.length
     ).catch(() => {}); // Silent fail
 
-    // Store standings and managers (including AVERAGE for odd leagues)
+    // Store standings and managers (skip entries with null entry_id)
     console.log(`[League ${leagueId}] Processing ${league.standings.results.length} standings...`);
-    let averageCount = 0;
+    let skippedCount = 0;
 
     for (const standing of league.standings.results) {
-      // Handle AVERAGE entry for odd-numbered leagues
-      // AVERAGE has null entry_id and is used for the bye team each gameweek
-      const isAverage = !standing.entry && standing.player_name === 'AVERAGE';
-      const entryId = isAverage ? -1 : standing.entry;
-
-      if (!entryId || entryId === null || entryId === undefined) {
-        // Skip only truly corrupted data (not AVERAGE)
-        if (!isAverage) {
-          console.warn(`[League ${leagueId}] Skipping corrupted standing:`, {
-            rank: standing.rank,
-            player_name: standing.player_name,
-            entry_name: standing.entry_name
-          });
-          continue;
-        }
+      // Skip entries with null/undefined entry_id (corrupted data from FPL)
+      if (!standing.entry || standing.entry === null || standing.entry === undefined) {
+        console.warn(`[League ${leagueId}] Skipping standing with null entry_id:`, {
+          rank: standing.rank,
+          player_name: standing.player_name,
+          entry_name: standing.entry_name
+        });
+        skippedCount++;
+        continue;
       }
 
-      if (isAverage) {
-        averageCount++;
-        console.log(`[League ${leagueId}] Found AVERAGE entry - this is an odd-numbered league`);
-      }
-
-      // Store manager info (use -1 for AVERAGE)
+      // Store manager info
       await db.query(`
         INSERT INTO managers (entry_id, player_name, team_name)
         VALUES ($1, $2, $3)
         ON CONFLICT (entry_id) DO UPDATE SET player_name = $2, team_name = $3
-      `, [entryId, standing.player_name, standing.entry_name]);
+      `, [standing.entry, standing.player_name, standing.entry_name]);
 
       // Store standing
       await db.query(`
@@ -136,7 +125,7 @@ export async function GET(
           updated_at = CURRENT_TIMESTAMP
       `, [
         leagueId,
-        entryId,
+        standing.entry,
         standing.rank,
         standing.matches_played,
         standing.matches_won,
@@ -148,37 +137,33 @@ export async function GET(
       ]);
     }
 
-    if (averageCount > 0) {
-      console.log(`[League ${leagueId}] Odd-numbered league detected - included AVERAGE entry`);
+    if (skippedCount > 0) {
+      console.warn(`[League ${leagueId}] Skipped ${skippedCount} standings with null entry_id`);
     }
 
-    // Store basic match data (including matches vs AVERAGE for odd leagues)
+    // Store basic match data (without chips or captain details for now)
+    // This allows for quick initial load - detailed data can be fetched later
     console.log(`[League ${leagueId}] Processing ${allMatches.length} matches...`);
-    let averageMatches = 0;
+    let skippedMatches = 0;
 
     for (const match of allMatches) {
-      // Handle matches vs AVERAGE (null entry_id means AVERAGE opponent)
-      const entry1Id = match.entry_1_entry || -1;
-      const entry2Id = match.entry_2_entry || -1;
-
-      // Skip only if both are null (truly corrupted)
-      if (entry1Id === -1 && entry2Id === -1) {
-        console.warn(`[League ${leagueId}] Skipping match with both entries null:`, {
-          event: match.event
+      // Skip matches with null entry_ids (corrupted data)
+      if (!match.entry_1_entry || !match.entry_2_entry) {
+        console.warn(`[League ${leagueId}] Skipping match with null entry_id:`, {
+          event: match.event,
+          entry_1: match.entry_1_entry,
+          entry_2: match.entry_2_entry
         });
+        skippedMatches++;
         continue;
-      }
-
-      if (entry1Id === -1 || entry2Id === -1) {
-        averageMatches++;
       }
 
       // Calculate winner based on points
       let winner = null;
       if (match.entry_1_points > match.entry_2_points) {
-        winner = entry1Id;
+        winner = match.entry_1_entry;
       } else if (match.entry_2_points > match.entry_1_points) {
-        winner = entry2Id;
+        winner = match.entry_2_entry;
       }
 
       await db.query(`
@@ -192,16 +177,16 @@ export async function GET(
       `, [
         leagueId,
         match.event,
-        entry1Id,
+        match.entry_1_entry,
         match.entry_1_points,
-        entry2Id,
+        match.entry_2_entry,
         match.entry_2_points,
         winner
       ]);
     }
 
-    if (averageMatches > 0) {
-      console.log(`[League ${leagueId}] Stored ${averageMatches} matches vs AVERAGE`);
+    if (skippedMatches > 0) {
+      console.warn(`[League ${leagueId}] Skipped ${skippedMatches} matches with null entry_id`);
     }
 
     console.log('League data fetch completed successfully (minimal mode for fast loading)');
