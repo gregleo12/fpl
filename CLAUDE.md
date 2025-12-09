@@ -10,6 +10,21 @@ Last Updated: 2025-01-05
 - **Domain**: dedoume.pronos.xyz
 - **Test League**: #804742 (Dedoume FPL 9th edition, 20 teams)
 
+## Critical Rules
+
+### Database API Routes
+**ALWAYS** add to ANY API route that queries the database:
+```typescript
+export const dynamic = 'force-dynamic';
+```
+**Why**: Without this, Next.js pre-renders at build time when `postgres.railway.internal` is unavailable, causing all queries to return zeros or fail silently.
+
+### FT (Free Transfer) Calculation Rules
+- **GW1 = 0 FT** (set ftBalance=1 after, don't process GW1)
+- **Cap = 5 FT** (not 2)
+- **Wildcard/Free Hit**: Don't consume FT, don't add +1 for next GW
+- **AFCON GW16**: Everyone gets 5 FT (special rule this season)
+
 ## Tech Stack
 - Next.js 14 + TypeScript
 - PostgreSQL (via pg library with connection pooling)
@@ -30,6 +45,7 @@ Last Updated: 2025-01-05
 - `/src/components/Stats/StatsHub.tsx` - Main Stats Hub component with GW selector
 - `/src/components/Stats/sections/` - Individual stat sections (CaptainPicks, ChipsPlayed, HitsTaken, GameweekWinners, Differentials)
 - `/src/components/SetupFlow/LeagueInput.tsx` - Simple league ID entry (proven approach)
+- `/src/components/Settings/MyLeagues.tsx` - Multi-league switcher (max 5 leagues)
 - `/src/app/admin/page.tsx` - Admin dashboard with analytics overview
 - `/src/app/admin/leagues/page.tsx` - Sortable leagues page (v1.26.7)
 - `/src/app/api/admin/leagues/route.ts` - API endpoint for all leagues data

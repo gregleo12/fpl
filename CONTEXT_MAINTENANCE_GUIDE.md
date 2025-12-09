@@ -6,10 +6,9 @@
 
 ## Overview
 
-Claude Code has three "memory files" that help him remember:
-1. **`.cursorrules`** - Quick reference card (critical rules)
-2. **`CLAUDE_CODE_CONTEXT.md`** - Full manual (architecture, bugs, fixes)
-3. **`.claude/SKILL.md`** - Backup copy
+Claude Code has two main "memory files" that help maintain project context:
+1. **`CLAUDE.md`** - Main context file (auto-read at session start)
+2. **`VERSION_HISTORY_COMPLETE.md`** - Complete changelog with version details
 
 Without these, Claude Code forgets everything between sessions and repeats mistakes.
 
@@ -17,51 +16,50 @@ Without these, Claude Code forgets everything between sessions and repeats mista
 
 ## File Purposes
 
-### `.cursorrules` (Reference Card)
-**What it is:** Short, critical rules that prevent disasters
-**Updates:** Rarely - only when discovering new critical patterns
-**Think of it as:** "DO NOT TOUCH" signs and safety warnings
-
-**Update when:**
-- Discovering a new critical rule
-- Finding a pattern that causes major bugs
-- Adding a new "never do this" item
-
-**Example content:**
-- Never touch `/src/hooks/usePullToRefresh.ts`
-- Bonus calculations must group by fixture first
-- Always test on mobile before deploying
-
----
-
-### `CLAUDE_CODE_CONTEXT.md` (Full Manual)
-**What it is:** Complete project documentation with history
-**Updates:** Frequently - after major bugs/features
-**Think of it as:** Employee handbook with lessons learned
+### `CLAUDE.md` (Main Context - Auto-Read)
+**What it is:** Complete project documentation including critical rules, architecture, bugs, and fixes
+**Auto-loaded:** Claude Code automatically reads this file at the start of each session
+**Updates:** Frequently - after major bugs/features/discoveries
+**Think of it as:** The single source of truth for project knowledge
 
 **Update when:**
 - Fixing a bug
 - Adding a feature
 - Discovering architecture insights
-- Deploying a new version
+- Finding critical rules or patterns
+- Deployment process changes
 
-**Example content:**
-- How the app works (architecture)
-- Past bugs and their fixes
-- Current known issues
-- Deployment procedures
-- Testing checklists
+**Key sections:**
+- Critical Information (database, domain, test league)
+- Critical Rules (database API routes, FT calculations)
+- Tech Stack
+- Architecture (Key Files, Data Flow)
+- Known Issues & Solutions (✅ FIXED, 🚧 IN PROGRESS)
+- Deployment Process
+- Testing Checklist
+
+---
+
+### `VERSION_HISTORY_COMPLETE.md` (Changelog)
+**What it is:** Complete version history with detailed changes
+**Updates:** After every version bump
+**Think of it as:** Git commit messages expanded with context
+
+**Update when:**
+- Bumping version number
+- Deploying a new release
+- Documenting what changed in each version
 
 ---
 
 ## When to Update
 
 ### ✅ Always Update After:
-1. **Fixing a major bug** → Document the fix
-2. **Adding a feature** → Update architecture section
-3. **Discovering a mistake pattern** → Add to "Common Mistakes"
+1. **Fixing a major bug** → Document in CLAUDE.md + version entry
+2. **Adding a feature** → Update architecture section + version entry
+3. **Discovering a mistake pattern** → Add to Critical Rules in CLAUDE.md
 4. **Changing deployment process** → Update deployment section
-5. **Version bump** → Add to version history
+5. **Version bump** → Add entry to VERSION_HISTORY_COMPLETE.md
 
 ### ⏭️ Don't Update For:
 - Minor typo fixes
@@ -77,7 +75,7 @@ Without these, Claude Code forgets everything between sessions and repeats mista
 
 **Tell Claude Code:**
 ```
-We fixed [bug name]! Update CLAUDE_CODE_CONTEXT.md:
+We fixed [bug name]! Update CLAUDE.md:
 
 Move "[Bug Name]" from "IN PROGRESS" to "FIXED":
 
@@ -90,47 +88,23 @@ Move "[Bug Name]" from "IN PROGRESS" to "FIXED":
 Then commit the update.
 ```
 
-**Example:**
-```
-We fixed the bonus bug! Update CLAUDE_CODE_CONTEXT.md:
-
-Move "Provisional Bonus" from "IN PROGRESS" to "FIXED":
-
-### ✅ FIXED: Provisional Bonus Bug (v1.7.2)
-- **Problem**: Bonus given to wrong players (all players getting bonus)
-- **Root Cause**: Not grouping by fixture - calculating globally
-- **Solution**: Fixed calculateProvisionalBonus() to group by fixtureId first
-- **Never Do**: Calculate bonus across all players without fixture grouping
-
-Then commit the update.
-```
-
 ---
 
 ### Procedure 2: After Adding a Feature
 
 **Tell Claude Code:**
 ```
-Update CLAUDE_CODE_CONTEXT.md with new feature:
+Update CLAUDE.md with new feature:
 
 Add to "Key Files":
 - `/src/[path]/[file].ts` - [Description of what it does]
 
-Add to "Version History":
-- v[version] - Added [feature name]
-
-Commit the changes.
-```
-
-**Example:**
-```
-Update CLAUDE_CODE_CONTEXT.md with new feature:
-
-Add to "Key Files":
-- `/src/lib/awards.ts` - Weekly awards calculations (Top Gun, Bench Disaster)
-
-Add to "Version History":
-- v1.8.0 - Added weekly awards system
+Then add to VERSION_HISTORY_COMPLETE.md:
+### v[version] - [Feature Name] ([Date])
+**FEATURE:** [Brief description]
+- Added: [what was added]
+- Changed: [what changed]
+- Files: [affected files]
 
 Commit the changes.
 ```
@@ -141,20 +115,20 @@ Commit the changes.
 
 **Tell Claude Code:**
 ```
-Update .cursorrules with new rule:
+Update CLAUDE.md Critical Rules section:
 
-Add under "Common Mistakes to Avoid":
-- [Description of mistake and correct approach]
+Add new rule to relevant subsection:
+- [Description of rule and why it matters]
 
 Commit the update.
 ```
 
 **Example:**
 ```
-Update .cursorrules with new rule:
+Update CLAUDE.md Critical Rules section:
 
-Add under "Common Mistakes to Avoid":
-- Don't calculate differential totals separately from main scores - use unified logic from fpl-calculations.ts
+Under "Database API Routes" add note:
+- This prevents build-time rendering failures when postgres.railway.internal is unavailable
 
 Commit the update.
 ```
@@ -167,12 +141,12 @@ Commit the update.
 ```
 Before we finish, update context files with today's work:
 
-1. What bugs did we fix? (move from IN PROGRESS to FIXED)
-2. What features did we add? (update Key Files + Version History)
-3. What new mistakes should we avoid? (add to Common Mistakes)
-4. Any version bumps? (update Version History)
+1. What bugs did we fix? (move from IN PROGRESS to FIXED in CLAUDE.md)
+2. What features did we add? (update Key Files + VERSION_HISTORY_COMPLETE.md)
+3. What new rules should we document? (add to Critical Rules in CLAUDE.md)
+4. Any version bumps? (update VERSION_HISTORY_COMPLETE.md)
 
-Update CLAUDE_CODE_CONTEXT.md and .cursorrules accordingly, then commit.
+Update both files accordingly, then commit.
 ```
 
 ---
@@ -181,19 +155,19 @@ Update CLAUDE_CODE_CONTEXT.md and .cursorrules accordingly, then commit.
 
 | Type of Update | File to Update | Section |
 |----------------|---------------|---------|
-| Bug fixed | `CLAUDE_CODE_CONTEXT.md` | Known Issues & Solutions (move to FIXED) |
-| New feature | `CLAUDE_CODE_CONTEXT.md` | Key Files + Version History |
-| Critical rule | `.cursorrules` | Common Mistakes to Avoid |
-| Architecture change | `CLAUDE_CODE_CONTEXT.md` | Architecture section |
-| Deployment change | `CLAUDE_CODE_CONTEXT.md` | Deployment Process |
-| Version bump | `CLAUDE_CODE_CONTEXT.md` | Version History |
-| Testing insight | `CLAUDE_CODE_CONTEXT.md` | Testing Checklist |
+| Bug fixed | `CLAUDE.md` | Known Issues & Solutions (move to FIXED) |
+| New feature | `CLAUDE.md` | Key Files section |
+| Critical rule | `CLAUDE.md` | Critical Rules section |
+| Architecture change | `CLAUDE.md` | Architecture section |
+| Deployment change | `CLAUDE.md` | Deployment Process |
+| Version details | `VERSION_HISTORY_COMPLETE.md` | Add new version entry |
+| Testing insight | `CLAUDE.md` | Testing Checklist |
 
 ---
 
 ## Sample Workflow
 
-### Example: Fixed the bonus calculation bug
+### Example: Fixed the admin panel showing zeros
 
 **Step 1: Verify the fix works**
 - Test on production
@@ -201,74 +175,32 @@ Update CLAUDE_CODE_CONTEXT.md and .cursorrules accordingly, then commit.
 
 **Step 2: Tell Claude Code to update**
 ```
-Perfect! The bonus bug is fixed. Now update the context:
+Perfect! The admin panel is fixed. Now update the context:
 
-In CLAUDE_CODE_CONTEXT.md:
-
-1. Move "Provisional Bonus (v1.7.0+)" from "IN PROGRESS" to "FIXED"
+In CLAUDE.md:
+1. Move "Admin Panel Showing Zeros" from "IN PROGRESS" to "FIXED"
 2. Change it to:
 
-### ✅ FIXED: Provisional Bonus Bug (v1.7.2)
-- **Problem**: Bonus awarded to wrong players across entire team
-- **Root Cause**: calculateProvisionalBonus() not grouping by fixtureId
-- **Solution**: Added fixture grouping - only top 3 BPS per match get bonus
-- **Testing**: Verified Sánchez and Muñoz no longer get incorrect bonus
+### ✅ FIXED: Admin Panel Showing Zeros (v2.0.16)
+- **Problem**: Admin panel returned all zeros despite database having 23,958 records
+- **Root Cause**: Next.js prerendering at build time when postgres.railway.internal unavailable
+- **Solution**: Added `export const dynamic = 'force-dynamic'` to admin API routes
+- **Testing**: Verified admin panel shows real data
 
-3. Update Version History:
-- v1.7.2 - Fixed provisional bonus fixture grouping bug
+3. In VERSION_HISTORY_COMPLETE.md add:
 
-4. Commit with message: "Update context: document provisional bonus fix"
+### v2.0.16 - Fix Admin Panel - Add force-dynamic (Dec 8, 2025)
+**CRITICAL FIX:** Admin panel now displays real analytics data instead of zeros
+- Problem: Admin panel showing all zeros despite database having 23,958 records
+- Root Cause: Next.js tried to prerender admin routes during build
+- Fixed: Added 'export const dynamic = force-dynamic' to admin API routes
+- Files: `api/admin/stats/route.ts`, `api/admin/leagues/route.ts`
+
+4. Commit with message: "v2.0.16: Document admin panel fix"
 ```
 
-**Step 3: Verify update**
-```
-Show me the git diff to verify the changes look correct.
-```
-
-**Step 4: Done!**
-Next session, Claude Code will read this and remember the fix.
-
----
-
-## Common Update Patterns
-
-### Pattern: Bug Discovery → Fix → Document
-
-```
-1. Bug discovered: "Bonus giving points to wrong players"
-2. Bug fixed: Update calculateProvisionalBonus()
-3. Document:
-   - Move from IN PROGRESS to FIXED
-   - Explain root cause
-   - Document solution
-   - Add "Never Do" warning
-```
-
----
-
-### Pattern: Feature Planning → Implementation → Document
-
-```
-1. Feature planned: "Add weekly awards"
-2. Feature implemented: Create awards.ts
-3. Document:
-   - Add to Key Files
-   - Update Version History
-   - Add testing notes if needed
-```
-
----
-
-### Pattern: Mistake Made → Fixed → Prevent Future
-
-```
-1. Mistake: Broke modal scrolling by modifying pull-to-refresh
-2. Fixed: Reverted changes
-3. Document:
-   - Add to .cursorrules: "Never touch usePullToRefresh.ts"
-   - Add to FIXED issues with explanation
-   - Add to Common Mistakes
-```
+**Step 3: Done!**
+Next session, Claude Code will automatically read CLAUDE.md and remember the fix.
 
 ---
 
@@ -282,7 +214,7 @@ Next session, Claude Code will read this and remember the fix.
 - Hoping he reads his own past work
 
 ✅ **What works:**
-- Explicitly saying "Update CLAUDE_CODE_CONTEXT.md with..."
+- Explicitly saying "Update CLAUDE.md with..."
 - Making it a habit at end of sessions
 - Being specific about what to document
 
@@ -306,33 +238,18 @@ Next session, Claude Code will read this and remember the fix.
 
 ---
 
-## Verification Checklist
-
-After updating context files, verify:
-
-- [ ] Bug moved from "IN PROGRESS" to "FIXED"?
-- [ ] Root cause explained?
-- [ ] Solution documented?
-- [ ] Version history updated?
-- [ ] New files added to "Key Files"?
-- [ ] Critical rules added to `.cursorrules`?
-- [ ] Changes committed with clear message?
-- [ ] Git diff reviewed and correct?
-
----
-
 ## Emergency: Lost Context
 
 If context files get out of sync or corrupted:
 
 **Step 1: Check git history**
 ```
-git log --oneline -- CLAUDE_CODE_CONTEXT.md .cursorrules
+git log --oneline -- CLAUDE.md VERSION_HISTORY_COMPLETE.md
 ```
 
 **Step 2: Restore from last good version**
 ```
-git checkout <commit-hash> -- CLAUDE_CODE_CONTEXT.md .cursorrules
+git checkout <commit-hash> -- CLAUDE.md VERSION_HISTORY_COMPLETE.md
 ```
 
 **Step 3: Rebuild from recent work**
@@ -342,7 +259,7 @@ Tell Claude Code:
 Read the last 20 commits:
 git log --oneline -20
 
-Then update CLAUDE_CODE_CONTEXT.md to reflect:
+Then update CLAUDE.md to reflect:
 - Recent bug fixes
 - Features added
 - Current version
@@ -354,12 +271,15 @@ Then update CLAUDE_CODE_CONTEXT.md to reflect:
 
 ### Template 1: Quick Bug Fix Update
 ```
-Update CLAUDE_CODE_CONTEXT.md:
+Update CLAUDE.md:
 
 Move [Bug Name] to FIXED section with:
 - Problem: [one sentence]
 - Solution: [one sentence]
 - Version: v[X.Y.Z]
+
+Add to VERSION_HISTORY_COMPLETE.md:
+- v[X.Y.Z] entry with bug details
 
 Commit: "Document [bug] fix"
 ```
@@ -368,12 +288,12 @@ Commit: "Document [bug] fix"
 
 ### Template 2: Feature Addition Update
 ```
-Update CLAUDE_CODE_CONTEXT.md:
+Update CLAUDE.md:
 
 Add to Key Files:
 - [filepath] - [description]
 
-Add to Version History:
+Update VERSION_HISTORY_COMPLETE.md:
 - v[X.Y.Z] - Added [feature]
 
 Commit: "Document [feature] addition"
@@ -383,10 +303,10 @@ Commit: "Document [feature] addition"
 
 ### Template 3: Critical Rule Update
 ```
-Update .cursorrules:
+Update CLAUDE.md:
 
-Add to "Never Touch These" OR "Common Mistakes to Avoid":
-- [Rule description]
+Add to "Critical Rules" section:
+- [Rule description and why it matters]
 
 Commit: "Add rule: [short description]"
 ```
@@ -397,13 +317,13 @@ Commit: "Add rule: [short description]"
 ```
 End of session update:
 
-Review today's work and update CLAUDE_CODE_CONTEXT.md:
+Review today's work and update CLAUDE.md:
 1. Fixed bugs: [list]
 2. Added features: [list]
 3. Version bumped to: v[X.Y.Z]
 
 Move relevant items from IN PROGRESS to FIXED.
-Update Version History.
+Update VERSION_HISTORY_COMPLETE.md with version entries.
 
 Commit: "Context update: [date] session"
 ```
@@ -430,43 +350,26 @@ Commit: "Context update: [date] session"
 ```
 git log --oneline
 
-a1b2c3d Update context: document bonus fix (v1.7.2)
-e4f5g6h Fix provisional bonus fixture grouping bug
-h7i8j9k Update context: add weekly awards feature
-k0l1m2n Implement weekly awards system (v1.8.0)
-n3o4p5q Add rule: never calculate bonus globally
+a1b2c3d Update context: document admin panel fix (v2.0.16)
+e4f5g6h Fix admin panel with force-dynamic
+h7i8j9k Update context: add multi-league feature
+k0l1m2n Implement multi-league support (v2.0.0)
 ```
 
 Notice: Code commits and context commits are **separate** for clarity.
 
 ---
 
-## Troubleshooting
-
-### Problem: Claude Code forgot about a fix
-**Solution:** Check if it's documented in CLAUDE_CODE_CONTEXT.md. If not, add it now.
-
-### Problem: .cursorrules getting too long
-**Solution:** Keep only critical rules here. Move detailed explanations to CLAUDE_CODE_CONTEXT.md.
-
-### Problem: Context file conflicts after merge
-**Solution:** Review both versions, keep most recent fixes, commit merged version.
-
-### Problem: Not sure what to document
-**Solution:** Ask yourself: "Would I want to remember this in 3 months?" If yes, document it.
-
----
-
 ## Summary
 
 **The Golden Rule:**
-**After every major fix or feature, explicitly tell Claude Code to update the context files.**
+**After every major fix or feature, explicitly tell Claude Code to update CLAUDE.md and VERSION_HISTORY_COMPLETE.md.**
 
 **Make it a habit:**
 Before ending each work session, run the "End of Session Update" procedure.
 
 **Remember:**
-These files are Claude Code's memory. Keep them updated, and he'll remember. Neglect them, and he'll repeat mistakes.
+CLAUDE.md is Claude Code's memory (automatically loaded each session). Keep it updated, and he'll remember. Neglect it, and he'll repeat mistakes.
 
 ---
 
@@ -474,11 +377,10 @@ These files are Claude Code's memory. Keep them updated, and he'll remember. Neg
 
 Setting up for the first time:
 
-- [ ] `.cursorrules` created in project root
-- [ ] `CLAUDE_CODE_CONTEXT.md` created in project root
-- [ ] `.claude/SKILL.md` backup created
-- [ ] All files committed to git
-- [ ] This guide saved in project memory
+- [ ] `CLAUDE.md` created in project root (auto-read by Claude Code)
+- [ ] `VERSION_HISTORY_COMPLETE.md` created in project root
+- [ ] Both files committed to git
+- [ ] This guide saved in project root
 - [ ] First update test completed successfully
 
 ---

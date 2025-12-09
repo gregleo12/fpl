@@ -132,7 +132,7 @@ All environment variables are managed in Railway dashboard:
 
 ## 📝 Version History
 
-- **v1.26.7** - Current version (Admin Leagues Page)
+- **v2.0.18** - Current version (Multi-League Support + Admin Panel Fixed)
 - See VERSION_HISTORY_COMPLETE.md for full changelog
 
 ---
