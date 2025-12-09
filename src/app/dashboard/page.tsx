@@ -48,11 +48,39 @@ export default function DashboardPage() {
     fetchAllData(savedState.leagueId, savedState.myTeamId);
   }, [router]);
 
-  async function fetchAllData(leagueId: string, playerId: string) {
+  async function fetchAllData(leagueId: string, playerId: string, forceSync = false) {
     setIsLoading(true);
     setError('');
 
     try {
+      // Check if we need to sync database with FPL (only if >5 mins since last sync)
+      const lastSyncKey = `league_${leagueId}_last_sync`;
+      const lastSync = localStorage.getItem(lastSyncKey);
+      const lastSyncTime = lastSync ? parseInt(lastSync) : 0;
+      const now = Date.now();
+      const SYNC_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+      const needsSync = forceSync || !lastSync || (now - lastSyncTime) > SYNC_THRESHOLD;
+
+      if (needsSync) {
+        console.log('[Dashboard] Syncing league data with FPL...');
+        // Sync h2h_matches table with latest FPL data
+        const syncResponse = await fetch(`/api/league/${leagueId}`, {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+
+        if (syncResponse.ok) {
+          localStorage.setItem(lastSyncKey, now.toString());
+          console.log('[Dashboard] League data synced successfully');
+        } else {
+          console.warn('[Dashboard] Failed to sync league data, continuing with cached data');
+        }
+      } else {
+        console.log('[Dashboard] Using cached data (last sync:', Math.round((now - lastSyncTime) / 1000), 'seconds ago)');
+      }
+
       // Fetch league standings and player profile in parallel
       const [leagueResponse, playerResponse] = await Promise.all([
         fetch(`/api/league/${leagueId}/stats?t=${Date.now()}`, {
@@ -92,7 +120,8 @@ export default function DashboardPage() {
 
   async function handleRefresh() {
     if (!state) return;
-    await fetchAllData(state.leagueId, state.myTeamId);
+    // Force sync on pull-to-refresh to ensure fresh data
+    await fetchAllData(state.leagueId, state.myTeamId, true);
     // Small delay for better UX feedback
     await new Promise(resolve => setTimeout(resolve, 500));
   }
