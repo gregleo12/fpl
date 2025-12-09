@@ -248,7 +248,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
         </select>
       </div>
 
-      <div style={{ width: '100%', height: 300 }}>
+      <div style={{ width: '100%', height: 360 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={chartData}
