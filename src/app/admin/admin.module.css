@@ -307,12 +307,12 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
-.leagueName {
+.leagueId {
   font-weight: 600;
   color: #ffffff;
 }
 
-.leagueId {
+.leagueName {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 0.25rem;
