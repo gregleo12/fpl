@@ -151,21 +151,6 @@ export function PitchView({ leagueId, myTeamId }: Props) {
         </button>
       </div>
 
-      {/* GW Stats */}
-      <div className={styles.gwStats}>
-        <div className={styles.gwStatBox}>
-          <div className={styles.gwStatValue}>{gwPoints}</div>
-          <div className={styles.gwStatLabel}>Points</div>
-        </div>
-        <div className={styles.gwStatBox}>
-          <div className={styles.gwStatValue}>{transfers.count}</div>
-          <div className={styles.gwStatLabel}>Transfers</div>
-          {transfers.cost > 0 && (
-            <div className={styles.gwStatCost}>-{transfers.cost} pts</div>
-          )}
-        </div>
-      </div>
-
       {/* Formation Display */}
       <div className={styles.formationBadge}>
         {formation}

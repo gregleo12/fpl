@@ -1,12 +1,20 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 183+ versions
-**Current Version:** v2.2.2 (December 10, 2025)
+**Total Releases:** 184+ versions
+**Current Version:** v2.2.3 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.3 - Remove Duplicate Header Stats (Dec 10, 2025)
+**UX CLEANUP:** Removed redundant Points and Transfers boxes from pitch view header
+- Removed: Duplicate GW Stats section showing Points and Transfers
+- Reason: Information already displayed in left panel's "This Gameweek" section
+- Result: Cleaner layout without redundant information
+- Impact: Left panel still shows Points, Rank, and Transfers as comprehensive stats
+- Files: `src/components/PitchView/PitchView.tsx`
 
 ### v2.2.2 - Fix Pitch Markings Alignment (Dec 10, 2025)
 **UX FIX:** Pitch markings now properly positioned relative to player rows
