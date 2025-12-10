@@ -8,8 +8,9 @@ import { HitsTaken } from './sections/HitsTaken';
 import { GameweekWinners } from './sections/GameweekWinners';
 import { TopPerformers } from './sections/TopPerformers';
 import { SeasonView } from './SeasonView';
+import { MyTeamView } from './MyTeamView';
 
-type ViewType = 'gameweek' | 'season';
+type ViewType = 'myteam' | 'gameweek' | 'season';
 
 export interface GameweekStats {
   event: number;
@@ -72,10 +73,13 @@ interface Props {
   currentGW: number;
   maxGW: number;
   isCurrentGWLive: boolean;
+  myTeamId: string;
+  myTeamName: string;
+  myManagerName: string;
 }
 
-export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props) {
-  const [view, setView] = useState<ViewType>('gameweek');
+export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId, myTeamName, myManagerName }: Props) {
+  const [view, setView] = useState<ViewType>('myteam');
   const [selectedGW, setSelectedGW] = useState(currentGW);
   const [stats, setStats] = useState<GameweekStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -113,6 +117,12 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
       <div className={styles.header}>
         {/* View Toggle */}
         <div className={styles.viewToggle}>
+          <button
+            className={`${styles.viewButton} ${view === 'myteam' ? styles.active : ''}`}
+            onClick={() => setView('myteam')}
+          >
+            {myTeamName}
+          </button>
           <button
             className={`${styles.viewButton} ${view === 'gameweek' ? styles.active : ''}`}
             onClick={() => setView('gameweek')}
@@ -181,6 +191,16 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive }: Props)
             </div>
           )}
         </>
+      )}
+
+      {/* My Team View */}
+      {view === 'myteam' && (
+        <MyTeamView
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          myTeamName={myTeamName}
+          myManagerName={myManagerName}
+        />
       )}
 
       {/* Season View */}

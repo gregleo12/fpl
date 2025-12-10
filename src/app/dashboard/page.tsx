@@ -274,6 +274,8 @@ export default function DashboardPage() {
           <StatsTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
+            myTeamName={state.myTeamName}
+            myManagerName={state.myManagerName}
           />
         )}
         {activeTab === 'settings' && (

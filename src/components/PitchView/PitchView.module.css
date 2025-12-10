@@ -1,0 +1,275 @@
+.container {
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.loading,
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Overall Stats */
+.overallStats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statBox {
+  flex: 1;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* GW Selector */
+.gwSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gwButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gwButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.gwButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gwDisplay {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* GW Stats */
+.gwStats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gwStatBox {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gwStatValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.gwStatLabel {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gwStatCost {
+  font-size: 0.7rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Formation Badge */
+.formationBadge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Pitch */
+.pitch {
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 50%, #16a34a 100%);
+  border-radius: 16px;
+  padding: 1.5rem 0.5rem;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add subtle pitch lines */
+.pitch::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-50%);
+}
+
+.pitchRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.pitchRow:last-child {
+  margin-bottom: 0;
+}
+
+/* Bench */
+.bench {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.benchLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+}
+
+.benchRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem;
+  }
+
+  .overallStats {
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .statBox {
+    padding: 0.75rem;
+  }
+
+  .statValue {
+    font-size: 1.25rem;
+  }
+
+  .statLabel {
+    font-size: 0.7rem;
+  }
+
+  .gwSelector {
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .gwButton {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .gwDisplay {
+    font-size: 1rem;
+    min-width: 100px;
+  }
+
+  .gwStats {
+    gap: 0.75rem;
+  }
+
+  .gwStatBox {
+    padding: 0.5rem;
+  }
+
+  .gwStatValue {
+    font-size: 1.1rem;
+  }
+
+  .formationBadge {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .pitch {
+    padding: 1rem 0.25rem;
+    border-radius: 12px;
+  }
+
+  .pitchRow {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .bench {
+    padding: 0.75rem;
+  }
+
+  .benchRow {
+    gap: 0.5rem;
+  }
+}
