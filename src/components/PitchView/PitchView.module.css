@@ -129,15 +129,19 @@
 
 /* Formation Badge */
 .formationBadge {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #fff;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Pitch */
@@ -433,8 +437,11 @@
   }
 
   .formationBadge {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    border-radius: 10px;
   }
 
   .pitch {

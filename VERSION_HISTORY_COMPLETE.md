@@ -1,12 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 186+ versions
-**Current Version:** v2.2.5 (December 10, 2025)
+**Total Releases:** 187+ versions
+**Current Version:** v2.2.6 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.6 - Improve Formation Badge Placement (Dec 10, 2025)
+**UX FIX:** Formation badge now positioned inside pitch area
+- Moved: Formation badge from floating above pitch to top-left corner inside pitch
+- Styled: Smaller, more subtle design with dark background and blur effect
+- Changed: Position from `inline-block` to `absolute` at top-left (1rem, 1rem)
+- Reduced: Font size from 0.85rem to 0.75rem (desktop) and 0.7rem (mobile)
+- Added: Backdrop blur, subtle shadow, and better opacity for modern look
+- Impact: Badge looks intentional and integrated with pitch, not awkwardly floating
+- Files: `src/components/PitchView/PitchView.tsx`, `src/components/PitchView/PitchView.module.css`
 
 ### v2.2.5 - Add Current GW Transfer Details (Dec 10, 2025)
 **FEATURE:** Display detailed transfer information with player names and points

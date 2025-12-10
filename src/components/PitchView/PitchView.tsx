@@ -151,13 +151,13 @@ export function PitchView({ leagueId, myTeamId }: Props) {
         </button>
       </div>
 
-      {/* Formation Display */}
-      <div className={styles.formationBadge}>
-        {formation}
-      </div>
-
       {/* Pitch */}
       <div className={styles.pitch}>
+        {/* Formation Display */}
+        <div className={styles.formationBadge}>
+          {formation}
+        </div>
+
         {/* Pitch markings */}
         <div className={styles.pitchMarkings}>
           {/* Goal frames */}
