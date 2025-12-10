@@ -25,7 +25,8 @@ interface Props {
 
 export function PlayerCard({ player, pick, isBench = false }: Props) {
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
-  const points = player.event_points * pick.multiplier;
+  // For bench players, show their actual points without multiplying by 0
+  const points = isBench ? player.event_points : (player.event_points * pick.multiplier);
   const isPositive = points > 0;
   const isNegative = points < 0;
 

@@ -43,6 +43,22 @@ export async function GET(
 
     const bootstrapData = await bootstrapResponse.json();
 
+    // Fetch live gameweek data for accurate player points
+    const liveResponse = await fetch(
+      `https://fantasy.premierleague.com/api/event/${gw}/live/`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+      }
+    );
+
+    if (!liveResponse.ok) {
+      throw new Error(`Failed to fetch live data: ${liveResponse.status}`);
+    }
+
+    const liveData = await liveResponse.json();
+
     // Fetch entry info for overall stats
     const entryResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/`,
@@ -59,7 +75,13 @@ export async function GET(
 
     const entryData = await entryResponse.json();
 
-    // Create player lookup
+    // Create live points lookup
+    const livePointsLookup: { [key: number]: number } = {};
+    liveData.elements.forEach((element: any) => {
+      livePointsLookup[element.id] = element.stats.total_points || 0;
+    });
+
+    // Create player lookup with live points
     const playerLookup: { [key: number]: any } = {};
     bootstrapData.elements.forEach((player: any) => {
       playerLookup[player.id] = {
@@ -68,7 +90,7 @@ export async function GET(
         team: player.team,
         team_code: player.team_code,
         element_type: player.element_type,
-        event_points: player.event_points || 0
+        event_points: livePointsLookup[player.id] || 0
       };
     });
 
