@@ -104,10 +104,6 @@
   cursor: pointer;
   user-select: none;
   transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
 }
 
 .table th.sortable:hover {
@@ -119,6 +115,7 @@
   font-size: 0.9rem;
   opacity: 0.6;
   transition: opacity 0.2s ease;
+  margin-left: 0.5rem;
 }
 
 .table th.sortable:hover .sortIcon {

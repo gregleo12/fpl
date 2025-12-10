@@ -135,32 +135,25 @@ export default function AdminLeaguesPage() {
             <thead>
               <tr>
                 <th onClick={() => handleSort('league_name')} className={styles.sortable}>
-                  <span>League</span>
-                  <span className={styles.sortIcon}>{getSortIcon('league_name')}</span>
+                  League <span className={styles.sortIcon}>{getSortIcon('league_name')}</span>
                 </th>
                 <th onClick={() => handleSort('team_count')} className={styles.sortable}>
-                  <span>Teams</span>
-                  <span className={styles.sortIcon}>{getSortIcon('team_count')}</span>
+                  Teams <span className={styles.sortIcon}>{getSortIcon('team_count')}</span>
                 </th>
                 <th onClick={() => handleSort('total_requests')} className={styles.sortable}>
-                  <span>Requests</span>
-                  <span className={styles.sortIcon}>{getSortIcon('total_requests')}</span>
+                  Requests <span className={styles.sortIcon}>{getSortIcon('total_requests')}</span>
                 </th>
                 <th onClick={() => handleSort('unique_users')} className={styles.sortable}>
-                  <span>Users</span>
-                  <span className={styles.sortIcon}>{getSortIcon('unique_users')}</span>
+                  Users <span className={styles.sortIcon}>{getSortIcon('unique_users')}</span>
                 </th>
                 <th onClick={() => handleSort('unique_managers')} className={styles.sortable}>
-                  <span>Managers</span>
-                  <span className={styles.sortIcon}>{getSortIcon('unique_managers')}</span>
+                  Managers <span className={styles.sortIcon}>{getSortIcon('unique_managers')}</span>
                 </th>
                 <th onClick={() => handleSort('last_seen')} className={styles.sortable}>
-                  <span>Last Seen</span>
-                  <span className={styles.sortIcon}>{getSortIcon('last_seen')}</span>
+                  Last Seen <span className={styles.sortIcon}>{getSortIcon('last_seen')}</span>
                 </th>
                 <th onClick={() => handleSort('first_seen')} className={styles.sortable}>
-                  <span>First Seen</span>
-                  <span className={styles.sortIcon}>{getSortIcon('first_seen')}</span>
+                  First Seen <span className={styles.sortIcon}>{getSortIcon('first_seen')}</span>
                 </th>
               </tr>
             </thead>
