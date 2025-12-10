@@ -141,7 +141,7 @@
 
 /* Pitch */
 .pitch {
-  background: linear-gradient(180deg, #16a34a 0%, #15803d 50%, #16a34a 100%);
+  background: #108043;
   border-radius: 16px;
   padding: 1.5rem 0.5rem;
   margin-bottom: 1rem;
@@ -151,16 +151,195 @@
   overflow: hidden;
 }
 
-/* Add subtle pitch lines */
+/* Grass stripes */
 .pitch::before {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 0;
   left: 0;
   right: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.15);
+  bottom: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    #108043 0px,
+    #108043 60px,
+    #0e7039 60px,
+    #0e7039 120px
+  );
+  z-index: 0;
+}
+
+/* Halfway line */
+.pitch::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  right: 5%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.4);
   transform: translateY(-50%);
+  z-index: 1;
+}
+
+/* Pitch markings container */
+.pitchMarkings {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Center circle */
+.centerCircle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.centerSpot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Penalty boxes - top */
+.penaltyBoxTop {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: none;
+}
+
+.goalAreaTop {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 35px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: none;
+}
+
+.penaltySpotTop {
+  position: absolute;
+  top: 55px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* Penalty boxes - bottom */
+.penaltyBoxBottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 80px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: none;
+}
+
+.goalAreaBottom {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 35px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-bottom: none;
+}
+
+.penaltySpotBottom {
+  position: absolute;
+  bottom: 55px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+/* Corner arcs */
+.cornerArc {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+}
+
+.cornerArc.topLeft {
+  top: -8px;
+  left: 5%;
+  border-right: none;
+  border-bottom: none;
+}
+
+.cornerArc.topRight {
+  top: -8px;
+  right: 5%;
+  border-left: none;
+  border-bottom: none;
+}
+
+.cornerArc.bottomLeft {
+  bottom: -8px;
+  left: 5%;
+  border-right: none;
+  border-top: none;
+}
+
+.cornerArc.bottomRight {
+  bottom: -8px;
+  right: 5%;
+  border-left: none;
+  border-top: none;
+}
+
+/* Goal frames */
+.goalFrame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.goalFrame.top {
+  top: -2px;
+  border-top: none;
+}
+
+.goalFrame.bottom {
+  bottom: -2px;
+  border-bottom: none;
 }
 
 .pitchRow {
@@ -169,6 +348,8 @@
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
 }
 
 .pitchRow:last-child {

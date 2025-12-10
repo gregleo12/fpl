@@ -173,6 +173,33 @@ export function PitchView({ leagueId, myTeamId }: Props) {
 
       {/* Pitch */}
       <div className={styles.pitch}>
+        {/* Pitch markings */}
+        <div className={styles.pitchMarkings}>
+          {/* Goal frames */}
+          <div className={`${styles.goalFrame} ${styles.top}`}></div>
+          <div className={`${styles.goalFrame} ${styles.bottom}`}></div>
+
+          {/* Penalty boxes and goal areas - top */}
+          <div className={styles.penaltyBoxTop}></div>
+          <div className={styles.goalAreaTop}></div>
+          <div className={styles.penaltySpotTop}></div>
+
+          {/* Penalty boxes and goal areas - bottom */}
+          <div className={styles.penaltyBoxBottom}></div>
+          <div className={styles.goalAreaBottom}></div>
+          <div className={styles.penaltySpotBottom}></div>
+
+          {/* Center circle and spot */}
+          <div className={styles.centerCircle}></div>
+          <div className={styles.centerSpot}></div>
+
+          {/* Corner arcs */}
+          <div className={`${styles.cornerArc} ${styles.topLeft}`}></div>
+          <div className={`${styles.cornerArc} ${styles.topRight}`}></div>
+          <div className={`${styles.cornerArc} ${styles.bottomLeft}`}></div>
+          <div className={`${styles.cornerArc} ${styles.bottomRight}`}></div>
+        </div>
+
         {/* Goalkeepers */}
         <div className={styles.pitchRow}>
           {goalkeepers.map(pick => {
