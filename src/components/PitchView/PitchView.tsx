@@ -31,8 +31,6 @@ export function PitchView({ leagueId, myTeamId }: Props) {
   const [maxGW, setMaxGW] = useState<number>(1);
   const [picks, setPicks] = useState<Player[]>([]);
   const [playerData, setPlayerData] = useState<{[key: number]: PlayerInfo}>({});
-  const [overallPoints, setOverallPoints] = useState<number>(0);
-  const [overallRank, setOverallRank] = useState<number>(0);
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [transfers, setTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -78,8 +76,6 @@ export function PitchView({ leagueId, myTeamId }: Props) {
         setPlayerData(data.playerData);
         setGwPoints(data.gwPoints);
         setTransfers(data.transfers);
-        setOverallPoints(data.overallPoints);
-        setOverallRank(data.overallRank);
 
       } catch (err: any) {
         setError(err.message || 'Failed to load team data');
@@ -134,20 +130,6 @@ export function PitchView({ leagueId, myTeamId }: Props) {
 
   return (
     <div className={styles.container}>
-      {/* Overall Stats */}
-      <div className={styles.overallStats}>
-        <div className={styles.statBox}>
-          <div className={styles.statValue}>{overallPoints.toLocaleString()}</div>
-          <div className={styles.statLabel}>Overall Points</div>
-        </div>
-        <div className={styles.statBox}>
-          <div className={styles.statValue}>
-            {overallRank > 0 ? `▲ ${overallRank.toLocaleString()}` : '-'}
-          </div>
-          <div className={styles.statLabel}>Overall Rank</div>
-        </div>
-      </div>
-
       {/* GW Selector */}
       <div className={styles.gwSelector}>
         <button

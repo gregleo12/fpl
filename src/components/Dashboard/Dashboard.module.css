@@ -879,3 +879,28 @@
     box-shadow: 0 0 0 8px rgba(255, 71, 87, 0);
   }
 }
+
+/* Pitch View Two-Column Layout */
+.pitchViewLayout {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* Desktop: Two columns */
+@media (min-width: 1024px) {
+  .pitchViewLayout {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    gap: 1.5rem;
+    align-items: start;
+  }
+}
+
+/* Tablet and Mobile: Single column */
+@media (max-width: 1023px) {
+  .pitchViewLayout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}

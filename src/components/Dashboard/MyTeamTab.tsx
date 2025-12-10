@@ -2,6 +2,7 @@
 
 import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
+import { StatsPanel } from '@/components/PitchView/StatsPanel';
 
 interface Props {
   data: any;
@@ -14,7 +15,7 @@ interface Props {
   onBackToMyTeam?: () => void;
 }
 
-export default function MyTeamTab({ leagueId, myTeamId, isViewingOther, onBackToMyTeam }: Props) {
+export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
   return (
     <div className={styles.myTeamTab}>
       {/* Back to My Team button */}
@@ -47,8 +48,19 @@ export default function MyTeamTab({ leagueId, myTeamId, isViewingOther, onBackTo
         </button>
       )}
 
-      {/* Pitch View */}
-      <PitchView leagueId={leagueId} myTeamId={myTeamId} />
+      {/* Two-column layout */}
+      <div className={styles.pitchViewLayout}>
+        {/* Left: Stats Panel */}
+        <StatsPanel
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          myTeamName={myTeamName}
+          myManagerName={myManagerName}
+        />
+
+        {/* Right: Pitch View */}
+        <PitchView leagueId={leagueId} myTeamId={myTeamId} />
+      </div>
     </div>
   );
 }
