@@ -75,6 +75,12 @@
   color: #fff;
 }
 
+.transferCost {
+  font-size: 0.85rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .panel {
