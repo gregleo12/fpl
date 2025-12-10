@@ -19,24 +19,36 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
+  const [transfersTotal, setTransfersTotal] = useState<number>(0);
+  const [transfersHits, setTransfersHits] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchStats() {
       try {
         // Fetch entry info for overall stats and team value
-        const response = await fetch(`/api/team/${myTeamId}/info`);
-        if (!response.ok) throw new Error('Failed to fetch stats');
+        const [infoResponse, transfersResponse] = await Promise.all([
+          fetch(`/api/team/${myTeamId}/info`),
+          fetch(`/api/team/${myTeamId}/transfers`)
+        ]);
 
-        const data = await response.json();
-        setOverallPoints(data.overallPoints);
-        setOverallRank(data.overallRank);
-        setTeamValue(data.teamValue);
-        setBank(data.bank);
-        setTotalPlayers(data.totalPlayers);
-        setGwPoints(data.gwPoints);
-        setGwRank(data.gwRank);
-        setGwTransfers(data.gwTransfers);
+        if (!infoResponse.ok) throw new Error('Failed to fetch team info');
+
+        const infoData = await infoResponse.json();
+        setOverallPoints(infoData.overallPoints);
+        setOverallRank(infoData.overallRank);
+        setTeamValue(infoData.teamValue);
+        setBank(infoData.bank);
+        setTotalPlayers(infoData.totalPlayers);
+        setGwPoints(infoData.gwPoints);
+        setGwRank(infoData.gwRank);
+        setGwTransfers(infoData.gwTransfers);
+
+        if (transfersResponse.ok) {
+          const transfersData = await transfersResponse.json();
+          setTransfersTotal(transfersData.totalTransfers);
+          setTransfersHits(transfersData.totalHits);
+        }
       } catch (err) {
         console.error('Error fetching stats:', err);
       } finally {
@@ -110,6 +122,22 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
         <div className={styles.statRow}>
           <span className={styles.statLabel}>In Bank</span>
           <span className={styles.statValue}>£{(bank / 10).toFixed(1)}m</span>
+        </div>
+      </div>
+
+      {/* Transfers Summary */}
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Transfers</h3>
+        <div className={styles.statRow}>
+          <span className={styles.statLabel}>Season Total</span>
+          <span className={styles.statValue}>{transfersTotal}</span>
+        </div>
+        <div className={styles.statRow}>
+          <span className={styles.statLabel}>Hits Taken</span>
+          <span className={styles.statValue}>
+            {transfersHits}
+            {transfersHits > 0 && <span className={styles.transferCost}> (-{transfersHits * 4}pts)</span>}
+          </span>
         </div>
       </div>
     </div>
