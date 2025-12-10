@@ -30,7 +30,7 @@ export async function GET() {
       )
       SELECT
         ls.league_id::integer,
-        'League ' || ls.league_id as league_name,
+        COALESCE(l.name, 'League ' || ls.league_id) as league_name,
         COALESCE(lt.team_count, 0)::integer as team_count,
         ls.total_requests::integer,
         ls.unique_users::integer,
@@ -40,6 +40,7 @@ export async function GET() {
         ls.first_seen as created_at
       FROM league_stats ls
       LEFT JOIN league_teams lt ON ls.league_id = lt.league_id
+      LEFT JOIN h2h_leagues l ON ls.league_id = l.id
       ORDER BY ls.total_requests DESC
     `);
 
