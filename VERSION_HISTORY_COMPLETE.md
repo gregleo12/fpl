@@ -1,8 +1,25 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 188+ versions
-**Current Version:** v2.2.7 (December 10, 2025)
+**Total Releases:** 189+ versions
+**Current Version:** v2.3.0 (December 10, 2025)
+
+---
+
+## 🎨 v2.3.x - My Team UI Polish & Mobile Optimization (Dec 2025)
+
+### v2.3.0 - Add Collapsible Sections & Compact Mobile Layout (Dec 10, 2025)
+**UI POLISH:** Improved stats panel with collapsible sections for better mobile experience
+- Added: Collapsible sections on mobile (tap to expand/collapse)
+- Desktop: Sections always open with cleaner header styling
+- Mobile: "This Gameweek" open by default, others collapsed to reduce scrolling
+- Sections: This Gameweek, Overall, Squad Value, Transfers, GW Transfers
+- Added: Hover states and tap affordance for future interactivity
+- Styling: More compact desktop padding (1.5rem → 1.25rem)
+- Styling: Mobile padding reduced (1.5rem → 1rem)
+- Impact: Mobile users no longer scroll through massive stats block to reach pitch
+- Impact: Cleaner, more organized information architecture
+- Files: `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
 
 ---
 

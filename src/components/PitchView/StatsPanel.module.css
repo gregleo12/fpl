@@ -5,8 +5,22 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   height: fit-content;
-  position: sticky;
-  top: 1rem;
+}
+
+/* Desktop: Sticky panel */
+@media (min-width: 1024px) {
+  .panel {
+    position: sticky;
+    top: 1rem;
+    padding: 1.25rem;
+  }
+}
+
+/* Mobile: More compact */
+@media (max-width: 1023px) {
+  .panel {
+    padding: 1rem;
+  }
 }
 
 .loading {
@@ -131,6 +145,69 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #fff;
+}
+
+/* Collapsible Sections */
+.collapsibleSection {
+  margin-bottom: 0.75rem;
+}
+
+.sectionToggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #fff;
+}
+
+.sectionToggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.toggleIcon {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: transform 0.2s;
+}
+
+.sectionContent {
+  padding-top: 0.75rem;
+}
+
+/* Desktop: Sections always open, no collapse UI */
+@media (min-width: 1024px) {
+  .collapsibleSection {
+    margin-bottom: 1.5rem;
+  }
+
+  .sectionToggle {
+    pointer-events: none;
+    background: transparent;
+    border: none;
+    padding: 0 0 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+  }
+
+  .sectionToggle:hover {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .toggleIcon {
+    display: none;
+  }
+
+  .sectionContent {
+    display: block !important;
+  }
 }
 
 /* Responsive */

@@ -3,15 +3,44 @@
 import { useState, useEffect } from 'react';
 import styles from './StatsPanel.module.css';
 
+interface CollapsibleSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+function CollapsibleSection({ title, children, defaultOpen = false }: CollapsibleSectionProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={styles.collapsibleSection}>
+      <button
+        className={styles.sectionToggle}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <span className={styles.sectionTitle}>{title}</span>
+        <span className={styles.toggleIcon}>{isOpen ? '▼' : '▶'}</span>
+      </button>
+      {isOpen && (
+        <div className={styles.sectionContent}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface Props {
   leagueId: string;
   myTeamId: string;
   myTeamName: string;
   myManagerName: string;
   selectedGW: number;
+  mode?: 'desktop' | 'mobile-top' | 'mobile-bottom';
 }
 
-export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW }: Props) {
+export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'desktop' }: Props) {
   const [overallPoints, setOverallPoints] = useState<number>(0);
   const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
@@ -84,9 +113,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         <p className={styles.teamName}>{myTeamName}</p>
       </div>
 
-      {/* Current GW Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>This Gameweek</h3>
+      {/* This Gameweek */}
+      <CollapsibleSection title="This Gameweek" defaultOpen={true}>
         <div className={styles.statRow}>
           <span className={styles.statLabel}>Points</span>
           <span className={styles.statValue}>{gwPoints}</span>
@@ -110,11 +138,10 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <span className={styles.statLabel}>Highest Points</span>
           <span className={styles.statValue}>{highestPoints}</span>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Overall Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Overall</h3>
+      <CollapsibleSection title="Overall" defaultOpen={false}>
         <div className={styles.statRow}>
           <span className={styles.statLabel}>Points</span>
           <span className={styles.statValue}>{overallPoints.toLocaleString()}</span>
@@ -127,11 +154,10 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <span className={styles.statLabel}>Total Players</span>
           <span className={styles.statValue}>{totalPlayers > 0 ? `${(totalPlayers / 1000000).toFixed(1)}M` : '-'}</span>
         </div>
-      </div>
+      </CollapsibleSection>
 
-      {/* Team Value */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Squad Value</h3>
+      {/* Squad Value */}
+      <CollapsibleSection title="Squad Value" defaultOpen={false}>
         <div className={styles.statRow}>
           <span className={styles.statLabel}>Team Value</span>
           <span className={styles.statValue}>£{(teamValue / 10).toFixed(1)}m</span>
@@ -140,11 +166,10 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <span className={styles.statLabel}>In Bank</span>
           <span className={styles.statValue}>£{(bank / 10).toFixed(1)}m</span>
         </div>
-      </div>
+      </CollapsibleSection>
 
-      {/* Transfers Summary */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Transfers</h3>
+      {/* Transfers */}
+      <CollapsibleSection title="Transfers" defaultOpen={false}>
         <div className={styles.statRow}>
           <span className={styles.statLabel}>Season Total</span>
           <span className={styles.statValue}>{transfersTotal}</span>
@@ -156,12 +181,11 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
             {transfersHits > 0 && <span className={styles.transferCost}> (-{transfersHits * 4}pts)</span>}
           </span>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Current GW Transfer Details */}
       {currentGWTransfers.length > 0 && (
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>GW{currentGW} Transfers</h3>
+        <CollapsibleSection title={`GW${currentGW} Transfers`} defaultOpen={false}>
           <div className={styles.transferDetail}>
             {currentGWTransfers.map((transfer, index) => {
               const netGain = transfer.netGain;
@@ -197,7 +221,7 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
               );
             })}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
     </div>
   );
