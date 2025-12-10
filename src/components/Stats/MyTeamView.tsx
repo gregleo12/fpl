@@ -319,7 +319,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                     const yourScore = match?.playerPoints || 0;
                     return (
                       <tr key={idx}>
-                        <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.opponentChip)}</span></td>
+                        <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.chipName)}</span></td>
                         <td>GW{chip.event}</td>
                         <td>{shortenManagerName(chip.opponentName)}</td>
                         <td>
