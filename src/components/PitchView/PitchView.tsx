@@ -65,46 +65,21 @@ export function PitchView({ leagueId, myTeamId }: Props) {
       setError('');
 
       try {
-        // Fetch user's picks for the selected GW
-        const picksResponse = await fetch(
-          `https://fantasy.premierleague.com/api/entry/${myTeamId}/event/${selectedGW}/picks/`
-        );
-        if (!picksResponse.ok) throw new Error('Failed to fetch picks');
-        const picksData = await picksResponse.json();
+        // Fetch data from our proxy API endpoint
+        const response = await fetch(`/api/team/${myTeamId}/gameweek/${selectedGW}`);
 
-        // Fetch bootstrap data for player info
-        const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-        if (!bootstrapResponse.ok) throw new Error('Failed to fetch player data');
-        const bootstrapData = await bootstrapResponse.json();
+        if (!response.ok) {
+          throw new Error('Failed to fetch team data');
+        }
 
-        // Create player lookup
-        const playerLookup: {[key: number]: PlayerInfo} = {};
-        bootstrapData.elements.forEach((player: any) => {
-          playerLookup[player.id] = {
-            id: player.id,
-            web_name: player.web_name,
-            team: player.team,
-            team_code: player.team_code,
-            element_type: player.element_type,
-            event_points: player.event_points || 0
-          };
-        });
+        const data = await response.json();
 
-        setPicks(picksData.picks);
-        setPlayerData(playerLookup);
-        setGwPoints(picksData.entry_history.points);
-        setTransfers({
-          count: picksData.entry_history.event_transfers,
-          cost: picksData.entry_history.event_transfers_cost
-        });
-
-        // Fetch entry info for overall stats
-        const entryResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${myTeamId}/`);
-        if (!entryResponse.ok) throw new Error('Failed to fetch entry info');
-        const entryData = await entryResponse.json();
-
-        setOverallPoints(entryData.summary_overall_points);
-        setOverallRank(entryData.summary_overall_rank);
+        setPicks(data.picks);
+        setPlayerData(data.playerData);
+        setGwPoints(data.gwPoints);
+        setTransfers(data.transfers);
+        setOverallPoints(data.overallPoints);
+        setOverallRank(data.overallRank);
 
       } catch (err: any) {
         setError(err.message || 'Failed to load team data');

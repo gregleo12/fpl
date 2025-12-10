@@ -323,7 +323,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                         <td>GW{chip.event}</td>
                         <td>{shortenManagerName(chip.opponentName)}</td>
                         <td>
-                          {yourScore}-{chip.opponentScore}
+                          {yourScore}-{chip.opponentPoints}
                         </td>
                         <td>
                           <span className={`${styles.resultBadge} ${
