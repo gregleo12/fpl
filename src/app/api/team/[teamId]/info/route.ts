@@ -26,7 +26,7 @@ export async function GET(
 
     const entryData = await entryResponse.json();
 
-    // Fetch bootstrap data for total players count
+    // Fetch bootstrap data for total players count and current GW
     const bootstrapResponse = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
       {
@@ -44,10 +44,32 @@ export async function GET(
     const bootstrapData = await bootstrapResponse.json();
     const totalPlayers = bootstrapData.total_players || 0;
 
-    // Get current GW stats
+    // Get current GW from bootstrap data
     const currentGW = entryData.current_event || 1;
-    const gwHistory = entryData.history || [];
-    const currentGWData = gwHistory.find((h: any) => h.event === currentGW) || {};
+
+    // Fetch picks for current GW to get entry_history with GW stats
+    const picksResponse = await fetch(
+      `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+      }
+    );
+
+    let gwPoints = 0;
+    let gwRank = 0;
+    let gwTransfers = { count: 0, cost: 0 };
+
+    if (picksResponse.ok) {
+      const picksData = await picksResponse.json();
+      gwPoints = picksData.entry_history?.points || 0;
+      gwRank = picksData.entry_history?.rank || 0;
+      gwTransfers = {
+        count: picksData.entry_history?.event_transfers || 0,
+        cost: picksData.entry_history?.event_transfers_cost || 0
+      };
+    }
 
     return NextResponse.json({
       overallPoints: entryData.summary_overall_points || 0,
@@ -55,12 +77,9 @@ export async function GET(
       teamValue: entryData.last_deadline_value || 0,
       bank: entryData.last_deadline_bank || 0,
       totalPlayers: totalPlayers,
-      gwPoints: currentGWData.points || 0,
-      gwRank: currentGWData.rank || 0,
-      gwTransfers: {
-        count: currentGWData.event_transfers || 0,
-        cost: currentGWData.event_transfers_cost || 0
-      }
+      gwPoints: gwPoints,
+      gwRank: gwRank,
+      gwTransfers: gwTransfers
     });
   } catch (error: any) {
     console.error('Error fetching team info:', error);
