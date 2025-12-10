@@ -64,7 +64,7 @@ export function PlayerCard({ player, pick, isBench = false }: Props) {
         isNegative ? styles.negative :
         ''
       }`}>
-        {points > 0 ? `+${points}` : points}
+        {points}
       </div>
     </div>
   );
