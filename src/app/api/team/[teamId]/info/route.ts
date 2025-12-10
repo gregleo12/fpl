@@ -9,6 +9,8 @@ export async function GET(
 ) {
   try {
     const { teamId } = params;
+    const { searchParams } = new URL(request.url);
+    const gwParam = searchParams.get('gw');
 
     // Fetch entry info
     const entryResponse = await fetch(
@@ -44,15 +46,15 @@ export async function GET(
     const bootstrapData = await bootstrapResponse.json();
     const totalPlayers = bootstrapData.total_players || 0;
 
-    // Get current GW from bootstrap data
-    const currentGW = entryData.current_event || 1;
+    // Get current GW from bootstrap data or use provided GW
+    const currentGW = gwParam ? parseInt(gwParam) : (entryData.current_event || 1);
 
     // Get FPL-wide stats for current GW from events array
     const currentEvent = bootstrapData.events?.[currentGW - 1];
     const averagePoints = currentEvent?.average_entry_score || 0;
     const highestPoints = currentEvent?.highest_score || 0;
 
-    // Fetch picks for current GW to get entry_history with GW stats
+    // Fetch picks for selected GW to get entry_history with GW stats
     const picksResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
       {

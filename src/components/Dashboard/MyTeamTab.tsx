@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
@@ -16,6 +17,27 @@ interface Props {
 }
 
 export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
+  const [selectedGW, setSelectedGW] = useState<number>(1);
+  const [maxGW, setMaxGW] = useState<number>(1);
+
+  // Fetch current GW and max GW
+  useEffect(() => {
+    async function fetchLeagueInfo() {
+      try {
+        const response = await fetch(`/api/league/${leagueId}/stats`);
+        if (!response.ok) throw new Error('Failed to fetch league info');
+        const data = await response.json();
+        const currentGW = data.isCurrentGWLive ? data.liveGameweekNumber : (data.activeGW || 1);
+        setSelectedGW(currentGW);
+        setMaxGW(data.maxGW || 1);
+      } catch (err: any) {
+        console.error('Error fetching league info:', err);
+      }
+    }
+
+    fetchLeagueInfo();
+  }, [leagueId]);
+
   return (
     <div className={styles.myTeamTab}>
       {/* Back to My Team button */}
@@ -56,10 +78,17 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           myTeamId={myTeamId}
           myTeamName={myTeamName}
           myManagerName={myManagerName}
+          selectedGW={selectedGW}
         />
 
         {/* Right: Pitch View */}
-        <PitchView leagueId={leagueId} myTeamId={myTeamId} />
+        <PitchView
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          selectedGW={selectedGW}
+          maxGW={maxGW}
+          onGWChange={setSelectedGW}
+        />
       </div>
     </div>
   );

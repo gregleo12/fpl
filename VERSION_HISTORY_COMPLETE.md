@@ -1,12 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 187+ versions
-**Current Version:** v2.2.6 (December 10, 2025)
+**Total Releases:** 188+ versions
+**Current Version:** v2.2.7 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.7 - Sync Left Panel with Gameweek Selection (Dec 10, 2025)
+**FEATURE:** Left panel stats now update when gameweek changes
+- Fixed: StatsPanel now syncs with selected GW from arrow navigation
+- Lifted: GW state from PitchView to MyTeamTab for shared control
+- Added: `selectedGW` prop to both StatsPanel and PitchView
+- Added: GW query parameter support to `/api/team/[teamId]/info` route
+- Flow: Arrow click → MyTeamTab state update → both panels refetch with new GW
+- Impact: Users can now view historical GW stats in left panel, not just current GW
+- Files: `src/components/Dashboard/MyTeamTab.tsx`, `src/components/PitchView/PitchView.tsx`, `src/components/PitchView/StatsPanel.tsx`, `src/app/api/team/[teamId]/info/route.ts`
 
 ### v2.2.6 - Improve Formation Badge Placement (Dec 10, 2025)
 **UX FIX:** Formation badge now positioned inside pitch area

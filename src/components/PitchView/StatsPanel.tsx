@@ -8,9 +8,10 @@ interface Props {
   myTeamId: string;
   myTeamName: string;
   myManagerName: string;
+  selectedGW: number;
 }
 
-export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Props) {
+export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW }: Props) {
   const [overallPoints, setOverallPoints] = useState<number>(0);
   const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
@@ -32,7 +33,7 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
       try {
         // Fetch entry info for overall stats and team value
         const [infoResponse, transfersResponse] = await Promise.all([
-          fetch(`/api/team/${myTeamId}/info`),
+          fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`),
           fetch(`/api/team/${myTeamId}/transfers`)
         ]);
 
@@ -65,7 +66,7 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
     }
 
     fetchStats();
-  }, [myTeamId]);
+  }, [myTeamId, selectedGW]);
 
   if (isLoading) {
     return (

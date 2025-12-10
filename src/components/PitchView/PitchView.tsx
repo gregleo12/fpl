@@ -24,35 +24,18 @@ interface PlayerInfo {
 interface Props {
   leagueId: string;
   myTeamId: string;
+  selectedGW: number;
+  maxGW: number;
+  onGWChange: (gw: number) => void;
 }
 
-export function PitchView({ leagueId, myTeamId }: Props) {
-  const [selectedGW, setSelectedGW] = useState<number>(1);
-  const [maxGW, setMaxGW] = useState<number>(1);
+export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange }: Props) {
   const [picks, setPicks] = useState<Player[]>([]);
   const [playerData, setPlayerData] = useState<{[key: number]: PlayerInfo}>({});
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [transfers, setTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Fetch current GW and max GW
-  useEffect(() => {
-    async function fetchLeagueInfo() {
-      try {
-        const response = await fetch(`/api/league/${leagueId}/stats`);
-        if (!response.ok) throw new Error('Failed to fetch league info');
-        const data = await response.json();
-        const currentGW = data.isCurrentGWLive ? data.liveGameweekNumber : (data.activeGW || 1);
-        setSelectedGW(currentGW);
-        setMaxGW(data.maxGW || 1);
-      } catch (err: any) {
-        console.error('Error fetching league info:', err);
-      }
-    }
-
-    fetchLeagueInfo();
-  }, [leagueId]);
 
   // Fetch team data for selected GW
   useEffect(() => {
@@ -134,7 +117,7 @@ export function PitchView({ leagueId, myTeamId }: Props) {
       <div className={styles.gwSelector}>
         <button
           className={styles.gwButton}
-          onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
+          onClick={() => onGWChange(Math.max(1, selectedGW - 1))}
           disabled={selectedGW <= 1}
         >
           ←
@@ -144,7 +127,7 @@ export function PitchView({ leagueId, myTeamId }: Props) {
         </div>
         <button
           className={styles.gwButton}
-          onClick={() => setSelectedGW(Math.min(maxGW, selectedGW + 1))}
+          onClick={() => onGWChange(Math.min(maxGW, selectedGW + 1))}
           disabled={selectedGW >= maxGW}
         >
           →
