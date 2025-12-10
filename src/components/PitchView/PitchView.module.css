@@ -174,7 +174,7 @@
 .pitch::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 35%;
   left: 5%;
   right: 5%;
   height: 2px;
@@ -197,7 +197,7 @@
 /* Center circle */
 .centerCircle {
   position: absolute;
-  top: 50%;
+  top: 35%;
   left: 50%;
   width: 120px;
   height: 120px;
@@ -208,7 +208,7 @@
 
 .centerSpot {
   position: absolute;
-  top: 50%;
+  top: 35%;
   left: 50%;
   width: 8px;
   height: 8px;

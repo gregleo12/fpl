@@ -1,12 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 182+ versions
-**Current Version:** v2.2.1 (December 10, 2025)
+**Total Releases:** 183+ versions
+**Current Version:** v2.2.2 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.2 - Fix Pitch Markings Alignment (Dec 10, 2025)
+**UX FIX:** Pitch markings now properly positioned relative to player rows
+- Fixed: Halfway line moved from 50% to 35% from top
+- Fixed: Center circle repositioned to 35% (aligned with halfway line)
+- Fixed: Center spot repositioned to 35% (aligned with halfway line)
+- Result: Halfway line now clearly between defenders and midfielders
+- Result: Center circle no longer cuts through defender row
+- Impact: Pitch looks like actual football pitch with proper perspective
+- Files: `src/components/PitchView/PitchView.module.css`
 
 ### v2.2.1 - Negative Scores & Bigger Player Cards (Dec 10, 2025)
 **UX IMPROVEMENTS:** Enhanced fixtures and pitch view display
