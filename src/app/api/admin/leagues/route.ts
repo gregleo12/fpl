@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const db = await getDatabase();
 
-    // Fetch all leagues with their metadata from analytics_requests and h2h_matches
+    // Fetch all leagues with their metadata from analytics_requests, leagues, and h2h_matches
     const result = await db.query(`
       WITH league_stats AS (
         SELECT
@@ -30,7 +30,7 @@ export async function GET() {
       )
       SELECT
         ls.league_id::integer,
-        'League ' || ls.league_id as league_name,
+        COALESCE(l.league_name, 'League ' || ls.league_id) as league_name,
         COALESCE(lt.team_count, 0)::integer as team_count,
         ls.total_requests::integer,
         ls.unique_users::integer,
@@ -40,6 +40,7 @@ export async function GET() {
         ls.first_seen as created_at
       FROM league_stats ls
       LEFT JOIN league_teams lt ON ls.league_id = lt.league_id
+      LEFT JOIN leagues l ON ls.league_id = l.league_id
       ORDER BY ls.total_requests DESC
     `);
 

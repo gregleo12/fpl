@@ -51,14 +51,26 @@ export async function trackRequest({
 }
 
 // Update league metadata (name, team count)
-// NOTE: analytics_leagues table doesn't exist, this is a no-op for now
 export async function updateLeagueMetadata(
   leagueId: number,
   leagueName: string,
   teamCount: number
 ): Promise<void> {
-  // No-op - analytics_leagues table removed
-  // League metadata is now computed on-demand from analytics_requests
+  try {
+    const db = await getDatabase();
+    await db.query(`
+      INSERT INTO leagues (league_id, league_name, team_count, updated_at)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (league_id)
+      DO UPDATE SET
+        league_name = $2,
+        team_count = $3,
+        updated_at = NOW()
+    `, [leagueId, leagueName, teamCount]);
+  } catch (error) {
+    console.error('Failed to update league metadata:', error);
+    // Silent fail - don't break the main flow
+  }
 }
 
 /**

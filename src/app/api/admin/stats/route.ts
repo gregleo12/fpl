@@ -80,16 +80,17 @@ export async function GET() {
       // Top 5 leagues by requests (with real-time unique users and managers)
       db.query(`
         SELECT
-          league_id,
-          'League ' || league_id as league_name,
+          ar.league_id,
+          COALESCE(l.league_name, 'League ' || ar.league_id) as league_name,
           COUNT(*) as total_requests,
-          COUNT(DISTINCT user_hash) as total_unique_users,
-          COUNT(DISTINCT selected_team_id) FILTER (WHERE selected_team_id IS NOT NULL) as total_unique_managers,
-          MAX(timestamp) as last_seen,
-          0 as team_count
-        FROM analytics_requests
-        WHERE league_id IS NOT NULL
-        GROUP BY league_id
+          COUNT(DISTINCT ar.user_hash) as total_unique_users,
+          COUNT(DISTINCT ar.selected_team_id) FILTER (WHERE ar.selected_team_id IS NOT NULL) as total_unique_managers,
+          MAX(ar.timestamp) as last_seen,
+          COALESCE(l.team_count, 0) as team_count
+        FROM analytics_requests ar
+        LEFT JOIN leagues l ON ar.league_id = l.league_id
+        WHERE ar.league_id IS NOT NULL
+        GROUP BY ar.league_id, l.league_name, l.team_count
         ORDER BY total_requests DESC
         LIMIT 5
       `),
