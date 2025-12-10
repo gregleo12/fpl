@@ -23,6 +23,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
   const [highestPoints, setHighestPoints] = useState<number>(0);
   const [transfersTotal, setTransfersTotal] = useState<number>(0);
   const [transfersHits, setTransfersHits] = useState<number>(0);
+  const [currentGW, setCurrentGW] = useState<number>(0);
+  const [currentGWTransfers, setCurrentGWTransfers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +54,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
           const transfersData = await transfersResponse.json();
           setTransfersTotal(transfersData.totalTransfers);
           setTransfersHits(transfersData.totalHits);
+          setCurrentGW(transfersData.currentGW || 0);
+          setCurrentGWTransfers(transfersData.currentGWTransfers || []);
         }
       } catch (err) {
         console.error('Error fetching stats:', err);
@@ -152,6 +156,48 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
           </span>
         </div>
       </div>
+
+      {/* Current GW Transfer Details */}
+      {currentGWTransfers.length > 0 && (
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>GW{currentGW} Transfers</h3>
+          <div className={styles.transferDetail}>
+            {currentGWTransfers.map((transfer, index) => {
+              const netGain = transfer.netGain;
+              const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
+              const afterHit = totalNet - gwTransfers.cost;
+
+              return (
+                <div key={index}>
+                  <div className={styles.transferRow}>
+                    <span className={styles.playerOut}>
+                      {transfer.playerOut.web_name} <span className={styles.points}>({transfer.playerOut.points}pts)</span>
+                    </span>
+                    <span className={styles.arrow}>→</span>
+                    <span className={styles.playerIn}>
+                      {transfer.playerIn.web_name} <span className={styles.points}>({transfer.playerIn.points}pts)</span>
+                    </span>
+                    <span className={`${styles.netGain} ${netGain < 0 ? styles.negative : ''}`}>
+                      {netGain > 0 ? '+' : ''}{netGain}
+                    </span>
+                  </div>
+                  {index === currentGWTransfers.length - 1 && (
+                    <>
+                      <div className={styles.transferDivider}></div>
+                      <div className={styles.transferSummary}>
+                        Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
+                        {gwTransfers.cost > 0 && (
+                          <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

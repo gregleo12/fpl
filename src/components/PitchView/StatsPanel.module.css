@@ -81,6 +81,58 @@
   font-weight: 500;
 }
 
+.transferDetail {
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.transferRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.playerOut {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.playerIn {
+  color: #10b981;
+}
+
+.points {
+  font-weight: 600;
+}
+
+.arrow {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.netGain {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.netGain.negative {
+  color: #ef4444;
+}
+
+.transferDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.75rem 0;
+}
+
+.transferSummary {
+  padding-top: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .panel {

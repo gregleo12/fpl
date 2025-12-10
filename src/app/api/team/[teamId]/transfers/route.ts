@@ -43,6 +43,9 @@ export async function GET(
 
     const bootstrapData = await bootstrapResponse.json();
 
+    // Get current GW
+    const currentGW = bootstrapData.events.find((e: any) => e.is_current)?.id || 1;
+
     // Create player lookup
     const playerLookup: { [key: number]: any } = {};
     bootstrapData.elements.forEach((player: any) => {
@@ -69,6 +72,48 @@ export async function GET(
       }
     }));
 
+    // Get current GW transfers
+    const currentGWTransfers = transfers.filter((t: any) => t.event === currentGW);
+
+    // Fetch player points for current GW transfers
+    let currentGWTransfersWithPoints: any[] = [];
+    if (currentGWTransfers.length > 0) {
+      try {
+        const picksResponse = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        if (picksResponse.ok) {
+          const picksData = await picksResponse.json();
+
+          // Create player points lookup from bootstrap data
+          const playerPointsLookup: { [key: number]: number } = {};
+          bootstrapData.elements.forEach((player: any) => {
+            playerPointsLookup[player.id] = player.event_points || 0;
+          });
+
+          currentGWTransfersWithPoints = currentGWTransfers.map((transfer: any) => ({
+            playerOut: {
+              ...playerLookup[transfer.element_out],
+              points: playerPointsLookup[transfer.element_out] || 0
+            },
+            playerIn: {
+              ...playerLookup[transfer.element_in],
+              points: playerPointsLookup[transfer.element_in] || 0
+            },
+            netGain: (playerPointsLookup[transfer.element_in] || 0) - (playerPointsLookup[transfer.element_out] || 0)
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching current GW picks:', err);
+      }
+    }
+
     // Calculate totals
     const totalTransfers = transfers.length;
     const totalHits = transfers.filter((t: any) => t.event !== 1).length;
@@ -76,7 +121,9 @@ export async function GET(
     return NextResponse.json({
       transfers: enrichedTransfers,
       totalTransfers: totalTransfers,
-      totalHits: Math.max(0, Math.floor((totalTransfers - totalHits) / 1)) // Approximate hits
+      totalHits: Math.max(0, Math.floor((totalTransfers - totalHits) / 1)), // Approximate hits
+      currentGW: currentGW,
+      currentGWTransfers: currentGWTransfersWithPoints
     });
   } catch (error: any) {
     console.error('Error fetching transfers:', error);

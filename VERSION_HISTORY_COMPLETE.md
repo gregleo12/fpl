@@ -1,12 +1,23 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 185+ versions
-**Current Version:** v2.2.4 (December 10, 2025)
+**Total Releases:** 186+ versions
+**Current Version:** v2.2.5 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.5 - Add Current GW Transfer Details (Dec 10, 2025)
+**FEATURE:** Display detailed transfer information with player names and points
+- Added: Current GW transfers section showing player-by-player breakdown
+- Display Format: "PlayerOut (Xpts) → PlayerIn (Ypts) = ±Z"
+- Added: Net gain calculation for each transfer
+- Added: Total net gain summary with hit cost factored in
+- Backend: Updated `/api/team/[teamId]/transfers` to fetch player points from bootstrap
+- Frontend: New transfer detail section with styled player names and net gains
+- Impact: Users can now see exactly how their transfers performed in current gameweek
+- Files: `src/app/api/team/[teamId]/transfers/route.ts`, `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
 
 ### v2.2.4 - Add FPL-wide Average and Highest Points (Dec 10, 2025)
 **FEATURE:** Display league-wide statistics in My Team Stats panel
