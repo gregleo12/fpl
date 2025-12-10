@@ -2,6 +2,7 @@
   padding: 1rem;
   max-width: 600px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .loading,
@@ -452,5 +453,36 @@
 
   .benchRow {
     gap: 0.5rem;
+  }
+
+  /* Scale down pitch markings for mobile */
+  .centerCircle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .penaltyBoxTop,
+  .penaltyBoxBottom {
+    width: 160px;
+    height: 60px;
+  }
+
+  .goalAreaTop,
+  .goalAreaBottom {
+    width: 100px;
+    height: 28px;
+  }
+
+  .penaltySpotTop {
+    top: 42px;
+  }
+
+  .penaltySpotBottom {
+    bottom: 42px;
+  }
+
+  .goalFrame {
+    width: 80px;
+    height: 6px;
   }
 }

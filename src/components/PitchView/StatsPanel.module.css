@@ -88,3 +88,47 @@
     margin-bottom: 1.5rem;
   }
 }
+
+@media (max-width: 768px) {
+  .panel {
+    padding: 1rem;
+  }
+
+  .teamHeader {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .managerName {
+    font-size: 1.25rem;
+  }
+
+  .teamName {
+    font-size: 0.85rem;
+  }
+
+  .section {
+    margin-bottom: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .statRow {
+    padding: 0.5rem 0;
+  }
+
+  .statLabel {
+    font-size: 0.85rem;
+  }
+
+  .statValue {
+    font-size: 1rem;
+  }
+
+  .transferCost {
+    font-size: 0.8rem;
+  }
+}
