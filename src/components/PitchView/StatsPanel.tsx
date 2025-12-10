@@ -19,6 +19,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
+  const [averagePoints, setAveragePoints] = useState<number>(0);
+  const [highestPoints, setHighestPoints] = useState<number>(0);
   const [transfersTotal, setTransfersTotal] = useState<number>(0);
   const [transfersHits, setTransfersHits] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +45,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
         setGwPoints(infoData.gwPoints);
         setGwRank(infoData.gwRank);
         setGwTransfers(infoData.gwTransfers);
+        setAveragePoints(infoData.averagePoints);
+        setHighestPoints(infoData.highestPoints);
 
         if (transfersResponse.ok) {
           const transfersData = await transfersResponse.json();
@@ -92,6 +96,14 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
             {gwTransfers.count}
             {gwTransfers.cost > 0 && <span className={styles.transferCost}> (-{gwTransfers.cost}pts)</span>}
           </span>
+        </div>
+        <div className={styles.statRow}>
+          <span className={styles.statLabel}>Average Points</span>
+          <span className={styles.statValue}>{averagePoints}</span>
+        </div>
+        <div className={styles.statRow}>
+          <span className={styles.statLabel}>Highest Points</span>
+          <span className={styles.statValue}>{highestPoints}</span>
         </div>
       </div>
 

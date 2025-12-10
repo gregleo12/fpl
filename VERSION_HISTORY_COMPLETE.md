@@ -1,12 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 184+ versions
-**Current Version:** v2.2.3 (December 10, 2025)
+**Total Releases:** 185+ versions
+**Current Version:** v2.2.4 (December 10, 2025)
 
 ---
 
 ## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.4 - Add FPL-wide Average and Highest Points (Dec 10, 2025)
+**FEATURE:** Display league-wide statistics in My Team Stats panel
+- Added: Average Points row to "This Gameweek" section
+- Added: Highest Points row to "This Gameweek" section
+- Backend: Updated `/api/team/[teamId]/info` to extract stats from bootstrap events array
+- Frontend: Updated StatsPanel to display `averagePoints` and `highestPoints`
+- Data Source: FPL bootstrap-static API events[currentGW-1].average_entry_score and .highest_score
+- Impact: Users can now compare their GW performance against FPL-wide averages
+- Files: `src/app/api/team/[teamId]/info/route.ts`, `src/components/PitchView/StatsPanel.tsx`
 
 ### v2.2.3 - Remove Duplicate Header Stats (Dec 10, 2025)
 **UX CLEANUP:** Removed redundant Points and Transfers boxes from pitch view header

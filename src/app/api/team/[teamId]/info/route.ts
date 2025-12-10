@@ -47,6 +47,11 @@ export async function GET(
     // Get current GW from bootstrap data
     const currentGW = entryData.current_event || 1;
 
+    // Get FPL-wide stats for current GW from events array
+    const currentEvent = bootstrapData.events?.[currentGW - 1];
+    const averagePoints = currentEvent?.average_entry_score || 0;
+    const highestPoints = currentEvent?.highest_score || 0;
+
     // Fetch picks for current GW to get entry_history with GW stats
     const picksResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
@@ -79,7 +84,9 @@ export async function GET(
       totalPlayers: totalPlayers,
       gwPoints: gwPoints,
       gwRank: gwRank,
-      gwTransfers: gwTransfers
+      gwTransfers: gwTransfers,
+      averagePoints: averagePoints,
+      highestPoints: highestPoints
     });
   } catch (error: any) {
     console.error('Error fetching team info:', error);
