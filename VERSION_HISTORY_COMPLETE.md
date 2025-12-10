@@ -1,8 +1,22 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 181+ versions
-**Current Version:** v2.0.20 (December 9, 2025)
+**Total Releases:** 182+ versions
+**Current Version:** v2.2.1 (December 10, 2025)
+
+---
+
+## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.1 - Negative Scores & Bigger Player Cards (Dec 10, 2025)
+**UX IMPROVEMENTS:** Enhanced fixtures and pitch view display
+- Added: Negative fixture scores show in parentheses format (4) instead of -4
+- Reason: Prevents confusing displays like "-4 - 4" → now shows as "(4) - 4"
+- Fixed: Player cards made bigger to prevent name truncation
+- Desktop: Cards 60px → 80px, kits 70px, name max-width 95px
+- Mobile: Cards 50px → 65px, kits 60px, name max-width 80px
+- Impact: Names like "B.Fernandes" and "Woltemade" now display fully
+- Files: `src/components/Fixtures/FixturesTab.tsx`, `src/components/PitchView/PlayerCard.module.css`
 
 ---
 
@@ -931,5 +945,5 @@ Added comprehensive error logging to diagnose failures
 
 ---
 
-**Last Updated:** December 8, 2025
+**Last Updated:** December 10, 2025
 **Maintained By:** Claude Code (automated after every deployment)
