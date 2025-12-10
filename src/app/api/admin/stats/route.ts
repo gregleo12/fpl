@@ -88,7 +88,7 @@ export async function GET() {
           MAX(ar.timestamp) as last_seen,
           0 as team_count
         FROM analytics_requests ar
-        LEFT JOIN h2h_leagues l ON ar.league_id = l.id
+        LEFT JOIN leagues l ON ar.league_id = l.id
         WHERE ar.league_id IS NOT NULL
         GROUP BY ar.league_id, l.name
         ORDER BY total_requests DESC

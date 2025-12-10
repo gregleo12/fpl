@@ -40,7 +40,7 @@ export async function GET() {
         ls.first_seen as created_at
       FROM league_stats ls
       LEFT JOIN league_teams lt ON ls.league_id = lt.league_id
-      LEFT JOIN h2h_leagues l ON ls.league_id = l.id
+      LEFT JOIN leagues l ON ls.league_id = l.id
       ORDER BY ls.total_requests DESC
     `);
 
