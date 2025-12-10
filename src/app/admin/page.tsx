@@ -717,8 +717,8 @@ export default function AdminPage() {
                           style={{ cursor: 'pointer' }}
                         >
                           <td>
-                            <div className={styles.leagueId}>League ID {league.leagueId}</div>
                             <div className={styles.leagueName}>{league.leagueName}</div>
+                            <div className={styles.leagueId}>ID: {league.leagueId}</div>
                           </td>
                           <td>{league.teamCount}</td>
                           <td>{league.totalRequests.toLocaleString()}</td>
