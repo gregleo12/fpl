@@ -2,11 +2,29 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.2 (December 11, 2025)
+**Current Version:** v2.4.3 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.3 - Pitch Redesign - FantasyPL Style Half-Pitch (Dec 11, 2025)
+**MAJOR VISUAL REDESIGN:** Transformed full-pitch view into half-pitch perspective matching official FantasyPL app
+- **Half-Pitch Perspective:** Only shows from goal to midfield (removed full-field view)
+- **Goal Frame Enhanced:** Visible goal frame behind goalkeeper with thicker borders
+- **Bench Integrated:** Bench now part of pitch container (not separate card) with divider line
+- **Removed Elements:**
+  - Center circle and center spot (not needed for half-pitch)
+  - Bottom penalty box, goal area, and penalty spot
+  - Bottom corner arcs (kept only top corners)
+  - Bottom goal frame (hidden)
+- **Halfway Line:** Repositioned from 35% to bottom of pitch (above bench area)
+- **Visual Depth:** Maintained grass stripes for realistic field appearance
+- **Layout:** GK positioned in goal, DEF near penalty box, MID in middle, FWD near halfway line
+- **Impact:** More focused view matching official FPL aesthetic, cleaner design, better use of space
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (half-pitch styling, removed full-field elements)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed bottom markings, bench integration)
 
 ### v2.4.2 - Stats Section Cleanup (Dec 11, 2025)
 **UX IMPROVEMENT:** Removed noise and fixed incorrect hits calculation

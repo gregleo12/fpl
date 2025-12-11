@@ -144,11 +144,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Pitch */
+/* Pitch - half-pitch with integrated bench */
 .pitch {
   background: #108043;
   border-radius: 16px;
-  padding: 1.5rem 0.5rem;
+  padding: 1.5rem 0.5rem 1rem;
   margin-bottom: 1rem;
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -174,16 +174,15 @@
   z-index: 0;
 }
 
-/* Halfway line */
+/* Halfway line - positioned at bottom for half-pitch */
 .pitch::after {
   content: '';
   position: absolute;
-  top: 35%;
+  bottom: 80px; /* Space for bench area */
   left: 5%;
   right: 5%;
   height: 2px;
   background: rgba(255, 255, 255, 0.4);
-  transform: translateY(-50%);
   z-index: 1;
 }
 
@@ -198,28 +197,7 @@
   z-index: 1;
 }
 
-/* Center circle */
-.centerCircle {
-  position: absolute;
-  top: 35%;
-  left: 50%;
-  width: 120px;
-  height: 120px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.centerSpot {
-  position: absolute;
-  top: 35%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
+/* Center circle and spot removed for half-pitch view */
 
 /* Penalty boxes - top */
 .penaltyBoxTop {
@@ -255,39 +233,7 @@
   transform: translateX(-50%);
 }
 
-/* Penalty boxes - bottom */
-.penaltyBoxBottom {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 200px;
-  height: 80px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-bottom: none;
-}
-
-.goalAreaBottom {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 120px;
-  height: 35px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-bottom: none;
-}
-
-.penaltySpotBottom {
-  position: absolute;
-  bottom: 55px;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  transform: translateX(-50%);
-}
+/* Bottom penalty box removed for half-pitch view */
 
 /* Corner arcs */
 .cornerArc {
@@ -312,39 +258,27 @@
   border-bottom: none;
 }
 
-.cornerArc.bottomLeft {
-  bottom: -8px;
-  left: 5%;
-  border-right: none;
-  border-top: none;
-}
+/* Bottom corner arcs removed for half-pitch view */
 
-.cornerArc.bottomRight {
-  bottom: -8px;
-  right: 5%;
-  border-left: none;
-  border-top: none;
-}
-
-/* Goal frames */
+/* Goal frame - enhanced for half-pitch view */
 .goalFrame {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 100px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.goalFrame.top {
-  top: -2px;
+  width: 110px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 3px solid rgba(255, 255, 255, 0.35);
   border-top: none;
 }
 
+.goalFrame.top {
+  top: -3px;
+}
+
+/* Bottom goal frame removed for half-pitch view */
 .goalFrame.bottom {
-  bottom: -2px;
-  border-bottom: none;
+  display: none;
 }
 
 .pitchRow {
@@ -361,21 +295,23 @@
   margin-bottom: 0;
 }
 
-/* Bench */
+/* Bench - integrated into pitch container */
 .bench {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 2;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .benchLabel {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.75rem;
+  text-align: center;
 }
 
 .benchRow {
@@ -445,7 +381,7 @@
   }
 
   .pitch {
-    padding: 1rem 0.25rem;
+    padding: 1rem 0.25rem 0.75rem;
     border-radius: 12px;
   }
 
@@ -455,7 +391,8 @@
   }
 
   .bench {
-    padding: 0.75rem;
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
   }
 
   .benchRow {
@@ -463,19 +400,12 @@
   }
 
   /* Scale down pitch markings for mobile */
-  .centerCircle {
-    width: 80px;
-    height: 80px;
-  }
-
-  .penaltyBoxTop,
-  .penaltyBoxBottom {
+  .penaltyBoxTop {
     width: 160px;
     height: 60px;
   }
 
-  .goalAreaTop,
-  .goalAreaBottom {
+  .goalAreaTop {
     width: 100px;
     height: 28px;
   }
@@ -484,12 +414,12 @@
     top: 42px;
   }
 
-  .penaltySpotBottom {
-    bottom: 42px;
+  .goalFrame {
+    width: 90px;
+    height: 10px;
   }
 
-  .goalFrame {
-    width: 80px;
-    height: 6px;
+  .pitch::after {
+    bottom: 60px; /* Adjust halfway line for mobile bench space */
   }
 }

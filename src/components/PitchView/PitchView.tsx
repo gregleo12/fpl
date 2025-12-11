@@ -144,31 +144,19 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
           {formation}
         </div>
 
-        {/* Pitch markings */}
+        {/* Pitch markings - half-pitch view */}
         <div className={styles.pitchMarkings}>
-          {/* Goal frames */}
+          {/* Goal frame at top */}
           <div className={`${styles.goalFrame} ${styles.top}`}></div>
-          <div className={`${styles.goalFrame} ${styles.bottom}`}></div>
 
-          {/* Penalty boxes and goal areas - top */}
+          {/* Penalty box and goal area - top only */}
           <div className={styles.penaltyBoxTop}></div>
           <div className={styles.goalAreaTop}></div>
           <div className={styles.penaltySpotTop}></div>
 
-          {/* Penalty boxes and goal areas - bottom */}
-          <div className={styles.penaltyBoxBottom}></div>
-          <div className={styles.goalAreaBottom}></div>
-          <div className={styles.penaltySpotBottom}></div>
-
-          {/* Center circle and spot */}
-          <div className={styles.centerCircle}></div>
-          <div className={styles.centerSpot}></div>
-
-          {/* Corner arcs */}
+          {/* Corner arcs - top only */}
           <div className={`${styles.cornerArc} ${styles.topLeft}`}></div>
           <div className={`${styles.cornerArc} ${styles.topRight}`}></div>
-          <div className={`${styles.cornerArc} ${styles.bottomLeft}`}></div>
-          <div className={`${styles.cornerArc} ${styles.bottomRight}`}></div>
         </div>
 
         {/* Goalkeepers */}
@@ -226,23 +214,23 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
             ) : null;
           })}
         </div>
-      </div>
 
-      {/* Bench */}
-      <div className={styles.bench}>
-        <div className={styles.benchLabel}>Bench</div>
-        <div className={styles.benchRow}>
-          {bench.map(pick => {
-            const player = playerData[pick.element];
-            return player ? (
-              <PlayerCard
-                key={pick.element}
-                player={player}
-                pick={pick}
-                isBench={true}
-              />
-            ) : null;
-          })}
+        {/* Bench - integrated into pitch */}
+        <div className={styles.bench}>
+          <div className={styles.benchLabel}>Bench</div>
+          <div className={styles.benchRow}>
+            {bench.map(pick => {
+              const player = playerData[pick.element];
+              return player ? (
+                <PlayerCard
+                  key={pick.element}
+                  player={player}
+                  pick={pick}
+                  isBench={true}
+                />
+              ) : null;
+            })}
+          </div>
         </div>
       </div>
     </div>
