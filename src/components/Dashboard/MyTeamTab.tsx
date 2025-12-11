@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
-import { TeamHeader } from '@/components/PitchView/TeamHeader';
 import { GWSelector } from '@/components/PitchView/GWSelector';
 
 interface Props {
@@ -21,9 +20,7 @@ interface Props {
 export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
   const [selectedGW, setSelectedGW] = useState<number>(1);
   const [maxGW, setMaxGW] = useState<number>(1);
-  const [gwPoints, setGwPoints] = useState<number>(0);
-  const [gwRank, setGwRank] = useState<number>(0);
-  const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
+  const [showStats, setShowStats] = useState<boolean>(false);
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -42,26 +39,6 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
     fetchLeagueInfo();
   }, [leagueId]);
-
-  // Fetch quick stats for mobile header
-  useEffect(() => {
-    async function fetchQuickStats() {
-      try {
-        const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`);
-        if (!response.ok) throw new Error('Failed to fetch quick stats');
-        const data = await response.json();
-        setGwPoints(data.gwPoints);
-        setGwRank(data.gwRank);
-        setGwTransfers(data.gwTransfers);
-      } catch (err: any) {
-        console.error('Error fetching quick stats:', err);
-      }
-    }
-
-    if (selectedGW > 0) {
-      fetchQuickStats();
-    }
-  }, [myTeamId, selectedGW]);
 
   return (
     <div className={styles.myTeamTab}>
@@ -97,14 +74,6 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Mobile Layout */}
       <div className={styles.mobileLayout}>
-        <TeamHeader
-          managerName={myManagerName}
-          teamName={myTeamName}
-          points={gwPoints}
-          rank={gwRank}
-          transfers={gwTransfers.count}
-          hitCost={gwTransfers.cost}
-        />
         <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
         <PitchView
           leagueId={leagueId}
@@ -114,14 +83,23 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           onGWChange={setSelectedGW}
           showGWSelector={false}
         />
-        <StatsPanel
-          leagueId={leagueId}
-          myTeamId={myTeamId}
-          myTeamName={myTeamName}
-          myManagerName={myManagerName}
-          selectedGW={selectedGW}
-          mode="collapsible-only"
-        />
+        <button
+          className={styles.viewStatsButton}
+          onClick={() => setShowStats(!showStats)}
+        >
+          {showStats ? 'Hide Stats' : 'View Stats'}
+          <span className={styles.toggleIcon}>{showStats ? '▲' : '▼'}</span>
+        </button>
+        {showStats && (
+          <StatsPanel
+            leagueId={leagueId}
+            myTeamId={myTeamId}
+            myTeamName={myTeamName}
+            myManagerName={myManagerName}
+            selectedGW={selectedGW}
+            mode="collapsible-only"
+          />
+        )}
       </div>
 
       {/* Desktop Layout - Two column */}

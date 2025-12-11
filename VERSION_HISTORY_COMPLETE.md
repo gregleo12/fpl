@@ -2,11 +2,29 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.4 (December 11, 2025)
+**Current Version:** v2.4.5 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.5 - My Team Structure - Remove Clutter, Add Stats Toggle (Dec 11, 2025)
+**MAJOR STRUCTURE CHANGES:** Removed unnecessary UI elements and added stats toggle for cleaner, more focused mobile experience
+- **Removed Header Bar:** Deleted TeamHeader component showing "FC Matos* / Greg Lienart" + stats - users know their own team
+- **Removed Formation Badge:** Deleted "3-4-3" pill from pitch - formation visible from player positions
+- **Removed BENCH Label:** Hidden "BENCH" text label - visual separation (border line) sufficient
+- **Simplified GW Selector:** Removed button borders and backgrounds - minimal arrows and text only
+- **Added Stats Toggle:** "View Stats" button below pitch reveals/hides all stats sections (hidden by default)
+- **Cleaner Mobile Layout:** Pitch takes center stage without header clutter
+- **Impact:** Faster focus on pitch, cleaner visual hierarchy, stats available on demand
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed TeamHeader, added stats toggle state/button)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added viewStatsButton styles)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed formation badge JSX)
+  - Modified: `src/components/PitchView/PitchView.module.css` (hidden bench label)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (minimal button styling)
+  - Deleted: `src/components/PitchView/TeamHeader.tsx`, `TeamHeader.module.css`
+  - Deleted: `src/components/PitchView/QuickStats.tsx`, `QuickStats.module.css`
 
 ### v2.4.4 - UI Consistency - Match App Style (Dec 11, 2025)
 **UX POLISH:** Unified My Team tab visual style with rest of app for consistent look and feel

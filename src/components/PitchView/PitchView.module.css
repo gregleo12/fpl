@@ -305,13 +305,7 @@
 }
 
 .benchLabel {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.75rem;
-  text-align: center;
+  display: none;
 }
 
 .benchRow {

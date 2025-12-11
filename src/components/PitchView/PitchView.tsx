@@ -139,11 +139,6 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
 
       {/* Pitch */}
       <div className={styles.pitch}>
-        {/* Formation Display */}
-        <div className={styles.formationBadge}>
-          {formation}
-        </div>
-
         {/* Pitch markings - half-pitch view */}
         <div className={styles.pitchMarkings}>
           {/* Goal frame at top */}
