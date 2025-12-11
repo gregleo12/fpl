@@ -27,7 +27,7 @@
 
 .managerName {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
   line-height: 1.2;
 }
@@ -57,7 +57,7 @@
 .statLabel {
   font-size: 0.65rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
   text-transform: lowercase;
   letter-spacing: 0.03em;
   line-height: 1;

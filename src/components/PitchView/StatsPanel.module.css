@@ -60,7 +60,7 @@
 .sectionTitle {
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: #10b981;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 1rem 0;
@@ -163,17 +163,17 @@
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all 0.2s;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .sectionToggle:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .toggleIcon {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.7);
   transition: transform 0.2s;
 }
 

@@ -2,11 +2,30 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.3 (December 11, 2025)
+**Current Version:** v2.4.4 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.4 - UI Consistency - Match App Style (Dec 11, 2025)
+**UX POLISH:** Unified My Team tab visual style with rest of app for consistent look and feel
+- **Green Accent Color:** Section titles now use app-wide green accent (#10b981) instead of faded white
+- **Brighter Text:** Increased text opacity across all components for better readability
+  - Manager name: 0.6 → 0.7
+  - Stat labels: 0.5 → 0.7
+  - Section toggle headers: #fff → rgba(255,255,255,0.9)
+  - Toggle icons: 0.5 → 0.7
+- **Interactive Elements:** Added green accent to hover states
+  - GW selector buttons show green border/background on hover
+  - Collapsible section headers show green border on hover
+- **Visual Consistency:** My Team now matches styling of Stats, Rankings, and Match Details
+- **Impact:** Cohesive app-wide design, improved text contrast, better visual hierarchy
+- **Files:**
+  - Modified: `src/components/PitchView/TeamHeader.module.css` (brighter text)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (green section titles, brighter text, green hover accent)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (green hover accent)
+  - Modified: `src/components/PitchView/QuickStats.module.css` (brighter text)
 
 ### v2.4.3 - Pitch Redesign - FantasyPL Style Half-Pitch (Dec 11, 2025)
 **MAJOR VISUAL REDESIGN:** Transformed full-pitch view into half-pitch perspective matching official FantasyPL app
