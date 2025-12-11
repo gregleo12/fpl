@@ -146,45 +146,21 @@
 
 /* Pitch - half-pitch with integrated bench */
 .pitch {
-  background: linear-gradient(
-    180deg,
-    #2d4a3e 0%,
-    #35573f 50%,
-    #2d4a3e 100%
-  );
-  border-radius: 8px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 12px;
   padding: 1rem 0.5rem;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Subtle grass stripes */
-.pitch::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    180deg,
-    transparent,
-    transparent 30px,
-    rgba(0, 0, 0, 0.05) 30px,
-    rgba(0, 0, 0, 0.05) 60px
-  );
-  pointer-events: none;
-  z-index: 0;
-  border-radius: 8px;
+  min-height: 400px;
 }
 
 /* Halfway line - positioned at bottom for half-pitch */
 .pitch::after {
   content: '';
   position: absolute;
-  bottom: 80px; /* Space for bench area */
-  left: 5%;
-  right: 5%;
+  bottom: 70px; /* Above bench */
+  left: 10%;
+  right: 10%;
   height: 1px;
   background: rgba(255, 255, 255, 0.15);
   z-index: 1;
@@ -203,16 +179,17 @@
 
 /* Center circle and spot removed for half-pitch view */
 
-/* Penalty boxes - top - subtle */
+/* Penalty boxes - top */
 .penaltyBoxTop {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 80px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 180px;
+  height: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-top: none;
+  border-radius: 0 0 4px 4px;
 }
 
 .goalAreaTop {
@@ -220,51 +197,32 @@
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 120px;
-  height: 35px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-top: none;
+  border-radius: 0 0 4px 4px;
 }
 
 .penaltySpotTop {
   position: absolute;
-  top: 55px;
+  top: 50px;
   left: 50%;
-  width: 6px;
-  height: 6px;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 50%;
-  transform: translateX(-50%);
 }
 
 /* Bottom penalty box removed for half-pitch view */
 
-/* Corner arcs - subtle */
+/* Corner arcs - hidden for cleaner look */
 .cornerArc {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
+  display: none;
 }
 
-.cornerArc.topLeft {
-  top: -8px;
-  left: 5%;
-  border-right: none;
-  border-bottom: none;
-}
-
-.cornerArc.topRight {
-  top: -8px;
-  right: 5%;
-  border-left: none;
-  border-bottom: none;
-}
-
-/* Bottom corner arcs removed for half-pitch view */
-
-/* Goal frame with net texture */
+/* Goal frame with simple net pattern */
 .goalFrame {
   position: absolute;
   left: 50%;
@@ -273,29 +231,38 @@
 
 .goalFrame.top {
   top: 0;
-  width: 120px;
-  height: 35px;
+  width: 90px;
+  height: 25px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  position: relative;
+}
+
+/* Simple net pattern */
+.goalFrame.top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background:
-    /* Net pattern - vertical */
     repeating-linear-gradient(
       90deg,
       transparent 0px,
-      transparent 6px,
-      rgba(255, 255, 255, 0.15) 6px,
-      rgba(255, 255, 255, 0.15) 7px
+      transparent 8px,
+      rgba(255, 255, 255, 0.08) 8px,
+      rgba(255, 255, 255, 0.08) 9px
     ),
-    /* Net pattern - horizontal */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      transparent 6px,
-      rgba(255, 255, 255, 0.15) 6px,
-      rgba(255, 255, 255, 0.15) 7px
-    ),
-    rgba(0, 0, 0, 0.5);
-  border: 3px solid rgba(255, 255, 255, 0.5);
-  border-top: none;
-  border-radius: 0 0 4px 4px;
+      transparent 8px,
+      rgba(255, 255, 255, 0.08) 8px,
+      rgba(255, 255, 255, 0.08) 9px
+    );
 }
 
 /* Bottom goal frame removed for half-pitch view */
@@ -422,7 +389,7 @@
   }
 
   .goalAreaTop {
-    width: 100px;
+    width: 90px;
     height: 28px;
   }
 
@@ -430,9 +397,9 @@
     top: 42px;
   }
 
-  .goalFrame {
-    width: 90px;
-    height: 10px;
+  .goalFrame.top {
+    width: 80px;
+    height: 20px;
   }
 
   .pitch::after {

@@ -2,11 +2,48 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.11 (December 11, 2025)
+**Current Version:** v2.4.12 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.12 - Pitch Redesign - App UI Colors & Simple Line Drawing (Dec 11, 2025)
+**VISUAL REDESIGN:** Replaced green grass pitch with dark app UI colors and simple line markings
+- **Background:** Changed from green grass to dark app card gradient
+  - Removed: Green gradient (#2d4a3e → #35573f)
+  - New: Dark gradient linear-gradient(135deg, #1e293b 0%, #0f172a 100%)
+  - Matches app's overall dark theme and card styling
+  - Border-radius: 12px, min-height: 400px
+- **Removed Grass Texture:** Deleted grass stripes (::before pseudo-element)
+  - No more fake grass texture
+  - Clean, flat background
+  - Minimalist design
+- **Updated Pitch Markings:** Simple white line drawings
+  - All lines: rgba(255,255,255,0.15) for subtle appearance
+  - Penalty box: 180x70px with rounded bottom corners
+  - 6-yard box: 100x30px with rounded bottom corners
+  - Halfway line: positioned 70px from bottom
+  - Penalty spot: 4x4px at top 50px
+- **Simplified Goal Frame:** Cleaner design
+  - Size: 90x25px (desktop), 80x20px (mobile)
+  - Border: 2px solid rgba(255,255,255,0.3)
+  - Background: rgba(0,0,0,0.3)
+  - Simple net pattern with 8px grid
+  - Net lines: rgba(255,255,255,0.08)
+- **Hidden Corner Arcs:** Removed for cleaner look
+  - display: none on all corner arcs
+  - Less visual clutter
+  - Focus on essential pitch elements
+- **Mobile Adjustments:** Scaled down markings
+  - Penalty box: 160x60px
+  - 6-yard box: 90x28px
+  - Goal frame: 80x20px
+  - Penalty spot: top 42px
+  - Halfway line: bottom 60px
+- **Impact:** Pitch now matches app's dark theme, looks more professional and less game-like
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (all pitch styling)
 
 ### v2.4.11 - Transfers Section Cleanup (Dec 11, 2025)
 **CLEANUP:** Removed redundant "Transfers" section and restyled "GW Transfers" with card design
