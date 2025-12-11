@@ -2,11 +2,34 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.8 (December 11, 2025)
+**Current Version:** v2.4.9 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.9 - Remove Redundant Stats Sections (Dec 11, 2025)
+**CLEANUP:** Removed redundant "This Gameweek" and "Overall" stats sections now that data is shown in boxes above pitch
+- **Removed "THIS GAMEWEEK" Section:** Deleted entire collapsible section
+  - Points (now in boxes)
+  - Rank (now in boxes)
+  - Transfers (now in boxes)
+  - Average Points (removed - not critical)
+- **Removed "OVERALL" Section:** Deleted entire collapsible section
+  - Points (now in boxes)
+  - Rank (now in boxes)
+  - Total Players (removed - not critical)
+- **Kept Remaining Sections:** Other sections still visible
+  - Squad Value (Team Value, In Bank)
+  - Transfers (Season Total, Hits Taken)
+  - GW Transfers (Transfer details)
+- **Cleaned Up Code:** Removed unused state variables and data fetching
+  - Removed: overallPoints, overallRank, totalPlayers, gwPoints, gwRank, averagePoints state
+  - Kept: teamValue, bank, gwTransfers, transfersTotal, transfersHits, transfersHitsCost, currentGW, currentGWTransfers
+  - Simplified data fetching to only set needed state
+- **Impact:** Cleaner stats panel, no duplicate information, faster rendering, less API data to process
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed sections, cleaned state)
 
 ### v2.4.8 - Stats Boxes Above Pitch - 5 Boxes in App Style (Dec 11, 2025)
 **MAJOR LAYOUT CHANGE:** Moved stats from pitch overlay to 5 separate boxes above pitch in app card style

@@ -39,15 +39,9 @@ interface Props {
 }
 
 export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'full' }: Props) {
-  const [overallPoints, setOverallPoints] = useState<number>(0);
-  const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
   const [bank, setBank] = useState<number>(0);
-  const [totalPlayers, setTotalPlayers] = useState<number>(0);
-  const [gwPoints, setGwPoints] = useState<number>(0);
-  const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
-  const [averagePoints, setAveragePoints] = useState<number>(0);
   const [transfersTotal, setTransfersTotal] = useState<number>(0);
   const [transfersHits, setTransfersHits] = useState<number>(0);
   const [transfersHitsCost, setTransfersHitsCost] = useState<number>(0);
@@ -67,15 +61,9 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         if (!infoResponse.ok) throw new Error('Failed to fetch team info');
 
         const infoData = await infoResponse.json();
-        setOverallPoints(infoData.overallPoints);
-        setOverallRank(infoData.overallRank);
         setTeamValue(infoData.teamValue);
         setBank(infoData.bank);
-        setTotalPlayers(infoData.totalPlayers);
-        setGwPoints(infoData.gwPoints);
-        setGwRank(infoData.gwRank);
         setGwTransfers(infoData.gwTransfers);
-        setAveragePoints(infoData.averagePoints);
 
         if (transfersResponse.ok) {
           const transfersData = await transfersResponse.json();
@@ -112,45 +100,6 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <p className={styles.teamName}>{myTeamName}</p>
         </div>
       )}
-
-      {/* This Gameweek */}
-      <CollapsibleSection title="This Gameweek" defaultOpen={true}>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Points</span>
-          <span className={styles.statValue}>{gwPoints}</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Rank</span>
-          <span className={styles.statValue}>{gwRank > 0 ? gwRank.toLocaleString() : '-'}</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Transfers</span>
-          <span className={styles.statValue}>
-            {gwTransfers.count}
-            {gwTransfers.cost > 0 && <span className={styles.transferCost}> (-{gwTransfers.cost}pts)</span>}
-          </span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Average Points</span>
-          <span className={styles.statValue}>{averagePoints}</span>
-        </div>
-      </CollapsibleSection>
-
-      {/* Overall Stats */}
-      <CollapsibleSection title="Overall" defaultOpen={false}>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Points</span>
-          <span className={styles.statValue}>{overallPoints.toLocaleString()}</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Rank</span>
-          <span className={styles.statValue}>{overallRank > 0 ? overallRank.toLocaleString() : '-'}</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Total Players</span>
-          <span className={styles.statValue}>{totalPlayers > 0 ? `${(totalPlayers / 1000000).toFixed(1)}M` : '-'}</span>
-        </div>
-      </CollapsibleSection>
 
       {/* Squad Value */}
       <CollapsibleSection title="Squad Value" defaultOpen={false}>
