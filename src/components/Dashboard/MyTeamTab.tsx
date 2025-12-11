@@ -20,9 +20,10 @@ interface Props {
 export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
   const [selectedGW, setSelectedGW] = useState<number>(1);
   const [maxGW, setMaxGW] = useState<number>(1);
-  const [showStats, setShowStats] = useState<boolean>(false);
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
+  const [overallPoints, setOverallPoints] = useState<number>(0);
+  const [overallRank, setOverallRank] = useState<number>(0);
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     fetchLeagueInfo();
   }, [leagueId]);
 
-  // Fetch stats for overlay
+  // Fetch stats for overlay and overall stats
   useEffect(() => {
     async function fetchStats() {
       try {
@@ -51,6 +52,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         const data = await response.json();
         setGwPoints(data.gwPoints);
         setGwTransfers(data.gwTransfers);
+        setOverallPoints(data.overallPoints || 0);
+        setOverallRank(data.overallRank || 0);
       } catch (err: any) {
         console.error('Error fetching stats:', err);
       }
@@ -95,6 +98,20 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Mobile Layout */}
       <div className={styles.mobileLayout}>
+        {/* Overall Stats Row */}
+        <div className={styles.overallStatsRow}>
+          <div className={styles.overallStat}>
+            <div className={styles.overallValue}>{overallPoints.toLocaleString()}</div>
+            <div className={styles.overallLabel}>Overall Points</div>
+          </div>
+          <div className={styles.overallStat}>
+            <div className={styles.overallValue}>
+              <span className={styles.rankArrow}>▲</span> {overallRank.toLocaleString()}
+            </div>
+            <div className={styles.overallLabel}>Overall Rank</div>
+          </div>
+        </div>
+
         <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
         <PitchView
           leagueId={leagueId}
@@ -106,23 +123,14 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           gwPoints={gwPoints}
           gwTransfers={gwTransfers}
         />
-        <button
-          className={styles.viewStatsButton}
-          onClick={() => setShowStats(!showStats)}
-        >
-          {showStats ? 'Hide Stats' : 'View Stats'}
-          <span className={styles.toggleIcon}>{showStats ? '▲' : '▼'}</span>
-        </button>
-        {showStats && (
-          <StatsPanel
-            leagueId={leagueId}
-            myTeamId={myTeamId}
-            myTeamName={myTeamName}
-            myManagerName={myManagerName}
-            selectedGW={selectedGW}
-            mode="collapsible-only"
-          />
-        )}
+        <StatsPanel
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          myTeamName={myTeamName}
+          myManagerName={myManagerName}
+          selectedGW={selectedGW}
+          mode="collapsible-only"
+        />
       </div>
 
       {/* Desktop Layout - Two column */}

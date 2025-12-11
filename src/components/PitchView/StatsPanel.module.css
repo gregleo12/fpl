@@ -69,8 +69,7 @@
 .statRow {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 0;
+  padding: 10px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -79,14 +78,14 @@
 }
 
 .statLabel {
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .statValue {
-  font-size: 1.1rem;
-  font-weight: 600;
   color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 .transferCost {
@@ -147,28 +146,34 @@
   color: #fff;
 }
 
-/* Collapsible Sections */
+/* Collapsible Sections - Match app card style */
 .collapsibleSection {
-  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
 }
 
 .sectionToggle {
+  background: transparent;
+  border: none;
   width: 100%;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
   cursor: pointer;
+  color: #10b981;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   transition: all 0.2s;
-  color: rgba(255, 255, 255, 0.9);
 }
 
 .sectionToggle:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .toggleIcon {
@@ -178,7 +183,7 @@
 }
 
 .sectionContent {
-  padding-top: 0.75rem;
+  padding: 0 16px 16px;
 }
 
 .sectionContent.open {

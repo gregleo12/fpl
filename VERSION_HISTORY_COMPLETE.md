@@ -2,11 +2,65 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.6 (December 11, 2025)
+**Current Version:** v2.4.7 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.7 - My Team - Copy FPL App Layout Exactly (Dec 11, 2025)
+**MAJOR REDESIGN:** Copied official FPL app layout exactly - no creativity, just matching the source
+- **Overall Stats Row:** Added above GW selector
+  - Overall Points displayed on left (e.g., "896")
+  - Overall Rank on right with arrow indicator (e.g., "▲ 247,994")
+  - Underlined labels matching FPL app style
+  - Fetched from team info API endpoint
+- **Removed View Stats Toggle:** Stats sections now always visible and scrollable
+  - Deleted toggle button entirely from mobile layout
+  - Stats scroll normally below pitch like FPL app
+  - Better UX - no hidden content
+- **Fixed Stats Boxes on Pitch:** Made larger and properly positioned
+  - Increased padding: 10px 16px (was 8px 14px)
+  - Increased min-width: 85px (was 75px)
+  - Larger value font: 1.8rem (was 1.6rem)
+  - Better background: rgba(30,41,59,0.95) with proper border
+  - Hit cost now has red background pill
+- **Dark Grey-Green Pitch:** Changed from bright green to muted FPL colors
+  - New gradient: #2d4a3e → #35573f → #2d4a3e (was #1e4d2b → #236b38)
+  - More subtle grass stripes (30px/60px pattern with rgba(0,0,0,0.05))
+  - Border-radius: 8px (was 16px)
+  - Border: 1px solid (was 2px)
+  - Professional muted appearance matching FPL app
+- **Proper Goal Net:** Updated net pattern to match FPL
+  - Wider goal: 120px (was 110px), taller: 35px (was 32px)
+  - Net lines at 6px intervals with rgba(255,255,255,0.15)
+  - Darker background: rgba(0,0,0,0.5) (was 0.4)
+  - Thicker border: 3px solid rgba(255,255,255,0.5) (was 0.6)
+- **Smaller Player Cards:** Compact size matching FPL app
+  - Card width: 52-60px (was 54-58px)
+  - Kit size: 40x44px (was 38x42px)
+  - Name font: 0.6rem with dark background pill
+  - Points font: 0.65rem with proper padding (3px 10px)
+  - Removed bench-specific sizing - uses same opacity modifier
+- **Subtle Pitch Markings:** Reduced prominence
+  - Border width: 1px (was 2px)
+  - Opacity: 0.2 (was 0.25)
+  - Halfway line: 1px height, 0.15 opacity (was 2px, 0.25)
+  - All markings more subtle matching FPL app
+- **Stats Sections UI Consistency:** Match app card style exactly
+  - Card background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border-radius: 12px, margin: 12px bottom
+  - Toggle padding: 14px 16px, green title (#10b981)
+  - Content padding: 0 16px 16px
+  - Stat rows: 10px padding, rgba text colors
+  - Hover: rgba(255,255,255,0.03) background
+- **Impact:** Exact FPL app aesthetic, professional appearance, consistent UI across all sections
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (overall stats, removed toggle, always show stats)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (overall stats styles, deleted toggle styles)
+  - Modified: `src/components/PitchView/PitchView.module.css` (dark pitch, goal net, stat boxes, subtle markings)
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (smaller cards, proper sizing)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (match app card style)
 
 ### v2.4.6 - My Team Visual Polish - Compact Cards & Darker Pitch (Dec 11, 2025)
 **MAJOR VISUAL POLISH:** Enhanced pitch aesthetics with stats overlay, darker colors, smaller cards matching official FPL app
