@@ -1,12 +1,23 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 189+ versions
-**Current Version:** v2.3.0 (December 10, 2025)
+**Total Releases:** 190+ versions
+**Current Version:** v2.3.1 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.3.x - My Team UI Polish & Mobile Optimization (Dec 2025)
+
+### v2.3.1 - Fix Desktop Collapsible Sections Bug (Dec 11, 2025)
+**CRITICAL FIX:** Desktop now shows all section content correctly
+- Bug: Sections with `defaultOpen={false}` hid content on desktop
+- Root Cause: Conditional rendering (`{isOpen && <div>}`) prevented CSS override
+- Fix: Always render content div, control visibility with CSS classes
+- Added: `.open` and `.closed` classes for state-based styling
+- Desktop: Both classes override to `display: block` (always visible)
+- Mobile: `.closed` hides with `display: none`, `.open` shows
+- Impact: Desktop users can now see Overall, Squad Value, Transfers sections
+- Files: `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
 
 ### v2.3.0 - Add Collapsible Sections & Compact Mobile Layout (Dec 10, 2025)
 **UI POLISH:** Improved stats panel with collapsible sections for better mobile experience

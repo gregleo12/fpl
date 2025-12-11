@@ -22,11 +22,9 @@ function CollapsibleSection({ title, children, defaultOpen = false }: Collapsibl
         <span className={styles.sectionTitle}>{title}</span>
         <span className={styles.toggleIcon}>{isOpen ? '▼' : '▶'}</span>
       </button>
-      {isOpen && (
-        <div className={styles.sectionContent}>
-          {children}
-        </div>
-      )}
+      <div className={`${styles.sectionContent} ${isOpen ? styles.open : styles.closed}`}>
+        {children}
+      </div>
     </div>
   );
 }

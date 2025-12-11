@@ -181,6 +181,14 @@
   padding-top: 0.75rem;
 }
 
+.sectionContent.open {
+  display: block;
+}
+
+.sectionContent.closed {
+  display: none;
+}
+
 /* Desktop: Sections always open, no collapse UI */
 @media (min-width: 1024px) {
   .collapsibleSection {
@@ -205,8 +213,9 @@
     display: none;
   }
 
-  .sectionContent {
-    display: block !important;
+  .sectionContent,
+  .sectionContent.closed {
+    display: block;
   }
 }
 
