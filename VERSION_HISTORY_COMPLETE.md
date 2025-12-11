@@ -2,11 +2,47 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.5 (December 11, 2025)
+**Current Version:** v2.4.6 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.6 - My Team Visual Polish - Compact Cards & Darker Pitch (Dec 11, 2025)
+**MAJOR VISUAL POLISH:** Enhanced pitch aesthetics with stats overlay, darker colors, smaller cards matching official FPL app
+- **Stats Overlay:** Added semi-transparent stat boxes ON the pitch itself
+  - Points displayed in top-left corner
+  - Transfers displayed in top-right corner with hit cost in red when applicable
+  - Dark background (rgba(15,23,42,0.9)) with backdrop blur
+  - Always visible without taking vertical space
+- **Darker Pitch:** Changed from bright green to muted gradient (#1e4d2b → #236b38)
+  - More subtle grass stripes using rgba(0,0,0,0.06) transparency
+  - All pitch markings reduced from 0.4 to 0.25 opacity (penalty boxes, goal area, corner arcs)
+  - More professional appearance matching official FPL app
+- **Goal Net Texture:** Added visible crosshatch pattern to goal
+  - Dual repeating-linear-gradient for vertical and horizontal net lines
+  - White lines at 0.12 opacity on dark background
+  - Height increased from 12px to 32px for better visibility
+- **Smaller Player Cards:** Made cards compact like FPL app
+  - Desktop: min-width 80px → 54px, kit 70px → 38x42px, name 0.8rem → 0.55rem
+  - Bench cards even more compact: 48px min-width
+  - Points badge smaller: 0.85rem → 0.7rem, reduced padding
+  - Captain/vice badges: 20px → 16px
+  - Mobile (768px): Cards 50px, kit 34x38px, name 0.5rem
+  - Mobile (480px): Cards 46px, kit 30x34px, name 0.48rem
+- **Tighter Spacing:** Reduced gaps between rows with smaller cards
+  - Pitch row gap: 0.75rem → 0.6rem, margin-bottom: 1.5rem → 1rem
+  - Bench gap: 0.75rem → 0.6rem, padding-top: 1rem → 0.75rem
+  - Mobile (768px): gap 0.4rem, margin-bottom 0.75rem
+- **Mobile Responsive:** Stats overlay scales down on smaller screens
+  - 768px: Stat boxes 60px min-width, value 1.3rem, label 0.6rem
+  - 480px: Stat boxes 50px min-width, value 1.1rem, label 0.55rem
+- **Impact:** Professional FantasyPL aesthetic, more compact pitch view, better information density
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added gwPoints/gwTransfers props, stats overlay JSX)
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (fetch stats, pass to PitchView)
+  - Modified: `src/components/PitchView/PitchView.module.css` (darker pitch, subtle markings, goal net, stats overlay, tighter spacing, mobile adjustments)
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (smaller cards, reduced sizes, mobile breakpoints)
 
 ### v2.4.5 - My Team Structure - Remove Clutter, Add Stats Toggle (Dec 11, 2025)
 **MAJOR STRUCTURE CHANGES:** Removed unnecessary UI elements and added stats toggle for cleaner, more focused mobile experience

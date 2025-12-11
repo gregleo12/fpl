@@ -21,6 +21,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [selectedGW, setSelectedGW] = useState<number>(1);
   const [maxGW, setMaxGW] = useState<number>(1);
   const [showStats, setShowStats] = useState<boolean>(false);
+  const [gwPoints, setGwPoints] = useState<number>(0);
+  const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -39,6 +41,25 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
     fetchLeagueInfo();
   }, [leagueId]);
+
+  // Fetch stats for overlay
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`);
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
+        setGwPoints(data.gwPoints);
+        setGwTransfers(data.gwTransfers);
+      } catch (err: any) {
+        console.error('Error fetching stats:', err);
+      }
+    }
+
+    if (selectedGW > 0) {
+      fetchStats();
+    }
+  }, [myTeamId, selectedGW]);
 
   return (
     <div className={styles.myTeamTab}>
@@ -82,6 +103,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           maxGW={maxGW}
           onGWChange={setSelectedGW}
           showGWSelector={false}
+          gwPoints={gwPoints}
+          gwTransfers={gwTransfers}
         />
         <button
           className={styles.viewStatsButton}

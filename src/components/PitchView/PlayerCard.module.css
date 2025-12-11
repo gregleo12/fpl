@@ -3,27 +3,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  min-width: 80px;
+  gap: 0.2rem;
+  min-width: 54px;
+  max-width: 58px;
 }
 
 .card.bench {
   opacity: 0.8;
+  min-width: 48px;
+  max-width: 52px;
 }
 
 .captainBadge,
 .viceBadge {
   position: absolute;
-  top: -8px;
+  top: -6px;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #1e293b;
   z-index: 2;
@@ -41,13 +44,13 @@
 
 .kitContainer {
   position: relative;
-  width: 70px;
-  height: 70px;
+  width: 38px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -58,11 +61,11 @@
 }
 
 .name {
-  font-size: 0.8rem;
+  font-size: 0.55rem;
   font-weight: 500;
   color: #fff;
   text-align: center;
-  max-width: 95px;
+  max-width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -70,13 +73,13 @@
 }
 
 .points {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  padding: 0.15rem 0.35rem;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
-  min-width: 35px;
+  min-width: 28px;
   text-align: center;
 }
 
@@ -92,29 +95,73 @@
 
 @media (max-width: 768px) {
   .card {
-    min-width: 65px;
+    min-width: 50px;
+    max-width: 54px;
+  }
+
+  .card.bench {
+    min-width: 44px;
+    max-width: 48px;
   }
 
   .kitContainer {
-    width: 60px;
-    height: 60px;
+    width: 34px;
+    height: 38px;
   }
 
   .name {
-    font-size: 0.75rem;
-    max-width: 80px;
+    font-size: 0.5rem;
+    max-width: 54px;
   }
 
   .points {
-    font-size: 0.75rem;
-    padding: 0.2rem 0.4rem;
-    min-width: 30px;
+    font-size: 0.65rem;
+    padding: 0.12rem 0.3rem;
+    min-width: 24px;
   }
 
   .captainBadge,
   .viceBadge {
-    width: 18px;
-    height: 18px;
-    font-size: 0.65rem;
+    width: 14px;
+    height: 14px;
+    font-size: 0.55rem;
+    top: -5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    min-width: 46px;
+    max-width: 50px;
+    gap: 0.15rem;
+  }
+
+  .card.bench {
+    min-width: 40px;
+    max-width: 44px;
+  }
+
+  .kitContainer {
+    width: 30px;
+    height: 34px;
+  }
+
+  .name {
+    font-size: 0.48rem;
+    max-width: 50px;
+  }
+
+  .points {
+    font-size: 0.6rem;
+    padding: 0.1rem 0.25rem;
+    min-width: 22px;
+  }
+
+  .captainBadge,
+  .viceBadge {
+    width: 12px;
+    height: 12px;
+    font-size: 0.5rem;
+    top: -4px;
   }
 }
