@@ -40,9 +40,6 @@ interface Props {
 
 export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'full' }: Props) {
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
-  const [transfersTotal, setTransfersTotal] = useState<number>(0);
-  const [transfersHits, setTransfersHits] = useState<number>(0);
-  const [transfersHitsCost, setTransfersHitsCost] = useState<number>(0);
   const [currentGW, setCurrentGW] = useState<number>(0);
   const [currentGWTransfers, setCurrentGWTransfers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -63,9 +60,6 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
 
         if (transfersResponse.ok) {
           const transfersData = await transfersResponse.json();
-          setTransfersTotal(transfersData.totalTransfers);
-          setTransfersHits(transfersData.totalHits);
-          setTransfersHitsCost(transfersData.totalHitsCost || 0);
           setCurrentGW(transfersData.currentGW || 0);
           setCurrentGWTransfers(transfersData.currentGWTransfers || []);
         }
@@ -97,58 +91,47 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         </div>
       )}
 
-      {/* Transfers */}
-      <CollapsibleSection title="Transfers" defaultOpen={false}>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Season Total</span>
-          <span className={styles.statValue}>{transfersTotal}</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Hits Taken</span>
-          <span className={styles.statValue}>
-            {transfersHits}
-            {transfersHitsCost > 0 && <span className={styles.transferCost}> (-{transfersHitsCost}pts)</span>}
-          </span>
-        </div>
-      </CollapsibleSection>
-
       {/* Current GW Transfer Details */}
       {currentGWTransfers.length > 0 && (
         <CollapsibleSection title={`GW${currentGW} Transfers`} defaultOpen={false}>
           <div className={styles.transferDetail}>
             {currentGWTransfers.map((transfer, index) => {
               const netGain = transfer.netGain;
-              const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
-              const afterHit = totalNet - gwTransfers.cost;
+              const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
 
               return (
-                <div key={index}>
-                  <div className={styles.transferRow}>
-                    <span className={styles.playerOut}>
-                      {transfer.playerOut.web_name} <span className={styles.points}>({transfer.playerOut.points}pts)</span>
+                <div key={index} className={styles.transferCard}>
+                  <div className={styles.transferPlayers}>
+                    <span className={styles.transferOut}>
+                      {transfer.playerOut.web_name} <span className={styles.transferPoints}>({transfer.playerOut.points}pts)</span>
                     </span>
-                    <span className={styles.arrow}>→</span>
-                    <span className={styles.playerIn}>
-                      {transfer.playerIn.web_name} <span className={styles.points}>({transfer.playerIn.points}pts)</span>
-                    </span>
-                    <span className={`${styles.netGain} ${netGain < 0 ? styles.negative : ''}`}>
-                      {netGain > 0 ? '+' : ''}{netGain}
+                    <span className={styles.transferArrow}>→</span>
+                    <span className={styles.transferIn}>
+                      {transfer.playerIn.web_name} <span className={styles.transferPoints}>({transfer.playerIn.points}pts)</span>
                     </span>
                   </div>
-                  {index === currentGWTransfers.length - 1 && (
-                    <>
-                      <div className={styles.transferDivider}></div>
-                      <div className={styles.transferSummary}>
-                        Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
-                        {gwTransfers.cost > 0 && (
-                          <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
-                        )}
-                      </div>
-                    </>
-                  )}
+                  <span className={`${styles.transferDiff} ${diffClass}`}>
+                    {netGain > 0 ? '+' : ''}{netGain}
+                  </span>
                 </div>
               );
             })}
+
+            {/* Summary */}
+            <div className={styles.transferSummary}>
+              {(() => {
+                const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
+                const afterHit = totalNet - gwTransfers.cost;
+                return (
+                  <>
+                    Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
+                    {gwTransfers.cost > 0 && (
+                      <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </CollapsibleSection>
       )}

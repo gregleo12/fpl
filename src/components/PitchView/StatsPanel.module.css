@@ -140,10 +140,67 @@
 }
 
 .transferSummary {
-  padding-top: 0.75rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 4px;
+}
+
+/* Transfer Cards */
+.transferCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transferPlayers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  flex: 1;
+}
+
+.transferOut {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.transferArrow {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.transferIn {
+  color: #10b981;
+}
+
+.transferPoints {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.transferDiff {
   font-weight: 600;
-  color: #fff;
+  font-size: 0.9rem;
+  min-width: 35px;
+  text-align: right;
+}
+
+.transferDiff.positive {
+  color: #10b981;
+}
+
+.transferDiff.negative {
+  color: #ef4444;
+}
+
+.transferDiff.neutral {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Collapsible Sections - Match app card style */

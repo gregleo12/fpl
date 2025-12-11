@@ -2,11 +2,42 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.10 (December 11, 2025)
+**Current Version:** v2.4.11 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.11 - Transfers Section Cleanup (Dec 11, 2025)
+**CLEANUP:** Removed redundant "Transfers" section and restyled "GW Transfers" with card design
+- **Removed "TRANSFERS" Section:** Deleted season totals collapsible section
+  - Season Total transfers (not actionable info)
+  - Hits Taken with cost (not actionable info)
+  - Removed transfersTotal, transfersHits, transfersHitsCost state
+- **Restyled "GW TRANSFERS" Section:** Card-based design matching app aesthetic
+  - **Transfer Cards:** Each transfer displayed in individual card
+    - Background: rgba(255,255,255,0.03)
+    - Border: 1px solid rgba(255,255,255,0.08)
+    - Border-radius: 8px, padding: 10px 12px
+    - Horizontal layout with players and point differential
+  - **Player Display:**
+    - Player Out: rgba(255,255,255,0.7) color
+    - Arrow: → in rgba(255,255,255,0.4)
+    - Player In: #10b981 (green) color
+    - Points shown in smaller font (0.75rem) in rgba(255,255,255,0.5)
+  - **Point Differential:** Right-aligned, color-coded
+    - Positive: +X in #10b981 (green)
+    - Negative: -X in #ef4444 (red)
+    - Neutral: 0 in rgba(255,255,255,0.5)
+    - Font size: 0.9rem, bold
+  - **Summary:** Net points shown at bottom
+    - "Net: +X pts (after -Y hit: +Z pts)" format
+    - Border-top separator (1px solid rgba(255,255,255,0.05))
+    - Font size: 0.8rem, lighter color
+- **Impact:** Cleaner stats panel, transfer details more readable with card design
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed Transfers section, restyled GW Transfers)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (added transfer card styles)
 
 ### v2.4.10 - Team Value Boxes Below Pitch (Dec 11, 2025)
 **LAYOUT ENHANCEMENT:** Moved Squad Value info from collapsible section to prominent boxes below pitch
