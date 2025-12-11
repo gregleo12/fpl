@@ -39,8 +39,6 @@ interface Props {
 }
 
 export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'full' }: Props) {
-  const [teamValue, setTeamValue] = useState<number>(0);
-  const [bank, setBank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [transfersTotal, setTransfersTotal] = useState<number>(0);
   const [transfersHits, setTransfersHits] = useState<number>(0);
@@ -61,8 +59,6 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         if (!infoResponse.ok) throw new Error('Failed to fetch team info');
 
         const infoData = await infoResponse.json();
-        setTeamValue(infoData.teamValue);
-        setBank(infoData.bank);
         setGwTransfers(infoData.gwTransfers);
 
         if (transfersResponse.ok) {
@@ -100,18 +96,6 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <p className={styles.teamName}>{myTeamName}</p>
         </div>
       )}
-
-      {/* Squad Value */}
-      <CollapsibleSection title="Squad Value" defaultOpen={false}>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Team Value</span>
-          <span className={styles.statValue}>£{(teamValue / 10).toFixed(1)}m</span>
-        </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>In Bank</span>
-          <span className={styles.statValue}>£{(bank / 10).toFixed(1)}m</span>
-        </div>
-      </CollapsibleSection>
 
       {/* Transfers */}
       <CollapsibleSection title="Transfers" defaultOpen={false}>

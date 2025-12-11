@@ -2,11 +2,38 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.9 (December 11, 2025)
+**Current Version:** v2.4.10 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.10 - Team Value Boxes Below Pitch (Dec 11, 2025)
+**LAYOUT ENHANCEMENT:** Moved Squad Value info from collapsible section to prominent boxes below pitch
+- **Added Team Value Boxes:** 2 boxes displayed below pitch (after bench)
+  - **Team Value:** Shows total squad value (e.g., "£103.8m")
+  - **In Bank:** Shows available funds (e.g., "£0.0m")
+  - Positioned between pitch and stats sections
+  - Visible on both mobile and desktop layouts
+- **App Card Styling:** Boxes match other stat boxes design
+  - Dark gradient background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border: 1px solid rgba(255,255,255,0.1)
+  - Border-radius: 10px
+  - Centered text with uppercase labels
+  - Min-width: 100px, padding: 12px 20px
+  - Gap: 12px between boxes
+- **Data Formatting:** Values formatted as £X.Xm (e.g., £103.8m)
+  - Fetched from team info API (teamValue and bank in 0.1m units)
+  - Formula: £${(value / 10).toFixed(1)}m
+- **Removed Squad Value Section:** Deleted collapsible section from StatsPanel
+  - No duplicate information
+  - Cleaner stats panel
+  - Removed teamValue and bank state from StatsPanel
+- **Impact:** Squad value more prominent and visible, consistent box design, no need to expand section
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added teamValue/bank state, fetch data, team value boxes JSX)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (team value boxes styles)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed Squad Value section and related state)
 
 ### v2.4.9 - Remove Redundant Stats Sections (Dec 11, 2025)
 **CLEANUP:** Removed redundant "This Gameweek" and "Overall" stats sections now that data is shown in boxes above pitch

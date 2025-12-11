@@ -32,6 +32,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [overallPoints, setOverallPoints] = useState<number>(0);
   const [overallRank, setOverallRank] = useState<number>(0);
+  const [teamValue, setTeamValue] = useState<number>(0);
+  const [bank, setBank] = useState<number>(0);
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -63,6 +65,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
         setOverallPoints(data.overallPoints || 0);
         setOverallRank(data.overallRank || 0);
+        setTeamValue(data.teamValue || 0);
+        setBank(data.bank || 0);
       } catch (err: any) {
         console.error('Error fetching stats:', err);
       }
@@ -144,6 +148,23 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           onGWChange={setSelectedGW}
           showGWSelector={false}
         />
+
+        {/* Team Value Boxes */}
+        <div className={styles.teamValueBoxes}>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(teamValue / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>Team Value</div>
+          </div>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(bank / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>In Bank</div>
+          </div>
+        </div>
+
         <StatsPanel
           leagueId={leagueId}
           myTeamId={myTeamId}
@@ -164,14 +185,32 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           selectedGW={selectedGW}
           mode="full"
         />
-        <PitchView
-          leagueId={leagueId}
-          myTeamId={myTeamId}
-          selectedGW={selectedGW}
-          maxGW={maxGW}
-          onGWChange={setSelectedGW}
-          showGWSelector={true}
-        />
+        <div>
+          <PitchView
+            leagueId={leagueId}
+            myTeamId={myTeamId}
+            selectedGW={selectedGW}
+            maxGW={maxGW}
+            onGWChange={setSelectedGW}
+            showGWSelector={true}
+          />
+
+          {/* Team Value Boxes */}
+          <div className={styles.teamValueBoxes}>
+            <div className={styles.teamValueBox}>
+              <div className={styles.teamValueBoxValue}>
+                £{(teamValue / 10).toFixed(1)}m
+              </div>
+              <div className={styles.teamValueBoxLabel}>Team Value</div>
+            </div>
+            <div className={styles.teamValueBox}>
+              <div className={styles.teamValueBoxValue}>
+                £{(bank / 10).toFixed(1)}m
+              </div>
+              <div className={styles.teamValueBoxLabel}>In Bank</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

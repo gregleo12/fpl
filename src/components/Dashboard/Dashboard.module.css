@@ -930,6 +930,36 @@
   margin-top: 2px;
 }
 
+/* Team Value Boxes - Below pitch */
+.teamValueBoxes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 8px;
+}
+
+.teamValueBox {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 12px 20px;
+  text-align: center;
+  min-width: 100px;
+}
+
+.teamValueBoxValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.teamValueBoxLabel {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
 /* Desktop Layout - Two columns */
 .desktopLayout {
   display: none;
