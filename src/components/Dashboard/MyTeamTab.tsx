@@ -6,7 +6,6 @@ import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { TeamHeader } from '@/components/PitchView/TeamHeader';
 import { GWSelector } from '@/components/PitchView/GWSelector';
-import { QuickStats } from '@/components/PitchView/QuickStats';
 
 interface Props {
   data: any;
@@ -98,14 +97,15 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Mobile Layout */}
       <div className={styles.mobileLayout}>
-        <TeamHeader managerName={myManagerName} teamName={myTeamName} />
-        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
-        <QuickStats
+        <TeamHeader
+          managerName={myManagerName}
+          teamName={myTeamName}
           points={gwPoints}
           rank={gwRank}
           transfers={gwTransfers.count}
           hitCost={gwTransfers.cost}
         />
+        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
         <PitchView
           leagueId={leagueId}
           myTeamId={myTeamId}

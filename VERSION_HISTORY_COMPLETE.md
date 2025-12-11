@@ -2,11 +2,25 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.0 (December 11, 2025)
+**Current Version:** v2.4.1 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.1 - Compact Header - Merge Team Info + Stats (Dec 11, 2025)
+**UX IMPROVEMENT:** Saved vertical space by merging team header and stats into one compact bar
+- **Mobile Layout:** Merged TeamHeader and QuickStats into single compact component
+- **Layout:** Team info on left (team name primary, manager name secondary), stats on right
+- **Removed:** Separate QuickStats component from mobile layout
+- **Vertical Space Saved:** One row instead of two before pitch
+- **Stats:** Points, Rank, Transfers displayed inline with team info
+- **Responsive:** Further compacted on small screens (< 768px and < 375px)
+- **Impact:** Users see their pitch even faster with more compact mobile header
+- **Files:**
+  - Modified: `src/components/PitchView/TeamHeader.tsx` (added stats props and display)
+  - Modified: `src/components/PitchView/TeamHeader.module.css` (horizontal layout)
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed QuickStats, pass stats to TeamHeader)
 
 ### v2.4.0 - Mobile Layout Restructure (Dec 11, 2025)
 **MAJOR UX IMPROVEMENT:** Completely restructured My Team layout for mobile-first experience
