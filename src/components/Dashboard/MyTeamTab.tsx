@@ -6,6 +6,13 @@ import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { GWSelector } from '@/components/PitchView/GWSelector';
 
+// Format large numbers for readability
+function formatRank(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return Math.round(num / 1000) + 'K';
+  return num.toString();
+}
+
 interface Props {
   data: any;
   playerData: any;
@@ -21,6 +28,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [selectedGW, setSelectedGW] = useState<number>(1);
   const [maxGW, setMaxGW] = useState<number>(1);
   const [gwPoints, setGwPoints] = useState<number>(0);
+  const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [overallPoints, setOverallPoints] = useState<number>(0);
   const [overallRank, setOverallRank] = useState<number>(0);
@@ -43,15 +51,16 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     fetchLeagueInfo();
   }, [leagueId]);
 
-  // Fetch stats for overlay and overall stats
+  // Fetch stats for stat boxes
   useEffect(() => {
     async function fetchStats() {
       try {
         const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`);
         if (!response.ok) throw new Error('Failed to fetch stats');
         const data = await response.json();
-        setGwPoints(data.gwPoints);
-        setGwTransfers(data.gwTransfers);
+        setGwPoints(data.gwPoints || 0);
+        setGwRank(data.gwRank || 0);
+        setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
         setOverallPoints(data.overallPoints || 0);
         setOverallRank(data.overallRank || 0);
       } catch (err: any) {
@@ -98,21 +107,35 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Mobile Layout */}
       <div className={styles.mobileLayout}>
-        {/* Overall Stats Row */}
-        <div className={styles.overallStatsRow}>
-          <div className={styles.overallStat}>
-            <div className={styles.overallValue}>{overallPoints.toLocaleString()}</div>
-            <div className={styles.overallLabel}>Overall Points</div>
+        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
+
+        {/* Stat Boxes - 5 boxes in app card style */}
+        <div className={styles.statBoxesContainer}>
+          <div className={styles.statBox}>
+            <div className={styles.statBoxValue}>{gwPoints}</div>
+            <div className={styles.statBoxLabel}>GW Pts</div>
           </div>
-          <div className={styles.overallStat}>
-            <div className={styles.overallValue}>
-              <span className={styles.rankArrow}>▲</span> {overallRank.toLocaleString()}
-            </div>
-            <div className={styles.overallLabel}>Overall Rank</div>
+          <div className={styles.statBox}>
+            <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
+            <div className={styles.statBoxLabel}>GW Rank</div>
+          </div>
+          <div className={styles.statBox}>
+            <div className={styles.statBoxValue}>{gwTransfers.count}</div>
+            <div className={styles.statBoxLabel}>Transfers</div>
+            {gwTransfers.cost > 0 && (
+              <div className={styles.statBoxSub}>(-{gwTransfers.cost})</div>
+            )}
+          </div>
+          <div className={styles.statBox}>
+            <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
+            <div className={styles.statBoxLabel}>Total Pts</div>
+          </div>
+          <div className={styles.statBox}>
+            <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
+            <div className={styles.statBoxLabel}>Overall Rank</div>
           </div>
         </div>
 
-        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
         <PitchView
           leagueId={leagueId}
           myTeamId={myTeamId}
@@ -120,8 +143,6 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           maxGW={maxGW}
           onGWChange={setSelectedGW}
           showGWSelector={false}
-          gwPoints={gwPoints}
-          gwTransfers={gwTransfers}
         />
         <StatsPanel
           leagueId={leagueId}

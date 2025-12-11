@@ -2,11 +2,46 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.7 (December 11, 2025)
+**Current Version:** v2.4.8 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.8 - Stats Boxes Above Pitch - 5 Boxes in App Style (Dec 11, 2025)
+**MAJOR LAYOUT CHANGE:** Moved stats from pitch overlay to 5 separate boxes above pitch in app card style
+- **Removed Pitch Stats Overlay:** Stats no longer displayed ON the pitch
+  - Deleted stats overlay boxes from pitch (Points and Transfers)
+  - Goalkeeper now fully visible without overlay blocking view
+  - Cleaner pitch appearance
+- **Removed Overall Stats Row:** Deleted old 2-stat row above GW selector
+- **Added 5 Stat Boxes Above Pitch:** New card-style boxes showing all key stats
+  - **GW Points:** Current gameweek points (e.g., "66")
+  - **GW Rank:** Gameweek rank formatted (e.g., "1.3M" for 1,315,462)
+  - **Transfers:** Transfer count with hit cost in red if applicable (e.g., "2" with "(-4)")
+  - **Total Points:** Overall points with comma formatting (e.g., "896")
+  - **Overall Rank:** Overall rank formatted (e.g., "248K" for 247,994)
+- **Number Formatting:** Smart formatting for large numbers
+  - 1M+ shows as "X.XM" (e.g., "1.3M")
+  - 1K+ shows as "XK" (e.g., "248K")
+  - <1K shows as-is (e.g., "896")
+- **App Card Styling:** Boxes match Stats tab card design
+  - Dark gradient background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border: 1px solid rgba(255,255,255,0.1)
+  - Border-radius: 10px
+  - Centered text, uppercase labels
+  - Flexible width with min 60px, max 80px
+- **Responsive Layout:** 5 boxes wrap on mobile (3+2 or all in one row)
+  - Gap: 8px between boxes
+  - Centered alignment
+  - Padding: 0 8px on container
+- **Impact:** All key stats visible at a glance, cleaner pitch view, consistent card design, better mobile layout
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added 5 stat boxes, removed old row, added formatRank helper)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (stat boxes styles, removed old overall stats row)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed stats overlay, removed gwPoints/gwTransfers props)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed pitch stats overlay styles)
+  - Modified: `src/app/api/team/[teamId]/info/route.ts` (already returns gwRank - no changes needed)
 
 ### v2.4.7 - My Team - Copy FPL App Layout Exactly (Dec 11, 2025)
 **MAJOR REDESIGN:** Copied official FPL app layout exactly - no creativity, just matching the source

@@ -190,50 +190,6 @@
   z-index: 1;
 }
 
-/* Stats overlay */
-.pitchStatsOverlay {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  right: 8px;
-  display: flex;
-  justify-content: space-between;
-  z-index: 10;
-}
-
-.statBox {
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 10px 16px;
-  min-width: 85px;
-  text-align: center;
-}
-
-.statBoxValue {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-}
-
-.statBoxLabel {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 4px;
-}
-
-.statBoxCost {
-  font-size: 0.75rem;
-  color: #ef4444;
-  font-weight: 600;
-  background: rgba(239, 68, 68, 0.2);
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-top: 4px;
-  display: inline-block;
-}
-
 /* Pitch markings container */
 .pitchMarkings {
   position: absolute;
@@ -481,54 +437,5 @@
 
   .pitch::after {
     bottom: 60px; /* Adjust halfway line for mobile bench space */
-  }
-
-  /* Stats overlay adjustments for mobile */
-  .pitchStatsOverlay {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-  }
-
-  .statBox {
-    padding: 6px 10px;
-    min-width: 60px;
-  }
-
-  .statBoxValue {
-    font-size: 1.3rem;
-  }
-
-  .statBoxLabel {
-    font-size: 0.6rem;
-  }
-
-  .statBoxCost {
-    font-size: 0.65rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .pitchStatsOverlay {
-    top: 6px;
-    left: 6px;
-    right: 6px;
-  }
-
-  .statBox {
-    padding: 5px 8px;
-    min-width: 50px;
-  }
-
-  .statBoxValue {
-    font-size: 1.1rem;
-  }
-
-  .statBoxLabel {
-    font-size: 0.55rem;
-  }
-
-  .statBoxCost {
-    font-size: 0.6rem;
   }
 }

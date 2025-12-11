@@ -28,21 +28,13 @@ interface Props {
   maxGW: number;
   onGWChange: (gw: number) => void;
   showGWSelector?: boolean;
-  gwPoints?: number;
-  gwTransfers?: { count: number; cost: number };
 }
 
-export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, showGWSelector = true, gwPoints: propGwPoints, gwTransfers: propGwTransfers }: Props) {
+export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, showGWSelector = true }: Props) {
   const [picks, setPicks] = useState<Player[]>([]);
   const [playerData, setPlayerData] = useState<{[key: number]: PlayerInfo}>({});
-  const [gwPoints, setGwPoints] = useState<number>(0);
-  const [transfers, setTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // Use props if provided, otherwise use internal state
-  const displayPoints = propGwPoints !== undefined ? propGwPoints : gwPoints;
-  const displayTransfers = propGwTransfers || transfers;
 
   // Fetch team data for selected GW
   useEffect(() => {
@@ -64,8 +56,6 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
 
         setPicks(data.picks);
         setPlayerData(data.playerData);
-        setGwPoints(data.gwPoints);
-        setTransfers(data.transfers);
 
       } catch (err: any) {
         setError(err.message || 'Failed to load team data');
@@ -158,21 +148,6 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
           {/* Corner arcs - top only */}
           <div className={`${styles.cornerArc} ${styles.topLeft}`}></div>
           <div className={`${styles.cornerArc} ${styles.topRight}`}></div>
-        </div>
-
-        {/* Stats overlay */}
-        <div className={styles.pitchStatsOverlay}>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{displayPoints}</div>
-            <div className={styles.statBoxLabel}>Points</div>
-          </div>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{displayTransfers.count}</div>
-            <div className={styles.statBoxLabel}>Transfers</div>
-            {displayTransfers.cost > 0 && (
-              <div className={styles.statBoxCost}>-{displayTransfers.cost} pts</div>
-            )}
-          </div>
         </div>
 
         {/* Goalkeepers */}
