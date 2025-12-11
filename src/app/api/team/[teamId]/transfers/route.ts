@@ -114,14 +114,38 @@ export async function GET(
       }
     }
 
+    // Fetch entry history to get accurate hits data
+    const historyResponse = await fetch(
+      `https://fantasy.premierleague.com/api/entry/${teamId}/history/`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+      }
+    );
+
+    let totalHits = 0;
+    let totalHitsCost = 0;
+
+    if (historyResponse.ok) {
+      const historyData = await historyResponse.json();
+      // Sum all event_transfers_cost from current season
+      totalHitsCost = historyData.current.reduce(
+        (sum: number, gw: any) => sum + (gw.event_transfers_cost || 0),
+        0
+      );
+      // Each hit is -4 points
+      totalHits = totalHitsCost / 4;
+    }
+
     // Calculate totals
     const totalTransfers = transfers.length;
-    const totalHits = transfers.filter((t: any) => t.event !== 1).length;
 
     return NextResponse.json({
       transfers: enrichedTransfers,
       totalTransfers: totalTransfers,
-      totalHits: Math.max(0, Math.floor((totalTransfers - totalHits) / 1)), // Approximate hits
+      totalHits: totalHits,
+      totalHitsCost: totalHitsCost,
       currentGW: currentGW,
       currentGWTransfers: currentGWTransfersWithPoints
     });

@@ -2,11 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.1 (December 11, 2025)
+**Current Version:** v2.4.2 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.2 - Stats Section Cleanup (Dec 11, 2025)
+**UX IMPROVEMENT:** Removed noise and fixed incorrect hits calculation
+- **Removed:** "Highest Points" from This Gameweek section (not useful information)
+- **Fixed:** "Hits Taken" now shows correct season total instead of 0
+- **API Update:** Fetches entry history to sum all `event_transfers_cost` values
+- **Calculation:** Divides total cost by 4 to get number of hits
+- **Display:** Shows both hit count and total points lost (e.g., "3 (-12pts)")
+- **Impact:** Users now see accurate season hits data
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed highestPoints, updated display)
+  - Modified: `src/app/api/team/[teamId]/transfers/route.ts` (fixed hits calculation)
 
 ### v2.4.1 - Compact Header - Merge Team Info + Stats (Dec 11, 2025)
 **UX IMPROVEMENT:** Saved vertical space by merging team header and stats into one compact bar

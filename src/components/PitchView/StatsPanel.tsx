@@ -48,9 +48,9 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
   const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
   const [averagePoints, setAveragePoints] = useState<number>(0);
-  const [highestPoints, setHighestPoints] = useState<number>(0);
   const [transfersTotal, setTransfersTotal] = useState<number>(0);
   const [transfersHits, setTransfersHits] = useState<number>(0);
+  const [transfersHitsCost, setTransfersHitsCost] = useState<number>(0);
   const [currentGW, setCurrentGW] = useState<number>(0);
   const [currentGWTransfers, setCurrentGWTransfers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,12 +76,12 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         setGwRank(infoData.gwRank);
         setGwTransfers(infoData.gwTransfers);
         setAveragePoints(infoData.averagePoints);
-        setHighestPoints(infoData.highestPoints);
 
         if (transfersResponse.ok) {
           const transfersData = await transfersResponse.json();
           setTransfersTotal(transfersData.totalTransfers);
           setTransfersHits(transfersData.totalHits);
+          setTransfersHitsCost(transfersData.totalHitsCost || 0);
           setCurrentGW(transfersData.currentGW || 0);
           setCurrentGWTransfers(transfersData.currentGWTransfers || []);
         }
@@ -134,10 +134,6 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <span className={styles.statLabel}>Average Points</span>
           <span className={styles.statValue}>{averagePoints}</span>
         </div>
-        <div className={styles.statRow}>
-          <span className={styles.statLabel}>Highest Points</span>
-          <span className={styles.statValue}>{highestPoints}</span>
-        </div>
       </CollapsibleSection>
 
       {/* Overall Stats */}
@@ -178,7 +174,7 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
           <span className={styles.statLabel}>Hits Taken</span>
           <span className={styles.statValue}>
             {transfersHits}
-            {transfersHits > 0 && <span className={styles.transferCost}> (-{transfersHits * 4}pts)</span>}
+            {transfersHitsCost > 0 && <span className={styles.transferCost}> (-{transfersHitsCost}pts)</span>}
           </span>
         </div>
       </CollapsibleSection>
