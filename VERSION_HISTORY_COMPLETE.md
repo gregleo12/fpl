@@ -2,11 +2,49 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.12 (December 11, 2025)
+**Current Version:** v2.4.13 (December 11, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.13 - Increase Player Card Size & Improve Pitch Markings (Dec 11, 2025)
+**SIZE & VISIBILITY:** Increased player card sizes and made pitch markings more visible
+- **Increased Player Card Sizes:** Players were too small to see clearly
+  - Card width: 58-68px (was 52-60px)
+  - Kit container: 48x52px (was 40x44px)
+  - Name font: 0.65rem (was 0.6rem)
+  - Name padding: 3px 6px (was 2px 4px)
+  - Name max-width: 66px (was 58px)
+  - Points font: 0.75rem (was 0.65rem)
+  - Points padding: 4px 12px (was 3px 10px)
+  - Points min-width: 32px (was 28px)
+- **Mobile Player Card Sizes:** Scaled appropriately for small screens
+  - Card width: 54-64px (was 46-50px)
+  - Kit container: 44x48px (was 30x34px)
+  - Name font: 0.6rem (was 0.48rem)
+  - Name max-width: 60px (was 50px)
+  - Points font: 0.7rem (was 0.6rem)
+  - Points padding: 3px 10px
+  - Bench cards: 48-56px wide
+- **Improved Pitch Markings:** Made lines more visible with better sizing
+  - Pitch min-height: 420px (was 400px)
+  - Penalty box: 200x75px with rgba(255,255,255,0.12) lines
+  - 6-yard box: 110x32px with 3px border-radius
+  - Penalty spot: 5x5px at top 55px
+  - Goal frame: 80x22px with subtle net (7px grid)
+  - Halfway line: bottom 85px, 8% margin, 0.12 opacity
+  - All lines use consistent subtle white: rgba(255,255,255,0.12)
+- **Mobile Pitch Adjustments:** Scaled pitch markings for mobile
+  - Penalty box: 160x60px
+  - 6-yard box: 90x26px
+  - Penalty spot: top 45px
+  - Goal frame: 70x18px
+  - Halfway line: bottom 75px
+- **Impact:** Players are now clearly visible and readable, pitch markings provide proper football field context
+- **Files:**
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (increased all card sizes)
+  - Modified: `src/components/PitchView/PitchView.module.css` (improved pitch markings visibility)
 
 ### v2.4.12 - Pitch Redesign - App UI Colors & Simple Line Drawing (Dec 11, 2025)
 **VISUAL REDESIGN:** Replaced green grass pitch with dark app UI colors and simple line markings
