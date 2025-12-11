@@ -880,27 +880,29 @@
   }
 }
 
-/* Pitch View Two-Column Layout */
-.pitchViewLayout {
+/* Mobile Layout - Single column with reordered elements */
+.mobileLayout {
   display: flex;
-  gap: 1.5rem;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-/* Desktop: Two columns */
+/* Desktop Layout - Two columns */
+.desktopLayout {
+  display: none;
+}
+
 @media (min-width: 1024px) {
-  .pitchViewLayout {
+  /* Hide mobile layout on desktop */
+  .mobileLayout {
+    display: none;
+  }
+
+  /* Show desktop layout */
+  .desktopLayout {
     display: grid;
     grid-template-columns: 30% 70%;
     gap: 1.5rem;
     align-items: start;
-  }
-}
-
-/* Tablet and Mobile: Single column */
-@media (max-width: 1023px) {
-  .pitchViewLayout {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
   }
 }

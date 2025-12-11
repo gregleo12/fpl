@@ -27,9 +27,10 @@ interface Props {
   selectedGW: number;
   maxGW: number;
   onGWChange: (gw: number) => void;
+  showGWSelector?: boolean;
 }
 
-export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange }: Props) {
+export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, showGWSelector = true }: Props) {
   const [picks, setPicks] = useState<Player[]>([]);
   const [playerData, setPlayerData] = useState<{[key: number]: PlayerInfo}>({});
   const [gwPoints, setGwPoints] = useState<number>(0);
@@ -114,25 +115,27 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange }:
   return (
     <div className={styles.container}>
       {/* GW Selector */}
-      <div className={styles.gwSelector}>
-        <button
-          className={styles.gwButton}
-          onClick={() => onGWChange(Math.max(1, selectedGW - 1))}
-          disabled={selectedGW <= 1}
-        >
-          ←
-        </button>
-        <div className={styles.gwDisplay}>
-          Gameweek {selectedGW}
+      {showGWSelector && (
+        <div className={styles.gwSelector}>
+          <button
+            className={styles.gwButton}
+            onClick={() => onGWChange(Math.max(1, selectedGW - 1))}
+            disabled={selectedGW <= 1}
+          >
+            ←
+          </button>
+          <div className={styles.gwDisplay}>
+            Gameweek {selectedGW}
+          </div>
+          <button
+            className={styles.gwButton}
+            onClick={() => onGWChange(Math.min(maxGW, selectedGW + 1))}
+            disabled={selectedGW >= maxGW}
+          >
+            →
+          </button>
         </div>
-        <button
-          className={styles.gwButton}
-          onClick={() => onGWChange(Math.min(maxGW, selectedGW + 1))}
-          disabled={selectedGW >= maxGW}
-        >
-          →
-        </button>
-      </div>
+      )}
 
       {/* Pitch */}
       <div className={styles.pitch}>

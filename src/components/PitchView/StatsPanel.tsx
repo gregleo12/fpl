@@ -35,10 +35,10 @@ interface Props {
   myTeamName: string;
   myManagerName: string;
   selectedGW: number;
-  mode?: 'desktop' | 'mobile-top' | 'mobile-bottom';
+  mode?: 'full' | 'collapsible-only';
 }
 
-export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'desktop' }: Props) {
+export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, selectedGW, mode = 'full' }: Props) {
   const [overallPoints, setOverallPoints] = useState<number>(0);
   const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
@@ -105,11 +105,13 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
 
   return (
     <div className={styles.panel}>
-      {/* Team Header */}
-      <div className={styles.teamHeader}>
-        <h2 className={styles.managerName}>{myManagerName}</h2>
-        <p className={styles.teamName}>{myTeamName}</p>
-      </div>
+      {/* Team Header - only in full mode */}
+      {mode === 'full' && (
+        <div className={styles.teamHeader}>
+          <h2 className={styles.managerName}>{myManagerName}</h2>
+          <p className={styles.teamName}>{myTeamName}</p>
+        </div>
+      )}
 
       {/* This Gameweek */}
       <CollapsibleSection title="This Gameweek" defaultOpen={true}>

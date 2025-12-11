@@ -1,0 +1,55 @@
+/* GW Selector */
+.gwSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.gwButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gwButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.gwButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gwDisplay {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Mobile - slightly smaller */
+@media (max-width: 768px) {
+  .gwButton {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .gwDisplay {
+    font-size: 1rem;
+    min-width: 110px;
+  }
+}

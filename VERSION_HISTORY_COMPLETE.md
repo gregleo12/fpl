@@ -2,7 +2,42 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.3.1 (December 11, 2025)
+**Current Version:** v2.4.0 (December 11, 2025)
+
+---
+
+## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.0 - Mobile Layout Restructure (Dec 11, 2025)
+**MAJOR UX IMPROVEMENT:** Completely restructured My Team layout for mobile-first experience
+- **Mobile Layout (< 1024px):**
+  - Team header with manager name and team name at top
+  - GW selector moved above pitch for easier access
+  - Quick stats row (Points | Rank | Transfers) before pitch
+  - Pitch and bench fully visible without scrolling past stats wall
+  - Detailed collapsible stats sections below pitch
+- **Desktop Layout (≥ 1024px):**
+  - Unchanged: Two-column layout with full stats panel on left, pitch on right
+  - Stats panel shows team header and all sections (full mode)
+  - Pitch view includes GW selector
+- **New Components:**
+  - `TeamHeader`: Displays manager and team name in mobile header
+  - `GWSelector`: Standalone gameweek selector (reusable)
+  - `QuickStats`: Horizontal stats row for mobile (Points, Rank, Transfers)
+- **Component Updates:**
+  - `StatsPanel`: Added `mode` prop ('full' | 'collapsible-only') for responsive rendering
+  - `PitchView`: Added `showGWSelector` prop to conditionally show/hide GW selector
+  - `MyTeamTab`: Separate mobile and desktop layouts with responsive CSS switching
+- **Impact:** Mobile users see their team immediately without scrolling through massive stats panel
+- **Impact:** Better information hierarchy on mobile with quick stats at top, detailed stats below
+- **Files:**
+  - Created: `src/components/PitchView/TeamHeader.tsx`, `src/components/PitchView/TeamHeader.module.css`
+  - Created: `src/components/PitchView/GWSelector.tsx`, `src/components/PitchView/GWSelector.module.css`
+  - Created: `src/components/PitchView/QuickStats.tsx`, `src/components/PitchView/QuickStats.module.css`
+  - Modified: `src/components/PitchView/StatsPanel.tsx`
+  - Modified: `src/components/PitchView/PitchView.tsx`
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx`
+  - Modified: `src/components/Dashboard/Dashboard.module.css`
 
 ---
 
