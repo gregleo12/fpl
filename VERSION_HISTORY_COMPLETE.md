@@ -2,11 +2,37 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.18 (December 12, 2025)
+**Current Version:** v2.4.19 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.19 - Stat Boxes Match Pitch Width - Dynamic Alignment (Dec 12, 2025)
+**ALIGNMENT:** Removed width constraints so stat boxes dynamically fill to match pitch width
+- **Problem:** Stat boxes (both rows) were narrower than pitch container due to min/max-width constraints
+- **Solution:** Use flex: 1 with no width limits to fill available space
+- **Removed Width Constraints:**
+  - Deleted `min-width: 95px` from `.statBox`
+  - Deleted `max-width: 115px` from `.statBox`
+  - Deleted `.statBoxRow:last-child .statBox` rule (min-width 120px, max-width 150px)
+  - Boxes now use `flex: 1` only - equal distribution within each row
+- **Updated Container Padding:**
+  - `.statBoxesContainer`: padding changed from `12px` to `0 1rem` (horizontal only)
+  - Now matches PitchView `.container` padding: 1rem
+  - Mobile: padding changed from `0 8px` to `0 0.75rem` (matches mobile pitch padding)
+- **Updated Row Layout:**
+  - `.statBoxRow`: added `width: 100%` for full width expansion
+  - Boxes distribute equally: Row 1 has 3 boxes, Row 2 has 2 boxes
+  - Row 2 boxes naturally larger since there are only 2 (flex: 1 handles this)
+- **Mobile Breakpoint (<400px):**
+  - Removed `min-width: 80px` and `max-width: 95px` from `.statBox`
+  - Removed `.statBoxRow:last-child .statBox` mobile override
+  - Updated padding to `0 0.75rem`
+- **Visual Result:** All containers (Row 1, Row 2, Pitch) now align perfectly with same width
+- **Design Goal:** Visual consistency - all elements span the same horizontal space
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (removed constraints, matched padding)
 
 ### v2.4.18 - Fix StatsPanel Background - Use Purple Gradient (Dec 12, 2025)
 **CONSISTENCY:** Updated StatsPanel .panel class to use purple gradient, removing nested container effect

@@ -892,13 +892,14 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
+  padding: 0 1rem;
 }
 
 .statBoxRow {
   display: flex;
   justify-content: center;
   gap: 8px;
+  width: 100%;
 }
 
 .statBox {
@@ -906,9 +907,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
   padding: 14px 12px;
-  min-width: 95px;
   flex: 1;
-  max-width: 115px;
   text-align: center;
 }
 
@@ -925,12 +924,6 @@
   text-transform: uppercase;
   margin-top: 6px;
   letter-spacing: 0.03em;
-}
-
-/* Row 2 boxes - slightly wider since only 2 */
-.statBoxRow:last-child .statBox {
-  min-width: 120px;
-  max-width: 150px;
 }
 
 .statBoxSub {
@@ -975,7 +968,7 @@
 @media (max-width: 400px) {
   .statBoxesContainer {
     gap: 6px;
-    padding: 8px;
+    padding: 0 0.75rem;
   }
 
   .statBoxRow {
@@ -984,14 +977,7 @@
 
   .statBox {
     padding: 10px 8px;
-    min-width: 80px;
-    max-width: 95px;
     border-radius: 10px;
-  }
-
-  .statBoxRow:last-child .statBox {
-    min-width: 100px;
-    max-width: 120px;
   }
 
   .statBoxValue {
