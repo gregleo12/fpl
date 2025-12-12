@@ -47,10 +47,10 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
   useEffect(() => {
     async function fetchStats() {
       try {
-        // Fetch entry info for overall stats and team value
+        // Fetch entry info for overall stats and team value, and transfers for selected GW
         const [infoResponse, transfersResponse] = await Promise.all([
           fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`),
-          fetch(`/api/team/${myTeamId}/transfers`)
+          fetch(`/api/team/${myTeamId}/transfers?gw=${selectedGW}`)
         ]);
 
         if (!infoResponse.ok) throw new Error('Failed to fetch team info');

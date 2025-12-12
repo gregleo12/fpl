@@ -10,6 +10,10 @@ export async function GET(
   try {
     const { teamId } = params;
 
+    // Get gameweek from query params, default to current if not provided
+    const searchParams = request.nextUrl.searchParams;
+    const requestedGW = searchParams.get('gw');
+
     // Fetch transfers
     const transfersResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/transfers/`,
@@ -43,8 +47,9 @@ export async function GET(
 
     const bootstrapData = await bootstrapResponse.json();
 
-    // Get current GW
+    // Get current GW from bootstrap or use requested GW
     const currentGW = bootstrapData.events.find((e: any) => e.is_current)?.id || 1;
+    const targetGW = requestedGW ? parseInt(requestedGW) : currentGW;
 
     // Create player lookup
     const playerLookup: { [key: number]: any } = {};
@@ -72,15 +77,15 @@ export async function GET(
       }
     }));
 
-    // Get current GW transfers
-    const currentGWTransfers = transfers.filter((t: any) => t.event === currentGW);
+    // Get transfers for target GW
+    const targetGWTransfers = transfers.filter((t: any) => t.event === targetGW);
 
-    // Fetch player points for current GW transfers
-    let currentGWTransfersWithPoints: any[] = [];
-    if (currentGWTransfers.length > 0) {
+    // Fetch player points for target GW transfers
+    let targetGWTransfersWithPoints: any[] = [];
+    if (targetGWTransfers.length > 0) {
       try {
         const picksResponse = await fetch(
-          `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
+          `https://fantasy.premierleague.com/api/entry/${teamId}/event/${targetGW}/picks/`,
           {
             headers: {
               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -91,13 +96,32 @@ export async function GET(
         if (picksResponse.ok) {
           const picksData = await picksResponse.json();
 
-          // Create player points lookup from bootstrap data
-          const playerPointsLookup: { [key: number]: number } = {};
-          bootstrapData.elements.forEach((player: any) => {
-            playerPointsLookup[player.id] = player.event_points || 0;
-          });
+          // Fetch live data for target GW to get accurate points
+          const liveResponse = await fetch(
+            `https://fantasy.premierleague.com/api/event/${targetGW}/live/`,
+            {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+              }
+            }
+          );
 
-          currentGWTransfersWithPoints = currentGWTransfers.map((transfer: any) => ({
+          let playerPointsLookup: { [key: number]: number } = {};
+
+          if (liveResponse.ok) {
+            const liveData = await liveResponse.json();
+            // Use live data for accurate GW points
+            liveData.elements.forEach((player: any) => {
+              playerPointsLookup[player.id] = player.stats.total_points || 0;
+            });
+          } else {
+            // Fallback to bootstrap data (only accurate for current GW)
+            bootstrapData.elements.forEach((player: any) => {
+              playerPointsLookup[player.id] = player.event_points || 0;
+            });
+          }
+
+          targetGWTransfersWithPoints = targetGWTransfers.map((transfer: any) => ({
             playerOut: {
               ...playerLookup[transfer.element_out],
               points: playerPointsLookup[transfer.element_out] || 0
@@ -110,7 +134,7 @@ export async function GET(
           }));
         }
       } catch (err) {
-        console.error('Error fetching current GW picks:', err);
+        console.error('Error fetching target GW picks:', err);
       }
     }
 
@@ -146,8 +170,8 @@ export async function GET(
       totalTransfers: totalTransfers,
       totalHits: totalHits,
       totalHitsCost: totalHitsCost,
-      currentGW: currentGW,
-      currentGWTransfers: currentGWTransfersWithPoints
+      currentGW: targetGW,
+      currentGWTransfers: targetGWTransfersWithPoints
     });
   } catch (error: any) {
     console.error('Error fetching transfers:', error);
