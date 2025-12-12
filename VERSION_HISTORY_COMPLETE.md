@@ -2,11 +2,71 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 210+ versions
-**Current Version:** v2.4.44 (December 12, 2025)
+**Current Version:** v2.4.45 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.45 - Add RivalFPL Branding to Welcome Screen (Dec 12, 2025)
+**BRANDING:** Added RivalFPL logo to welcome screen above existing title
+- **Purpose:** Establish brand identity with RivalFPL logo on first screen users see
+  - Logo displays prominently at top of welcome screen
+  - Positioned above "FPL H2H Analytics" title
+  - Creates strong brand presence on landing page
+- **Logo Design:**
+  - Text-based logo using CSS/HTML: "Rival/FPL"
+  - Three components: "Rival" + "/" + "FPL"
+  - Color scheme:
+    - "Rival": White (#ffffff) - matches text on dark background
+    - "/": FPL green (#00ff87) - official FPL brand color
+    - "FPL": FPL green (#00ff87) - official FPL brand color
+  - Diagonal slash connects "Rival" to "FPL"
+  - Clean, modern, professional appearance
+- **Implementation:**
+  - **1. JSX Structure (page.tsx:37-41):**
+    - Added `.logo` div above existing title
+    - Three `<span>` elements: `.logoRival`, `.logoSlash`, `.logoFPL`
+    - Flex container for horizontal alignment
+  - **2. Typography & Styling (landing.module.css:17-40):**
+    - Font: Poppins/Montserrat with fallbacks
+    - Weight: 700 (bold)
+    - Size: 3rem desktop (slightly smaller than 3.5rem title)
+    - Letter-spacing: -1px (tight, modern look)
+    - Slash: italic style with -2px margins (tightened spacing)
+    - Centered alignment via flexbox
+    - Margin bottom: 1.5rem (space before title)
+  - **3. Responsive Design:**
+    - Desktop (>768px): 3rem, 1.5rem margin
+    - Tablet (≤768px): 2.25rem, 1.25rem margin
+    - Mobile (≤480px): 1.75rem, 1rem margin
+    - Scales proportionally with screen size
+- **Result:** Professional branding on welcome screen
+  - ✓ RivalFPL logo prominently displayed
+  - ✓ Positioned above existing FPL H2H Analytics title
+  - ✓ Uses official FPL brand colors (#00ff87 green)
+  - ✓ Clean, modern text-based design
+  - ✓ Responsive across all screen sizes
+  - ✓ Strong brand identity established
+- **Visual Hierarchy:**
+  - RivalFPL logo (top, 3rem)
+  - FPL H2H Analytics title (3.5rem)
+  - Subtitle (1.2rem)
+  - League input form
+- **Technical Notes:**
+  - Text-based logo (no image assets needed)
+  - CSS-only implementation
+  - Minimal bundle size impact (+41 lines)
+  - Flexible for future design iterations
+- **Future Enhancements (not in this version):**
+  - Page title update to "RivalFPL"
+  - PWA manifest name update
+  - Favicon with RivalFPL branding
+- **Implements:** Brief K-19 specifications (RivalFPL branding)
+- **Files:**
+  - Modified: `src/app/page.tsx` (added logo markup)
+  - Modified: `src/app/landing.module.css` (added logo styles + responsive)
+  - Modified: `package.json` (v2.4.44 → v2.4.45)
 
 ### v2.4.44 - Fix Breakpoint Mismatch (Align to 769px) (Dec 12, 2025)
 **BUG FIX:** Fixed layout inconsistency caused by mismatched media query breakpoints
