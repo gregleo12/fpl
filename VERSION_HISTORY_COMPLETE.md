@@ -2,11 +2,48 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 210+ versions
-**Current Version:** v2.4.41 (December 12, 2025)
+**Current Version:** v2.4.42 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.42 - Remove Pitch Markings for Cleaner View (Dec 12, 2025)
+**VISUAL SIMPLIFICATION:** Removed all pitch markings for cleaner, simpler pitch view
+- **Problem:** Pitch markings (goal, boxes, arcs, circles, border) added visual clutter
+  - Too many lines and elements on the pitch
+  - Distracted from the player cards
+  - Not essential for understanding team formation
+- **Solution:** Remove all pitch markings, keep only purple gradient background and bench separator
+- **Changes:**
+  - **1. TSX Cleanup:**
+    - Removed entire `<div className={styles.pitchMarkings}>` section from PitchView.tsx
+    - Removed 8 pitch marking divs: pitchBorder, goalFrame, sixYardBox, penaltyArea, penaltySpot, penaltyArc, halfwayLine, centerCircle
+    - Kept bench separator line (border-top on .bench class)
+  - **2. CSS Cleanup:**
+    - Commented out all pitch marking CSS classes (desktop + mobile) in PitchView.module.css
+    - Marked as "REMOVED (v2.4.42)" with explanation
+    - Preserved CSS in comments for potential restoration if needed
+    - Kept bench border-top: 2px solid rgba(255,255,255,0.2) for separation
+- **Result:** Clean, minimal pitch view
+  - ✓ Purple gradient background only
+  - ✓ Player cards in formation clearly visible
+  - ✓ Bench separator line maintained
+  - ✓ No distracting pitch lines
+  - ✓ Cleaner, more modern look
+  - ✓ Focus on players, not geometry
+- **Note:** Max-width already correctly set to 1400px from v2.4.41
+  - CSS variable --app-max-width: 1400px in globals.css
+  - Applied to nav bar, content, and My Team content
+  - No changes needed for max-width in this version
+- **Visual Comparison:**
+  - Before: Purple gradient + 8 pitch markings (border, goal, boxes, arcs, circles)
+  - After: Purple gradient + bench separator only
+- **Implements:** Brief K-17 specifications (remove pitch markings, max-width already correct)
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed pitch markings div, -13 lines)
+  - Modified: `src/components/PitchView/PitchView.module.css` (commented out pitch marking CSS)
+  - Modified: `package.json` (v2.4.41 → v2.4.42)
 
 ### v2.4.41 - Max-Width Consistency at 1400px (Dec 12, 2025)
 **LAYOUT CONSISTENCY:** Unified max-width of 1400px for all layout elements using CSS variables for consistent layout at larger screen widths
