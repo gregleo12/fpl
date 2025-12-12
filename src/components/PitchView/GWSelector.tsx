@@ -6,9 +6,10 @@ interface Props {
   selectedGW: number;
   maxGW: number;
   onGWChange: (gw: number) => void;
+  isLive?: boolean;
 }
 
-export function GWSelector({ selectedGW, maxGW, onGWChange }: Props) {
+export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false }: Props) {
   return (
     <div className={styles.gwSelector}>
       <button
@@ -22,6 +23,7 @@ export function GWSelector({ selectedGW, maxGW, onGWChange }: Props) {
       <div className={styles.gwDisplay}>
         <span className={styles.gwLabel}>GW</span>
         <span className={styles.gwNumber}>{selectedGW}</span>
+        {isLive && <span className={styles.liveBadge}>LIVE</span>}
       </div>
 
       <button

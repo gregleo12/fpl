@@ -27,6 +27,8 @@ interface Props {
 export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
   const [selectedGW, setSelectedGW] = useState<number>(1);
   const [maxGW, setMaxGW] = useState<number>(1);
+  const [isLiveGW, setIsLiveGW] = useState<boolean>(false);
+  const [liveGWNumber, setLiveGWNumber] = useState<number>(0);
   const [gwPoints, setGwPoints] = useState<number>(0);
   const [gwRank, setGwRank] = useState<number>(0);
   const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
@@ -45,6 +47,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         const currentGW = data.isCurrentGWLive ? data.liveGameweekNumber : (data.activeGW || 1);
         setSelectedGW(currentGW);
         setMaxGW(data.maxGW || 1);
+        setIsLiveGW(data.isCurrentGWLive || false);
+        setLiveGWNumber(data.liveGameweekNumber || 0);
       } catch (err: any) {
         console.error('Error fetching league info:', err);
       }
@@ -111,7 +115,12 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Unified Layout - Same on all screen sizes */}
       <div className={styles.myTeamContent}>
-        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
+        <GWSelector
+          selectedGW={selectedGW}
+          maxGW={maxGW}
+          onGWChange={setSelectedGW}
+          isLive={isLiveGW && selectedGW === liveGWNumber}
+        />
 
         {/* Stat Boxes - 2 Rows */}
         <div className={styles.statBoxesContainer}>
