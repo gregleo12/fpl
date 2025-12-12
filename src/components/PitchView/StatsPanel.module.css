@@ -205,10 +205,10 @@
 
 /* GW Transfers - Static Container */
 .gwTransfersContainer {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 1.5rem;
   margin-top: 12px;
 }
 
@@ -229,9 +229,9 @@
 
 /* Collapsible Sections - Match app card style */
 .collapsibleSection {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 16px;
   margin-bottom: 12px;
   overflow: hidden;
 }

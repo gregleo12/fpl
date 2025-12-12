@@ -146,11 +146,11 @@
 
 /* Pitch - half-pitch with integrated bench */
 .pitch {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
   padding: 1rem 0.5rem;
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   min-height: 420px;
 }
 

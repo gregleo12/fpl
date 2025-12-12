@@ -2,11 +2,46 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.14 (December 12, 2025)
+**Current Version:** v2.4.15 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.15 - Use Exact Stats Tab CSS for All Containers (Dec 12, 2025)
+**CONSISTENCY:** Applied Stats tab styling to all My Team containers for cohesive design
+- **Purple Gradient Background:** Changed all containers to Stats tab gradient
+  - Old: `linear-gradient(135deg, #1e293b 0%, #0f172a 100%)` (dark blue)
+  - New: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)` (purple/magenta)
+  - Source: `/src/components/Stats/season/Leaderboard.module.css` `.card`
+- **Increased Border Radius:** Changed from 12px to 16px for all containers
+  - More rounded corners match Stats tab appearance
+- **Updated Stat Boxes (5 above pitch):**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 14px 10px (slightly increased for better proportion)
+- **Updated Team Value Boxes (2 below pitch):**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 16px 24px (unchanged)
+- **Updated Pitch Container:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Border and padding unchanged
+- **Updated GW Transfers Container:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 1.5rem (increased from 16px for consistency)
+- **Updated Collapsible Sections:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Overflow: hidden (unchanged)
+- **Impact:** My Team tab now matches Stats tab appearance with unified purple gradient theme
+- **Design Goal:** App-wide visual consistency - all tabs feel like the same application
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (stat boxes, team value boxes)
+  - Modified: `src/components/PitchView/PitchView.module.css` (pitch container)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (GW transfers, collapsible sections)
 
 ### v2.4.14 - Fix Container Styling + GW Transfers Static Display (Dec 12, 2025)
 **CONSISTENCY:** Made all boxes match app UI styling, converted GW Transfers to static display
