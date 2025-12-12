@@ -1,12 +1,33 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 194+ versions
-**Current Version:** v2.4.24 (December 12, 2025)
+**Total Releases:** 195+ versions
+**Current Version:** v2.4.25 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.25 - Fix Pitch Width and Spacing (Dec 12, 2025)
+**LAYOUT FIX:** Pitch container now follows same width and spacing rules as other containers
+- **Problem:** Pitch was narrower than stat boxes above it and had inconsistent vertical spacing
+  - Pitch had `max-width: 600px` limiting its width
+  - Pitch had `margin: 0 auto` centering it (breaking edge-to-edge alignment)
+  - Pitch had `padding: 1rem` instead of relying on parent's padding
+  - Vertical gaps around pitch were larger than the consistent 8px between other elements
+- **Solution:** Removed all width constraints and margins from pitch container
+- **Changes to `.container` class:**
+  - Removed `max-width: 600px` (was limiting width)
+  - Removed `margin: 0 auto` (was centering, breaking alignment)
+  - Removed `padding: 1rem` (parent handles padding)
+  - Set to `width: 100%` only
+- **Changes to Mobile @media query:**
+  - Removed `padding: 0.75rem` from `.container`
+  - Kept `width: 100%` only
+- **Result:** Pitch now fills 100% width like all other containers with consistent 8px vertical gaps
+- **Design Principle Applied:** "ONE parent controls spacing. Children just fill 100% width." - Pitch is no exception
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed width constraints and padding)
 
 ### v2.4.24 - Fix Container Widths and Spacing Consistency (Dec 12, 2025)
 **LAYOUT FIX:** All containers now have same width and consistent spacing via single parent wrapper

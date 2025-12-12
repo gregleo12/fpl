@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.25 (Dec 12)** - 🎨 Fix pitch width and spacing - remove constraints, match other containers
 - **v2.4.24 (Dec 12)** - 🎨 Fix container widths and spacing consistency - single parent controls all spacing
 - **v2.4.23 (Dec 12)** - 🎨 Copy Stats tab GW selector EXACTLY - compact dark design
 - **v2.4.22 (Dec 12)** - 🎨 Add proper half-pitch markings inside container
