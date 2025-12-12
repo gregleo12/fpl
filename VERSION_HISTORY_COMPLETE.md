@@ -1,12 +1,53 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 207+ versions
-**Current Version:** v2.4.37 (December 12, 2025)
+**Total Releases:** 208+ versions
+**Current Version:** v2.4.38 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.38 - Proper Pitch Geometry with True Semicircles (Dec 12, 2025)
+**GEOMETRY FIX:** Implemented proper semicircular arcs with correct proportions and true geometric shapes
+- **Problem:** Pitch arcs needed proper sizing and geometry
+  - Center circle too small (80px wide) - not proportional to pitch size
+  - Penalty arc removed in v2.4.34 - needed to be re-added with correct geometry
+  - Arcs must be TRUE semicircles (height = width/2), not ovals or ellipses
+  - User clarification: "circles should be half circles, not whatever you have been drawing"
+- **Solution:** Re-add penalty arc and enlarge center circle as proper TRUE semicircles
+- **Changes:**
+  - **1. Re-added Penalty Arc as TRUE Semicircle:**
+    - Desktop: `width: 180px; height: 90px` (height = width/2 for true semicircle)
+    - Mobile: `width: 150px; height: 75px`
+    - Curves DOWNWARD from bottom of 18-yard box: `border-radius: 0 0 90px 90px`
+    - Border radius equals height (90px) for perfect circular arc
+    - Positioned at `top: 145px` (25px goal + 120px penalty area)
+    - Width is ~50% of penalty area width
+    - Added to HTML: `<div className={styles.penaltyArc} />`
+  - **2. Increased Center Circle Size as TRUE Semicircle:**
+    - Desktop: `width: 150px; height: 75px` (was 80x40 - almost doubled)
+    - Mobile: `width: 120px; height: 60px` (was 70x35 - proportionally larger)
+    - Curves UPWARD toward goal: `border-radius: 75px 75px 0 0`
+    - Border radius equals height (75px) for perfect circular arc
+    - Much larger for proper pitch proportions
+  - **3. TRUE Semicircle Geometry Principle:**
+    - Height always equals half the width (creates true half-circle)
+    - Border radius equals the height (creates proper curve)
+    - Not ovals or ellipses - geometric semicircles like cutting a circle in half
+    - Example: 150px wide circle cut in half = 75px tall semicircle
+- **Result:** Proper football pitch geometry with correctly sized and shaped arcs
+  - ✓ Penalty arc: TRUE semicircle curving DOWNWARD from 18-yard box
+  - ✓ Center circle: MUCH larger TRUE semicircle curving UPWARD on halfway line
+  - ✓ Both arcs use proper geometric ratios (height = width/2)
+  - ✓ Border radius = height ensures perfect circular curves
+  - ✓ Proportions match real football pitch layout
+  - ✓ Desktop and mobile styles both use true semicircle geometry
+- **Technical Note:** All semicircles maintain 1:2 height-to-width ratio with border-radius equal to height
+- **Implements:** User clarification answers from pitch design specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added penaltyArc div)
+  - Modified: `src/components/PitchView/PitchView.module.css` (penalty arc styles, center circle size increase, desktop & mobile)
 
 ### v2.4.37 - Final Pitch Layout Following Annotated Design (Dec 12, 2025)
 **LAYOUT FIX:** Implemented 5 design changes to create proper pitch layout with two borders and clear hierarchy

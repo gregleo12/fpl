@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.38 (Dec 12)** - 🎨 Proper pitch geometry - TRUE semicircles: penalty arc re-added (180x90), center circle enlarged (150x75), height = width/2
 - **v2.4.37 (Dec 12)** - 🎨 Final pitch layout - 5 changes: container border, 20px margins, penalty area touches sides, halfway line at bottom, bench outside pitch
 - **v2.4.36 (Dec 12)** - 🔧 Convert pitch border to drawn element - fixed v2.4.35 error, border now drawn INSIDE container not CSS border
 - **v2.4.35 (Dec 12)** - 🔧 Add pitch border + fix center circle direction - visible 2px border, circle curves upward
