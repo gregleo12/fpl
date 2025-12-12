@@ -1,27 +1,33 @@
-/* GW Selector - Minimal styling */
+/* GW Selector - Match Stats Tab Style */
 .gwSelector {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 0.75rem 0;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
 .gwButton {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 1.4rem;
-  padding: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 8px 14px;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
 }
 
 .gwButton:hover:not(:disabled) {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .gwButton:disabled {
@@ -30,9 +36,20 @@
 }
 
 .gwDisplay {
-  font-size: 1rem;
-  font-weight: 600;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+}
+
+.gwLabel {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.gwNumber {
+  font-size: 1.3rem;
+  font-weight: 700;
   color: #fff;
-  min-width: 120px;
-  text-align: center;
 }

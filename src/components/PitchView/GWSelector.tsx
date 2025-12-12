@@ -19,7 +19,8 @@ export function GWSelector({ selectedGW, maxGW, onGWChange }: Props) {
         ←
       </button>
       <div className={styles.gwDisplay}>
-        Gameweek {selectedGW}
+        <span className={styles.gwLabel}>GW</span>
+        <span className={styles.gwNumber}>{selectedGW}</span>
       </div>
       <button
         className={styles.gwButton}
