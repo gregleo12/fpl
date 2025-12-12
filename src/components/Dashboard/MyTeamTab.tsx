@@ -109,119 +109,79 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         </button>
       )}
 
-      {/* Mobile Layout */}
-      <div className={styles.mobileLayout}>
-        <div className={styles.myTeamContent}>
-          <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
+      {/* Unified Layout - Same on all screen sizes */}
+      <div className={styles.myTeamContent}>
+        <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
 
-          {/* Stat Boxes - 2 Rows */}
-          <div className={styles.statBoxesContainer}>
-            {/* Row 1: This Gameweek */}
-            <div className={styles.statBoxRow}>
-              <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>{gwPoints}</div>
-                <div className={styles.statBoxLabel}>GW PTS</div>
-              </div>
-              <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
-                <div className={styles.statBoxLabel}>GW RANK</div>
-              </div>
-              <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>
-                  {gwTransfers.count}
-                  {gwTransfers.cost > 0 && (
-                    <span className={styles.statBoxSub}> (-{gwTransfers.cost})</span>
-                  )}
-                </div>
-                <div className={styles.statBoxLabel}>TRANSFERS</div>
-              </div>
+        {/* Stat Boxes - 2 Rows */}
+        <div className={styles.statBoxesContainer}>
+          {/* Row 1: This Gameweek */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{gwPoints}</div>
+              <div className={styles.statBoxLabel}>GW PTS</div>
             </div>
-
-            {/* Row 2: Season Totals */}
-            <div className={styles.statBoxRow}>
-              <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
-                <div className={styles.statBoxLabel}>TOTAL PTS</div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
+              <div className={styles.statBoxLabel}>GW RANK</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>
+                {gwTransfers.count}
+                {gwTransfers.cost > 0 && (
+                  <span className={styles.statBoxSub}> (-{gwTransfers.cost})</span>
+                )}
               </div>
-              <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
-                <div className={styles.statBoxLabel}>OVERALL RANK</div>
-              </div>
+              <div className={styles.statBoxLabel}>TRANSFERS</div>
             </div>
           </div>
 
-          <PitchView
-            leagueId={leagueId}
-            myTeamId={myTeamId}
-            selectedGW={selectedGW}
-            maxGW={maxGW}
-            onGWChange={setSelectedGW}
-            showGWSelector={false}
-          />
-
-          {/* Team Value Boxes */}
-          <div className={styles.teamValueBoxes}>
-            <div className={styles.teamValueBox}>
-              <div className={styles.teamValueBoxValue}>
-                £{(teamValue / 10).toFixed(1)}m
-              </div>
-              <div className={styles.teamValueBoxLabel}>Team Value</div>
+          {/* Row 2: Season Totals */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
+              <div className={styles.statBoxLabel}>TOTAL PTS</div>
             </div>
-            <div className={styles.teamValueBox}>
-              <div className={styles.teamValueBoxValue}>
-                £{(bank / 10).toFixed(1)}m
-              </div>
-              <div className={styles.teamValueBoxLabel}>In Bank</div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
+              <div className={styles.statBoxLabel}>OVERALL RANK</div>
             </div>
           </div>
-
-          <StatsPanel
-            leagueId={leagueId}
-            myTeamId={myTeamId}
-            myTeamName={myTeamName}
-            myManagerName={myManagerName}
-            selectedGW={selectedGW}
-            mode="collapsible-only"
-          />
         </div>
-      </div>
 
-      {/* Desktop Layout - Two column */}
-      <div className={styles.desktopLayout}>
+        <PitchView
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          selectedGW={selectedGW}
+          maxGW={maxGW}
+          onGWChange={setSelectedGW}
+          showGWSelector={false}
+        />
+
+        {/* Team Value Boxes */}
+        <div className={styles.teamValueBoxes}>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(teamValue / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>Team Value</div>
+          </div>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(bank / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>In Bank</div>
+          </div>
+        </div>
+
         <StatsPanel
           leagueId={leagueId}
           myTeamId={myTeamId}
           myTeamName={myTeamName}
           myManagerName={myManagerName}
           selectedGW={selectedGW}
-          mode="full"
+          mode="collapsible-only"
         />
-        <div>
-          <PitchView
-            leagueId={leagueId}
-            myTeamId={myTeamId}
-            selectedGW={selectedGW}
-            maxGW={maxGW}
-            onGWChange={setSelectedGW}
-            showGWSelector={true}
-          />
-
-          {/* Team Value Boxes */}
-          <div className={styles.teamValueBoxes}>
-            <div className={styles.teamValueBox}>
-              <div className={styles.teamValueBoxValue}>
-                £{(teamValue / 10).toFixed(1)}m
-              </div>
-              <div className={styles.teamValueBoxLabel}>Team Value</div>
-            </div>
-            <div className={styles.teamValueBox}>
-              <div className={styles.teamValueBoxValue}>
-                £{(bank / 10).toFixed(1)}m
-              </div>
-              <div className={styles.teamValueBoxLabel}>In Bank</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

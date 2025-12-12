@@ -880,18 +880,20 @@
   }
 }
 
-/* Mobile Layout - Single column with reordered elements */
-.mobileLayout {
-  display: flex;
-  flex-direction: column;
-}
-
-/* My Team Content - Consistent spacing wrapper */
+/* My Team Content - Consistent spacing wrapper, unified layout for all screen sizes */
 .myTeamContent {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 0 12px;
+}
+
+/* Desktop: Center layout and add max-width to prevent over-stretching */
+@media (min-width: 1024px) {
+  .myTeamContent {
+    max-width: 600px;
+    margin: 0 auto;
+  }
 }
 
 /* Stat Boxes Container - 2 Rows */
@@ -1007,22 +1009,4 @@
   }
 }
 
-/* Desktop Layout - Two columns */
-.desktopLayout {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  /* Hide mobile layout on desktop */
-  .mobileLayout {
-    display: none;
-  }
-
-  /* Show desktop layout */
-  .desktopLayout {
-    display: grid;
-    grid-template-columns: 30% 70%;
-    gap: 1.5rem;
-    align-items: start;
-  }
-}
+/* Desktop layout removed - using unified layout for all screen sizes */
