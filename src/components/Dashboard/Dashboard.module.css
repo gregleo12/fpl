@@ -565,6 +565,178 @@
 
 /* Removed desktop/mobile breakpoint switches - consistent layout at all widths */
 
+/* Mobile Responsive - Table and Stats Styling */
+@media (max-width: 768px) {
+  /* Section spacing */
+  .section {
+    padding: 1rem;
+  }
+
+  .sectionHeader {
+    margin-bottom: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.125rem;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    margin-left: 6px;
+  }
+
+  /* Stats Grid - 4 columns on mobile */
+  .statsGrid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .statsGrid + .statsGrid {
+    margin-top: 12px !important;
+  }
+
+  .statCard {
+    padding: 14px 10px;
+    min-height: 70px;
+    gap: 6px;
+  }
+
+  .statValue {
+    font-size: 1.5rem;
+  }
+
+  .statLabel {
+    font-size: 0.625rem;
+    margin-top: 0;
+    font-weight: 700;
+  }
+
+  /* Form Grid */
+  .formGrid {
+    gap: 8px;
+  }
+
+  .formCircle {
+    width: 48px;
+    height: 48px;
+    font-size: 1.125rem;
+  }
+
+  .gameweekLabel {
+    font-size: 0.6875rem;
+  }
+
+  .formIndicator {
+    width: 18px;
+    height: 18px;
+    font-size: 0.65rem;
+  }
+
+  /* Rankings Table Styling */
+  .table {
+    font-size: 0.8rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.5rem 0.35rem;
+  }
+
+  /* Hide non-essential columns on mobile */
+  .formCol,
+  .pfCol,
+  .diffCol {
+    display: none;
+  }
+
+  /* Show streak on mobile */
+  .streakCol {
+    display: table-cell;
+    padding: 0.5rem 0.25rem 0.5rem 0.5rem !important;
+    text-align: center;
+  }
+
+  /* Optimize streak badge for mobile */
+  .streak {
+    font-size: 0.7rem !important;
+    padding: 0.3rem 0.5rem !important;
+    min-width: 36px !important;
+  }
+
+  /* Team column sizing */
+  .teamCol {
+    min-width: 140px;
+    max-width: 140px;
+  }
+
+  .teamName {
+    font-weight: 700 !important;
+    font-size: 0.8125rem !important;
+  }
+
+  .managerName {
+    font-weight: 400 !important;
+    font-size: 0.6875rem !important;
+  }
+
+  /* Compact record columns */
+  .recordCol {
+    padding: 0.5rem 0.2rem !important;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+
+  /* Compact rank column */
+  .rankCol {
+    padding: 0.5rem 0.25rem !important;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+
+  /* Compact rank indicators */
+  .currentRank {
+    font-size: 0.9rem;
+  }
+
+  .rankChangeIndicator {
+    font-size: 0.55rem;
+    padding: 1px 3px;
+    gap: 1px;
+  }
+
+  /* Points column */
+  .ptsCol {
+    padding: 0.5rem 0.3rem !important;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Chip badges */
+  .chipBadgeSmall {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .chipsCell {
+    gap: 0.25rem;
+  }
+
+  /* Rank badge */
+  .rankBadge {
+    padding: 6px 10px;
+    flex-shrink: 0;
+  }
+
+  .rankNumber {
+    font-size: 1.25rem;
+  }
+
+  .rankLabel {
+    font-size: 0.625rem;
+  }
+}
+
 /* Small screen padding adjustments only - no layout changes */
 @media (max-width: 480px) {
   .section {
