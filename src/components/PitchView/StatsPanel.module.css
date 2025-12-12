@@ -140,20 +140,22 @@
 }
 
 .transferOut {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .transferArrow {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 8px;
 }
 
 .transferIn {
-  color: #10b981;
+  color: #00ff87;
+  font-weight: 500;
 }
 
 .transferPoints {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8em;
 }
 
 .transferDiff {
@@ -162,23 +164,23 @@
 }
 
 .transferDiff.positive {
-  color: #10b981;
+  color: #00ff87;
 }
 
 .transferDiff.negative {
-  color: #ef4444;
+  color: #ff4757;
 }
 
 .transferDiff.neutral {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .transferSummary {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
   padding-top: 12px;
-  margin-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* GW Transfers - Static Container */
@@ -191,9 +193,9 @@
 .gwTransfersTitle {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #10b981;
+  color: #00ff87;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.5px;
   margin-bottom: 0.75rem;
 }
 
@@ -228,7 +230,7 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  color: #10b981;
+  color: #00ff87;
   font-size: 0.85rem;
   font-weight: 600;
   text-transform: uppercase;
