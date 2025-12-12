@@ -664,6 +664,7 @@
 
 /* My Team Content - Consistent spacing wrapper, unified layout for all screen sizes */
 .myTeamContent {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
