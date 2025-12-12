@@ -144,7 +144,7 @@
 /* Pitch - half-pitch with integrated bench */
 .pitch {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.25);  /* Visible pitch border */
   border-radius: 16px;
   padding: 1rem 0.5rem;
   position: relative;
@@ -225,17 +225,17 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 6. CENTER CIRCLE - semicircle on halfway line */
+/* 6. CENTER CIRCLE - semicircle on halfway line, curves UPWARD toward goal */
 .centerCircle {
   position: absolute;
-  bottom: 100px;
+  bottom: 100px;               /* Sits on halfway line */
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
   height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 0 0 50% 50%;
-  border-top: none;
+  border-radius: 50% 50% 0 0;  /* Curves UPWARD (toward goal) */
+  border-bottom: none;          /* Flat edge on halfway line */
   background: transparent;
 }
 
@@ -393,5 +393,7 @@
     width: 70px;
     height: 35px;
     border-color: rgba(255, 255, 255, 0.25);
+    border-radius: 50% 50% 0 0;  /* Curves UPWARD (same as desktop) */
+    border-bottom: none;
   }
 }
