@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.32 (Dec 12)** - 🔧 Explicit pitch markings - standardized class names, 7 elements with exact specs, -47 lines
 - **v2.4.31 (Dec 12)** - 🎨 Enhance pitch markings visibility - doubled opacity for recognizable football pitch
 - **v2.4.30 (Dec 12)** - 🎨 GW Transfers receipt-style layout - clear hierarchy, hit as line item, white player names
 - **v2.4.29 (Dec 12)** - 🎨 Spread players wider on pitch - natural formation with space-evenly distribution

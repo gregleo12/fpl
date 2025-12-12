@@ -1,12 +1,49 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 201+ versions
-**Current Version:** v2.4.31 (December 12, 2025)
+**Total Releases:** 202+ versions
+**Current Version:** v2.4.32 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.32 - Explicit Pitch Markings with Standardized Structure (Dec 12, 2025)
+**REFACTOR:** Complete overhaul of pitch markings implementation with explicit specifications and standardized class names
+- **Problem:** Previous pitch marking implementation had inconsistent naming and could be improved
+  - Class names had suffixes like "Top", "Bottom" that were confusing (`.penaltyBoxTop`, `.goalAreaTop`)
+  - Corner arcs included but not relevant for half-pitch view
+  - Goal frame used compound classes (`.goalFrame.top`)
+  - Implementation could benefit from clearer structure
+- **Solution:** Implement exact pitch markings specification with standardized class names
+- **Changes:**
+  - **HTML Structure (`PitchView.tsx`):**
+    - Simplified to exactly 7 marking elements (no corner arcs)
+    - Standardized class names: `.goalFrame`, `.sixYardBox`, `.penaltyArea`, `.penaltySpot`, `.penaltyArc`, `.halfwayLine`, `.centerCircle`
+    - Removed compound classes and "Top" suffixes
+    - Self-closing JSX tags for cleaner code
+  - **CSS Implementation (`PitchView.module.css`):**
+    - Complete rewrite of pitch markings section with exact specifications
+    - All 7 elements with clear numeric comments (1. Goal Frame, 2. Six-Yard Box, etc.)
+    - Opacity values meet visibility requirements: goal frame 0.3, penalty spot 0.35, halfway line 0.3, others 0.25
+    - Sizing: goal 100px×25px, 6-yard 160px×40px, penalty area 75% width×120px height
+    - Updated mobile responsive styles to match new class names
+  - **Code Quality:**
+    - Reduced total lines (134 removed, 87 added = -47 net lines)
+    - Better maintainability with standardized naming
+    - Clear documentation in comments
+- **7 Required Elements Verified:**
+  - ✓ Goal frame (100px wide, 25px high, 0.3 opacity)
+  - ✓ Six-yard box (160px wide, 40px high, 0.25 opacity)
+  - ✓ Penalty area (75% wide, 120px high, 0.25 opacity)
+  - ✓ Penalty spot (8px diameter, 0.35 opacity)
+  - ✓ Penalty arc (100px wide, 50px high, 0.25 opacity)
+  - ✓ Halfway line (90% width, 0.3 opacity)
+  - ✓ Center circle (80px wide, 40px high, 0.25 opacity)
+- **Result:** Cleaner, more maintainable pitch markings with standardized naming and exact specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (simplified HTML structure)
+  - Modified: `src/components/PitchView/PitchView.module.css` (complete rewrite of markings section, updated mobile styles)
 
 ### v2.4.31 - Enhance Pitch Markings Visibility (Dec 12, 2025)
 **VISUAL FIX:** Increased opacity of all pitch markings to make pitch more recognizable as football field
