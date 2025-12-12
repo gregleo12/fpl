@@ -2,11 +2,62 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 210+ versions
-**Current Version:** v2.4.40 (December 12, 2025)
+**Current Version:** v2.4.41 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.41 - Max-Width Consistency at 1400px (Dec 12, 2025)
+**LAYOUT CONSISTENCY:** Unified max-width of 1400px for all layout elements using CSS variables for consistent layout at larger screen widths
+- **Problem:** Inconsistent max-widths at larger screen sizes
+  - Nav bar (.tabs): 1400px
+  - Content container: 1400px
+  - My Team content (.myTeamContent): 600px (too narrow!)
+  - Layout looked awkward at very wide viewports (1500px+)
+  - Different elements had different max-widths causing visual inconsistency
+- **Solution:** Use CSS variable `--app-max-width: 1400px` and apply to ALL layout elements
+- **Key Changes:**
+  - **1. CSS Variable Creation:**
+    - Added `--app-max-width: 1400px` to `:root` selector in `globals.css`
+    - Single source of truth for all max-width declarations
+    - Easy to change globally if needed in future
+  - **2. Nav Bar Update:**
+    - Changed `.tabs` max-width from `1400px` to `var(--app-max-width)` in `dashboard.module.css`
+    - Nav bar now uses CSS variable (though value stayed 1400px)
+  - **3. Content Container Update:**
+    - Changed `.content` max-width from `1400px` to `var(--app-max-width)` in `dashboard.module.css`
+    - Content container now uses CSS variable (though value stayed 1400px)
+  - **4. My Team Content Update (Key Change):**
+    - Changed `.myTeamContent` max-width from `600px` to `var(--app-max-width)` in `Dashboard.module.css`
+    - My Team content now grows to full 1400px width on desktop (was limited to 600px)
+    - Much better use of screen space at larger viewports
+- **Technical Implementation:**
+  - **globals.css:**
+    - Added `--app-max-width: 1400px` to existing `:root` selector
+    - Placed alongside other CSS variables (--status-bar-height, --bottom-bar-height)
+  - **dashboard.module.css:**
+    - Updated `.tabs` in @media (min-width: 769px) to use variable
+    - Updated `.content` to use variable
+  - **Dashboard.module.css:**
+    - Updated `.myTeamContent` in @media (min-width: 1024px) to use variable
+    - Changed from 600px to 1400px via the variable
+- **Result:** Consistent 1400px max-width across all layout elements
+  - ✓ Nav bar, content, and My Team content all stop growing at 1400px
+  - ✓ Better layout consistency at larger viewports (1500px+)
+  - ✓ My Team content uses full available width (no longer constrained to 600px)
+  - ✓ Single source of truth via CSS variable
+  - ✓ Easy to adjust globally if needed in future
+  - ✓ Professional, consistent layout at all screen sizes
+- **Visual Comparison:**
+  - Before: My Team content capped at 600px while nav bar and main content at 1400px
+  - After: All elements consistently stop growing at 1400px
+- **Implements:** Brief K-16 specifications (max-width consistency)
+- **Files:**
+  - Modified: `src/app/globals.css` (added CSS variable)
+  - Modified: `src/app/dashboard/dashboard.module.css` (tabs and content use variable)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (myTeamContent uses variable, 600px→1400px)
+  - Modified: `package.json` (v2.4.40 → v2.4.41)
 
 ### v2.4.40 - Redesign Player Cards to FPL Style (Dec 12, 2025)
 **VISUAL REDESIGN:** Completely redesigned player cards to match official FPL app style with compact layout and professional appearance
