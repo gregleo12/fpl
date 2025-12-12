@@ -144,7 +144,6 @@
 /* Pitch - half-pitch with integrated bench */
 .pitch {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
-  border: 2px solid rgba(255, 255, 255, 0.25);  /* Visible pitch border */
   border-radius: 16px;
   padding: 1rem 0.5rem;
   position: relative;
@@ -162,6 +161,19 @@
   bottom: 0;
   pointer-events: none;  /* Don't block player clicks */
   z-index: 1;
+}
+
+/* PITCH BORDER - rectangle drawn inside container, stops above bench */
+.pitchBorder {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 90px;  /* Stop above the bench */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 0;  /* Behind other markings */
 }
 
 /* 1. GOAL FRAME - small rectangle at top center */
@@ -356,6 +368,13 @@
   }
 
   /* Scale down pitch markings for mobile */
+  .pitchBorder {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 70px;  /* Stop above mobile bench */
+  }
+
   .goalFrame {
     width: 85px;
     height: 20px;

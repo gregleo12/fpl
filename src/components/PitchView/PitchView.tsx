@@ -135,8 +135,9 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
 
       {/* Pitch */}
       <div className={styles.pitch}>
-        {/* PITCH MARKINGS - 6 essential elements (penalty arc removed per Brief K-13d-v5) */}
+        {/* PITCH MARKINGS - Drawn elements inside container */}
         <div className={styles.pitchMarkings}>
+          <div className={styles.pitchBorder} />
           <div className={styles.goalFrame} />
           <div className={styles.sixYardBox} />
           <div className={styles.penaltyArea} />
