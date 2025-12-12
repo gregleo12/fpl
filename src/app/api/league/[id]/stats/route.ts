@@ -363,9 +363,9 @@ export async function GET(
       ? liveGameweekNumber - 1
       : maxGWInDatabase;
 
-    // Get total gameweeks from league (FPL has 38 GWs)
-    // Use league data or default to 38 for FPL
-    const maxGW = 38;
+    // Max GW for navigation: current live GW or max GW in database
+    // This prevents users from navigating to future gameweeks that haven't started
+    const maxGW = (isCurrentGWLive && liveGameweekNumber > 0) ? liveGameweekNumber : maxGWInDatabase;
 
     // Determine which GW to show based on mode
     let currentGW: number;
