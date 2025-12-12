@@ -17,7 +17,7 @@ type TabType = 'league' | 'fixtures' | 'myteam' | 'stats' | 'settings';
 export default function DashboardPage() {
   const router = useRouter();
   const [state, setState] = useState<SavedState | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('league');
+  const [activeTab, setActiveTab] = useState<TabType>('myteam');
   const [leagueData, setLeagueData] = useState<any>(null);
   const [playerData, setPlayerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -200,6 +200,13 @@ export default function DashboardPage() {
       <div className={styles.tabsWrapper}>
         <nav className={styles.tabs}>
           <button
+            className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
+            onClick={() => setActiveTab('myteam')}
+          >
+            <span className={styles.tabIcon}>🏆</span>
+            <span className={styles.tabLabel}>My Team</span>
+          </button>
+          <button
             className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
             onClick={() => setActiveTab('league')}
           >
@@ -212,13 +219,6 @@ export default function DashboardPage() {
           >
             <span className={styles.tabIcon}>🎯</span>
             <span className={styles.tabLabel}>Fixtures</span>
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
-            onClick={() => setActiveTab('myteam')}
-          >
-            <span className={styles.tabIcon}>🏆</span>
-            <span className={styles.tabLabel}>My Team</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'stats' ? styles.active : ''}`}
