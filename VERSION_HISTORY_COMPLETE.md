@@ -2,11 +2,43 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 210+ versions
-**Current Version:** v2.4.42 (December 12, 2025)
+**Current Version:** v2.4.43 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.43 - My Team as Default Screen (First in Nav) (Dec 12, 2025)
+**UX IMPROVEMENT:** Made My Team the default landing screen and moved it to first position in navigation
+- **Problem:** Opening the app landed on Rankings, but My Team is the most-used feature
+  - Users had to click through to My Team every time they opened the app
+  - My Team was in middle position (3rd of 5) in nav bar
+  - Rankings as default didn't match actual usage patterns
+- **Solution:** Make My Team the default screen and move it to first position in nav
+- **Changes:**
+  - **1. Default Tab:**
+    - Changed `useState<TabType>('league')` to `useState<TabType>('myteam')` in page.tsx:20
+    - App now lands on My Team when opened
+    - My Team becomes the "home" screen of the app
+  - **2. Nav Bar Order:**
+    - Moved My Team button from 3rd position to 1st position in nav bar (page.tsx:202-208)
+    - New order: My Team | Rankings | Fixtures | Stats | Settings
+    - Old order: Rankings | Fixtures | My Team | Stats | Settings
+    - My Team now leftmost (most prominent) position
+- **Result:** Better UX with My Team as home screen
+  - ✓ Opening app lands directly on My Team
+  - ✓ My Team is first (leftmost) nav item
+  - ✓ No extra click needed to see your team
+  - ✓ Matches actual user behavior
+  - ✓ My Team feels like the primary feature
+- **Technical Details:**
+  - Only changed page.tsx (dashboard component)
+  - No CSS changes needed
+  - No breaking changes to other components
+- **Implements:** Brief K-18 specifications (My Team as default, first in nav)
+- **Files:**
+  - Modified: `src/app/dashboard/page.tsx` (default tab + nav order)
+  - Modified: `package.json` (v2.4.42 → v2.4.43)
 
 ### v2.4.42 - Remove Pitch Markings for Cleaner View (Dec 12, 2025)
 **VISUAL SIMPLIFICATION:** Removed all pitch markings for cleaner, simpler pitch view
