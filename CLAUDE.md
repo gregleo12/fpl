@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.34 (Dec 12)** - 🔧 Remove penalty arc - simplified to 6 essential elements, can add back later
 - **v2.4.33 (Dec 12)** - 🔧 Correct penalty spot geometry - accurate 12-yard position (100→105px desktop, 80→83px mobile), enhanced comments
 - **v2.4.32 (Dec 12)** - 🔧 Explicit pitch markings - standardized class names, 7 elements with exact specs, -47 lines
 - **v2.4.31 (Dec 12)** - 🎨 Enhance pitch markings visibility - doubled opacity for recognizable football pitch

@@ -1,12 +1,37 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 203+ versions
-**Current Version:** v2.4.33 (December 12, 2025)
+**Total Releases:** 204+ versions
+**Current Version:** v2.4.34 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.34 - Remove Penalty Arc for Cleaner Pitch View (Dec 12, 2025)
+**SIMPLIFICATION:** Removed penalty arc element completely to simplify pitch markings
+- **Problem:** Penalty arc was problematic despite multiple positioning attempts
+  - Initial implementation had arc in wrong position
+  - v2.4.32-v2.4.33 attempts to fix positioning and geometry
+  - Arc proved difficult to position correctly and visually match reference
+- **Solution:** Remove penalty arc completely - it's a nice-to-have, not essential
+- **Changes:**
+  - **HTML (`PitchView.tsx`):** Removed `<div className={styles.penaltyArc} />` element
+  - **CSS (`PitchView.module.css`):** Removed `.penaltyArc` class from both desktop and mobile sections
+  - Updated element numbering: 5. Halfway Line, 6. Center Circle (was 6. and 7.)
+  - Updated comment: "6 essential elements" (was 7)
+- **Result:** Cleaner, simpler pitch with 6 essential elements
+  - ✓ Goal frame
+  - ✓ 6-yard box
+  - ✓ 18-yard box (penalty area)
+  - ✓ Penalty spot
+  - ✓ Halfway line
+  - ✓ Center circle
+- **Justification:** FPL app's penalty arc is also very subtle/minimal in their official design
+- **Future:** Can add penalty arc back later once other elements look perfect
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed penalty arc div)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed penalty arc CSS, updated comments)
 
 ### v2.4.33 - Correct Penalty Spot Geometry and Enhance Pitch Comments (Dec 12, 2025)
 **ACCURACY FIX:** Corrected penalty spot position to accurate 12-yard distance with detailed geometry documentation
