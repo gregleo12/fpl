@@ -1,12 +1,82 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 190+ versions
-**Current Version:** v2.4.20 (December 12, 2025)
+**Total Releases:** 194+ versions
+**Current Version:** v2.4.24 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.24 - Fix Container Widths and Spacing Consistency (Dec 12, 2025)
+**LAYOUT FIX:** All containers now have same width and consistent spacing via single parent wrapper
+- **Problem:** Different containers had different widths and inconsistent vertical gaps
+  - GW Selector narrower than stat boxes below
+  - Team Value boxes narrower than pitch above
+  - Vertical spacing between containers inconsistent
+- **Solution:** Wrapped all mobile layout content in `.myTeamContent` parent container
+- **Single Parent Controller:** Parent div controls all spacing with gap: 8px and padding: 0 12px
+- **Child Containers Updated:**
+  - All set to `width: 100%` for full width alignment
+  - Removed individual padding from `.statBoxesContainer`
+  - Changed `.teamValueBox` from `min-width: 130px` to `flex: 1` for equal distribution
+  - Updated `.teamValueBoxes` to remove individual padding, add `width: 100%`, gap: 8px
+- **Mobile Breakpoint:** At <400px, gap reduces to 6px and padding to 0 10px
+- **Result:** All containers (GW Selector, stat boxes, pitch, team value boxes) now edge-to-edge aligned with consistent 8px gaps
+- **Design Principle:** "ONE parent controls spacing. Children just fill 100% width."
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added .myTeamContent wrapper div)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added .myTeamContent styles, updated children)
+
+### v2.4.23 - Copy Stats Tab GW Selector EXACTLY (Dec 12, 2025)
+**SIMPLIFICATION:** Replaced reinvented GW selector with EXACT copy from Stats tab
+- **Problem:** My Team GW selector looked completely different from Stats tab despite Brief K-12d request
+  - Full width container with arrows on far edges (purple gradient style)
+  - Didn't match Stats tab's compact centered design
+- **User Feedback:** "Stop reinventing - just COPY the Stats tab component"
+- **Solution:** Found actual Stats tab GW selector in StatsHub.tsx and copied EXACT code
+- **Copied From:** `/src/components/Stats/StatsHub.tsx` lines 142-166 (JSX) and StatsHub.module.css lines 58-116 (CSS)
+- **New Design:**
+  - Compact centered layout (not full width)
+  - Dark semi-transparent background: `rgba(0, 0, 0, 0.3)` (not purple gradient)
+  - Arrows in subtle boxes: `rgba(255, 255, 255, 0.1)` background
+  - Green hover effects: `rgba(0, 255, 135, 0.2)` + `#00ff87` border (not purple)
+  - Proper spacing: gap 0.75rem, padding 0.5rem 1rem
+- **Result:** GW selector now matches Stats tab exactly with proper compact design
+- **Files:**
+  - Modified: `src/components/PitchView/GWSelector.tsx` (copied exact JSX structure)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (copied exact styles with comment "EXACT copy from Stats tab")
+
+### v2.4.22 - Add Proper Half-Pitch Markings Inside Container (Dec 12, 2025)
+**VISUAL FIX:** Added missing pitch markings - penalty arc, halfway line, and center mark
+- **Problem:** Pitch was missing standard football pitch markings inside purple container
+  - No penalty arc below penalty box
+  - Halfway line was ::after pseudo-element (not explicit element)
+  - No center mark circle
+- **Solution:** Added explicit HTML elements for each marking inside pitch container
+- **Added Markings:**
+  - **Penalty arc:** Curved arc below penalty box, positioned at top 75px, 80x40px, border-radius 0 0 50% 50%
+  - **Halfway line:** Explicit div element at bottom 85px, left/right 8% margin, 1px height
+  - **Center mark:** Small circle at halfway line, bottom 80px, 10x10px with border-radius 50%
+- **All Markings:** Subtle white lines `rgba(255, 255, 255, 0.12)` on purple background
+- **Removed:** Old ::after pseudo-element for halfway line (replaced with explicit element)
+- **Visual Result:** Proper half-pitch view with all standard football pitch markings visible
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added penalty arc, halfway line, center mark JSX)
+  - Modified: `src/components/PitchView/PitchView.module.css` (added CSS for new markings, removed ::after)
+
+### v2.4.21 - GW Selector Match Stats Tab Style (Dec 12, 2025)
+**NOTE:** This version was superseded by v2.4.23 which copied Stats tab EXACTLY instead of interpreting
+- **Original Problem:** GW selector was just plain text with arrows, no container styling
+- **First Solution (v2.4.21):** Added purple gradient container with styled arrow buttons
+  - Background: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)`
+  - Arrows in darker boxes with rounded corners
+  - Format: "GW 15" (not "Gameweek 15")
+- **User Feedback:** Requested EXACT copy from Stats tab instead of interpretation
+- **Result:** v2.4.23 replaced this implementation with actual Stats tab code (compact dark design)
+- **Files:**
+  - Modified: `src/components/PitchView/GWSelector.tsx` (updated to "GW" format)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (added purple gradient - later replaced)
 
 ### v2.4.20 - Fix GW Transfers - Remove Nested Purple Container (Dec 12, 2025)
 **SIMPLIFICATION:** Removed duplicate purple container styling from gwTransfersContainer
@@ -1636,5 +1706,5 @@ Added comprehensive error logging to diagnose failures
 
 ---
 
-**Last Updated:** December 10, 2025
+**Last Updated:** December 12, 2025
 **Maintained By:** Claude Code (automated after every deployment)

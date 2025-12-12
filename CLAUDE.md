@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-08
+Last Updated: 2025-12-12
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -1190,7 +1190,15 @@ const [data1, data2] = await Promise.all([
 
 ## Version History
 
-**Latest (v2.0.x Series - Dec 2025):**
+**Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.24 (Dec 12)** - 🎨 Fix container widths and spacing consistency - single parent controls all spacing
+- **v2.4.23 (Dec 12)** - 🎨 Copy Stats tab GW selector EXACTLY - compact dark design
+- **v2.4.22 (Dec 12)** - 🎨 Add proper half-pitch markings inside container
+- **v2.4.21 (Dec 12)** - 🎨 GW selector match Stats tab style (superseded by v2.4.23)
+- **v2.4.20 (Dec 12)** - 🎨 Fix GW Transfers - Remove nested purple container
+- **v2.4.0-v2.4.19 (Dec 11-12)** - 🎨 My Team Mobile-First Layout Restructure
+
+**Previous (v2.0.x Series - Dec 2025):**
 - **v2.0.18 (Dec 8)** - 📝 Documentation update
 - **v2.0.16 (Dec 8)** - 🔧 **CRITICAL: Admin panel force-dynamic fix**
 - **v2.0.11 (Dec 5)** - 🔧 Fix analytics tracking
