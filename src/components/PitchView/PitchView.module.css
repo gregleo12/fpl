@@ -154,18 +154,6 @@
   min-height: 420px;
 }
 
-/* Halfway line - positioned at bottom for half-pitch */
-.pitch::after {
-  content: '';
-  position: absolute;
-  bottom: 85px;
-  left: 8%;
-  right: 8%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.12);
-  z-index: 1;
-}
-
 /* Pitch markings container */
 .pitchMarkings {
   position: absolute;
@@ -214,6 +202,42 @@
   width: 5px;
   height: 5px;
   background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+/* Penalty arc */
+.penaltyArc {
+  position: absolute;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: none;
+  border-radius: 0 0 50% 50%;
+}
+
+/* Halfway line - explicit element */
+.halfwayLine {
+  position: absolute;
+  bottom: 85px;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  z-index: 1;
+}
+
+/* Center mark */
+.centerMark {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 50%;
 }
 
@@ -404,7 +428,16 @@
     height: 18px;
   }
 
-  .pitch::after {
-    bottom: 75px; /* Adjust halfway line for mobile bench space */
+  .penaltyArc {
+    width: 70px;
+    height: 35px;
+  }
+
+  .halfwayLine {
+    bottom: 75px; /* Adjust for mobile bench space */
+  }
+
+  .centerMark {
+    bottom: 70px;
   }
 }

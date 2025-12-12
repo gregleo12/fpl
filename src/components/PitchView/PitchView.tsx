@@ -144,6 +144,11 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
           <div className={styles.penaltyBoxTop}></div>
           <div className={styles.goalAreaTop}></div>
           <div className={styles.penaltySpotTop}></div>
+          <div className={styles.penaltyArc}></div>
+
+          {/* Halfway line and center mark */}
+          <div className={styles.halfwayLine}></div>
+          <div className={styles.centerMark}></div>
 
           {/* Corner arcs - top only */}
           <div className={`${styles.cornerArc} ${styles.topLeft}`}></div>
