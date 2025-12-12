@@ -144,6 +144,7 @@
 /* Pitch - half-pitch with integrated bench */
 .pitch {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);  /* Standard container border */
   border-radius: 16px;
   padding: 1rem 0.5rem;
   position: relative;
@@ -166,10 +167,10 @@
 /* PITCH BORDER - rectangle drawn inside container, stops above bench */
 .pitchBorder {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  bottom: 90px;  /* Stop above the bench */
+  top: 20px;      /* More space from container edge */
+  left: 20px;
+  right: 20px;
+  bottom: 140px;  /* Stop above the bench - bench is OUTSIDE pitch */
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 4px;
   pointer-events: none;
@@ -202,13 +203,12 @@
   background: transparent;
 }
 
-/* 3. PENALTY AREA (18-yard box) - large box */
+/* 3. PENALTY AREA (18-yard box) - large box, TOUCHES pitch border sides */
 .penaltyArea {
   position: absolute;
   top: 25px;                    /* Starts at goal line */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 75%;
+  left: 20px;                   /* Aligns with pitch border left edge */
+  right: 20px;                  /* Aligns with pitch border right edge */
   height: 120px;                /* 18 yards deep */
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-top: none;
@@ -227,20 +227,20 @@
   border-radius: 50%;
 }
 
-/* 5. HALFWAY LINE - horizontal line near bottom */
+/* 5. HALFWAY LINE - bottom of pitch border, bench is OUTSIDE */
 .halfwayLine {
   position: absolute;
-  bottom: 100px;
-  left: 5%;
-  right: 5%;
+  bottom: 140px;  /* Same as pitch border bottom - THIS IS THE BOTTOM OF THE PITCH */
+  left: 20px;     /* Aligns with pitch border */
+  right: 20px;    /* Aligns with pitch border */
   height: 1px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* 6. CENTER CIRCLE - semicircle on halfway line, curves UPWARD toward goal */
 .centerCircle {
   position: absolute;
-  bottom: 100px;               /* Sits on halfway line */
+  bottom: 140px;               /* Sits on halfway line at pitch bottom */
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
@@ -369,10 +369,10 @@
 
   /* Scale down pitch markings for mobile */
   .pitchBorder {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    bottom: 70px;  /* Stop above mobile bench */
+    top: 15px;      /* Proportional increase from desktop */
+    left: 15px;
+    right: 15px;
+    bottom: 100px;  /* Stop above mobile bench - bench OUTSIDE pitch */
   }
 
   .goalFrame {
@@ -390,7 +390,8 @@
 
   .penaltyArea {
     top: 20px;                  /* Starts at mobile goal line */
-    width: 70%;
+    left: 15px;                 /* Aligns with mobile pitch border */
+    right: 15px;                /* Aligns with mobile pitch border */
     height: 95px;               /* Scaled 18-yard box */
     border-color: rgba(255, 255, 255, 0.25);
   }
@@ -403,12 +404,14 @@
   }
 
   .halfwayLine {
-    bottom: 75px; /* Adjust for mobile bench space */
-    background: rgba(255, 255, 255, 0.3);
+    bottom: 100px;  /* Same as mobile pitch border bottom */
+    left: 15px;     /* Aligns with mobile pitch border */
+    right: 15px;    /* Aligns with mobile pitch border */
+    background: rgba(255, 255, 255, 0.25);
   }
 
   .centerCircle {
-    bottom: 75px;
+    bottom: 100px;  /* Sits on mobile halfway line */
     width: 70px;
     height: 35px;
     border-color: rgba(255, 255, 255, 0.25);
