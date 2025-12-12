@@ -203,6 +203,30 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* GW Transfers - Static Container */
+.gwTransfersContainer {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+}
+
+.gwTransfersTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.gwTransfersList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 /* Collapsible Sections - Match app card style */
 .collapsibleSection {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);

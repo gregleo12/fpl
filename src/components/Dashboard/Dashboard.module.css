@@ -890,41 +890,41 @@
 /* Stat Boxes Container - 5 boxes in app card style */
 .statBoxesContainer {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  padding: 0 8px;
-  margin-bottom: 12px;
+  padding: 12px;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .statBox {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 10px 12px;
-  min-width: 60px;
-  text-align: center;
+  border-radius: 12px;
+  padding: 12px 8px;
+  min-width: 62px;
   flex: 1;
-  max-width: 80px;
+  max-width: 85px;
+  text-align: center;
 }
 
 .statBoxValue {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
 }
 
 .statBoxLabel {
-  font-size: 0.6rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  margin-top: 4px;
+  margin-top: 6px;
   letter-spacing: 0.03em;
+  line-height: 1.2;
 }
 
 .statBoxSub {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: #ef4444;
   font-weight: 600;
   margin-top: 2px;
@@ -935,29 +935,52 @@
   display: flex;
   justify-content: center;
   gap: 12px;
-  padding: 12px 8px;
+  padding: 16px 12px;
 }
 
 .teamValueBox {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 12px 20px;
+  border-radius: 12px;
+  padding: 16px 24px;
   text-align: center;
-  min-width: 100px;
+  min-width: 130px;
 }
 
 .teamValueBoxValue {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #fff;
 }
 
 .teamValueBoxLabel {
   font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  margin-top: 4px;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+/* Mobile - slightly smaller */
+@media (max-width: 400px) {
+  .statBoxesContainer {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  .statBox {
+    padding: 10px 6px;
+    min-width: 56px;
+    border-radius: 10px;
+  }
+
+  .statBoxValue {
+    font-size: 1.2rem;
+  }
+
+  .statBoxLabel {
+    font-size: 0.5rem;
+  }
 }
 
 /* Desktop Layout - Two columns */

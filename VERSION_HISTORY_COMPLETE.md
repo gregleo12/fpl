@@ -2,11 +2,50 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.13 (December 11, 2025)
+**Current Version:** v2.4.14 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.14 - Fix Container Styling + GW Transfers Static Display (Dec 12, 2025)
+**CONSISTENCY:** Made all boxes match app UI styling, converted GW Transfers to static display
+- **Fixed Stat Boxes Styling:** Updated to match Stats tab design
+  - Border-radius: 12px (was 10px)
+  - Container padding: 12px (was 0 8px)
+  - Flex-wrap: nowrap (was wrap)
+  - Min-width: 62px, max-width: 85px
+  - Value font-size: 1.4rem (was 1.3rem)
+  - Label font-size: 0.55rem (was 0.6rem)
+  - Label color: rgba(255,255,255,0.5) (was 0.6)
+  - Label margin-top: 6px (was 4px)
+  - Sub font-size: 0.7rem (was 0.65rem)
+- **Fixed Team Value Boxes Styling:** Updated to match app card design
+  - Border-radius: 12px (was 10px)
+  - Padding: 16px 24px (was 12px 20px)
+  - Container padding: 16px 12px (was 12px 8px)
+  - Min-width: 130px (was 100px)
+  - Value font-size: 1.4rem (was 1.2rem)
+  - Label color: rgba(255,255,255,0.5) (was 0.6)
+  - Label margin-top: 6px (was 4px)
+- **Converted GW Transfers to Static Container:** Removed collapsible dropdown
+  - Changed from CollapsibleSection component to static div
+  - Always visible when transfers exist
+  - Container background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%)
+  - Container border: 1px solid rgba(255,255,255,0.1), 12px border-radius
+  - Container padding: 16px with 12px margin-top
+  - Title: 0.85rem, #10b981 color, uppercase, 0.05em letter-spacing
+  - List: flex column with 8px gap
+  - Maintains transfer card styling with player details and net summary
+- **Mobile Breakpoint:** Added for screens under 400px
+  - Stat boxes: 56px min-width, 1.2rem value, 0.5rem label
+  - Container gap: 6px, padding: 8px
+  - Border-radius: 10px on mobile
+- **Impact:** All containers now have consistent app UI styling, GW Transfers always visible
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (updated stat boxes and team value boxes)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (converted GW Transfers to static container)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (added GW Transfers container styles)
 
 ### v2.4.13 - Increase Player Card Size & Improve Pitch Markings (Dec 11, 2025)
 **SIZE & VISIBILITY:** Increased player card sizes and made pitch markings more visible

@@ -91,10 +91,11 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         </div>
       )}
 
-      {/* Current GW Transfer Details */}
+      {/* GW Transfers - Static container, not collapsible */}
       {currentGWTransfers.length > 0 && (
-        <CollapsibleSection title={`GW${currentGW} Transfers`} defaultOpen={false}>
-          <div className={styles.transferDetail}>
+        <div className={styles.gwTransfersContainer}>
+          <div className={styles.gwTransfersTitle}>GW{currentGW} TRANSFERS</div>
+          <div className={styles.gwTransfersList}>
             {currentGWTransfers.map((transfer, index) => {
               const netGain = transfer.netGain;
               const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
@@ -116,24 +117,24 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
                 </div>
               );
             })}
-
-            {/* Summary */}
-            <div className={styles.transferSummary}>
-              {(() => {
-                const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
-                const afterHit = totalNet - gwTransfers.cost;
-                return (
-                  <>
-                    Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
-                    {gwTransfers.cost > 0 && (
-                      <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
           </div>
-        </CollapsibleSection>
+
+          {/* Summary */}
+          <div className={styles.transferSummary}>
+            {(() => {
+              const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
+              const afterHit = totalNet - gwTransfers.cost;
+              return (
+                <>
+                  Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
+                  {gwTransfers.cost > 0 && (
+                    <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </div>
       )}
     </div>
   );
