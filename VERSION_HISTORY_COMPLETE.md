@@ -1,12 +1,41 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 205+ versions
-**Current Version:** v2.4.35 (December 12, 2025)
+**Total Releases:** 206+ versions
+**Current Version:** v2.4.36 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.36 - Convert Pitch Border from CSS Border to Drawn Element (Dec 12, 2025)
+**CORRECTION:** Fixed pitch border implementation - converted from CSS border on container to drawn rectangle element inside
+- **Problem:** v2.4.35 incorrectly added CSS border directly to .pitch container
+  - Used `border: 2px solid rgba(255, 255, 255, 0.25)` on container element
+  - This created a container border, not a pitch marking drawn inside
+  - User explicitly corrected: "You added a thick border to the container. That's WRONG."
+  - Pitch markings should be drawn INSIDE container like all other markings (goal, penalty box, etc.)
+- **Solution:** Convert pitch border to drawn rectangle element positioned inside container
+- **Changes:**
+  - **Pitch Container (`PitchView.module.css`):** Removed CSS border from `.pitch` container
+  - **HTML (`PitchView.tsx`):** Added `<div className={styles.pitchBorder} />` element to pitch markings
+  - **CSS (`PitchView.module.css`):** Added `.pitchBorder` class with absolute positioning
+    - Desktop: `top: 10px; left: 10px; right: 10px; bottom: 90px` (stops above bench)
+    - Mobile: `top: 8px; left: 8px; right: 8px; bottom: 70px` (stops above mobile bench)
+    - Border: `1px solid rgba(255, 255, 255, 0.25)`
+    - Border radius: `4px`
+    - Z-index: `0` (behind other markings)
+    - Pointer events: `none` (doesn't block player clicks)
+- **Result:** Pitch border now correctly renders as drawn rectangle INSIDE container
+  - ✓ Border is drawn element positioned absolutely within pitch container
+  - ✓ Stops above bench area (doesn't extend to container edges)
+  - ✓ Matches style of other pitch markings (goal frame, penalty area, etc.)
+  - ✓ Z-index 0 ensures it renders behind other pitch elements
+  - ✓ 4px border radius provides subtle corner smoothing
+- **Implements:** Brief K-13d-v7 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added pitchBorder HTML element)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed CSS border from container, added pitchBorder class for desktop & mobile)
 
 ### v2.4.35 - Add Pitch Border and Fix Center Circle Direction (Dec 12, 2025)
 **VISUAL FIX:** Added visible pitch border and corrected center circle to curve upward toward goal

@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.36 (Dec 12)** - 🔧 Convert pitch border to drawn element - fixed v2.4.35 error, border now drawn INSIDE container not CSS border
 - **v2.4.35 (Dec 12)** - 🔧 Add pitch border + fix center circle direction - visible 2px border, circle curves upward
 - **v2.4.34 (Dec 12)** - 🔧 Remove penalty arc - simplified to 6 essential elements, can add back later
 - **v2.4.33 (Dec 12)** - 🔧 Correct penalty spot geometry - accurate 12-yard position (100→105px desktop, 80→83px mobile), enhanced comments
