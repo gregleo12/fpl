@@ -311,149 +311,17 @@
   letter-spacing: 0.5px;
 }
 
-@media (max-width: 768px) {
-  .container {
-    width: 100%;
-  }
-
-  .overallStats {
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-  }
-
-  .statBox {
-    padding: 0.75rem;
-  }
-
-  .statValue {
-    font-size: 1.25rem;
-  }
-
-  .statLabel {
-    font-size: 0.7rem;
-  }
-
-  .gwSelector {
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .gwButton {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-  }
-
-  .gwDisplay {
-    font-size: 1rem;
-    min-width: 100px;
-  }
-
-  .gwStats {
-    gap: 0.75rem;
-  }
-
-  .gwStatBox {
-    padding: 0.5rem;
-  }
-
-  .gwStatValue {
-    font-size: 1.1rem;
-  }
-
-  .formationBadge {
-    top: 0.75rem;
-    left: 0.75rem;
-    padding: 0.3rem 0.6rem;
-    font-size: 0.7rem;
-    border-radius: 10px;
-  }
-
+/* Small screen padding adjustments only - no layout changes */
+@media (max-width: 480px) {
   .pitch {
     padding: 1rem 0.25rem 0.75rem;
-    border-radius: 12px;
   }
 
   .pitchRow {
-    gap: 0.35rem;
-    margin-bottom: 0.75rem;
     padding: 0 6px;
-  }
-
-  .bench {
-    padding-top: 0.6rem;
-    margin-top: 0.4rem;
   }
 
   .benchRow {
-    gap: 0.35rem;
     padding: 0 6px;
   }
-
-  .benchPosition {
-    font-size: 0.65rem;
-    margin-bottom: 3px;
-  }
-
-  /* Mobile pitch markings - REMOVED (v2.4.42) */
-  /*
-  .pitchBorder {
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 100px;
-  }
-
-  .goalFrame {
-    width: 85px;
-    height: 20px;
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
-  .sixYardBox {
-    top: 20px;
-    width: 140px;
-    height: 32px;
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  .penaltyArea {
-    top: 20px;
-    left: 15px;
-    right: 15px;
-    height: 95px;
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  .penaltySpot {
-    top: 83px;
-    width: 6px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.35);
-  }
-
-  .penaltyArc {
-    top: 115px;
-    width: 150px;
-    height: 75px;
-    border-radius: 0 0 75px 75px;
-    border-color: rgba(255, 255, 255, 0.25);
-  }
-
-  .halfwayLine {
-    bottom: 100px;
-    left: 15px;
-    right: 15px;
-    background: rgba(255, 255, 255, 0.25);
-  }
-
-  .centerCircle {
-    bottom: 100px;
-    width: 120px;
-    height: 60px;
-    border-color: rgba(255, 255, 255, 0.25);
-    border-radius: 60px 60px 0 0;
-    border-bottom: none;
-  }
-  */
 }

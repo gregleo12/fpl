@@ -7,21 +7,7 @@
   height: fit-content;
 }
 
-/* Desktop: Sticky panel */
-@media (min-width: 1024px) {
-  .panel {
-    position: sticky;
-    top: 1rem;
-    padding: 1.25rem;
-  }
-}
-
-/* Mobile: More compact */
-@media (max-width: 1023px) {
-  .panel {
-    padding: 1rem;
-  }
-}
+/* Consistent padding at all sizes - no sticky behavior for unified layout */
 
 .loading {
   color: rgba(255, 255, 255, 0.5);
@@ -349,54 +335,11 @@
   }
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .panel {
-    position: static;
-    margin-bottom: 1.5rem;
-  }
-}
+/* No layout changes at breakpoints - consistent behavior at all sizes */
 
-@media (max-width: 768px) {
+/* Small screen adjustments - only padding changes */
+@media (max-width: 480px) {
   .panel {
     padding: 1rem;
-  }
-
-  .teamHeader {
-    padding-bottom: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .managerName {
-    font-size: 1.25rem;
-  }
-
-  .teamName {
-    font-size: 0.85rem;
-  }
-
-  .section {
-    margin-bottom: 1rem;
-  }
-
-  .sectionTitle {
-    font-size: 0.8rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .statRow {
-    padding: 0.5rem 0;
-  }
-
-  .statLabel {
-    font-size: 0.85rem;
-  }
-
-  .statValue {
-    font-size: 1rem;
-  }
-
-  .transferCost {
-    font-size: 0.8rem;
   }
 }
