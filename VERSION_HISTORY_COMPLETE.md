@@ -2,11 +2,41 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.15 (December 12, 2025)
+**Current Version:** v2.4.16 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.16 - Fix GW Transfers - Remove Nested Container (Dec 12, 2025)
+**SIMPLIFICATION:** Removed container-within-container effect for cleaner single-box design
+- **Problem:** GW Transfers had nested boxes - purple outer container with grey/green inner cards
+- **Solution:** Single purple container with transfer rows directly inside
+- **Removed Nested Structure:**
+  - Deleted `.gwTransfersList` wrapper div
+  - Removed `.transferCard` styles (background, border, border-radius, padding, margin)
+  - Changed to simple `.transferRow` with separator lines
+- **Updated JSX Structure:**
+  - Transfer rows now map directly inside `.gwTransfersContainer`
+  - No intermediate wrapper div
+  - Changed className from `transferCard` to `transferRow`
+- **Updated CSS Styles:**
+  - `.gwTransfersContainer`: padding reduced to 1.25rem, added width: 100%
+  - `.gwTransfersTitle`: margin-bottom increased to 1rem
+  - `.transferRow`: Simple row with 12px padding, separator lines (rgba(255,255,255,0.06))
+  - `.transferRow:last-of-type`: No bottom border
+  - `.transferPlayers`: font-size increased to 0.9rem
+  - `.transferOut`: color lightened to rgba(255,255,255,0.6)
+  - `.transferArrow`: color lightened to rgba(255,255,255,0.3)
+  - `.transferPoints`: color adjusted to rgba(255,255,255,0.4), font-size 0.8rem
+  - `.transferDiff`: font-weight 700, font-size 1rem (larger, bolder)
+  - `.transferDiff.neutral`: color rgba(255,255,255,0.4)
+  - `.transferSummary`: color rgba(255,255,255,0.5), padding-top 12px, border rgba(255,255,255,0.06)
+- **Visual Result:** Clean single container matching pitch width with subtle separator lines between transfers
+- **Design Goal:** Remove visual clutter, match Stats tab container simplicity
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed nested div, changed to transferRow)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (removed card styles, added row styles)
 
 ### v2.4.15 - Use Exact Stats Tab CSS for All Containers (Dec 12, 2025)
 **CONSISTENCY:** Applied Stats tab styling to all My Team containers for cohesive design

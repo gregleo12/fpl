@@ -95,29 +95,28 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
       {currentGWTransfers.length > 0 && (
         <div className={styles.gwTransfersContainer}>
           <div className={styles.gwTransfersTitle}>GW{currentGW} TRANSFERS</div>
-          <div className={styles.gwTransfersList}>
-            {currentGWTransfers.map((transfer, index) => {
-              const netGain = transfer.netGain;
-              const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
 
-              return (
-                <div key={index} className={styles.transferCard}>
-                  <div className={styles.transferPlayers}>
-                    <span className={styles.transferOut}>
-                      {transfer.playerOut.web_name} <span className={styles.transferPoints}>({transfer.playerOut.points}pts)</span>
-                    </span>
-                    <span className={styles.transferArrow}>→</span>
-                    <span className={styles.transferIn}>
-                      {transfer.playerIn.web_name} <span className={styles.transferPoints}>({transfer.playerIn.points}pts)</span>
-                    </span>
-                  </div>
-                  <span className={`${styles.transferDiff} ${diffClass}`}>
-                    {netGain > 0 ? '+' : ''}{netGain}
+          {currentGWTransfers.map((transfer, index) => {
+            const netGain = transfer.netGain;
+            const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
+
+            return (
+              <div key={index} className={styles.transferRow}>
+                <div className={styles.transferPlayers}>
+                  <span className={styles.transferOut}>
+                    {transfer.playerOut.web_name} <span className={styles.transferPoints}>({transfer.playerOut.points}pts)</span>
+                  </span>
+                  <span className={styles.transferArrow}>→</span>
+                  <span className={styles.transferIn}>
+                    {transfer.playerIn.web_name} <span className={styles.transferPoints}>({transfer.playerIn.points}pts)</span>
                   </span>
                 </div>
-              );
-            })}
-          </div>
+                <span className={`${styles.transferDiff} ${diffClass}`}>
+                  {netGain > 0 ? '+' : ''}{netGain}
+                </span>
+              </div>
+            );
+          })}
 
           {/* Summary */}
           <div className={styles.transferSummary}>
