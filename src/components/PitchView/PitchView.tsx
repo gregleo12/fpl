@@ -209,14 +209,29 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
           <div className={styles.benchRow}>
             {bench.map(pick => {
               const player = playerData[pick.element];
-              return player ? (
-                <PlayerCard
-                  key={pick.element}
-                  player={player}
-                  pick={pick}
-                  isBench={true}
-                />
-              ) : null;
+              if (!player) return null;
+
+              // Get position label
+              const positionLabels: {[key: number]: string} = {
+                1: 'GKP',
+                2: 'DEF',
+                3: 'MID',
+                4: 'FWD'
+              };
+              const positionLabel = positionLabels[player.element_type] || '';
+
+              return (
+                <div key={pick.element} className={styles.benchPlayerContainer}>
+                  {positionLabel && (
+                    <div className={styles.benchPosition}>{positionLabel}</div>
+                  )}
+                  <PlayerCard
+                    player={player}
+                    pick={pick}
+                    isBench={true}
+                  />
+                </div>
+              );
             })}
           </div>
         </div>

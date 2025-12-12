@@ -27,8 +27,7 @@ export function PlayerCard({ player, pick, isBench = false }: Props) {
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   // For bench players, show their actual points without multiplying by 0
   const points = isBench ? player.event_points : (player.event_points * pick.multiplier);
-  const isPositive = points > 0;
-  const isNegative = points < 0;
+  const isZeroPoints = points === 0;
 
   return (
     <div className={`${styles.card} ${isBench ? styles.bench : ''}`}>
@@ -40,7 +39,7 @@ export function PlayerCard({ player, pick, isBench = false }: Props) {
         <div className={styles.viceBadge}>V</div>
       )}
 
-      {/* Kit Image */}
+      {/* Kit Image - Cropped to show top 60-70% */}
       <div className={styles.kitContainer}>
         <img
           src={kitUrl}
@@ -53,17 +52,13 @@ export function PlayerCard({ player, pick, isBench = false }: Props) {
         />
       </div>
 
-      {/* Player Name */}
-      <div className={styles.name}>
+      {/* Player Name - Red bar for zero points, purple otherwise */}
+      <div className={`${styles.name} ${isZeroPoints ? styles.zeroPoints : ''}`}>
         {player.web_name}
       </div>
 
-      {/* Points */}
-      <div className={`${styles.points} ${
-        isPositive ? styles.positive :
-        isNegative ? styles.negative :
-        ''
-      }`}>
+      {/* Points - Green bar with dark text */}
+      <div className={styles.points}>
         {points}
       </div>
     </div>
