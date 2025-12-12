@@ -183,10 +183,8 @@
 
 /* GW Transfers - Static Container */
 .gwTransfersContainer {
-  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.25rem;
+  /* No background/border - .panel wrapper provides container styling */
+  padding: 0;
   width: 100%;
 }
 
@@ -196,7 +194,7 @@
   color: #10b981;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 /* Transfer rows - NO wrapper, just rows */

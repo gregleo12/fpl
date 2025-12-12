@@ -2,11 +2,35 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.19 (December 12, 2025)
+**Current Version:** v2.4.20 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.20 - Fix GW Transfers - Remove Nested Purple Container (Dec 12, 2025)
+**SIMPLIFICATION:** Removed duplicate purple container styling from gwTransfersContainer
+- **Problem:** GW Transfers had TWO purple containers nested inside each other
+  - Outer: `.panel` with purple gradient
+  - Inner: `.gwTransfersContainer` with same purple gradient (duplicate!)
+- **Root Cause:** Both `.panel` and `.gwTransfersContainer` had identical styling
+  - Background: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)`
+  - Border: `1px solid rgba(255, 255, 255, 0.1)`
+  - Border-radius: `16px`
+- **Solution:** Removed styling from `.gwTransfersContainer`, kept only `.panel` styled
+- **Updated .gwTransfersContainer:**
+  - Removed: `background` (no longer needed)
+  - Removed: `border` (no longer needed)
+  - Removed: `border-radius` (no longer needed)
+  - Removed: `padding: 1.25rem` (now `padding: 0`)
+  - Kept: `width: 100%` for layout
+  - Now acts as layout container only, styling comes from parent `.panel`
+- **Updated .gwTransfersTitle:**
+  - margin-bottom: 0.75rem (was 1rem) - adjusted for removed container padding
+- **Result:** Single purple container with transfers directly inside
+- **Visual Effect:** Clean single container, no nested box appearance
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (removed duplicate styling)
 
 ### v2.4.19 - Stat Boxes Match Pitch Width - Dynamic Alignment (Dec 12, 2025)
 **ALIGNMENT:** Removed width constraints so stat boxes dynamically fill to match pitch width
