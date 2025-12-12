@@ -1,12 +1,62 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 196+ versions
-**Current Version:** v2.4.26 (December 12, 2025)
+**Total Releases:** 198+ versions
+**Current Version:** v2.4.28 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.28 - Reformat Hit Display in Transfers Stat Box (Dec 12, 2025)
+**LAYOUT FIX:** Hit cost now displays inline with transfer count for cleaner, balanced stat box
+- **Problem:** Hit cost (-4) displayed below "TRANSFERS" label, making stat box taller and unbalanced
+  - Current layout stacked: "2 / TRANSFERS / (-4)"
+  - Stat box was taller than others due to extra line
+  - Hit cost as separate div with margin-top creating awkward spacing
+- **Solution:** Move hit cost inline with transfer count using flexbox
+- **JSX Changes (`MyTeamTab.tsx`):**
+  - Moved hit cost span inside statBoxValue div instead of as separate sibling
+  - Changed from `<div className={styles.statBoxSub}>` to `<span className={styles.statBoxSub}>`
+  - Added space before parenthesis for proper formatting: `{' (-'}{gwTransfers.cost}{')'}`
+- **CSS Changes (`Dashboard.module.css`):**
+  - Updated `.statBoxValue`: Added `display: flex`, `align-items: baseline`, `justify-content: center`, `gap: 4px`
+  - Updated `.statBoxSub`: Changed `font-size: 0.7rem → 0.9rem`, `color: #ef4444 → #ff4757` (app red), removed `margin-top`
+- **Result:** Cleaner, more balanced layout - "2 (-4)" displays on one line, "TRANSFERS" below
+- **Visual Comparison:**
+  - Before: "2 / TRANSFERS / (-4)" (stacked, unbalanced)
+  - After: "2 (-4) / TRANSFERS" (inline, balanced)
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (moved hit cost inline)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (flexbox layout for inline display)
+
+### v2.4.27 - Update GW Transfers Styling to Match App Branding (Dec 12, 2025)
+**STYLING FIX:** GW Transfers now uses app's color palette for visual consistency
+- **Problem:** GW Transfers container colors didn't match app branding
+  - Using teal (#10b981) instead of app's green (#00ff87)
+  - Text not white enough (opacity too low)
+  - Overall felt inconsistent with other containers (points badges, GW selector, etc.)
+- **Solution:** Updated all colors to match app's established palette
+- **Color Updates:**
+  - Title color: #10b981 → #00ff87 (app green)
+  - Player In color: #10b981 → #00ff87 + font-weight: 500
+  - Positive diff: #10b981 → #00ff87
+  - Negative diff: #ef4444 → #ff4757 (app red)
+  - Transfer Out: rgba(255, 255, 255, 0.6) → 0.7 (brighter)
+  - Transfer Arrow: rgba(255, 255, 255, 0.3) → 0.4 (brighter)
+  - Transfer Points: rgba(255, 255, 255, 0.4) → 0.5 (brighter)
+  - Summary: rgba(255, 255, 255, 0.5) → 0.6 (brighter)
+- **Typography Improvements:**
+  - Letter spacing: 0.05em → 0.5px (more precise)
+  - Font sizes optimized: 0.8rem → 0.85rem for summary
+  - Added margin to transfer arrow: 0 8px (better spacing)
+  - Border opacity: 0.06 → 0.1 (more visible)
+- **Result:** GW Transfers now visually consistent with rest of app
+  - Green highlights match GW selector hover, points badges, etc.
+  - Red accents match app's error/negative color
+  - Text more readable with improved opacity levels
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (updated all transfer-related colors and typography)
 
 ### v2.4.26 - Make GW Transfers Dynamic (Dec 12, 2025)
 **FUNCTIONALITY FIX:** GW Transfers section now updates dynamically when navigating gameweeks
