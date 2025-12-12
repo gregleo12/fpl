@@ -1,12 +1,38 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 200+ versions
-**Current Version:** v2.4.30 (December 12, 2025)
+**Total Releases:** 201+ versions
+**Current Version:** v2.4.31 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.31 - Enhance Pitch Markings Visibility (Dec 12, 2025)
+**VISUAL FIX:** Increased opacity of all pitch markings to make pitch more recognizable as football field
+- **Problem:** Pitch markings too subtle (0.12-0.15 opacity) - barely visible, doesn't visually read as football pitch
+  - Penalty boxes, goal area, arcs, lines all at `rgba(255, 255, 255, 0.12)` (too faint)
+  - Penalty spot at `0.15` opacity (hard to see)
+  - Goal frame at `0.25` border opacity (too subtle)
+  - Net pattern at `0.06` opacity (almost invisible)
+  - Overall pitch felt like generic purple container, not football field
+- **Solution:** Enhanced markings by increasing opacity ~2x for better visibility while keeping brand colors
+- **Opacity Changes (Desktop & Mobile):**
+  - Penalty box (18-yard): `border: 0.12 → 0.25` (doubled)
+  - 6-yard box (goal area): `border: 0.12 → 0.25` (doubled)
+  - Penalty spot: `background: 0.15 → 0.3` (doubled), size `5px → 6px` (slightly larger)
+  - Penalty arc: `border: 0.12 → 0.25` (doubled)
+  - Halfway line: `background: 0.12 → 0.25` (doubled)
+  - Center mark: `border: 0.12 → 0.25` (doubled)
+  - Goal frame: `border: 0.25 → 0.35`, `background: 0.25 → 0.3` (more prominent)
+  - Net pattern: `0.06 → 0.08` (more visible)
+- **Result:** Pitch now immediately recognizable as football field at a glance
+  - Markings visible but not overpowering
+  - Purple gradient background maintained for brand consistency
+  - Better visual hierarchy: goal, penalty area, and halfway line stand out
+  - Professional football pitch appearance without changing colors
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (enhanced all marking opacities, desktop & mobile)
 
 ### v2.4.30 - GW Transfers Receipt-Style Layout (Dec 12, 2025)
 **STYLING FIX:** Transform GW Transfers section into clean receipt/ledger format with clear hierarchy
