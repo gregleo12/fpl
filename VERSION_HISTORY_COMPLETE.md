@@ -1,12 +1,56 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 208+ versions
-**Current Version:** v2.4.38 (December 12, 2025)
+**Total Releases:** 209+ versions
+**Current Version:** v2.4.39 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.39 - Fix Desktop Layout with Unified Vertical Layout (Dec 12, 2025)
+**LAYOUT FIX:** Fixed desktop layout breaking issues by implementing unified vertical layout for all screen sizes
+- **Problem:** Desktop layout (≥1024px) broke with side-by-side design
+  - Desktop showed 30% transfers panel | 70% pitch (two-column grid)
+  - Missing stat boxes: GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK not visible on desktop
+  - Missing pitch elements: Center circle and penalty arc disappeared (likely due to 70% width constraint)
+  - Different GW selector style: Desktop showed "Gameweek 15" while mobile showed compact "GW 15"
+  - Mobile (< 1024px) worked correctly with all elements visible
+- **Solution:** Unified vertical layout for all screen sizes (Option A from Brief K-14)
+  - Same layout on mobile, tablet, and desktop - just wider on larger screens
+  - No separate desktop/mobile layouts - single consistent structure
+  - Desktop gets max-width and centered to prevent over-stretching
+- **Changes:**
+  - **1. MyTeamTab.tsx - Removed Dual Layout System:**
+    - Removed `.mobileLayout` wrapper div (lines 112-187)
+    - Removed `.desktopLayout` div with 30%/70% grid (lines 189-225)
+    - Single `.myTeamContent` wrapper for all screen sizes
+    - Layout order: GW Selector → Stat Boxes (2 rows) → Pitch → Team Value → GW Transfers
+    - All components visible at all screen sizes
+  - **2. Dashboard.module.css - Unified Layout CSS:**
+    - Removed `.mobileLayout` class and styles
+    - Removed `.desktopLayout` class and 30%/70% grid styles
+    - Removed `@media (min-width: 1024px)` hiding mobile layout
+    - Single `.myTeamContent` with flex column layout
+    - Added desktop-specific styles: `max-width: 600px; margin: 0 auto`
+    - Net reduction: -56 lines (67 insertions, 123 deletions)
+- **Result:** Consistent layout across all devices with all elements visible
+  - ✓ Desktop shows all 5 stat boxes (GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK)
+  - ✓ Desktop shows all pitch elements (goal, boxes, penalty spot, penalty arc, halfway line, center circle)
+  - ✓ Same compact GW selector style on all devices ("GW 15")
+  - ✓ Consistent vertical stack layout: mobile, tablet, desktop
+  - ✓ Desktop layout centered with 600px max-width to prevent over-stretching
+  - ✓ GW Transfers section visible with receipt-style layout
+  - ✓ All elements properly sized and visible
+- **Technical Details:**
+  - Removed conditional rendering based on screen size
+  - Single source of truth for layout structure
+  - Responsive design through max-width instead of separate layouts
+  - Cleaner, more maintainable code
+- **Implements:** Brief K-14 Option A (recommended solution)
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed dual layout system)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (unified layout CSS, removed desktop grid)
 
 ### v2.4.38 - Proper Pitch Geometry with True Semicircles (Dec 12, 2025)
 **GEOMETRY FIX:** Implemented proper semicircular arcs with correct proportions and true geometric shapes
