@@ -1,12 +1,47 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 199+ versions
-**Current Version:** v2.4.29 (December 12, 2025)
+**Total Releases:** 200+ versions
+**Current Version:** v2.4.30 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.30 - GW Transfers Receipt-Style Layout (Dec 12, 2025)
+**STYLING FIX:** Transform GW Transfers section into clean receipt/ledger format with clear hierarchy
+- **Problem:** Title too small and not bold, transferred-out players gray instead of white, hit cost buried in awkward summary text
+  - Title was 0.85rem and font-weight 600 (too subtle)
+  - Player out names were `rgba(255, 255, 255, 0.7)` (gray, hard to read)
+  - Hit cost hidden in summary line: "Net: +15 pts (after -4 hit: +11 pts)"
+  - Summary layout awkward and hard to scan
+- **Solution:** Receipt-style layout with proper visual hierarchy and clear line items
+- **JSX Changes (`StatsPanel.tsx`):**
+  - Changed title from `<div>` to `<h3>` for semantic markup
+  - Separated hit as dedicated row that only shows if `gwTransfers.cost > 0`
+  - Added `<hr className={styles.transferSeparator} />` before net result
+  - Net result now dedicated row with left label ("Net result:") and right value
+  - Renamed CSS class from `transferDiff` to `transferPointsDiff` for clarity
+- **CSS Changes (`StatsPanel.module.css`):**
+  - **Title:** `font-size: 0.85rem → 1rem`, `font-weight: 600 → 700` (bigger, bolder)
+  - **Player out:** `color: rgba(255, 255, 255, 0.7) → #ffffff` (WHITE, not gray) + `font-weight: 500`
+  - **Hit row:** New styles - `display: flex`, `justify-content: space-between`, red value (`#ff4757`)
+  - **Separator:** `border-top: 1px solid rgba(255, 255, 255, 0.15)` (subtle line)
+  - **Net result:** New dedicated row styles with larger font (`1.1rem`), bold (`700`)
+  - **Point diff:** Renamed from `.transferDiff` to `.transferPointsDiff`, `font-weight: 700 → 600`
+- **Visual Result (Receipt Style):**
+  ```
+  GW15 TRANSFERS                                  ← Bigger, BOLD
+
+  Mateta (2pts)      →   Thiago (2pts)        0  ← WHITE "Mateta"
+  Semenyo (3pts)     →   B.Fernandes (18pts) +15 ← WHITE "Semenyo"
+  Hit                                         -4  ← Separate line, RED
+                                         ───────  ← Separator
+  Net result:                            +11 pts  ← Clear label + value
+  ```
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (new JSX structure)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (receipt-style formatting)
 
 ### v2.4.29 - Spread Players Wider on Pitch (Dec 12, 2025)
 **LAYOUT FIX:** Players now spread across more of the pitch width for a natural formation feel
