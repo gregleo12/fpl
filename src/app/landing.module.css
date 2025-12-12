@@ -14,6 +14,31 @@
   text-align: center;
 }
 
+.logo {
+  font-family: 'Poppins', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.logoRival {
+  color: #ffffff;
+}
+
+.logoSlash {
+  color: #00ff87;
+  margin: 0 -2px;
+  font-style: italic;
+}
+
+.logoFPL {
+  color: #00ff87;
+}
+
 .title {
   font-size: 3.5rem;
   font-weight: 700;
@@ -182,6 +207,11 @@
 }
 
 @media (max-width: 768px) {
+  .logo {
+    font-size: 2.25rem;
+    margin-bottom: 1.25rem;
+  }
+
   .title {
     font-size: 2.5rem;
   }
@@ -206,6 +236,11 @@
 @media (max-width: 480px) {
   .container {
     padding: 1rem;
+  }
+
+  .logo {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
   }
 
   .title {
