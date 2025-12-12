@@ -135,24 +135,15 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
 
       {/* Pitch */}
       <div className={styles.pitch}>
-        {/* Pitch markings - half-pitch view */}
+        {/* PITCH MARKINGS - Exact specification from Brief K-13d-v2 */}
         <div className={styles.pitchMarkings}>
-          {/* Goal frame at top */}
-          <div className={`${styles.goalFrame} ${styles.top}`}></div>
-
-          {/* Penalty box and goal area - top only */}
-          <div className={styles.penaltyBoxTop}></div>
-          <div className={styles.goalAreaTop}></div>
-          <div className={styles.penaltySpotTop}></div>
-          <div className={styles.penaltyArc}></div>
-
-          {/* Halfway line and center mark */}
-          <div className={styles.halfwayLine}></div>
-          <div className={styles.centerMark}></div>
-
-          {/* Corner arcs - top only */}
-          <div className={`${styles.cornerArc} ${styles.topLeft}`}></div>
-          <div className={`${styles.cornerArc} ${styles.topRight}`}></div>
+          <div className={styles.goalFrame} />
+          <div className={styles.sixYardBox} />
+          <div className={styles.penaltyArea} />
+          <div className={styles.penaltySpot} />
+          <div className={styles.penaltyArc} />
+          <div className={styles.halfwayLine} />
+          <div className={styles.centerCircle} />
         </div>
 
         {/* Goalkeepers */}

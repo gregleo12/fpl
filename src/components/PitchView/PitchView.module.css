@@ -151,146 +151,106 @@
   min-height: 420px;
 }
 
-/* Pitch markings container */
+/* ====== PITCH MARKINGS ====== */
+/* Line color - rgba(255, 255, 255, 0.3) for visibility */
+
 .pitchMarkings {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;
+  pointer-events: none;  /* Don't block player clicks */
   z-index: 1;
 }
 
-/* Center circle and spot removed for half-pitch view */
-
-/* Penalty box (18-yard box) */
-.penaltyBoxTop {
+/* 1. GOAL FRAME - small rectangle at top center */
+.goalFrame {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
-  height: 75px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: 100px;
+  height: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top: none;
-  border-radius: 0 0 4px 4px;
+  background: transparent;
 }
 
-/* 6-yard box (goal area) */
-.goalAreaTop {
+/* 2. SIX-YARD BOX - small box below goal */
+.sixYardBox {
   position: absolute;
-  top: 0;
+  top: 25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 110px;
-  height: 32px;
+  width: 160px;
+  height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-top: none;
-  border-radius: 0 0 3px 3px;
+  background: transparent;
 }
 
-/* Penalty spot */
-.penaltySpotTop {
+/* 3. PENALTY AREA (18-yard box) - large box */
+.penaltyArea {
   position: absolute;
-  top: 55px;
+  top: 25px;
   left: 50%;
   transform: translateX(-50%);
-  width: 6px;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.3);
+  width: 75%;
+  height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: none;
+  background: transparent;
+}
+
+/* 4. PENALTY SPOT - small dot */
+.penaltySpot {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 50%;
 }
 
-/* Penalty arc */
+/* 5. PENALTY ARC - curved line below penalty area */
 .penaltyArc {
   position: absolute;
-  top: 75px;
+  top: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0 0 50% 50%;
+  border-top: none;
+  background: transparent;
+}
+
+/* 6. HALFWAY LINE - horizontal line near bottom */
+.halfwayLine {
+  position: absolute;
+  bottom: 100px;
+  left: 5%;
+  right: 5%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 7. CENTER CIRCLE - semicircle on halfway line */
+.centerCircle {
+  position: absolute;
+  bottom: 100px;
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
   height: 40px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-top: none;
   border-radius: 0 0 50% 50%;
-}
-
-/* Halfway line - explicit element */
-.halfwayLine {
-  position: absolute;
-  bottom: 85px;
-  left: 8%;
-  right: 8%;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.25);
-  z-index: 1;
-}
-
-/* Center mark */
-.centerMark {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 10px;
-  height: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 50%;
-}
-
-/* Bottom penalty box removed for half-pitch view */
-
-/* Corner arcs - hidden for cleaner look */
-.cornerArc {
-  display: none;
-}
-
-/* Goal frame with subtle net */
-.goalFrame {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.goalFrame.top {
-  top: 0;
-  width: 80px;
-  height: 22px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(255, 255, 255, 0.35);
   border-top: none;
-  border-radius: 0 0 3px 3px;
-  position: relative;
-}
-
-/* Simple net pattern */
-.goalFrame.top::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0px,
-      transparent 7px,
-      rgba(255, 255, 255, 0.08) 7px,
-      rgba(255, 255, 255, 0.08) 8px
-    ),
-    repeating-linear-gradient(
-      0deg,
-      transparent 0px,
-      transparent 7px,
-      rgba(255, 255, 255, 0.08) 7px,
-      rgba(255, 255, 255, 0.08) 8px
-    );
-}
-
-/* Bottom goal frame removed for half-pitch view */
-.goalFrame.bottom {
-  display: none;
+  background: transparent;
 }
 
 .pitchRow {
@@ -410,45 +370,47 @@
   }
 
   /* Scale down pitch markings for mobile */
-  .penaltyBoxTop {
-    width: 160px;
-    height: 60px;
+  .goalFrame {
+    width: 85px;
+    height: 20px;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .sixYardBox {
+    width: 140px;
+    height: 32px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
-  .goalAreaTop {
-    width: 90px;
-    height: 26px;
+  .penaltyArea {
+    width: 70%;
+    height: 95px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
-  .penaltySpotTop {
-    top: 45px;
-    width: 5px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  .goalFrame.top {
-    width: 70px;
-    height: 18px;
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(0, 0, 0, 0.3);
+  .penaltySpot {
+    top: 80px;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.35);
   }
 
   .penaltyArc {
-    width: 70px;
-    height: 35px;
+    top: 115px;
+    width: 85px;
+    height: 42px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
   .halfwayLine {
     bottom: 75px; /* Adjust for mobile bench space */
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.3);
   }
 
-  .centerMark {
-    bottom: 70px;
+  .centerCircle {
+    bottom: 75px;
+    width: 70px;
+    height: 35px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 }
