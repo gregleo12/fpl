@@ -891,7 +891,7 @@
 /* Desktop: Center layout and add max-width to prevent over-stretching */
 @media (min-width: 1024px) {
   .myTeamContent {
-    max-width: 600px;
+    max-width: var(--app-max-width);
     margin: 0 auto;
   }
 }
