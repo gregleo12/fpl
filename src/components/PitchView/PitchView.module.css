@@ -151,33 +151,31 @@
   min-height: 420px;
 }
 
-/* ====== PITCH MARKINGS ====== */
-/* Line color - rgba(255, 255, 255, 0.3) for visibility */
-
+/* ====== PITCH MARKINGS - REMOVED (v2.4.42) ====== */
+/* Pitch markings removed for cleaner look - just players on purple background */
+/*
 .pitchMarkings {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  pointer-events: none;  /* Don't block player clicks */
+  pointer-events: none;
   z-index: 1;
 }
 
-/* PITCH BORDER - rectangle drawn inside container, stops above bench */
 .pitchBorder {
   position: absolute;
-  top: 20px;      /* More space from container edge */
+  top: 20px;
   left: 20px;
   right: 20px;
-  bottom: 140px;  /* Stop above the bench - bench is OUTSIDE pitch */
+  bottom: 140px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 4px;
   pointer-events: none;
-  z-index: 0;  /* Behind other markings */
+  z-index: 0;
 }
 
-/* 1. GOAL FRAME - small rectangle at top center */
 .goalFrame {
   position: absolute;
   top: 0;
@@ -190,7 +188,6 @@
   background: transparent;
 }
 
-/* 2. SIX-YARD BOX - small box below goal */
 .sixYardBox {
   position: absolute;
   top: 25px;
@@ -203,22 +200,20 @@
   background: transparent;
 }
 
-/* 3. PENALTY AREA (18-yard box) - large box, TOUCHES pitch border sides */
 .penaltyArea {
   position: absolute;
-  top: 25px;                    /* Starts at goal line */
-  left: 20px;                   /* Aligns with pitch border left edge */
-  right: 20px;                  /* Aligns with pitch border right edge */
-  height: 120px;                /* 18 yards deep */
+  top: 25px;
+  left: 20px;
+  right: 20px;
+  height: 120px;
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-top: none;
   background: transparent;
 }
 
-/* 4. PENALTY SPOT - small dot (12 yards from goal) */
 .penaltySpot {
   position: absolute;
-  top: 105px;                   /* 25px (goal) + 80px (12/18 of 120px) = 12 yards from goal */
+  top: 105px;
   left: 50%;
   transform: translateX(-50%);
   width: 8px;
@@ -227,43 +222,41 @@
   border-radius: 50%;
 }
 
-/* 5. PENALTY ARC - semicircle at bottom of 18-yard box, curves DOWNWARD */
 .penaltyArc {
   position: absolute;
-  top: 145px;                   /* Bottom of penalty area (25 + 120) */
+  top: 145px;
   left: 50%;
   transform: translateX(-50%);
-  width: 180px;                 /* ~50% of penalty area width */
-  height: 90px;                 /* Half of width = true semicircle */
+  width: 180px;
+  height: 90px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 0 0 90px 90px; /* Curves DOWNWARD (radius = height) */
-  border-top: none;             /* Flat edge on penalty area line */
+  border-radius: 0 0 90px 90px;
+  border-top: none;
   background: transparent;
 }
 
-/* 6. HALFWAY LINE - bottom of pitch border, bench is OUTSIDE */
 .halfwayLine {
   position: absolute;
-  bottom: 140px;  /* Same as pitch border bottom - THIS IS THE BOTTOM OF THE PITCH */
-  left: 20px;     /* Aligns with pitch border */
-  right: 20px;    /* Aligns with pitch border */
+  bottom: 140px;
+  left: 20px;
+  right: 20px;
   height: 1px;
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* 7. CENTER CIRCLE - large semicircle on halfway line, curves UPWARD toward goal */
 .centerCircle {
   position: absolute;
-  bottom: 140px;               /* Sits on halfway line at pitch bottom */
+  bottom: 140px;
   left: 50%;
   transform: translateX(-50%);
-  width: 150px;                /* Much larger for proper proportions */
-  height: 75px;                /* Half of width = true semicircle */
+  width: 150px;
+  height: 75px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 75px 75px 0 0;  /* Curves UPWARD (radius = height) */
-  border-bottom: none;          /* Flat edge on halfway line */
+  border-radius: 75px 75px 0 0;
+  border-bottom: none;
   background: transparent;
 }
+*/
 
 .pitchRow {
   display: flex;
@@ -402,12 +395,13 @@
     margin-bottom: 3px;
   }
 
-  /* Scale down pitch markings for mobile */
+  /* Mobile pitch markings - REMOVED (v2.4.42) */
+  /*
   .pitchBorder {
-    top: 15px;      /* Proportional increase from desktop */
+    top: 15px;
     left: 15px;
     right: 15px;
-    bottom: 100px;  /* Stop above mobile bench - bench OUTSIDE pitch */
+    bottom: 100px;
   }
 
   .goalFrame {
@@ -417,48 +411,49 @@
   }
 
   .sixYardBox {
-    top: 20px;                  /* After smaller mobile goal */
+    top: 20px;
     width: 140px;
     height: 32px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
   .penaltyArea {
-    top: 20px;                  /* Starts at mobile goal line */
-    left: 15px;                 /* Aligns with mobile pitch border */
-    right: 15px;                /* Aligns with mobile pitch border */
-    height: 95px;               /* Scaled 18-yard box */
+    top: 20px;
+    left: 15px;
+    right: 15px;
+    height: 95px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
   .penaltySpot {
-    top: 83px;                  /* 20px (goal) + 63px (12/18 of 95px) = 12 yards from goal */
+    top: 83px;
     width: 6px;
     height: 6px;
     background: rgba(255, 255, 255, 0.35);
   }
 
   .penaltyArc {
-    top: 115px;                 /* Bottom of mobile penalty area (20 + 95) */
-    width: 150px;               /* ~50% of mobile penalty area width */
-    height: 75px;               /* Half of width = true semicircle */
-    border-radius: 0 0 75px 75px; /* Curves DOWNWARD (radius = height) */
+    top: 115px;
+    width: 150px;
+    height: 75px;
+    border-radius: 0 0 75px 75px;
     border-color: rgba(255, 255, 255, 0.25);
   }
 
   .halfwayLine {
-    bottom: 100px;  /* Same as mobile pitch border bottom */
-    left: 15px;     /* Aligns with mobile pitch border */
-    right: 15px;    /* Aligns with mobile pitch border */
+    bottom: 100px;
+    left: 15px;
+    right: 15px;
     background: rgba(255, 255, 255, 0.25);
   }
 
   .centerCircle {
-    bottom: 100px;  /* Sits on mobile halfway line */
-    width: 120px;   /* Proportionally larger */
-    height: 60px;   /* Half of width = true semicircle */
+    bottom: 100px;
+    width: 120px;
+    height: 60px;
     border-color: rgba(255, 255, 255, 0.25);
-    border-radius: 60px 60px 0 0;  /* Curves UPWARD (radius = height) */
+    border-radius: 60px 60px 0 0;
     border-bottom: none;
   }
+  */
 }

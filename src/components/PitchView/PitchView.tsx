@@ -135,18 +135,6 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
 
       {/* Pitch */}
       <div className={styles.pitch}>
-        {/* PITCH MARKINGS - Drawn elements inside container */}
-        <div className={styles.pitchMarkings}>
-          <div className={styles.pitchBorder} />
-          <div className={styles.goalFrame} />
-          <div className={styles.sixYardBox} />
-          <div className={styles.penaltyArea} />
-          <div className={styles.penaltySpot} />
-          <div className={styles.penaltyArc} />
-          <div className={styles.halfwayLine} />
-          <div className={styles.centerCircle} />
-        </div>
-
         {/* Goalkeepers */}
         <div className={styles.pitchRow}>
           {goalkeepers.map(pick => {
