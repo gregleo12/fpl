@@ -1,0 +1,216 @@
+/* Overlay - full screen darkened background */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Modal Container */
+.modal {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.95) 100%);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(0, 255, 135, 0.4);
+  transform: scale(1.1);
+}
+
+/* Player Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.jersey {
+  width: 70px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.headerText {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  margin-bottom: 0.25rem;
+  word-wrap: break-word;
+}
+
+.teamInfo {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.captainTag {
+  color: #00ff87;
+  font-weight: 700;
+}
+
+/* Loading State */
+.loadingContainer {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Stats Section */
+.stats {
+  padding: 1rem 1.5rem;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statRow:last-child {
+  border-bottom: none;
+}
+
+.statLabel {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.statValue {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Total Points Section */
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(0, 255, 135, 0.1);
+  border-top: 2px solid rgba(0, 255, 135, 0.3);
+  margin-top: 0.5rem;
+}
+
+.totalLabel {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #00ff87;
+}
+
+.totalValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .modal {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 95vh;
+  }
+
+  .overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .header {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+
+  .playerName {
+    font-size: 1.25rem;
+  }
+
+  .jersey {
+    width: 60px;
+  }
+
+  .stats {
+    padding: 1rem 1.25rem;
+  }
+
+  .statRow {
+    padding: 0.625rem 0;
+  }
+
+  .total {
+    padding: 1rem 1.25rem;
+  }
+}

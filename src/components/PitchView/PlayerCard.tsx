@@ -21,16 +21,20 @@ interface Props {
   player: PlayerInfo;
   pick: Player;
   isBench?: boolean;
+  onClick?: () => void;
 }
 
-export function PlayerCard({ player, pick, isBench = false }: Props) {
+export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   // For bench players, show their actual points without multiplying by 0
   const points = isBench ? player.event_points : (player.event_points * pick.multiplier);
   const isZeroPoints = points === 0;
 
   return (
-    <div className={`${styles.card} ${isBench ? styles.bench : ''}`}>
+    <div
+      className={`${styles.card} ${isBench ? styles.bench : ''} ${onClick ? styles.clickable : ''}`}
+      onClick={onClick}
+    >
       {/* Captain/Vice Badge */}
       {pick.is_captain && (
         <div className={styles.captainBadge}>C</div>

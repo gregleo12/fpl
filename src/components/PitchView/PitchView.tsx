@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './PitchView.module.css';
 import { PlayerCard } from './PlayerCard';
+import { PlayerModal } from './PlayerModal';
 
 interface Player {
   element: number;
@@ -19,6 +20,9 @@ interface PlayerInfo {
   team_code: number;
   element_type: number;
   event_points: number;
+  bps?: number;
+  bonus?: number;
+  minutes?: number;
 }
 
 interface Props {
@@ -35,6 +39,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
   const [playerData, setPlayerData] = useState<{[key: number]: PlayerInfo}>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedPlayer, setSelectedPlayer] = useState<{ player: PlayerInfo; pick: Player } | null>(null);
 
   // Fetch team data for selected GW
   useEffect(() => {
@@ -144,6 +149,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
                 key={pick.element}
                 player={player}
                 pick={pick}
+                onClick={() => setSelectedPlayer({ player, pick })}
               />
             ) : null;
           })}
@@ -158,6 +164,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
                 key={pick.element}
                 player={player}
                 pick={pick}
+                onClick={() => setSelectedPlayer({ player, pick })}
               />
             ) : null;
           })}
@@ -172,6 +179,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
                 key={pick.element}
                 player={player}
                 pick={pick}
+                onClick={() => setSelectedPlayer({ player, pick })}
               />
             ) : null;
           })}
@@ -186,6 +194,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
                 key={pick.element}
                 player={player}
                 pick={pick}
+                onClick={() => setSelectedPlayer({ player, pick })}
               />
             ) : null;
           })}
@@ -217,6 +226,7 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
                     player={player}
                     pick={pick}
                     isBench={true}
+                    onClick={() => setSelectedPlayer({ player, pick })}
                   />
                 </div>
               );
@@ -224,6 +234,16 @@ export function PitchView({ leagueId, myTeamId, selectedGW, maxGW, onGWChange, s
           </div>
         </div>
       </div>
+
+      {/* Player Modal */}
+      {selectedPlayer && (
+        <PlayerModal
+          player={selectedPlayer.player}
+          pick={selectedPlayer.pick}
+          gameweek={selectedGW}
+          onClose={() => setSelectedPlayer(null)}
+        />
+      )}
     </div>
   );
 }
