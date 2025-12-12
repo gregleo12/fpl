@@ -1,12 +1,40 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 204+ versions
-**Current Version:** v2.4.34 (December 12, 2025)
+**Total Releases:** 205+ versions
+**Current Version:** v2.4.35 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.35 - Add Pitch Border and Fix Center Circle Direction (Dec 12, 2025)
+**VISUAL FIX:** Added visible pitch border and corrected center circle to curve upward toward goal
+- **Problem:** Two geometry issues needed correction
+  - No visible border around pitch container - pitch blended into background
+  - Center circle curving DOWNWARD instead of UPWARD toward goal
+  - Center circle had `border-radius: 0 0 50% 50%` (curves bottom) and `border-top: none`
+- **Solution:** Add pitch border and fix center circle curvature
+- **Changes:**
+  - **Pitch Border (`PitchView.module.css`):**
+    - Changed `.pitch` border from `1px solid rgba(255, 255, 255, 0.1)` → `2px solid rgba(255, 255, 255, 0.25)`
+    - More prominent border (2px instead of 1px, 0.25 opacity instead of 0.1)
+    - Clearly defines pitch playing area
+  - **Center Circle - Desktop:**
+    - `border-radius: 0 0 50% 50%` → `border-radius: 50% 50% 0 0` (curves UPWARD)
+    - `border-top: none` → `border-bottom: none` (flat edge on halfway line)
+    - Enhanced comment: "curves UPWARD toward goal"
+  - **Center Circle - Mobile:**
+    - Added `border-radius: 50% 50% 0 0` (was missing explicit value)
+    - Added `border-bottom: none` (was missing)
+- **Result:** Pitch now has clear visible boundary and center circle correctly curves upward
+  - ✓ Pitch border clearly visible and defines playing area
+  - ✓ Center circle curves UPWARD like real football pitch
+  - ✓ Flat edge of center circle aligns with halfway line
+  - ✓ Consistent geometry across desktop and mobile
+- **Implements:** Brief K-13d-v6 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (pitch border, center circle curvature for desktop & mobile)
 
 ### v2.4.34 - Remove Penalty Arc for Cleaner Pitch View (Dec 12, 2025)
 **SIMPLIFICATION:** Removed penalty arc element completely to simplify pitch markings
