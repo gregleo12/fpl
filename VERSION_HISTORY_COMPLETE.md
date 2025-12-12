@@ -1,12 +1,39 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 195+ versions
-**Current Version:** v2.4.25 (December 12, 2025)
+**Total Releases:** 196+ versions
+**Current Version:** v2.4.26 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.26 - Make GW Transfers Dynamic (Dec 12, 2025)
+**FUNCTIONALITY FIX:** GW Transfers section now updates dynamically when navigating gameweeks
+- **Problem:** GW Transfers section stayed fixed on current GW (e.g., "GW15 TRANSFERS") regardless of selected GW
+  - Transfers API endpoint hardcoded to fetch only current GW transfers
+  - StatsPanel component didn't pass selected GW to transfers endpoint
+  - Navigating to GW14 still showed "GW15 TRANSFERS" with GW15 data
+- **Solution:** Made transfers API accept gameweek query parameter and updated component to pass it
+- **API Changes (`/api/team/[teamId]/transfers/route.ts`):**
+  - Added `gw` query parameter support (e.g., `?gw=14`)
+  - Falls back to current GW if no query param provided (backward compatible)
+  - Replaced hardcoded `currentGW` with dynamic `targetGW` based on query param
+  - Fetch player points from live data (`/api/event/${targetGW}/live/`) for accurate historical GW points
+  - Filter transfers by `targetGW` instead of always using current GW
+  - Fallback to bootstrap data if live data unavailable (for very old GWs)
+- **Component Changes (`StatsPanel.tsx`):**
+  - Updated transfers fetch to include `?gw=${selectedGW}` query parameter
+  - Transfers now re-fetch automatically when selectedGW changes (already in useEffect deps)
+  - Display updates with correct GW number and transfer data
+- **Result:** Navigating gameweeks now shows correct transfers for each GW
+  - GW15 selected → Shows "GW15 TRANSFERS" with GW15 transfers and points
+  - GW14 selected → Shows "GW14 TRANSFERS" with GW14 transfers and points
+  - GW1 selected → Shows nothing (no transfers possible first week)
+  - GW with no transfers → Section hidden (no transfers made that week)
+- **Files:**
+  - Modified: `src/app/api/team/[teamId]/transfers/route.ts` (added GW parameter support, live data fetching)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (pass selectedGW to API)
 
 ### v2.4.25 - Fix Pitch Width and Spacing (Dec 12, 2025)
 **LAYOUT FIX:** Pitch container now follows same width and spacing rules as other containers
