@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.29 (Dec 12)** - 🎨 Spread players wider on pitch - natural formation with space-evenly distribution
 - **v2.4.28 (Dec 12)** - 🎨 Reformat hit display - inline with transfer count for balanced stat box
 - **v2.4.27 (Dec 12)** - 🎨 Update GW Transfers styling - match app branding colors
 - **v2.4.26 (Dec 12)** - 🔧 Make GW Transfers dynamic - updates with selected gameweek

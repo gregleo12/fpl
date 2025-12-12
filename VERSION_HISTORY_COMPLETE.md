@@ -1,12 +1,37 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 198+ versions
-**Current Version:** v2.4.28 (December 12, 2025)
+**Total Releases:** 199+ versions
+**Current Version:** v2.4.29 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.29 - Spread Players Wider on Pitch (Dec 12, 2025)
+**LAYOUT FIX:** Players now spread across more of the pitch width for a natural formation feel
+- **Problem:** Players clustered in center of pitch using only ~70% of available width
+  - `justify-content: center` kept players tightly grouped in middle
+  - Unused space on left and right edges of pitch
+  - Formation felt cramped and unnatural
+  - Gap between players was `0.6rem` with no edge padding
+- **Solution:** Changed flexbox distribution from center to space-evenly for better horizontal spread
+- **Changes to Desktop (`PitchView.module.css`):**
+  - `.pitchRow`: Changed `justify-content: center → space-evenly` (distribute across width)
+  - `.pitchRow`: Reduced `gap: 0.6rem → 0.5rem` (tighter gaps between players)
+  - `.pitchRow`: Added `padding: 0 8px` (small edge buffer so players don't touch container edges)
+  - `.benchRow`: Changed `justify-content: center → space-evenly` (match pitch rows)
+  - `.benchRow`: Reduced `gap: 0.6rem → 0.5rem`, added `padding: 0 8px`
+- **Changes to Mobile:**
+  - `.pitchRow`: Reduced `gap: 0.4rem → 0.35rem`, added `padding: 0 6px`
+  - `.benchRow`: Reduced `gap: 0.4rem → 0.35rem`, added `padding: 0 6px`
+- **Result:** Players now spread across ~85-95% of pitch width with natural spacing
+  - Defenders, midfielders, forwards utilize more horizontal space
+  - GK remains centered (only 1 player)
+  - Better use of available space without feeling cramped
+  - Formation looks more like real football pitch
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (updated flexbox distribution and spacing)
 
 ### v2.4.28 - Reformat Hit Display in Transfers Stat Box (Dec 12, 2025)
 **LAYOUT FIX:** Hit cost now displays inline with transfer count for cleaner, balanced stat box
