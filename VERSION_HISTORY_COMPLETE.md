@@ -1,12 +1,39 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 202+ versions
-**Current Version:** v2.4.32 (December 12, 2025)
+**Total Releases:** 203+ versions
+**Current Version:** v2.4.33 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.33 - Correct Penalty Spot Geometry and Enhance Pitch Comments (Dec 12, 2025)
+**ACCURACY FIX:** Corrected penalty spot position to accurate 12-yard distance with detailed geometry documentation
+- **Problem:** Penalty spot positioned slightly too high (100px desktop, 80px mobile)
+  - Should be exactly 12 yards from goal line, which is 12/18 (66.67%) of penalty area depth
+  - Current positioning was approximately 62.5% of penalty area depth
+  - Brief K-13d-v4 flagged geometry concerns
+- **Solution:** Corrected penalty spot position with precise calculations
+- **Desktop Changes:**
+  - Penalty spot: `100px → 105px` (25px goal + 80px where 80 = 12/18 × 120px penalty area)
+  - Calculation: 25 + (12/18 × 120) = 25 + 80 = **105px** ✓
+- **Mobile Changes:**
+  - Penalty spot: `80px → 83px` (20px goal + 63px where 63 = 12/18 × 95px penalty area)
+  - Calculation: 20 + (12/18 × 95) = 20 + 63 = **83px** ✓
+- **Enhanced Documentation:**
+  - Added explicit inline geometry calculations in CSS comments
+  - Clarified penalty area starts at goal line (after goal frame)
+  - Clarified penalty arc sits at BOTTOM EDGE of 18-yard box and curves DOWNWARD into field
+  - Added "D" shape description for penalty arc
+- **Verified Correct Layout:**
+  - ✓ Penalty spot is ABOVE the arc (105px < 145px desktop, 83px < 115px mobile)
+  - ✓ Penalty spot is INSIDE the penalty box (between 25-145px desktop, 20-115px mobile)
+  - ✓ Penalty arc at exact bottom edge of 18-yard box
+  - ✓ Arc curves downward away from goal (like letter "D" rotated 90°)
+- **Result:** Pitch markings now geometrically accurate to real football pitch proportions
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (corrected penalty spot position, enhanced comments for desktop & mobile)
 
 ### v2.4.32 - Explicit Pitch Markings with Standardized Structure (Dec 12, 2025)
 **REFACTOR:** Complete overhaul of pitch markings implementation with explicit specifications and standardized class names
