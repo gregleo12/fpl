@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.44 (Dec 12)** - 🐛 Fix breakpoint mismatch - aligned all desktop layouts to 769px, changed .myTeamContent from 1024px to 769px, eliminated 255px "dead zone", consistent nav/content width
 - **v2.4.43 (Dec 12)** - 🏠 My Team as default screen - first in nav bar, changed default tab to 'myteam', moved to leftmost position, My Team now "home" screen
 - **v2.4.42 (Dec 12)** - 🎨 Remove pitch markings - cleaner pitch view, removed 8 marking elements (goal, boxes, arcs, circles, border), kept bench separator, purple gradient only
 - **v2.4.41 (Dec 12)** - 🎨 Max-width consistency at 1400px - CSS variable --app-max-width, unified nav/content/My Team max-width, My Team content now 1400px (was 600px)

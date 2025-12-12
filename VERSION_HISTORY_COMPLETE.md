@@ -2,11 +2,57 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 210+ versions
-**Current Version:** v2.4.43 (December 12, 2025)
+**Current Version:** v2.4.44 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.44 - Fix Breakpoint Mismatch (Align to 769px) (Dec 12, 2025)
+**BUG FIX:** Fixed layout inconsistency caused by mismatched media query breakpoints
+- **Problem:** Between 769px and 1023px screen width, nav bar was full-width but My Team content was narrow
+  - Nav bar desktop layout triggered at `@media (min-width: 769px)` ✅
+  - My Team content desktop layout triggered at `@media (min-width: 1024px)` ❌
+  - 255px "dead zone" where layouts were inconsistent
+  - Visual mismatch: full-width nav bar with narrow content
+- **Root Cause Analysis:**
+  - Nav bar (.tabs) used 769px breakpoint - matching content padding breakpoint
+  - My Team content (.myTeamContent) used 1024px breakpoint - inconsistent
+  - Mobile styles (.section) applied up to 1024px, overlapping with desktop
+  - Investigation identified all breakpoints across CSS files
+- **Solution:** Align all desktop transitions to 769px breakpoint
+- **Changes:**
+  - **1. My Team Content Breakpoint:**
+    - Changed `.myTeamContent` from `@media (min-width: 1024px)` to `@media (min-width: 769px)`
+    - Location: Dashboard.module.css:892
+    - Now matches nav bar and content padding breakpoints
+  - **2. Mobile Section Breakpoint:**
+    - Changed `.section` from `@media (max-width: 1024px)` to `@media (max-width: 768px)`
+    - Location: Dashboard.module.css:567
+    - Eliminates breakpoint overlap
+    - Mobile styles now end at 768px, desktop starts at 769px
+- **Result:** Consistent layout at all screen widths
+  - ✓ Nav bar desktop layout: 769px+ (unchanged)
+  - ✓ Content padding desktop: 769px+ (unchanged)
+  - ✓ My Team content desktop: 769px+ (changed from 1024px)
+  - ✓ Mobile styles: ≤768px (changed from ≤1024px)
+  - ✓ No more "dead zone" - smooth transition at single breakpoint
+  - ✓ Nav bar and content always match width
+- **Technical Details:**
+  - All desktop transitions now happen at exactly 769px
+  - Clean breakpoint: mobile ≤768px, desktop ≥769px
+  - No overlapping media queries
+  - Matches established app-wide desktop breakpoint
+- **Investigation Process:**
+  - Searched all CSS files for 1024px breakpoints
+  - Identified Dashboard.module.css and StatsPanel.module.css
+  - Compared nav bar vs content CSS
+  - Found 255px mismatch range (769px-1023px)
+  - Root cause: inconsistent breakpoint values
+- **Implements:** Brief K-17b specifications (fix breakpoint mismatch)
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (2 breakpoint changes)
+  - Modified: `package.json` (v2.4.43 → v2.4.44)
 
 ### v2.4.43 - My Team as Default Screen (First in Nav) (Dec 12, 2025)
 **UX IMPROVEMENT:** Made My Team the default landing screen and moved it to first position in navigation
