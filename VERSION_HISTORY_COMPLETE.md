@@ -1,12 +1,95 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 209+ versions
-**Current Version:** v2.4.39 (December 12, 2025)
+**Total Releases:** 210+ versions
+**Current Version:** v2.4.40 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.40 - Redesign Player Cards to FPL Style (Dec 12, 2025)
+**VISUAL REDESIGN:** Completely redesigned player cards to match official FPL app style with compact layout and professional appearance
+- **Problem:** Current player cards had several design issues
+  - Too much vertical space (full jersey + name below + points below = tall cards)
+  - No card container (jersey just floated with text underneath)
+  - Bench missing position labels (no GKP/MID/DEF/FWD indicators)
+  - Generic styling didn't match FPL app quality
+- **Solution:** Implement FPL-style card design with cropped jerseys, color-coded bars, and position labels
+- **Key Design Changes:**
+  - **1. Card Container Structure:**
+    - Added rounded card container (8px border-radius) with dark background (#1a1a2e)
+    - Box shadow for depth (0 2px 6px rgba(0,0,0,0.3))
+    - Compact, square-ish cards instead of tall vertical layout
+    - Better proportions matching FPL app
+  - **2. Jersey Cropping (Key Feature):**
+    - Fixed height kitContainer (60px desktop, 50px mobile, 54px small mobile)
+    - `overflow: hidden` crops bottom of jersey to show only top 60-70%
+    - `align-items: flex-start` aligns jersey to top of container
+    - Natural aspect ratio maintained but bottom is cut off
+    - Creates compact look without distorting jersey
+  - **3. Color Scheme (FPL Official Colors):**
+    - Name bar: Dark purple (#37003c) with white text - official FPL purple
+    - Points bar: FPL green (#00ff87) with dark text (#1a1a2e) - official FPL green
+    - Zero points: Red name bar (#dc2626) instead of purple
+    - Card background: Dark navy (#1a1a2e)
+    - Removed positive/negative gradient styling from points bar
+  - **4. Bench Position Labels:**
+    - Added GKP/DEF/MID/FWD labels above bench player cards
+    - Uppercase, semi-transparent gray text (rgba(255,255,255,0.6))
+    - Position mapping: 1=GKP (Goalkeeper), 2=DEF (Defender), 3=MID (Midfielder), 4=FWD (Forward)
+    - New `.benchPlayerContainer` wrapper with flex column layout
+    - New `.benchPosition` class for label styling
+  - **5. Captain/Vice Badges Repositioned:**
+    - Moved from top-center to top-left of jersey (6px from top/left)
+    - Gold background (#fbbf24) for captain (C)
+    - Gray background (#94a3b8) for vice-captain (V)
+    - Slightly larger (18px desktop, 16px tablet, 14px mobile)
+    - Box shadow for better visibility
+- **Technical Implementation:**
+  - **PlayerCard.module.css:**
+    - Complete rewrite with FPL structure
+    - Card container with rounded corners and shadow
+    - Fixed-height jersey container with overflow hidden
+    - Purple name bar, green points bar
+    - Zero points red name bar conditional styling
+    - Position label styles
+    - Responsive: 70px → 60px → 64px card widths
+  - **PlayerCard.tsx:**
+    - Added `isZeroPoints` logic (points === 0)
+    - Conditional className for red name bar on zero points
+    - Removed positive/negative points styling logic
+    - Updated comments for cropped jersey feature
+  - **PitchView.tsx:**
+    - Wrapped bench players in `.benchPlayerContainer` div
+    - Added position label rendering with mapping object
+    - Position labels: {1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD'}
+    - Conditional rendering of position label if exists
+  - **PitchView.module.css:**
+    - Added `.benchPlayerContainer` with flex column layout
+    - Added `.benchPosition` class for label styling
+    - Changed `.benchRow` align-items to flex-start
+    - Added mobile responsive styles for position labels
+- **Result:** Professional FPL-style player cards with compact layout
+  - ✓ Jersey cropped to show only top 60-70% (much more compact)
+  - ✓ Card container with rounded corners and shadow
+  - ✓ Dark purple name bar with white text (FPL official color)
+  - ✓ FPL green points bar with dark text (FPL official color)
+  - ✓ Red name bar for zero points (like FPL app)
+  - ✓ Position labels on bench players (GKP, DEF, MID, FWD)
+  - ✓ Captain/Vice badges on top-left of jersey with box shadow
+  - ✓ Less vertical space = more compact pitch view
+  - ✓ Better info density and professional appearance
+  - ✓ Matches official FPL app quality and style
+- **Visual Comparison:**
+  - Before: Tall cards with full jersey visible, floating text
+  - After: Compact square-ish cards with cropped jersey, integrated card design
+- **Implements:** Brief K-15 specifications (FPL-style player cards)
+- **Files:**
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (complete rewrite, FPL structure)
+  - Modified: `src/components/PitchView/PlayerCard.tsx` (zero points logic)
+  - Modified: `src/components/PitchView/PitchView.tsx` (bench position labels)
+  - Modified: `src/components/PitchView/PitchView.module.css` (bench container & position label styles)
 
 ### v2.4.39 - Fix Desktop Layout with Unified Vertical Layout (Dec 12, 2025)
 **LAYOUT FIX:** Fixed desktop layout breaking issues by implementing unified vertical layout for all screen sizes

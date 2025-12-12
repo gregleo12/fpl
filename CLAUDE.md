@@ -1191,6 +1191,7 @@ const [data1, data2] = await Promise.all([
 ## Version History
 
 **Latest (v2.4.x Series - Dec 2025):**
+- **v2.4.40 (Dec 12)** - 🎨 FPL-style player cards - cropped jerseys (60-70% height), purple name bar, green points bar, red for zero points, bench position labels (GKP/DEF/MID/FWD)
 - **v2.4.39 (Dec 12)** - 🔧 Fix desktop layout - unified vertical layout for all screen sizes, removed 30%/70% grid, all stat boxes + pitch elements visible, -56 lines
 - **v2.4.38 (Dec 12)** - 🎨 Proper pitch geometry - TRUE semicircles: penalty arc re-added (180x90), center circle enlarged (150x75), height = width/2
 - **v2.4.37 (Dec 12)** - 🎨 Final pitch layout - 5 changes: container border, 20px margins, penalty area touches sides, halfway line at bottom, bench outside pitch
