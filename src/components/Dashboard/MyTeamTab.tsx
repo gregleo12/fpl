@@ -127,11 +127,13 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
                 <div className={styles.statBoxLabel}>GW RANK</div>
               </div>
               <div className={styles.statBox}>
-                <div className={styles.statBoxValue}>{gwTransfers.count}</div>
+                <div className={styles.statBoxValue}>
+                  {gwTransfers.count}
+                  {gwTransfers.cost > 0 && (
+                    <span className={styles.statBoxSub}> (-{gwTransfers.cost})</span>
+                  )}
+                </div>
                 <div className={styles.statBoxLabel}>TRANSFERS</div>
-                {gwTransfers.cost > 0 && (
-                  <div className={styles.statBoxSub}>(-{gwTransfers.cost})</div>
-                )}
               </div>
             </div>
 

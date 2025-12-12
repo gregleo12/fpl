@@ -923,6 +923,10 @@
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
 }
 
 .statBoxLabel {
@@ -934,10 +938,9 @@
 }
 
 .statBoxSub {
-  font-size: 0.7rem;
-  color: #ef4444;
+  font-size: 0.9rem;
+  color: #ff4757;
   font-weight: 600;
-  margin-top: 2px;
 }
 
 /* Team Value Boxes - Below pitch */
