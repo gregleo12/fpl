@@ -2,11 +2,30 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.17 (December 12, 2025)
+**Current Version:** v2.4.18 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.18 - Fix StatsPanel Background - Use Purple Gradient (Dec 12, 2025)
+**CONSISTENCY:** Updated StatsPanel .panel class to use purple gradient, removing nested container effect
+- **Problem:** StatsPanel .panel wrapper had old dark blue gradient (#1e293b → #0f172a)
+- **Root Cause:** .panel background wasn't updated in Brief K-10 when all other containers were changed to purple
+- **Visual Issue:** Created nested box effect - dark blue panel with purple gwTransfersContainer inside
+- **Solution:** Updated .panel background to match all other containers
+- **Updated .panel Background:**
+  - Old: `linear-gradient(135deg, #1e293b 0%, #0f172a 100%)` (dark blue)
+  - New: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)` (purple)
+- **Cleaned Up Duplicate CSS:**
+  - Removed duplicate `.transferRow` definition (line 104)
+  - Removed duplicate `.transferPlayers` definition (line 150)
+  - Removed duplicate `.transferSummary` definition (line 142)
+  - Kept only the correct definitions (from Brief K-11a)
+- **Result:** StatsPanel now blends seamlessly with gwTransfersContainer, no visible nested boxes
+- **Design Goal:** Complete app-wide purple gradient consistency
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (updated .panel background, removed duplicates)
 
 ### v2.4.17 - Stat Boxes 2-Row Layout (Dec 12, 2025)
 **READABILITY:** Changed 5 cramped boxes in single row to spacious 2-row layout

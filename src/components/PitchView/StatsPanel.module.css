@@ -1,5 +1,5 @@
 .panel {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
   border-radius: 16px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -101,13 +101,6 @@
   line-height: 1.5;
 }
 
-.transferRow {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
 .playerOut {
   color: rgba(255, 255, 255, 0.6);
 }
@@ -137,14 +130,6 @@
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
   margin: 0.75rem 0;
-}
-
-.transferSummary {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
-  padding-top: 12px;
-  margin-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .transferPlayers {
@@ -186,6 +171,14 @@
 
 .transferDiff.neutral {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.transferSummary {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* GW Transfers - Static Container */
