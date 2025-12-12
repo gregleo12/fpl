@@ -2,11 +2,45 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 190+ versions
-**Current Version:** v2.4.16 (December 12, 2025)
+**Current Version:** v2.4.17 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.17 - Stat Boxes 2-Row Layout (Dec 12, 2025)
+**READABILITY:** Changed 5 cramped boxes in single row to spacious 2-row layout
+- **Problem:** 5 stat boxes cramped in single row, hard to read, boxes too small
+- **Solution:** Split into 2 logical rows with larger boxes
+- **Row 1: This Gameweek (3 boxes)**
+  - GW PTS
+  - GW RANK
+  - TRANSFERS (with hit cost if applicable)
+- **Row 2: Season Totals (2 boxes)**
+  - TOTAL PTS
+  - OVERALL RANK
+- **JSX Changes:**
+  - Added `.statBoxRow` wrapper divs for each row
+  - Split 5 boxes into two rows (3 + 2)
+  - Updated all labels to uppercase (GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK)
+- **CSS Changes:**
+  - `.statBoxesContainer`: flex-direction column (was row), gap 8px
+  - `.statBoxRow`: new class for row layout, flex with center justify, gap 8px
+  - `.statBox`: min-width 95px (was 62px), max-width 115px (was 85px), padding 14px 12px
+  - `.statBoxValue`: font-size 1.5rem (was 1.4rem)
+  - `.statBoxLabel`: font-size 0.6rem (was 0.55rem)
+  - `.statBoxRow:last-child .statBox`: min-width 120px, max-width 150px (row 2 boxes wider)
+- **Mobile Breakpoint (<400px):**
+  - `.statBoxRow`: gap 6px
+  - `.statBox`: padding 10px 8px, min-width 80px, max-width 95px
+  - `.statBoxRow:last-child .statBox`: min-width 100px, max-width 120px
+  - `.statBoxValue`: font-size 1.3rem
+  - `.statBoxLabel`: font-size 0.55rem
+- **Visual Result:** Much more readable with larger boxes and logical grouping
+- **Design Goal:** Improve readability by giving boxes more space
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (split into 2 rows)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added row layout, increased sizes)
 
 ### v2.4.16 - Fix GW Transfers - Remove Nested Container (Dec 12, 2025)
 **SIMPLIFICATION:** Removed container-within-container effect for cleaner single-box design

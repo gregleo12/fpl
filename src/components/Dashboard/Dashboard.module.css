@@ -887,40 +887,50 @@
   gap: 1rem;
 }
 
-/* Stat Boxes Container - 5 boxes in app card style */
+/* Stat Boxes Container - 2 Rows */
 .statBoxesContainer {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   padding: 12px;
+}
+
+.statBoxRow {
+  display: flex;
   justify-content: center;
-  flex-wrap: nowrap;
+  gap: 8px;
 }
 
 .statBox {
   background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  padding: 14px 10px;
-  min-width: 62px;
+  padding: 14px 12px;
+  min-width: 95px;
   flex: 1;
-  max-width: 85px;
+  max-width: 115px;
   text-align: center;
 }
 
 .statBoxValue {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #fff;
   line-height: 1.2;
 }
 
 .statBoxLabel {
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   margin-top: 6px;
   letter-spacing: 0.03em;
-  line-height: 1.2;
+}
+
+/* Row 2 boxes - slightly wider since only 2 */
+.statBoxRow:last-child .statBox {
+  min-width: 120px;
+  max-width: 150px;
 }
 
 .statBoxSub {
@@ -968,18 +978,28 @@
     padding: 8px;
   }
 
+  .statBoxRow {
+    gap: 6px;
+  }
+
   .statBox {
-    padding: 10px 6px;
-    min-width: 56px;
+    padding: 10px 8px;
+    min-width: 80px;
+    max-width: 95px;
     border-radius: 10px;
   }
 
+  .statBoxRow:last-child .statBox {
+    min-width: 100px;
+    max-width: 120px;
+  }
+
   .statBoxValue {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
   }
 
   .statBoxLabel {
-    font-size: 0.5rem;
+    font-size: 0.55rem;
   }
 }
 

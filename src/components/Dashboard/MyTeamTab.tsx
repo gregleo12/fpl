@@ -113,30 +113,37 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
       <div className={styles.mobileLayout}>
         <GWSelector selectedGW={selectedGW} maxGW={maxGW} onGWChange={setSelectedGW} />
 
-        {/* Stat Boxes - 5 boxes in app card style */}
+        {/* Stat Boxes - 2 Rows */}
         <div className={styles.statBoxesContainer}>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{gwPoints}</div>
-            <div className={styles.statBoxLabel}>GW Pts</div>
+          {/* Row 1: This Gameweek */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{gwPoints}</div>
+              <div className={styles.statBoxLabel}>GW PTS</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
+              <div className={styles.statBoxLabel}>GW RANK</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{gwTransfers.count}</div>
+              <div className={styles.statBoxLabel}>TRANSFERS</div>
+              {gwTransfers.cost > 0 && (
+                <div className={styles.statBoxSub}>(-{gwTransfers.cost})</div>
+              )}
+            </div>
           </div>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
-            <div className={styles.statBoxLabel}>GW Rank</div>
-          </div>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{gwTransfers.count}</div>
-            <div className={styles.statBoxLabel}>Transfers</div>
-            {gwTransfers.cost > 0 && (
-              <div className={styles.statBoxSub}>(-{gwTransfers.cost})</div>
-            )}
-          </div>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
-            <div className={styles.statBoxLabel}>Total Pts</div>
-          </div>
-          <div className={styles.statBox}>
-            <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
-            <div className={styles.statBoxLabel}>Overall Rank</div>
+
+          {/* Row 2: Season Totals */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
+              <div className={styles.statBoxLabel}>TOTAL PTS</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
+              <div className={styles.statBoxLabel}>OVERALL RANK</div>
+            </div>
           </div>
         </div>
 
