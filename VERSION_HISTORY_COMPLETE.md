@@ -1,12 +1,52 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 206+ versions
-**Current Version:** v2.4.36 (December 12, 2025)
+**Total Releases:** 207+ versions
+**Current Version:** v2.4.37 (December 12, 2025)
 
 ---
 
 ## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.37 - Final Pitch Layout Following Annotated Design (Dec 12, 2025)
+**LAYOUT FIX:** Implemented 5 design changes to create proper pitch layout with two borders and clear hierarchy
+- **Problem:** Pitch layout needed refinement based on annotated design specifications
+  - Container needed standard border like other app containers
+  - Pitch border too close to container edge (only 10px margin)
+  - Penalty area floating in center (75% width), should connect to pitch sides
+  - Halfway line cutting through forwards, should mark bottom of pitch
+  - Bench inside pitch area, should be clearly OUTSIDE
+- **Solution:** Implement 5 specific changes from Brief K-13d-v8 annotated design
+- **Changes:**
+  - **1. Re-added Container Border:** Added standard border to `.pitch` container: `1px solid rgba(255, 255, 255, 0.1)`
+  - **2. Increased Pitch Border Margins:**
+    - Desktop: `top/left/right: 10px → 20px`, `bottom: 90px → 140px`
+    - Mobile: `top/left/right: 8px → 15px`, `bottom: 70px → 100px`
+    - More space between pitch border and container creates clear visual separation
+  - **3. Connected Penalty Area to Pitch Border Sides:**
+    - Desktop: Changed from `width: 75%` centered to `left: 20px; right: 20px`
+    - Mobile: Changed from `width: 70%` centered to `left: 15px; right: 15px`
+    - 18-yard box now TOUCHES pitch border on both sides like real pitch
+  - **4. Moved Halfway Line to Bottom of Pitch Border:**
+    - Desktop: `bottom: 100px → 140px`, added `left: 20px; right: 20px` alignment
+    - Mobile: `bottom: 75px → 100px`, added `left: 15px; right: 15px` alignment
+    - Halfway line = bottom edge of pitch border (where pitch ends)
+  - **5. All Elements Adjusted for New Layout:**
+    - Center circle moved to new halfway line position (bottom: 140px desktop, 100px mobile)
+    - Goal frame, 6-yard box, penalty spot maintain positions relative to top
+    - Bench now clearly OUTSIDE pitch area (below halfway line)
+- **Result:** Clear visual hierarchy matching annotated design
+  - ✓ Two distinct borders: container border (purple/rounded) + pitch border (white rectangle inside)
+  - ✓ 20px gap between container and pitch border on desktop (15px mobile)
+  - ✓ Penalty area spans full width, side lines connect to pitch border
+  - ✓ Halfway line marks bottom of pitch where it ends
+  - ✓ Bench positioned clearly OUTSIDE the pitch rectangle
+  - ✓ Forwards (Haaland, etc.) positioned INSIDE pitch, ABOVE halfway line
+  - ✓ Center circle sits on halfway line at bottom of pitch
+- **Visual Layout:** Matches user's annotated drawing exactly
+- **Implements:** Brief K-13d-v8 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (container border, pitch border margins, penalty area positioning, halfway line/center circle positions, mobile styles)
 
 ### v2.4.36 - Convert Pitch Border from CSS Border to Drawn Element (Dec 12, 2025)
 **CORRECTION:** Fixed pitch border implementation - converted from CSS border on container to drawn rectangle element inside
