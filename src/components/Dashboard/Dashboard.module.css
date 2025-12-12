@@ -564,7 +564,7 @@
 }
 
 /* Mobile Responsive */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .section {
     padding: 1.5rem;
   }
@@ -889,7 +889,7 @@
 }
 
 /* Desktop: Center layout and add max-width to prevent over-stretching */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .myTeamContent {
     max-width: var(--app-max-width);
     margin: 0 auto;
