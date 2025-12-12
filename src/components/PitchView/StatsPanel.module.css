@@ -140,7 +140,8 @@
 }
 
 .transferOut {
-  color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+  font-weight: 500;
 }
 
 .transferArrow {
@@ -158,23 +159,81 @@
   font-size: 0.8em;
 }
 
-.transferDiff {
-  font-weight: 700;
+.transferPointsDiff {
+  font-weight: 600;
   font-size: 1rem;
+  text-align: right;
 }
 
-.transferDiff.positive {
+.transferPointsDiff.positive {
   color: #00ff87;
 }
 
-.transferDiff.negative {
+.transferPointsDiff.negative {
   color: #ff4757;
 }
 
-.transferDiff.neutral {
+.transferPointsDiff.neutral {
   color: rgba(255, 255, 255, 0.5);
 }
 
+/* Hit row - Receipt style line item */
+.hitRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.hitLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.hitValue {
+  color: #ff4757;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Separator line */
+.transferSeparator {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 8px 0;
+}
+
+/* Net result row - Receipt style */
+.netResultRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.netResultLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.netResultValue {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.netResultValue.positive {
+  color: #00ff87;
+}
+
+.netResultValue.negative {
+  color: #ff4757;
+}
+
+.netResultValue.neutral {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Legacy - kept for compatibility */
 .transferSummary {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.6);
@@ -191,12 +250,12 @@
 }
 
 .gwTransfersTitle {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: #00ff87;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 0.75rem;
+  margin: 0 0 1rem 0;
 }
 
 /* Transfer rows - NO wrapper, just rows */

@@ -91,11 +91,12 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
         </div>
       )}
 
-      {/* GW Transfers - Static container, not collapsible */}
+      {/* GW Transfers - Receipt-style layout */}
       {currentGWTransfers.length > 0 && (
         <div className={styles.gwTransfersContainer}>
-          <div className={styles.gwTransfersTitle}>GW{currentGW} TRANSFERS</div>
+          <h3 className={styles.gwTransfersTitle}>GW{currentGW} TRANSFERS</h3>
 
+          {/* Transfer rows */}
           {currentGWTransfers.map((transfer, index) => {
             const netGain = transfer.netGain;
             const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
@@ -104,35 +105,48 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
               <div key={index} className={styles.transferRow}>
                 <div className={styles.transferPlayers}>
                   <span className={styles.transferOut}>
-                    {transfer.playerOut.web_name} <span className={styles.transferPoints}>({transfer.playerOut.points}pts)</span>
+                    {transfer.playerOut.web_name}
                   </span>
+                  <span className={styles.transferPoints}>({transfer.playerOut.points}pts)</span>
                   <span className={styles.transferArrow}>→</span>
                   <span className={styles.transferIn}>
-                    {transfer.playerIn.web_name} <span className={styles.transferPoints}>({transfer.playerIn.points}pts)</span>
+                    {transfer.playerIn.web_name}
                   </span>
+                  <span className={styles.transferPoints}>({transfer.playerIn.points}pts)</span>
                 </div>
-                <span className={`${styles.transferDiff} ${diffClass}`}>
+                <span className={`${styles.transferPointsDiff} ${diffClass}`}>
                   {netGain > 0 ? '+' : ''}{netGain}
                 </span>
               </div>
             );
           })}
 
-          {/* Summary */}
-          <div className={styles.transferSummary}>
-            {(() => {
-              const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
-              const afterHit = totalNet - gwTransfers.cost;
-              return (
-                <>
-                  Net: {totalNet > 0 ? '+' : ''}{totalNet} pts
-                  {gwTransfers.cost > 0 && (
-                    <> (after -{gwTransfers.cost} hit: {afterHit > 0 ? '+' : ''}{afterHit} pts)</>
-                  )}
-                </>
-              );
-            })()}
-          </div>
+          {/* Hit row - only if hit taken */}
+          {gwTransfers.cost > 0 && (
+            <div className={styles.hitRow}>
+              <span className={styles.hitLabel}>Hit</span>
+              <span className={styles.hitValue}>-{gwTransfers.cost}</span>
+            </div>
+          )}
+
+          {/* Separator */}
+          <hr className={styles.transferSeparator} />
+
+          {/* Net result */}
+          {(() => {
+            const totalNet = currentGWTransfers.reduce((sum, t) => sum + t.netGain, 0);
+            const netResult = totalNet - gwTransfers.cost;
+            const netClass = netResult > 0 ? styles.positive : netResult < 0 ? styles.negative : styles.neutral;
+
+            return (
+              <div className={styles.netResultRow}>
+                <span className={styles.netResultLabel}>Net result:</span>
+                <span className={`${styles.netResultValue} ${netClass}`}>
+                  {netResult > 0 ? '+' : ''}{netResult} pts
+                </span>
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>
