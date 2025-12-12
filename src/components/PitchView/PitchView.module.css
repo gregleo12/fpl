@@ -215,22 +215,7 @@
   border-radius: 50%;
 }
 
-/* 5. PENALTY ARC - "D" shape at bottom of penalty area */
-/* The arc sits at the BOTTOM EDGE of the 18-yard box and curves DOWNWARD into the field */
-.penaltyArc {
-  position: absolute;
-  top: 145px;                   /* 25px (goal) + 120px (penalty area) = bottom edge of 18-yard box */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 0 0 50% 50%;   /* Curves DOWNWARD (away from goal) */
-  border-top: none;              /* Flat edge aligns with penalty area edge */
-  background: transparent;
-}
-
-/* 6. HALFWAY LINE - horizontal line near bottom */
+/* 5. HALFWAY LINE - horizontal line near bottom */
 .halfwayLine {
   position: absolute;
   bottom: 100px;
@@ -240,7 +225,7 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* 7. CENTER CIRCLE - semicircle on halfway line */
+/* 6. CENTER CIRCLE - semicircle on halfway line */
 .centerCircle {
   position: absolute;
   bottom: 100px;
@@ -396,13 +381,6 @@
     width: 6px;
     height: 6px;
     background: rgba(255, 255, 255, 0.35);
-  }
-
-  .penaltyArc {
-    top: 115px;                 /* 20px (goal) + 95px (penalty area) = bottom edge */
-    width: 85px;
-    height: 42px;
-    border-color: rgba(255, 255, 255, 0.25);
   }
 
   .halfwayLine {
