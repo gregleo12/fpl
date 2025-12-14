@@ -48,6 +48,13 @@ export async function GET(
 
     const completedGameweeks = matchesResult.rows.map(r => r.event);
 
+    // DEBUG: Log what gameweeks we found
+    console.log(`[Season Stats Debug] League ${leagueId}:`);
+    console.log(`  maxStartedGW from bootstrap: ${maxStartedGW}`);
+    console.log(`  completedGameweeks in DB: ${completedGameweeks.join(', ')}`);
+    console.log(`  Missing GW15? ${!completedGameweeks.includes(15)}`);
+    console.log(`  Missing GW16? ${!completedGameweeks.includes(16)}`);
+
     if (completedGameweeks.length === 0) {
       return NextResponse.json({
         completedGameweeks: 0,
