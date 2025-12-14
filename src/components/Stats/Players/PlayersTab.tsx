@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import PlayersFilters from './PlayersFilters';
 import PlayersTable from './PlayersTable';
+import PlayerDetailModal from './PlayerDetailModal';
 
 export interface Player {
   id: number;
@@ -67,6 +68,7 @@ export default function PlayersTab() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
 
   const fetchPlayers = async (resetPage = false, pageOverride?: number) => {
     setLoading(true);
@@ -120,8 +122,7 @@ export default function PlayersTab() {
   };
 
   const handlePlayerClick = (player: Player) => {
-    // Placeholder for K-23d (Player detail modal)
-    console.log('Player clicked:', player);
+    setSelectedPlayerId(player.id);
   };
 
   const hasMore = pagination ? page < pagination.totalPages : false;
@@ -151,6 +152,14 @@ export default function PlayersTab() {
 
       {loading && players.length > 0 && (
         <div className="text-center py-4 text-gray-400">Loading more...</div>
+      )}
+
+      {/* Player Detail Modal */}
+      {selectedPlayerId && (
+        <PlayerDetailModal
+          playerId={selectedPlayerId}
+          onClose={() => setSelectedPlayerId(null)}
+        />
       )}
     </div>
   );
