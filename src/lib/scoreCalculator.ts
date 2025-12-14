@@ -161,10 +161,12 @@ export function calculateScoreFromData(
   const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
 
   // Calculate score with auto-subs and provisional bonus
-  const result = calculateLivePointsWithBonus(squad, fixturesData);
+  const result = calculateLivePointsWithBonus(squad, fixturesData, activeChip);
 
-  // Get adjusted squad after auto-subs
-  const { squad: adjustedSquad, substitutions } = applyAutoSubstitutions(squad);
+  // Get adjusted squad after auto-subs (skip for Bench Boost)
+  const { squad: adjustedSquad, substitutions } = isBenchBoost
+    ? { squad, substitutions: [] }
+    : applyAutoSubstitutions(squad);
 
   const finalScore = result.totalPoints - transferCost;
 

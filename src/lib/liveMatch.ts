@@ -181,19 +181,21 @@ function calculateLiveStats(
 
   // Use auto-substitution adjusted score if available (with provisional bonus from fixtures data)
   let finalLiveScore = liveScore;
-  if (autoSubResult && !isBenchBoost) {
-    // Calculate score with auto-subs AND provisional bonus (we now have fixtures data with all 22 players)
-    const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
 
-    // Use calculateLivePointsWithBonus for accurate provisional bonus calculation
-    const { calculateLivePointsWithBonus } = require('./fpl-calculations');
-    const result = calculateLivePointsWithBonus(squad, fixturesData);
-    finalLiveScore = result.totalPoints;
+  // Always use calculateLivePointsWithBonus for accurate scoring (handles both auto-subs and Bench Boost)
+  const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
+  const { calculateLivePointsWithBonus } = require('./fpl-calculations');
+  const result = calculateLivePointsWithBonus(squad, fixturesData, picksData.active_chip);
+  finalLiveScore = result.totalPoints;
 
-    if (result.provisionalBonus > 0) {
-      console.log(`Provisional bonus for ${manager}: +${result.provisionalBonus} pts`);
-    }
+  if (result.provisionalBonus > 0) {
+    console.log(`Provisional bonus for ${manager}: +${result.provisionalBonus} pts`);
+  }
+
+  if (autoSubResult && !isBenchBoost && autoSubResult.substitutions.length > 0) {
     console.log(`Score with auto-subs and bonus: ${finalLiveScore} (${autoSubResult.substitutions.length} subs)`);
+  } else if (isBenchBoost) {
+    console.log(`Score with Bench Boost and bonus: ${finalLiveScore} (all 15 players count)`);
   }
 
   // Calculate final live score (subtract hits - API returns positive values)
