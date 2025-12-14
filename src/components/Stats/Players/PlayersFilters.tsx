@@ -73,13 +73,13 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="bg-[#1a1a2e] rounded-lg p-4 border border-gray-800 space-y-3">
       {/* Filter row */}
       <div className="flex flex-wrap gap-2">
         <select
           value={filters.position}
           onChange={(e) => setFilters({ ...filters, position: e.target.value })}
-          className="bg-[#2a2a3e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500"
+          className="bg-[#16161e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer hover:border-gray-600"
         >
           {positions.map(p => (
             <option key={p.value} value={p.value}>{p.label}</option>
@@ -89,7 +89,7 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
         <select
           value={filters.team}
           onChange={(e) => setFilters({ ...filters, team: e.target.value })}
-          className="bg-[#2a2a3e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500"
+          className="bg-[#16161e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer hover:border-gray-600"
         >
           <option value="all">All teams</option>
           {teams.map(t => (
@@ -100,7 +100,7 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
         <select
           value={filters.maxPrice}
           onChange={(e) => setFilters({ ...filters, maxPrice: parseInt(e.target.value) })}
-          className="bg-[#2a2a3e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500"
+          className="bg-[#16161e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer hover:border-gray-600"
         >
           {priceOptions.map(p => (
             <option key={p.value} value={p.value}>{p.label}</option>
@@ -109,7 +109,7 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
 
         <button
           onClick={reset}
-          className="text-gray-400 hover:text-white text-sm px-3 py-2 transition-colors"
+          className="text-gray-400 hover:text-white text-sm px-3 py-2 transition-colors hover:bg-[#16161e] rounded-lg"
         >
           Reset
         </button>
@@ -122,7 +122,7 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
           <select
             value={filters.sort}
             onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-            className="bg-[#2a2a3e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500"
+            className="bg-[#16161e] text-white rounded-lg px-3 py-2 text-sm border border-gray-700 focus:outline-none focus:border-purple-500 transition-colors cursor-pointer hover:border-gray-600"
           >
             {sortOptions.map(s => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -135,7 +135,7 @@ export default function PlayersFilters({ filters, setFilters, teams }: Props) {
           placeholder="🔍 Search player..."
           value={filters.search}
           onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          className="bg-[#2a2a3e] text-white rounded-lg px-3 py-2 text-sm flex-1 min-w-[150px] border border-gray-700 focus:outline-none focus:border-purple-500 placeholder-gray-500"
+          className="bg-[#16161e] text-white rounded-lg px-3 py-2 text-sm flex-1 min-w-[150px] border border-gray-700 focus:outline-none focus:border-purple-500 placeholder-gray-500 transition-colors"
         />
       </div>
     </div>

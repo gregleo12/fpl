@@ -23,6 +23,9 @@ export interface Player {
   expected_goals: string;
   expected_assists: string;
   expected_goal_involvements: string;
+  influence: string;
+  creativity: string;
+  threat: string;
   ict_index: string;
   selected_by_percent: string;
   status: string;
@@ -65,9 +68,9 @@ export default function PlayersTab() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState<PaginationData | null>(null);
 
-  const fetchPlayers = async (resetPage = false) => {
+  const fetchPlayers = async (resetPage = false, pageOverride?: number) => {
     setLoading(true);
-    const currentPage = resetPage ? 1 : page;
+    const currentPage = resetPage ? 1 : (pageOverride || page);
 
     const params = new URLSearchParams({
       page: currentPage.toString(),
@@ -110,8 +113,9 @@ export default function PlayersTab() {
 
   const loadMore = () => {
     if (pagination && page < pagination.totalPages) {
-      setPage(prev => prev + 1);
-      setTimeout(() => fetchPlayers(false), 0);
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchPlayers(false, nextPage);
     }
   };
 
@@ -123,7 +127,7 @@ export default function PlayersTab() {
   const hasMore = pagination ? page < pagination.totalPages : false;
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4">
       <PlayersFilters
         filters={filters}
         setFilters={setFilters}
@@ -133,14 +137,13 @@ export default function PlayersTab() {
       <PlayersTable
         players={players}
         loading={loading && players.length === 0}
-        sortBy={filters.sort}
         onPlayerClick={handlePlayerClick}
       />
 
       {hasMore && !loading && (
         <button
           onClick={loadMore}
-          className="w-full py-3 text-center text-purple-400 hover:text-purple-300 transition-colors rounded-lg bg-[#2a2a3e] hover:bg-[#35354e]"
+          className="w-full py-3 text-center text-purple-400 hover:text-purple-300 transition-colors rounded-lg bg-[#1a1a2e] hover:bg-[#2a2a3e] border border-gray-800"
         >
           Load More Players
         </button>
