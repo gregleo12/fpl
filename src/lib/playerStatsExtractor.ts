@@ -28,51 +28,27 @@ export interface PlayerStats {
 
 /**
  * Extracts all player stats from a single live element
- * Aggregates stats across all fixtures the player participated in during the gameweek
+ * Uses direct stats from element.stats (FPL API provides all stats directly)
  */
 export function extractPlayerStats(liveElement: any): PlayerStats {
-  // Get direct stats from the stats object
-  const directStats = liveElement.stats || {};
-
-  // Initialize aggregated fixture stats
-  const fixtureStats = {
-    goals_scored: 0,
-    assists: 0,
-    yellow_cards: 0,
-    red_cards: 0,
-    saves: 0,
-    clean_sheets: 0,
-    goals_conceded: 0,
-    own_goals: 0,
-    penalties_saved: 0,
-    penalties_missed: 0,
-  };
-
-  // Aggregate stats from all fixtures
-  const explain = liveElement.explain || [];
-  for (const fixtureExplain of explain) {
-    const stats = fixtureExplain.stats || [];
-
-    // Extract each stat by identifier and aggregate
-    for (const stat of stats) {
-      const identifier = stat.identifier;
-      const value = stat.value || 0;
-
-      if (identifier in fixtureStats) {
-        fixtureStats[identifier as keyof typeof fixtureStats] += value;
-      }
-    }
-  }
+  const stats = liveElement.stats || {};
 
   return {
-    // Direct stats
-    total_points: directStats.total_points || 0,
-    minutes: directStats.minutes || 0,
-    bps: directStats.bps || 0,
-    bonus: directStats.bonus || 0,
-
-    // Aggregated fixture stats
-    ...fixtureStats,
+    // All stats are directly available in element.stats
+    total_points: stats.total_points || 0,
+    minutes: stats.minutes || 0,
+    bps: stats.bps || 0,
+    bonus: stats.bonus || 0,
+    goals_scored: stats.goals_scored || 0,
+    assists: stats.assists || 0,
+    yellow_cards: stats.yellow_cards || 0,
+    red_cards: stats.red_cards || 0,
+    saves: stats.saves || 0,
+    clean_sheets: stats.clean_sheets || 0,
+    goals_conceded: stats.goals_conceded || 0,
+    own_goals: stats.own_goals || 0,
+    penalties_saved: stats.penalties_saved || 0,
+    penalties_missed: stats.penalties_missed || 0,
   };
 }
 
