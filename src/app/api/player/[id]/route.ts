@@ -30,14 +30,20 @@ export async function GET(
     const history = await fplApi.getEntryHistory(entryId);
 
     // Get bootstrap data to check which gameweeks have started
-    const bootstrap = await fplApi.getBootstrapData();
-    const events = bootstrap.events || [];
+    // Fallback to 38 if bootstrap fetch fails (include all GWs)
+    let maxStartedGW = 38;
+    try {
+      const bootstrap = await fplApi.getBootstrapData();
+      const events = bootstrap?.events || [];
 
-    // Find the highest gameweek that has started (is_current or finished)
-    const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
-    const maxStartedGW = startedGameweeks.length > 0
-      ? Math.max(...startedGameweeks.map((e: any) => e.id))
-      : 0;
+      // Find the highest gameweek that has started (is_current or finished)
+      const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
+      if (startedGameweeks.length > 0) {
+        maxStartedGW = Math.max(...startedGameweeks.map((e: any) => e.id));
+      }
+    } catch (error) {
+      console.log('Could not fetch bootstrap data, including all gameweeks');
+    }
 
     // Get manager info from database
     const managerResult = await db.query(
