@@ -51,6 +51,20 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           const bootstrapData = await bootstrapRes.json();
           const liveData = await liveRes.json();
 
+          // DEBUG: Log raw liveData
+          console.log('=== PLAYER MODAL DEBUG ===');
+          console.log('1. Gameweek:', gameweek);
+          console.log('2. Player ID:', player.id);
+          console.log('3. liveData elements count:', liveData?.elements?.length);
+
+          // DEBUG: Find player element directly
+          const playerElement = liveData?.elements?.find((e: any) => e.id === player.id);
+          console.log('4. Found player element:', playerElement ? 'YES' : 'NO');
+          console.log('5. playerElement.stats:', playerElement?.stats);
+          console.log('6. playerElement.stats.assists:', playerElement?.stats?.assists);
+          console.log('7. playerElement.stats.goals_scored:', playerElement?.stats?.goals_scored);
+          console.log('8. playerElement.explain length:', playerElement?.explain?.length);
+
           // Get team name
           const team = bootstrapData.teams.find((t: any) => t.id === player.team);
           setTeamName(team?.name || 'Unknown Team');
@@ -66,7 +80,12 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
           // Get detailed live stats using shared utility (single source of truth)
           const stats = getPlayerStats(liveData, player.id);
+          console.log('9. getPlayerStats returned:', stats);
+          console.log('10. stats.assists:', stats?.assists);
+          console.log('11. stats.goals_scored:', stats?.goals_scored);
+
           setDetailedStats(stats);
+          console.log('12. Called setDetailedStats with:', stats);
         }
       } catch (error) {
         console.error('Error fetching detailed data:', error);
@@ -80,6 +99,11 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
+
+  // DEBUG: Log what's being rendered
+  console.log('13. RENDER - detailedStats:', detailedStats);
+  console.log('14. RENDER - detailedStats.assists:', detailedStats?.assists);
+  console.log('15. RENDER - detailedStats.goals_scored:', detailedStats?.goals_scored);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
