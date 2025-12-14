@@ -290,11 +290,11 @@ async function calculateChipPerformance(
     // Changed to use FPL API (like Chips Played) instead of database active_chip columns
     const chipsFaced = await Promise.all(
       managers.map(async (manager) => {
-        // Get all matches where this manager played
+        // Get all matches where this manager played (including winner info)
         const matchesResult = await db.query(`
           SELECT
-            entry_1_id, entry_2_id,
-            event
+            entry_1_id, entry_2_id, entry_1_points, entry_2_points,
+            winner, event
           FROM h2h_matches
           WHERE league_id = $1
           AND event = ANY($2)
@@ -302,7 +302,7 @@ async function calculateChipPerformance(
         `, [leagueId, gameweeks, manager.entry_id]);
 
         const matches = matchesResult.rows;
-        let opponentChips: string[] = [];
+        let opponentChipsData: Array<{chip: string, gw: number, result: string}> = [];
 
         // For each match, get opponent's entry ID and fetch their chip history from FPL API
         for (const match of matches) {
@@ -310,6 +310,14 @@ async function calculateChipPerformance(
 
           // Skip AVERAGE opponent (-1)
           if (opponentId === -1) continue;
+
+          // Determine result for this manager
+          let result = 'D';
+          if (match.winner === manager.entry_id) {
+            result = 'W';
+          } else if (match.winner && match.winner !== manager.entry_id) {
+            result = 'L';
+          }
 
           try {
             // Fetch opponent's chip history from FPL API
@@ -324,7 +332,11 @@ async function calculateChipPerformance(
             // Check if opponent used a chip in this gameweek
             const chipUsed = chips.find((c: any) => c.event === match.event);
             if (chipUsed) {
-              opponentChips.push(`${CHIP_NAMES[chipUsed.name] || chipUsed.name} (GW${match.event})`);
+              opponentChipsData.push({
+                chip: CHIP_NAMES[chipUsed.name] || chipUsed.name,
+                gw: match.event,
+                result: result
+              });
             }
           } catch (error) {
             // Skip if can't fetch opponent data
@@ -332,12 +344,19 @@ async function calculateChipPerformance(
           }
         }
 
+        // Sort by GW (oldest to newest)
+        opponentChipsData.sort((a, b) => a.gw - b.gw);
+
+        // Create display string
+        const chipsDetail = opponentChipsData.map(c => `${c.chip} (GW${c.gw})`).join(', ');
+
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
-          chips_faced_count: opponentChips.length,
-          chips_faced_detail: opponentChips.join(', ')
+          chips_faced_count: opponentChipsData.length,
+          chips_faced_detail: chipsDetail,
+          chips_faced_data: opponentChipsData // Include structured data for frontend
         };
       })
     );

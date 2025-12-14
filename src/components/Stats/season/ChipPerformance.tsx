@@ -17,6 +17,7 @@ export interface ChipPerformanceData {
     team_name: string;
     chips_faced_count: number;
     chips_faced_detail: string;
+    chips_faced_data?: Array<{chip: string, gw: number, result: string}>;
   }>;
 }
 
@@ -32,26 +33,44 @@ export function ChipPerformance({ data }: Props) {
   const isEmpty = !currentData || currentData.length === 0;
 
   // Render function for items (used by both card and modal)
-  const renderItem = (manager: any, index: number) => (
-    <div className={styles.listItem}>
-      <div className={styles.rank}>{index + 1}</div>
-      <div className={styles.info}>
-        <div className={styles.name}>{manager.player_name}</div>
-        <div className={styles.meta}>{manager.team_name}</div>
-        <div className={styles.chips}>
-          {view === 'played' ? manager.chips_detail : manager.chips_faced_detail}
+  const renderItem = (manager: any, index: number) => {
+    // Render chips faced with color coding
+    const renderChipsFaced = () => {
+      if (!manager.chips_faced_data || manager.chips_faced_data.length === 0) {
+        return manager.chips_faced_detail;
+      }
+
+      return manager.chips_faced_data.map((chip: any, idx: number) => (
+        <span key={idx}>
+          <span className={chip.result === 'W' ? styles.chipWin : chip.result === 'L' ? styles.chipLoss : ''}>
+            {chip.chip} (GW{chip.gw})
+          </span>
+          {idx < manager.chips_faced_data.length - 1 && ', '}
+        </span>
+      ));
+    };
+
+    return (
+      <div className={styles.listItem}>
+        <div className={styles.rank}>{index + 1}</div>
+        <div className={styles.info}>
+          <div className={styles.name}>{manager.player_name}</div>
+          <div className={styles.meta}>{manager.team_name}</div>
+          <div className={styles.chips}>
+            {view === 'played' ? manager.chips_detail : renderChipsFaced()}
+          </div>
+        </div>
+        <div className={styles.stats}>
+          <div className={styles.statValue}>
+            {view === 'played' ? manager.chip_count : manager.chips_faced_count}
+          </div>
+          <div className={styles.statLabel}>
+            {view === 'played' ? 'chips' : 'faced'}
+          </div>
         </div>
       </div>
-      <div className={styles.stats}>
-        <div className={styles.statValue}>
-          {view === 'played' ? manager.chip_count : manager.chips_faced_count}
-        </div>
-        <div className={styles.statLabel}>
-          {view === 'played' ? 'chips' : 'faced'}
-        </div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
