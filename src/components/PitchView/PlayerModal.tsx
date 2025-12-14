@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import styles from './PlayerModal.module.css';
-import { getPlayerStats } from '@/lib/playerStatsExtractor';
 
 interface PlayerInfo {
   id: number;
@@ -41,29 +40,14 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   useEffect(() => {
     async function fetchDetailedData() {
       try {
-        // Fetch bootstrap data for team names and live stats
-        const [bootstrapRes, liveRes] = await Promise.all([
+        // Fetch bootstrap data for team names and player gameweek stats from our backend
+        const [bootstrapRes, playerStatsRes] = await Promise.all([
           fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-          fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`)
+          fetch(`/api/players/${player.id}/gameweek/${gameweek}`)
         ]);
 
-        if (bootstrapRes.ok && liveRes.ok) {
+        if (bootstrapRes.ok) {
           const bootstrapData = await bootstrapRes.json();
-          const liveData = await liveRes.json();
-
-          // DEBUG: Log raw liveData
-          console.log('=== PLAYER MODAL DEBUG ===');
-          console.log('1. Gameweek:', gameweek);
-          console.log('2. Player ID:', player.id);
-          console.log('3. liveData elements count:', liveData?.elements?.length);
-
-          // DEBUG: Find player element directly
-          const playerElement = liveData?.elements?.find((e: any) => e.id === player.id);
-          console.log('4. Found player element:', playerElement ? 'YES' : 'NO');
-          console.log('5. playerElement.stats:', playerElement?.stats);
-          console.log('6. playerElement.stats.assists:', playerElement?.stats?.assists);
-          console.log('7. playerElement.stats.goals_scored:', playerElement?.stats?.goals_scored);
-          console.log('8. playerElement.explain length:', playerElement?.explain?.length);
 
           // Get team name
           const team = bootstrapData.teams.find((t: any) => t.id === player.team);
@@ -77,18 +61,44 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
             4: 'FWD'
           };
           setPositionName(positions[player.element_type] || '');
+        }
 
-          // Get detailed live stats using shared utility (single source of truth)
-          const stats = getPlayerStats(liveData, player.id);
-          console.log('9. getPlayerStats returned:', stats);
-          console.log('10. stats.assists:', stats?.assists);
-          console.log('11. stats.goals_scored:', stats?.goals_scored);
+        // Get detailed stats from our backend API
+        if (playerStatsRes.ok) {
+          const data = await playerStatsRes.json();
 
-          setDetailedStats(stats);
-          console.log('12. Called setDetailedStats with:', stats);
+          setDetailedStats({
+            goals_scored: data.goals_scored || 0,
+            assists: data.assists || 0,
+            clean_sheets: data.clean_sheets || 0,
+            goals_conceded: data.goals_conceded || 0,
+            own_goals: data.own_goals || 0,
+            penalties_saved: data.penalties_saved || 0,
+            penalties_missed: data.penalties_missed || 0,
+            yellow_cards: data.yellow_cards || 0,
+            red_cards: data.red_cards || 0,
+            saves: data.saves || 0,
+            bonus: data.bonus || 0,
+            bps: data.bps || 0,
+            minutes: data.minutes || 0,
+            total_points: data.total_points || 0,
+            expected_goals: data.expected_goals || 0,
+            expected_assists: data.expected_assists || 0,
+            expected_goal_involvements: data.expected_goal_involvements || 0,
+            influence: data.influence || 0,
+            creativity: data.creativity || 0,
+            threat: data.threat || 0,
+            ict_index: data.ict_index || 0
+          });
+        } else {
+          console.error('Failed to fetch player stats from backend');
+          // Fallback to basic data from player prop
+          setDetailedStats(null);
         }
       } catch (error) {
         console.error('Error fetching detailed data:', error);
+        // Fallback to basic data from player prop
+        setDetailedStats(null);
       } finally {
         setLoading(false);
       }
@@ -99,11 +109,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
-
-  // DEBUG: Log what's being rendered
-  console.log('13. RENDER - detailedStats:', detailedStats);
-  console.log('14. RENDER - detailedStats.assists:', detailedStats?.assists);
-  console.log('15. RENDER - detailedStats.goals_scored:', detailedStats?.goals_scored);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
