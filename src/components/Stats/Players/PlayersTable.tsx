@@ -57,6 +57,10 @@ export default function PlayersTable({ players, loading, onPlayerClick }: Props)
             <th className="text-right py-3 px-2">C</th>
             <th className="text-right py-3 px-2">T</th>
             <th className="text-right py-3 px-2">ICT</th>
+            <th className="text-right py-3 px-2">YC</th>
+            <th className="text-right py-3 px-2">RC</th>
+            <th className="text-right py-3 px-2">S</th>
+            <th className="text-right py-3 px-2">OG</th>
           </tr>
         </thead>
         <tbody className="bg-[#1a1a2e]">
@@ -93,6 +97,10 @@ export default function PlayersTable({ players, loading, onPlayerClick }: Props)
                 <td className="py-3 px-2 text-right text-gray-300">{parseFloat(player.creativity).toFixed(1)}</td>
                 <td className="py-3 px-2 text-right text-gray-300">{parseFloat(player.threat).toFixed(1)}</td>
                 <td className="py-3 px-2 text-right text-gray-300">{parseFloat(player.ict_index).toFixed(1)}</td>
+                <td className="py-3 px-2 text-right text-gray-300">{player.yellow_cards || 0}</td>
+                <td className="py-3 px-2 text-right text-gray-300">{player.red_cards || 0}</td>
+                <td className="py-3 px-2 text-right text-gray-300">{player.saves || 0}</td>
+                <td className="py-3 px-2 text-right text-gray-300">{player.own_goals || 0}</td>
               </tr>
             );
           })}
