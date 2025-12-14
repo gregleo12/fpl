@@ -10,6 +10,7 @@ export interface ChipPerformanceData {
     team_name: string;
     chip_count: number;
     chips_detail: string;
+    chips_played_data?: Array<{chip: string, gw: number, result: string}>;
   }>;
   chipsFaced: Array<{
     entry_id: number;
@@ -34,6 +35,22 @@ export function ChipPerformance({ data }: Props) {
 
   // Render function for items (used by both card and modal)
   const renderItem = (manager: any, index: number) => {
+    // Render chips played with color coding
+    const renderChipsPlayed = () => {
+      if (!manager.chips_played_data || manager.chips_played_data.length === 0) {
+        return manager.chips_detail;
+      }
+
+      return manager.chips_played_data.map((chip: any, idx: number) => (
+        <span key={idx}>
+          <span className={chip.result === 'W' ? styles.chipWin : chip.result === 'L' ? styles.chipLoss : ''}>
+            {chip.chip} (GW{chip.gw})
+          </span>
+          {idx < manager.chips_played_data.length - 1 && ', '}
+        </span>
+      ));
+    };
+
     // Render chips faced with color coding
     const renderChipsFaced = () => {
       if (!manager.chips_faced_data || manager.chips_faced_data.length === 0) {
@@ -57,7 +74,7 @@ export function ChipPerformance({ data }: Props) {
           <div className={styles.name}>{manager.player_name}</div>
           <div className={styles.meta}>{manager.team_name}</div>
           <div className={styles.chips}>
-            {view === 'played' ? manager.chips_detail : renderChipsFaced()}
+            {view === 'played' ? renderChipsPlayed() : renderChipsFaced()}
           </div>
         </div>
         <div className={styles.stats}>

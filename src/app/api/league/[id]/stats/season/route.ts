@@ -260,11 +260,25 @@ async function calculateChipPerformance(
           (chip: any) => gameweeks.includes(chip.event)
         );
 
+        // Get match results for this manager to determine win/loss for each chip
+        const matchesResult = await db.query(`
+          SELECT event, winner
+          FROM h2h_matches
+          WHERE league_id = $1
+          AND event = ANY($2)
+          AND (entry_1_id = $3 OR entry_2_id = $3)
+        `, [leagueId, gameweeks, manager.entry_id]);
+
+        const matchResults = new Map(
+          matchesResult.rows.map((m: any) => [m.event, m.winner === manager.entry_id ? 'W' : m.winner ? 'L' : 'D'])
+        );
+
         return {
           manager,
           chips: chips.map((c: any) => ({
             name: c.name,
-            event: c.event
+            event: c.event,
+            result: matchResults.get(c.event) || 'D'
           }))
         };
       } catch (error) {
@@ -276,13 +290,23 @@ async function calculateChipPerformance(
 
     // LEADERBOARD 1: Most Chips Played
     const chipsPlayed = allChipData
-      .map(({ manager, chips }) => ({
-        entry_id: manager.entry_id,
-        player_name: manager.player_name,
-        team_name: manager.team_name,
-        chip_count: chips.length,
-        chips_detail: chips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', ')
-      }))
+      .map(({ manager, chips }) => {
+        // Sort chips by GW
+        const sortedChips = [...chips].sort((a: any, b: any) => a.event - b.event);
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          chip_count: chips.length,
+          chips_detail: sortedChips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
+          chips_played_data: sortedChips.map((c: any) => ({
+            chip: CHIP_NAMES[c.name] || c.name,
+            gw: c.event,
+            result: c.result
+          }))
+        };
+      })
       .filter(m => m.chip_count > 0)
       .sort((a, b) => b.chip_count - a.chip_count);
 
