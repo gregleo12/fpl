@@ -29,6 +29,16 @@ export async function GET(
     // Get entry history (includes chip usage and GW-by-GW data)
     const history = await fplApi.getEntryHistory(entryId);
 
+    // Get bootstrap data to check which gameweeks have started
+    const bootstrap = await fplApi.getBootstrapData();
+    const events = bootstrap.events || [];
+
+    // Find the highest gameweek that has started (is_current or finished)
+    const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
+    const maxStartedGW = startedGameweeks.length > 0
+      ? Math.max(...startedGameweeks.map((e: any) => e.id))
+      : 0;
+
     // Get manager info from database
     const managerResult = await db.query(
       'SELECT * FROM managers WHERE entry_id = $1',
@@ -41,6 +51,8 @@ export async function GET(
     }
 
     // Get all matches for this player in this league
+    // Include matches from gameweeks that have started (even if 0-0)
+    // Exclude only future gameweeks that haven't started yet
     const matchesResult = await db.query(`
       SELECT
         hm.*,
@@ -55,9 +67,9 @@ export async function GET(
       )
       WHERE (hm.entry_1_id = $1 OR hm.entry_2_id = $1)
         AND hm.league_id = $2
-        AND (hm.entry_1_points > 0 OR hm.entry_2_points > 0)
+        AND hm.event <= $3
       ORDER BY hm.event ASC
-    `, [entryId, leagueId]);
+    `, [entryId, leagueId, maxStartedGW]);
 
     const matches = matchesResult.rows;
 
