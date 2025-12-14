@@ -87,14 +87,25 @@ export async function GET(
       };
     });
 
-    // Transform picks to match original format
-    const picks = allPlayers.map((player, index) => ({
+    // Transform picks to match original format - CORRECTLY assign positions
+    // Starting 11 gets positions 1-11, bench gets positions 12-15
+    const starting11Picks = scoreResult.squad.starting11.map((player, index) => ({
       element: player.id,
-      position: index + 1,
+      position: index + 1, // Positions 1-11
       multiplier: player.multiplier,
       is_captain: player.multiplier === 2,
       is_vice_captain: false // Would need to be extracted from original picks if needed
     }));
+
+    const benchPicks = scoreResult.squad.bench.map((player, index) => ({
+      element: player.id,
+      position: index + 12, // Positions 12-15
+      multiplier: player.multiplier,
+      is_captain: false, // Bench players can't be captain
+      is_vice_captain: false
+    }));
+
+    const picks = [...starting11Picks, ...benchPicks];
 
     // Return enriched data with live stats, autosubs, and provisional bonus
     return NextResponse.json({
