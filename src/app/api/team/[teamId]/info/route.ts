@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -54,7 +55,21 @@ export async function GET(
     const averagePoints = currentEvent?.average_entry_score || 0;
     const highestPoints = currentEvent?.highest_score || 0;
 
-    // Fetch picks for selected GW to get entry_history with GW stats
+    // Determine gameweek status
+    let status: 'upcoming' | 'in_progress' | 'completed' = 'in_progress';
+    if (currentEvent) {
+      if (currentEvent.finished) {
+        status = 'completed';
+      } else if (!currentEvent.is_current && !currentEvent.data_checked) {
+        status = 'upcoming';
+      }
+    }
+
+    // Use live score calculator for accurate GW points
+    const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, status);
+    const gwPoints = scoreResult.score;
+
+    // Fetch picks for GW rank and transfers (these aren't live)
     const picksResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
       {
@@ -64,13 +79,11 @@ export async function GET(
       }
     );
 
-    let gwPoints = 0;
     let gwRank = 0;
     let gwTransfers = { count: 0, cost: 0 };
 
     if (picksResponse.ok) {
       const picksData = await picksResponse.json();
-      gwPoints = picksData.entry_history?.points || 0;
       gwRank = picksData.entry_history?.rank || 0;
       gwTransfers = {
         count: picksData.entry_history?.event_transfers || 0,
