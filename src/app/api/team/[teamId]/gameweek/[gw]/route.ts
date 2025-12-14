@@ -71,7 +71,7 @@ export async function GET(
 
     allPlayers.forEach(player => {
       const element = elementLookup[player.id];
-      const positionMap: { [key: string]: number } = { GKP: 1, DEF: 2, MID: 3, FWD: 4 };
+      const positionMap: { [key: string]: number } = { GK: 1, DEF: 2, MID: 3, FWD: 4 };
 
       playerLookup[player.id] = {
         id: player.id,

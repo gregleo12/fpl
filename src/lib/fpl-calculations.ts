@@ -105,13 +105,13 @@ export function createSquadFromPicks(
 
     if (pick.position <= 11) {
       starting11.push(player);
-    } else if (pick.position <= 14) {
-      // Bench positions 12-14 (15 is typically not used for auto-subs)
+    } else if (pick.position <= 15) {
+      // Bench positions 12-15 (all 4 bench players)
       bench.push(player);
     }
   });
 
-  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
+  // Sort bench by position to maintain order (12, 13, 14, 15 = 1st, 2nd, 3rd, 4th bench)
   bench.sort((a, b) => {
     const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
     const posB = picks.find((p: any) => p.element === b.id)?.position || 0;

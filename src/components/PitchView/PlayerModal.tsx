@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import styles from './PlayerModal.module.css';
+import { getPlayerStats } from '@/lib/playerStatsExtractor';
 
 interface PlayerInfo {
   id: number;
@@ -63,9 +64,9 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           };
           setPositionName(positions[player.element_type] || '');
 
-          // Get detailed live stats
-          const playerLiveStats = liveData.elements.find((e: any) => e.id === player.id);
-          setDetailedStats(playerLiveStats?.stats || null);
+          // Get detailed live stats using shared utility (single source of truth)
+          const stats = getPlayerStats(liveData, player.id);
+          setDetailedStats(stats);
         }
       } catch (error) {
         console.error('Error fetching detailed data:', error);
