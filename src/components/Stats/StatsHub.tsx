@@ -9,8 +9,9 @@ import { GameweekWinners } from './sections/GameweekWinners';
 import { TopPerformers } from './sections/TopPerformers';
 import { SeasonView } from './SeasonView';
 import { MyTeamView } from './MyTeamView';
+import PlayersTab from './Players/PlayersTab';
 
-type ViewType = 'myteam' | 'gameweek' | 'season';
+type ViewType = 'myteam' | 'gameweek' | 'season' | 'players';
 
 export interface GameweekStats {
   event: number;
@@ -135,6 +136,12 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
           >
             Season
           </button>
+          <button
+            className={`${styles.viewButton} ${view === 'players' ? styles.active : ''}`}
+            onClick={() => setView('players')}
+          >
+            Players
+          </button>
         </div>
 
         {/* GW Selector (only for gameweek view) */}
@@ -206,6 +213,11 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
       {/* Season View */}
       {view === 'season' && (
         <SeasonView leagueId={leagueId} />
+      )}
+
+      {/* Players View */}
+      {view === 'players' && (
+        <PlayersTab />
       )}
     </div>
   );
