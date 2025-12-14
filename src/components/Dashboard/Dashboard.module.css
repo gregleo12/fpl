@@ -435,6 +435,16 @@
   letter-spacing: 0.5px;
 }
 
+.chipWin {
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+}
+
+.chipLoss {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
 /* Result Badge */
 .resultBadge {
   display: inline-flex;

@@ -314,12 +314,22 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                   </tr>
                 </thead>
                 <tbody>
-                  {playerData.chipsFaced.map((chip: any, idx: number) => {
+                  {playerData.chipsFaced
+                    .sort((a: any, b: any) => a.event - b.event)
+                    .map((chip: any, idx: number) => {
                     const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
                     const yourScore = match?.playerPoints || 0;
                     return (
                       <tr key={idx}>
-                        <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.chipName)}</span></td>
+                        <td>
+                          <span className={`${styles.chipBadge} ${
+                            chip.result === 'W' ? styles.chipWin :
+                            chip.result === 'L' ? styles.chipLoss :
+                            ''
+                          }`}>
+                            {getChipAbbreviation(chip.chipName)}
+                          </span>
+                        </td>
                         <td>GW{chip.event}</td>
                         <td>{shortenManagerName(chip.opponentName)}</td>
                         <td>
