@@ -576,7 +576,7 @@
 /* Removed desktop/mobile breakpoint switches - consistent layout at all widths */
 
 /* Mobile Responsive - Table and Stats Styling */
-@media (max-width: 768px) {
+@media (max-width: 978px) {
   /* Section spacing */
   .section {
     padding: 1rem;
