@@ -287,13 +287,13 @@ async function calculateChipPerformance(
       .sort((a, b) => b.chip_count - a.chip_count);
 
     // LEADERBOARD 2: Most Chips Faced
+    // Changed to use FPL API (like Chips Played) instead of database active_chip columns
     const chipsFaced = await Promise.all(
       managers.map(async (manager) => {
         // Get all matches where this manager played
         const matchesResult = await db.query(`
           SELECT
             entry_1_id, entry_2_id,
-            active_chip_1, active_chip_2,
             event
           FROM h2h_matches
           WHERE league_id = $1
@@ -304,14 +304,31 @@ async function calculateChipPerformance(
         const matches = matchesResult.rows;
         let opponentChips: string[] = [];
 
+        // For each match, get opponent's entry ID and fetch their chip history from FPL API
         for (const match of matches) {
-          // If manager is entry_1, count entry_2's chip
-          if (match.entry_1_id === manager.entry_id && match.active_chip_2) {
-            opponentChips.push(`${CHIP_NAMES[match.active_chip_2] || match.active_chip_2} (GW${match.event})`);
-          }
-          // If manager is entry_2, count entry_1's chip
-          if (match.entry_2_id === manager.entry_id && match.active_chip_1) {
-            opponentChips.push(`${CHIP_NAMES[match.active_chip_1] || match.active_chip_1} (GW${match.event})`);
+          const opponentId = match.entry_1_id === manager.entry_id ? match.entry_2_id : match.entry_1_id;
+
+          // Skip AVERAGE opponent (-1)
+          if (opponentId === -1) continue;
+
+          try {
+            // Fetch opponent's chip history from FPL API
+            const response = await fetch(
+              `https://fantasy.premierleague.com/api/entry/${opponentId}/history/`
+            );
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            const chips = data.chips || [];
+
+            // Check if opponent used a chip in this gameweek
+            const chipUsed = chips.find((c: any) => c.event === match.event);
+            if (chipUsed) {
+              opponentChips.push(`${CHIP_NAMES[chipUsed.name] || chipUsed.name} (GW${match.event})`);
+            }
+          } catch (error) {
+            // Skip if can't fetch opponent data
+            continue;
           }
         }
 
