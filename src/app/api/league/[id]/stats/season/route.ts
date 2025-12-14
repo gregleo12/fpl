@@ -17,17 +17,34 @@ export async function GET(
 
     const db = await getDatabase();
 
+    // Get bootstrap data to check which gameweeks have started
+    // Fallback to 38 if bootstrap fetch fails (include all GWs)
+    let maxStartedGW = 38;
+    try {
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const events = bootstrapData?.events || [];
+
+        // Find the highest gameweek that has started (is_current or finished)
+        const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
+        if (startedGameweeks.length > 0) {
+          maxStartedGW = Math.max(...startedGameweeks.map((e: any) => e.id));
+        }
+      }
+    } catch (error) {
+      console.log('Could not fetch bootstrap data, including all gameweeks');
+    }
+
     // Fetch all matches for the league to determine completed gameweeks
-    // Only count gameweeks where matches were actually played (points > 0)
+    // Include matches from gameweeks that have started (even if 0-0)
     const matchesResult = await db.query(`
       SELECT DISTINCT event
       FROM h2h_matches
       WHERE league_id = $1
-      AND entry_1_points IS NOT NULL
-      AND entry_2_points IS NOT NULL
-      AND (entry_1_points > 0 OR entry_2_points > 0)
+      AND event <= $2
       ORDER BY event
-    `, [leagueId]);
+    `, [leagueId, maxStartedGW]);
 
     const completedGameweeks = matchesResult.rows.map(r => r.event);
 
