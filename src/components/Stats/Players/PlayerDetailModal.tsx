@@ -65,13 +65,14 @@ export default function PlayerDetailModal({ playerId, onClose }: Props) {
 
   const { player, history, totals, per90 } = data;
 
-  const statusColor = {
+  const statusColorMap: { [key: string]: string } = {
     'a': 'bg-green-500',
     'i': 'bg-red-500',
     's': 'bg-red-500',
     'd': 'bg-yellow-500',
     'u': 'bg-red-500'
-  }[player.status] || 'bg-gray-500';
+  };
+  const statusColor = statusColorMap[player.status] || 'bg-gray-500';
 
   return (
     <div
