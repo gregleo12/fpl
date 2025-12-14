@@ -252,7 +252,7 @@ export default function DashboardPage() {
           <FixturesTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
-            maxGW={leagueData.maxGW || 1}
+            maxGW={38}
             defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
           />
         )}
