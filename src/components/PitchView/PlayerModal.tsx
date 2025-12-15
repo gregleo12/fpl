@@ -32,7 +32,7 @@ interface Props {
 }
 
 export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
-  const [detailedStats, setDetailedStats] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
   const [teamName, setTeamName] = useState<string>('');
   const [positionName, setPositionName] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -40,13 +40,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   useEffect(() => {
     async function fetchDetailedData() {
       try {
-        // 1. LOG: Fetch starting
-        console.log('[PlayerModal] 🔍 Fetching data for player:', {
-          playerId: player.id,
-          playerName: player.web_name,
-          gameweek: gameweek
-        });
-
         // Fetch bootstrap data for team names and full player data from our backend
         const [bootstrapRes, playerDataRes] = await Promise.all([
           fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
@@ -73,71 +66,10 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
         // Get detailed stats from our backend API
         if (playerDataRes.ok) {
           const playerData = await playerDataRes.json();
-
-          // 2. LOG: API Response
-          console.log('[PlayerModal] ✅ API Response:', {
-            player: playerData.player?.web_name,
-            historyCount: playerData.history?.length,
-            gameweeksInHistory: playerData.history?.map((h: any) => h.gameweek)
-          });
-
-          // Find the current gameweek stats from history array
-          const gwStats = playerData.history?.find((h: any) => h.gameweek === gameweek);
-
-          // 3. LOG: Found gameweek stats
-          if (gwStats) {
-            console.log('[PlayerModal] 📊 Found GW stats:', {
-              gameweek: gwStats.gameweek,
-              minutes: gwStats.minutes,
-              goals_scored: gwStats.goals_scored,
-              assists: gwStats.assists,
-              bonus: gwStats.bonus,
-              bps: gwStats.bps,
-              total_points: gwStats.total_points
-            });
-
-            const statsToSet = {
-              goals_scored: gwStats.goals_scored || 0,
-              assists: gwStats.assists || 0,
-              clean_sheets: gwStats.clean_sheets || 0,
-              goals_conceded: gwStats.goals_conceded || 0,
-              own_goals: gwStats.own_goals || 0,
-              penalties_saved: gwStats.penalties_saved || 0,
-              penalties_missed: gwStats.penalties_missed || 0,
-              yellow_cards: gwStats.yellow_cards || 0,
-              red_cards: gwStats.red_cards || 0,
-              saves: gwStats.saves || 0,
-              bonus: gwStats.bonus || 0,
-              bps: gwStats.bps || 0,
-              minutes: gwStats.minutes || 0,
-              total_points: gwStats.total_points || 0,
-              expected_goals: gwStats.expected_goals || 0,
-              expected_assists: gwStats.expected_assists || 0,
-              expected_goal_involvements: gwStats.expected_goal_involvements || 0,
-              influence: gwStats.influence || 0,
-              creativity: gwStats.creativity || 0,
-              threat: gwStats.threat || 0,
-              ict_index: gwStats.ict_index || 0
-            };
-
-            // 4. LOG: Setting detailedStats
-            console.log('[PlayerModal] ⚙️  Setting detailedStats:', statsToSet);
-
-            setDetailedStats(statsToSet);
-          } else {
-            console.error(`[PlayerModal] ❌ No stats found for gameweek ${gameweek}`);
-            // Fallback to basic data from player prop
-            setDetailedStats(null);
-          }
-        } else {
-          console.error('[PlayerModal] ❌ Failed to fetch player data from backend');
-          // Fallback to basic data from player prop
-          setDetailedStats(null);
+          setData(playerData);
         }
       } catch (error) {
         console.error('[PlayerModal] ❌ Error fetching detailed data:', error);
-        // Fallback to basic data from player prop
-        setDetailedStats(null);
       } finally {
         setLoading(false);
       }
@@ -148,6 +80,9 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
+
+  // Find gameweek stats from history array (same as PlayerHistory.tsx does)
+  const gwStats = data?.history?.find((h: any) => h.gameweek === gameweek);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -176,45 +111,45 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
             <div className={styles.stats}>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Minutes played</span>
-                <span className={styles.statValue}>{detailedStats?.minutes || player.minutes || 0}</span>
+                <span className={styles.statValue}>{gwStats?.minutes || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Goals scored</span>
-                <span className={styles.statValue}>{detailedStats?.goals_scored || 0}</span>
+                <span className={styles.statValue}>{gwStats?.goals_scored || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Assists</span>
-                <span className={styles.statValue}>{detailedStats?.assists || 0}</span>
+                <span className={styles.statValue}>{gwStats?.assists || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Clean sheets</span>
-                <span className={styles.statValue}>{detailedStats?.clean_sheets || 0}</span>
+                <span className={styles.statValue}>{gwStats?.clean_sheets || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Goals conceded</span>
-                <span className={styles.statValue}>{detailedStats?.goals_conceded || 0}</span>
+                <span className={styles.statValue}>{gwStats?.goals_conceded || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Yellow cards</span>
-                <span className={styles.statValue}>{detailedStats?.yellow_cards || 0}</span>
+                <span className={styles.statValue}>{gwStats?.yellow_cards || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Red cards</span>
-                <span className={styles.statValue}>{detailedStats?.red_cards || 0}</span>
+                <span className={styles.statValue}>{gwStats?.red_cards || 0}</span>
               </div>
               {player.element_type === 1 && (
                 <div className={styles.statRow}>
                   <span className={styles.statLabel}>Saves</span>
-                  <span className={styles.statValue}>{detailedStats?.saves || 0}</span>
+                  <span className={styles.statValue}>{gwStats?.saves || 0}</span>
                 </div>
               )}
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>Bonus</span>
-                <span className={styles.statValue}>{detailedStats?.bonus || player.bonus || 0}</span>
+                <span className={styles.statValue}>{gwStats?.bonus || 0}</span>
               </div>
               <div className={styles.statRow}>
                 <span className={styles.statLabel}>BPS</span>
-                <span className={styles.statValue}>{detailedStats?.bps || player.bps || 0}</span>
+                <span className={styles.statValue}>{gwStats?.bps || 0}</span>
               </div>
             </div>
 
