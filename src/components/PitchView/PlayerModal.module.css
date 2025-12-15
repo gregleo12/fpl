@@ -128,8 +128,9 @@
 }
 
 .statRow {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1rem;
   align-items: center;
   padding: 0.75rem 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -149,6 +150,22 @@
   font-weight: 700;
   color: white;
   min-width: 40px;
+  text-align: right;
+}
+
+.statPoints {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00ff87;
+  min-width: 60px;
+  text-align: right;
+}
+
+.statInfo {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  min-width: 60px;
   text-align: right;
 }
 
@@ -175,6 +192,13 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: #00ff87;
+}
+
+.multiplier {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(0, 255, 135, 0.7);
+  margin-left: 0.5rem;
 }
 
 /* Mobile Responsive */

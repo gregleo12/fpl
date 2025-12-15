@@ -31,6 +31,69 @@ interface Props {
   onClose: () => void;
 }
 
+// Helper function to calculate points for each stat
+function calculateStatPoints(stat: string, value: number, position: number): number {
+  if (value === 0) return 0;
+
+  switch (stat) {
+    case 'minutes':
+      if (value >= 60) return 2;
+      if (value > 0) return 1;
+      return 0;
+
+    case 'goals_scored':
+      // GKP/DEF = 6, MID = 5, FWD = 4
+      if (position === 1 || position === 2) return value * 6;
+      if (position === 3) return value * 5;
+      if (position === 4) return value * 4;
+      return 0;
+
+    case 'assists':
+      return value * 3;
+
+    case 'clean_sheets':
+      // Only GKP/DEF/MID get clean sheet points
+      if (position === 1 || position === 2) return value * 4;
+      if (position === 3) return value * 1;
+      return 0;
+
+    case 'goals_conceded':
+      // Only GKP/DEF, -1 for every 2 goals conceded
+      if (position === 1 || position === 2) {
+        return Math.floor(value / 2) * -1;
+      }
+      return 0;
+
+    case 'saves':
+      // Only GKP, +1 for every 3 saves
+      if (position === 1) {
+        return Math.floor(value / 3);
+      }
+      return 0;
+
+    case 'penalties_saved':
+      return value * 5;
+
+    case 'penalties_missed':
+      return value * -2;
+
+    case 'yellow_cards':
+      return value * -1;
+
+    case 'red_cards':
+      return value * -3;
+
+    case 'own_goals':
+      return value * -2;
+
+    case 'bonus':
+      return value; // Bonus points are 1:1
+
+    default:
+      return 0;
+  }
+}
+
 export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +121,22 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   // Find gameweek stats from history array (same as PlayerHistory.tsx does)
   const gwStats = data?.history?.find((h: any) => h.gameweek === gameweek);
 
+  // Define stats to display with their labels
+  const stats = [
+    { key: 'minutes', label: 'Minutes played' },
+    { key: 'goals_scored', label: 'Goals scored' },
+    { key: 'assists', label: 'Assists' },
+    { key: 'clean_sheets', label: 'Clean sheets' },
+    { key: 'goals_conceded', label: 'Goals conceded' },
+    { key: 'own_goals', label: 'Own goals' },
+    { key: 'penalties_saved', label: 'Penalties saved', gkOnly: true },
+    { key: 'penalties_missed', label: 'Penalties missed' },
+    { key: 'saves', label: 'Saves', gkOnly: true },
+    { key: 'yellow_cards', label: 'Yellow cards' },
+    { key: 'red_cards', label: 'Red cards' },
+    { key: 'bonus', label: 'Bonus', isBonus: true },
+  ];
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -81,56 +160,52 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           </div>
         ) : (
           <>
-            {/* Stats Grid */}
+            {/* Stats Grid - Only show non-zero stats */}
             <div className={styles.stats}>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Minutes played</span>
-                <span className={styles.statValue}>{gwStats?.minutes || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Goals scored</span>
-                <span className={styles.statValue}>{gwStats?.goals_scored || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Assists</span>
-                <span className={styles.statValue}>{gwStats?.assists || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Clean sheets</span>
-                <span className={styles.statValue}>{gwStats?.clean_sheets || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Goals conceded</span>
-                <span className={styles.statValue}>{gwStats?.goals_conceded || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Yellow cards</span>
-                <span className={styles.statValue}>{gwStats?.yellow_cards || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Red cards</span>
-                <span className={styles.statValue}>{gwStats?.red_cards || 0}</span>
-              </div>
-              {player.element_type === 1 && (
+              {stats.map(({ key, label, gkOnly, isBonus }) => {
+                // Skip GK-only stats for non-goalkeepers
+                if (gkOnly && player.element_type !== 1) return null;
+
+                const value = gwStats?.[key] || 0;
+
+                // Skip zero values (except for minutes which always shows if > 0)
+                if (value === 0 && key !== 'minutes') return null;
+
+                // Also skip minutes if actually 0
+                if (key === 'minutes' && value === 0) return null;
+
+                const points = calculateStatPoints(key, value, player.element_type);
+
+                return (
+                  <div key={key} className={styles.statRow}>
+                    <span className={styles.statLabel}>{label}</span>
+                    <span className={styles.statValue}>{value}</span>
+                    <span className={styles.statPoints}>
+                      {points > 0 ? '+' : ''}{points} pts
+                    </span>
+                  </div>
+                );
+              })}
+
+              {/* BPS - shown for reference, doesn't contribute to points */}
+              {gwStats?.bps > 0 && (
                 <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Saves</span>
-                  <span className={styles.statValue}>{gwStats?.saves || 0}</span>
+                  <span className={styles.statLabel}>BPS</span>
+                  <span className={styles.statValue}>{gwStats.bps}</span>
+                  <span className={styles.statInfo}>(info only)</span>
                 </div>
               )}
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>Bonus</span>
-                <span className={styles.statValue}>{gwStats?.bonus || 0}</span>
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.statLabel}>BPS</span>
-                <span className={styles.statValue}>{gwStats?.bps || 0}</span>
-              </div>
             </div>
 
             {/* Total Points */}
             <div className={styles.total}>
               <span className={styles.totalLabel}>TOTAL POINTS</span>
-              <span className={styles.totalValue}>{totalPoints}</span>
+              <span className={styles.totalValue}>
+                {player.event_points}
+                {pick.multiplier > 1 && (
+                  <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                )}
+              </span>
             </div>
           </>
         )}
