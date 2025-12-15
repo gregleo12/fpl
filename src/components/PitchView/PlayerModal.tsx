@@ -182,8 +182,13 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
                 const value = gwStats?.[key] || 0;
 
-                // Skip zero values (except for minutes which always shows if > 0)
-                if (value === 0 && key !== 'minutes') return null;
+                // Always show minutes and defensive_contribution (for DEF/MID)
+                const isDefOrMid = player.element_type === 2 || player.element_type === 3;
+                const alwaysShow = key === 'minutes' ||
+                  (key === 'defensive_contribution' && isDefOrMid);
+
+                // Skip zero values (except for stats that should always show)
+                if (value === 0 && !alwaysShow) return null;
 
                 // Also skip minutes if actually 0
                 if (key === 'minutes' && value === 0) return null;
