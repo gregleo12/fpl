@@ -318,9 +318,8 @@ export async function GET(
         const team1Differentials = team1Players.filter((id: number) => !team2Players.includes(id));
         const team2Differentials = team2Players.filter((id: number) => !team1Players.includes(id));
 
-        // Get last 5 GWs (using completed gameweeks)
-        const lastCompletedGW = currentGW - 1;
-        const last5GWs = Array.from({ length: 5 }, (_, i) => lastCompletedGW - i).filter(gw => gw > 0).reverse();
+        // Get last 5 GWs (including current GW to show live data)
+        const last5GWs = Array.from({ length: 5 }, (_, i) => currentGW - i).filter(gw => gw > 0).reverse();
 
         // Fetch all GW data once (cache it) to avoid redundant API calls
         const gwDataCache: Map<number, any> = new Map();
