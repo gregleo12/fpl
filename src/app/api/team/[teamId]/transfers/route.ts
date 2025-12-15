@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDatabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -9,28 +10,41 @@ export async function GET(
 ) {
   try {
     const { teamId } = params;
+    const db = await getDatabase();
 
     // Get gameweek from query params, default to current if not provided
     const searchParams = request.nextUrl.searchParams;
     const requestedGW = searchParams.get('gw');
 
-    // Fetch transfers
-    const transfersResponse = await fetch(
-      `https://fantasy.premierleague.com/api/entry/${teamId}/transfers/`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
-      }
-    );
+    // Fetch transfers from database
+    const transfersResult = await db.query(`
+      SELECT
+        mt.event,
+        mt.transfer_time as time,
+        mt.player_in as element_in,
+        mt.player_out as element_out,
+        mt.player_in_cost as element_in_cost,
+        mt.player_out_cost as element_out_cost,
+        pin.id as pin_id,
+        pin.web_name as pin_web_name,
+        pin.team as pin_team,
+        pin.team_code as pin_team_code,
+        pin.element_type as pin_element_type,
+        pout.id as pout_id,
+        pout.web_name as pout_web_name,
+        pout.team as pout_team,
+        pout.team_code as pout_team_code,
+        pout.element_type as pout_element_type
+      FROM manager_transfers mt
+      JOIN players pin ON pin.id = mt.player_in
+      JOIN players pout ON pout.id = mt.player_out
+      WHERE mt.entry_id = $1
+      ORDER BY mt.event DESC, mt.transfer_time DESC
+    `, [parseInt(teamId)]);
 
-    if (!transfersResponse.ok) {
-      throw new Error(`Failed to fetch transfers: ${transfersResponse.status}`);
-    }
+    const transfers = transfersResult.rows;
 
-    const transfers = await transfersResponse.json();
-
-    // Fetch bootstrap data for player names
+    // Fetch bootstrap data for current GW
     const bootstrapResponse = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
       {
@@ -51,28 +65,24 @@ export async function GET(
     const currentGW = bootstrapData.events.find((e: any) => e.is_current)?.id || 1;
     const targetGW = requestedGW ? parseInt(requestedGW) : currentGW;
 
-    // Create player lookup
-    const playerLookup: { [key: number]: any } = {};
-    bootstrapData.elements.forEach((player: any) => {
-      playerLookup[player.id] = {
-        id: player.id,
-        web_name: player.web_name,
-        team: player.team,
-        team_code: player.team_code,
-        element_type: player.element_type
-      };
-    });
-
-    // Enrich transfers with player names
+    // Enrich transfers with player data (already joined from database)
     const enrichedTransfers = transfers.map((transfer: any) => ({
       event: transfer.event,
       time: transfer.time,
       playerIn: {
-        ...playerLookup[transfer.element_in],
+        id: transfer.pin_id,
+        web_name: transfer.pin_web_name,
+        team: transfer.pin_team,
+        team_code: transfer.pin_team_code,
+        element_type: transfer.pin_element_type,
         cost: transfer.element_in_cost
       },
       playerOut: {
-        ...playerLookup[transfer.element_out],
+        id: transfer.pout_id,
+        web_name: transfer.pout_web_name,
+        team: transfer.pout_team,
+        team_code: transfer.pout_team_code,
+        element_type: transfer.pout_element_type,
         cost: transfer.element_out_cost
       }
     }));
@@ -123,11 +133,19 @@ export async function GET(
 
           targetGWTransfersWithPoints = targetGWTransfers.map((transfer: any) => ({
             playerOut: {
-              ...playerLookup[transfer.element_out],
+              id: transfer.pout_id,
+              web_name: transfer.pout_web_name,
+              team: transfer.pout_team,
+              team_code: transfer.pout_team_code,
+              element_type: transfer.pout_element_type,
               points: playerPointsLookup[transfer.element_out] || 0
             },
             playerIn: {
-              ...playerLookup[transfer.element_in],
+              id: transfer.pin_id,
+              web_name: transfer.pin_web_name,
+              team: transfer.pin_team,
+              team_code: transfer.pin_team_code,
+              element_type: transfer.pin_element_type,
               points: playerPointsLookup[transfer.element_in] || 0
             },
             netGain: (playerPointsLookup[transfer.element_in] || 0) - (playerPointsLookup[transfer.element_out] || 0)
