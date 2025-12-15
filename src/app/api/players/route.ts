@@ -31,6 +31,20 @@ export async function GET(request: NextRequest) {
 
     const db = await getDatabase();
 
+    // Debug: Check tables exist
+    try {
+      const tableCheck = await db.query(`
+        SELECT table_name,
+               (SELECT COUNT(*) FROM information_schema.columns WHERE table_name = t.table_name) as col_count
+        FROM information_schema.tables t
+        WHERE table_schema = 'public'
+        AND table_name IN ('players', 'teams', 'player_gameweek_stats')
+      `);
+      console.log('[Players API] Tables check:', JSON.stringify(tableCheck.rows));
+    } catch (dbErr: any) {
+      console.error('[Players API] DB connection error:', dbErr.message);
+    }
+
     // Build query
     const whereConditions: string[] = ['now_cost <= $1', 'now_cost >= $2'];
     const params: any[] = [maxPrice, minPrice];
@@ -117,10 +131,17 @@ export async function GET(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('Error fetching players:', error);
+  } catch (error: any) {
+    console.error('[Players API] Full error:', error);
+    console.error('[Players API] Error message:', error?.message);
+    console.error('[Players API] Error code:', error?.code);
+
     return NextResponse.json(
-      { error: 'Failed to fetch players' },
+      {
+        error: 'Failed to fetch players',
+        details: error?.message || 'Unknown error',
+        code: error?.code
+      },
       { status: 500 }
     );
   }
