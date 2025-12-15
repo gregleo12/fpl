@@ -9,17 +9,15 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  position: string;
-  team_id: number;
-  team_name: string;
-  team_short: string;
+  element_type: number;
+  team: number;
   team_code: number;
   now_cost: number;
   selected_by_percent: string;
   total_points: number;
   form: string;
   points_per_game: string;
-  event_points?: number;
+  event_points: number;
   starts: number;
   minutes: number;
   goals_scored: number;
@@ -34,14 +32,14 @@ interface Player {
   bps: number;
   yellow_cards: number;
   red_cards: number;
-  cost_change_start?: number;
+  cost_change_start: number;
   [key: string]: any;
 }
 
 interface Team {
   id: number;
   name: string;
-  short: string;
+  short_name: string;
 }
 
 export type ViewMode = 'compact' | 'all';
@@ -62,8 +60,7 @@ export function PlayersTab() {
       setIsLoading(true);
       setError('');
 
-      // Fetch all players (max 100 per page, we'll fetch multiple pages if needed)
-      const response = await fetch('/api/players?limit=100&sort=total_points&order=desc', {
+      const response = await fetch('/api/fpl-proxy', {
         cache: 'no-store'
       });
 
@@ -73,28 +70,13 @@ export function PlayersTab() {
 
       const data = await response.json();
 
-      // If there are more pages, fetch them all
-      let allPlayers = data.players;
-      const totalPages = data.pagination.totalPages;
+      // Sort by total_points descending by default
+      const sortedPlayers = data.elements.sort((a: Player, b: Player) =>
+        b.total_points - a.total_points
+      );
 
-      if (totalPages > 1) {
-        const pagePromises = [];
-        for (let page = 2; page <= totalPages; page++) {
-          pagePromises.push(
-            fetch(`/api/players?limit=100&sort=total_points&order=desc&page=${page}`, {
-              cache: 'no-store'
-            }).then(r => r.json())
-          );
-        }
-
-        const pages = await Promise.all(pagePromises);
-        pages.forEach(pageData => {
-          allPlayers = allPlayers.concat(pageData.players);
-        });
-      }
-
-      setPlayers(allPlayers);
-      setTeams(data.filters.teams);
+      setPlayers(sortedPlayers);
+      setTeams(data.teams);
     } catch (err: any) {
       console.error('Error fetching players:', err);
       setError(err.message || 'Failed to load players');

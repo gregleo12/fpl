@@ -9,17 +9,15 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  position: string;
-  team_id: number;
-  team_name: string;
-  team_short: string;
+  element_type: number;
+  team: number;
   team_code: number;
   now_cost: number;
   selected_by_percent: string;
   total_points: number;
   form: string;
   points_per_game: string;
-  event_points?: number;
+  event_points: number;
   starts: number;
   minutes: number;
   goals_scored: number;
@@ -34,19 +32,26 @@ interface Player {
   bps: number;
   yellow_cards: number;
   red_cards: number;
-  cost_change_start?: number;
+  cost_change_start: number;
   [key: string]: any;
+}
+
+interface Team {
+  id: number;
+  name: string;
+  short_name: string;
 }
 
 interface Props {
   player: Player;
+  team: Team;
   columns: ColumnDef[];
 }
 
-export function PlayerRow({ player, columns }: Props) {
+export function PlayerRow({ player, team, columns }: Props) {
   return (
     <tr className={styles.row}>
-      <PlayerCell player={player} />
+      <PlayerCell player={player} team={team} />
       {columns.map((col) => {
         const value = player[col.key];
         const displayValue = col.format ? col.format(value, player) : value;
