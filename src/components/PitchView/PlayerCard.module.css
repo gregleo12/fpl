@@ -99,6 +99,10 @@
   padding: 5px;
   text-align: center;
   border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Fixture Bar - Muted purple/gray for upcoming fixtures */
@@ -110,6 +114,10 @@
   padding: 5px;
   text-align: center;
   border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Position Label (for bench players) */
@@ -145,11 +153,13 @@
   .points {
     font-size: 0.7rem;
     padding: 4px;
+    min-height: 24px;
   }
 
   .fixture {
     font-size: 0.6rem;
     padding: 4px;
+    min-height: 24px;
   }
 
   .captainBadge,
@@ -193,11 +203,13 @@
   .points {
     font-size: 0.75rem;
     padding: 4px;
+    min-height: 24px;
   }
 
   .fixture {
     font-size: 0.65rem;
     padding: 4px;
+    min-height: 24px;
   }
 
   .captainBadge,
