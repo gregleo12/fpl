@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-12
+Last Updated: 2025-12-15
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -392,6 +392,67 @@ NEVER push without bumping version and documenting it!
 - `/src/app/setup/select-league/select-league.module.css`
 
 **Result:** Clean, simple, maintainable codebase with proven League ID entry flow.
+
+---
+
+## MANDATORY: Test Before Committing
+
+**NEVER commit untested code. This is non-negotiable.**
+
+### Before Every Commit:
+
+1. **Run the dev server**
+   ```bash
+   npm run dev
+   ```
+
+2. **Open browser and test**
+   - Go to http://localhost:3001
+   - Navigate to the feature you changed
+   - Verify it works as expected
+
+3. **Check browser console**
+   - Open DevTools (F12) or check terminal for errors
+   - Look for any errors in Console tab
+   - Check Network tab if API calls are involved
+
+4. **Only commit if it works**
+   - If it works → commit and push
+   - If it doesn't work → debug and fix first
+   - DO NOT commit broken code hoping it will work in production
+
+5. **Confirm testing in commit message**
+   - Include "Tested locally" or "Verified working" in commit
+   - If you cannot test, explain why and flag it
+
+### Example Workflow
+
+```bash
+# 1. Make changes
+# 2. Test locally
+npm run dev
+# 3. Open browser, test feature, check console
+# 4. Only then commit
+git add .
+git commit -m "v2.5.9: Fix player modal - Tested locally, shows correct assists"
+git push
+```
+
+### Why This Matters
+
+- Saves time: Catching bugs locally is faster than debugging deployed code
+- Saves deployments: Railway has limited build minutes
+- Saves frustration: User doesn't have to test broken builds repeatedly
+- Professional practice: No developer ships untested code
+
+### Red Flags - Stop and Test
+
+If you're about to say:
+- "It should work"
+- "This will fix it"
+- "Once deployed, it will work"
+
+STOP. Test it first. Verify it actually works.
 
 ---
 
