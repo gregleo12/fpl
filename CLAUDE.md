@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-15
+Last Updated: 2025-12-15 (v2.6.7)
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -1251,7 +1251,15 @@ const [data1, data2] = await Promise.all([
 
 ## Version History
 
-**Latest (v2.4.x Series - Dec 2025):**
+**Latest (v2.6.x Series - Dec 2025):**
+- **v2.6.7 (Dec 15)** - 🗄️ **Switch PlayersTab to database** - migrated from FPL proxy to /api/players endpoint, added missing DB columns (team_code, event_points, cost_change_start, defensive_contribution), updated all interfaces to use DB field names (position instead of element_type, team_id instead of team), synced 760 players + 11,850 gameweek stats to production DB
+- **v2.6.6 (Dec 15)** - 🔧 Fix Players tab with FPL API proxy - created /api/fpl-proxy server-side route to bypass CORS, temporary solution
+- **v2.6.5 (Dec 15)** - ❌ Attempt database API (failed - tables didn't exist)
+- **v2.6.4 (Dec 15)** - 🎨 Improve error handling - added retry button, detailed HTTP status codes
+- **v2.6.3 (Dec 15)** - 🔗 Integrate PlayersTab into Stats section - updated import path to @/components/Players
+- **v2.6.2 (Dec 15)** - 📝 Simplify version numbering - removed alpha/beta suffixes
+
+**Previous (v2.4.x Series - Dec 2025):**
 - **v2.4.45 (Dec 12)** - 🎨 Add RivalFPL branding - text logo on welcome screen, "Rival" (white) + "/" (green) + "FPL" (green), 3rem desktop, responsive scaling, strong brand identity
 - **v2.4.44 (Dec 12)** - 🐛 Fix breakpoint mismatch - aligned all desktop layouts to 769px, changed .myTeamContent from 1024px to 769px, eliminated 255px "dead zone", consistent nav/content width
 - **v2.4.43 (Dec 12)** - 🏠 My Team as default screen - first in nav bar, changed default tab to 'myteam', moved to leftmost position, My Team now "home" screen
