@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { Crown, Shuffle, Medal, Users, Armchair, Repeat } from 'lucide-react';
 import { LiveMatchData, WinRequirements } from '@/types/liveMatch';
 import styles from './LiveMatchModal.module.css';
 
@@ -98,7 +99,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {/* Captain Section */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>👑</span>
+            <Crown size={18} color="#00ff87" className={styles.emoji} />
             <span className={styles.sectionTitle}>Captains</span>
           </div>
 
@@ -131,7 +132,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {(matchData.player1.differentials.length > 0 || matchData.player2.differentials.length > 0) && (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <span className={styles.emoji}>🔀</span>
+              <Shuffle size={18} color="#00ff87" className={styles.emoji} />
               <span className={styles.sectionTitle}>Differential Players</span>
             </div>
 
@@ -217,7 +218,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {/* Chips Section */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>🎖️</span>
+            <Medal size={18} color="#00ff87" className={styles.emoji} />
             <span className={styles.sectionTitle}>Chips</span>
           </div>
 
@@ -239,7 +240,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {/* Transfer Hits Section */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>🔄</span>
+            <Repeat size={18} color="#00ff87" className={styles.emoji} />
             <span className={styles.sectionTitle}>Transfer Hits</span>
           </div>
 
@@ -262,7 +263,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {matchData.commonPlayers.length > 0 && (
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <span className={styles.emoji}>👥</span>
+              <Users size={18} color="#00ff87" className={styles.emoji} />
               <span className={styles.sectionTitle}>Common Players</span>
             </div>
 
@@ -307,7 +308,7 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
         {/* Bench Points Section */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.emoji}>💺</span>
+            <Armchair size={18} color="#00ff87" className={styles.emoji} />
             <span className={styles.sectionTitle}>Bench Points</span>
           </div>
 

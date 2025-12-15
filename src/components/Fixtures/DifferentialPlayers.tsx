@@ -1,3 +1,4 @@
+import { Swords } from 'lucide-react';
 import styles from './DifferentialPlayers.module.css';
 
 interface DifferentialPlayer {
@@ -28,7 +29,7 @@ export function DifferentialPlayers({
     return (
       <div className={styles.differentialSection}>
         <div className={styles.sectionHeader}>
-          <span className={styles.emoji}>⚔️</span>
+          <Swords size={18} color="#bb86fc" className={styles.emoji} />
           <span className={styles.title}>Differential Players</span>
         </div>
         <div className={styles.noDifferentials}>
@@ -42,7 +43,7 @@ export function DifferentialPlayers({
     <div className={styles.differentialSection}>
       {/* Section Header */}
       <div className={styles.sectionHeader}>
-        <span className={styles.emoji}>⚔️</span>
+        <Swords size={18} color="#bb86fc" className={styles.emoji} />
         <span className={styles.title}>Differential Players</span>
       </div>
 

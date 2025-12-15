@@ -1,3 +1,4 @@
+import { Target } from 'lucide-react';
 import styles from './StrategicIntel.module.css';
 
 interface CaptainPick {
@@ -48,7 +49,7 @@ export function StrategicIntel({ entry1, entry2 }: StrategicIntelProps) {
     <div className={styles.strategicIntel}>
       {/* Section Header */}
       <div className={styles.sectionHeader}>
-        <span className={styles.emoji}>🎯</span>
+        <Target size={18} color="#bb86fc" className={styles.emoji} />
         <span className={styles.title}>Strategic Intel</span>
       </div>
 

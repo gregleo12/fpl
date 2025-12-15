@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Trophy, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
@@ -203,35 +204,55 @@ export default function DashboardPage() {
             className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
             onClick={() => setActiveTab('myteam')}
           >
-            <span className={styles.tabIcon}>🏆</span>
+            <Trophy
+              size={24}
+              color={activeTab === 'myteam' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>My Team</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
             onClick={() => setActiveTab('league')}
           >
-            <span className={styles.tabIcon}>📊</span>
+            <BarChart3
+              size={24}
+              color={activeTab === 'league' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Rankings</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
             onClick={() => setActiveTab('fixtures')}
           >
-            <span className={styles.tabIcon}>🎯</span>
+            <Target
+              size={24}
+              color={activeTab === 'fixtures' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Fixtures</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'stats' ? styles.active : ''}`}
             onClick={() => setActiveTab('stats')}
           >
-            <span className={styles.tabIcon}>📈</span>
+            <TrendingUp
+              size={24}
+              color={activeTab === 'stats' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Stats</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            <span className={styles.tabIcon}>⚙️</span>
+            <SettingsIcon
+              size={24}
+              color={activeTab === 'settings' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Settings</span>
           </button>
         </nav>

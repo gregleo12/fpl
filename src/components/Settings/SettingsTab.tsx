@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { RefreshCw, Repeat, User, LogOut } from 'lucide-react';
 import { loadState, clearState } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 import MyLeagues from './MyLeagues';
@@ -87,7 +88,11 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           disabled={isRefreshing}
           className={styles.actionButton}
         >
-          <span className={styles.buttonIcon}>{isRefreshing ? '⟳' : '↻'}</span>
+          <RefreshCw
+            size={20}
+            color="#00ff87"
+            className={`${styles.buttonIcon} ${isRefreshing ? styles.spinning : ''}`}
+          />
           <span className={styles.buttonText}>
             {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
           </span>
@@ -97,7 +102,11 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           onClick={handleChangeLeague}
           className={styles.actionButton}
         >
-          <span className={styles.buttonIcon}>🔄</span>
+          <Repeat
+            size={20}
+            color="#00ff87"
+            className={styles.buttonIcon}
+          />
           <span className={styles.buttonText}>Change League</span>
         </button>
 
@@ -105,7 +114,11 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           onClick={handleChangeTeam}
           className={styles.actionButton}
         >
-          <span className={styles.buttonIcon}>👤</span>
+          <User
+            size={20}
+            color="#00ff87"
+            className={styles.buttonIcon}
+          />
           <span className={styles.buttonText}>Change Team</span>
         </button>
 
@@ -113,7 +126,11 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           onClick={handleLogout}
           className={`${styles.actionButton} ${styles.danger}`}
         >
-          <span className={styles.buttonIcon}>🚪</span>
+          <LogOut
+            size={20}
+            color="#ff0066"
+            className={styles.buttonIcon}
+          />
           <span className={styles.buttonText}>Log Out</span>
         </button>
       </div>
