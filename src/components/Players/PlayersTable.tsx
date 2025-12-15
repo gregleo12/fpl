@@ -1,6 +1,8 @@
 'use client';
 
 import { PlayerRow } from './PlayerRow';
+import { COMPACT_COLUMNS, ALL_COLUMNS } from './columns';
+import { ViewMode } from './PlayersTab';
 import styles from './PlayersTab.module.css';
 
 interface Player {
@@ -16,6 +18,22 @@ interface Player {
   total_points: number;
   form: string;
   points_per_game: string;
+  event_points: number;
+  starts: number;
+  minutes: number;
+  goals_scored: number;
+  expected_goals: string;
+  assists: number;
+  expected_assists: string;
+  expected_goal_involvements: string;
+  clean_sheets: number;
+  goals_conceded: number;
+  saves: number;
+  bonus: number;
+  bps: number;
+  yellow_cards: number;
+  red_cards: number;
+  cost_change_start: number;
 }
 
 interface Team {
@@ -27,14 +45,17 @@ interface Team {
 interface Props {
   players: Player[];
   teams: Team[];
+  viewMode: ViewMode;
 }
 
-export function PlayersTable({ players, teams }: Props) {
+export function PlayersTable({ players, teams, viewMode }: Props) {
   // Create team lookup map
   const teamMap = teams.reduce((acc, team) => {
     acc[team.id] = team;
     return acc;
   }, {} as Record<number, Team>);
+
+  const columns = viewMode === 'compact' ? COMPACT_COLUMNS : ALL_COLUMNS;
 
   return (
     <div className={styles.tableContainer}>
@@ -42,10 +63,16 @@ export function PlayersTable({ players, teams }: Props) {
         <thead>
           <tr className={styles.headerRow}>
             <th className={styles.playerHeader}>Player</th>
-            <th className={styles.statHeader}>Price</th>
-            <th className={styles.statHeader}>TSB%</th>
-            <th className={styles.statHeader}>Total</th>
-            <th className={styles.statHeader}>Form</th>
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className={styles.statHeader}
+                style={{ width: col.width, textAlign: col.align || 'center' }}
+                title={col.tooltip}
+              >
+                {col.label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
@@ -54,6 +81,7 @@ export function PlayersTable({ players, teams }: Props) {
               key={player.id}
               player={player}
               team={teamMap[player.team]}
+              columns={columns}
             />
           ))}
         </tbody>

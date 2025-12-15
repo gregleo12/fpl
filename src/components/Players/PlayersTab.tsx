@@ -17,6 +17,22 @@ interface Player {
   total_points: number;
   form: string;
   points_per_game: string;
+  event_points: number;
+  starts: number;
+  minutes: number;
+  goals_scored: number;
+  expected_goals: string;
+  assists: number;
+  expected_assists: string;
+  expected_goal_involvements: string;
+  clean_sheets: number;
+  goals_conceded: number;
+  saves: number;
+  bonus: number;
+  bps: number;
+  yellow_cards: number;
+  red_cards: number;
+  cost_change_start: number;
 }
 
 interface Team {
@@ -25,11 +41,14 @@ interface Team {
   short_name: string;
 }
 
+export type ViewMode = 'compact' | 'all';
+
 export function PlayersTab() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('compact');
 
   useEffect(() => {
     fetchPlayers();
@@ -84,7 +103,22 @@ export function PlayersTab() {
         <div className={styles.subtitle}>{players.length} players</div>
       </div>
 
-      <PlayersTable players={players} teams={teams} />
+      <div className={styles.viewToggle}>
+        <button
+          className={viewMode === 'compact' ? styles.active : ''}
+          onClick={() => setViewMode('compact')}
+        >
+          Compact Stats
+        </button>
+        <button
+          className={viewMode === 'all' ? styles.active : ''}
+          onClick={() => setViewMode('all')}
+        >
+          All Stats
+        </button>
+      </div>
+
+      <PlayersTable players={players} teams={teams} viewMode={viewMode} />
     </div>
   );
 }

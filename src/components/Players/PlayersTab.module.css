@@ -4,7 +4,7 @@
 }
 
 .header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .title {
@@ -17,6 +17,42 @@
 .subtitle {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* View Toggle */
+.viewToggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.viewToggle button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewToggle button:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.viewToggle button.active {
+  background: #00ff87;
+  color: #1a1a2e;
+  border-color: #00ff87;
+}
+
+.viewToggle button.active:hover {
+  background: #00e077;
+  border-color: #00e077;
 }
 
 .loading,

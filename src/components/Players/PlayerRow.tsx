@@ -1,6 +1,7 @@
 'use client';
 
 import { PlayerCell } from './PlayerCell';
+import { ColumnDef } from './columns';
 import styles from './PlayersTab.module.css';
 
 interface Player {
@@ -16,6 +17,23 @@ interface Player {
   total_points: number;
   form: string;
   points_per_game: string;
+  event_points: number;
+  starts: number;
+  minutes: number;
+  goals_scored: number;
+  expected_goals: string;
+  assists: number;
+  expected_assists: string;
+  expected_goal_involvements: string;
+  clean_sheets: number;
+  goals_conceded: number;
+  saves: number;
+  bonus: number;
+  bps: number;
+  yellow_cards: number;
+  red_cards: number;
+  cost_change_start: number;
+  [key: string]: any;
 }
 
 interface Team {
@@ -27,19 +45,27 @@ interface Team {
 interface Props {
   player: Player;
   team: Team;
+  columns: ColumnDef[];
 }
 
-export function PlayerRow({ player, team }: Props) {
-  // Format price (divide by 10 to get actual price)
-  const price = (player.now_cost / 10).toFixed(1);
-
+export function PlayerRow({ player, team, columns }: Props) {
   return (
     <tr className={styles.row}>
       <PlayerCell player={player} team={team} />
-      <td className={styles.statsCell}>£{price}</td>
-      <td className={styles.statsCell}>{player.selected_by_percent}%</td>
-      <td className={styles.statsCell}>{player.total_points}</td>
-      <td className={styles.statsCell}>{player.form}</td>
+      {columns.map((col) => {
+        const value = player[col.key];
+        const displayValue = col.format ? col.format(value, player) : value;
+
+        return (
+          <td
+            key={col.key}
+            className={styles.statsCell}
+            style={{ textAlign: col.align || 'center' }}
+          >
+            {displayValue !== null && displayValue !== undefined ? displayValue : '-'}
+          </td>
+        );
+      })}
     </tr>
   );
 }
