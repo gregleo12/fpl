@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Trophy, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
+import { Shirt, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
@@ -204,7 +204,7 @@ export default function DashboardPage() {
             className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
             onClick={() => setActiveTab('myteam')}
           >
-            <Trophy
+            <Shirt
               size={24}
               color={activeTab === 'myteam' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
               className={styles.tabIcon}
