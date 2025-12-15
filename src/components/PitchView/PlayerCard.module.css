@@ -96,10 +96,10 @@
   color: #1a1a2e;  /* Dark text on green */
   font-size: 0.8rem;
   font-weight: 700;
-  padding: 5px;
+  padding: 4px 5px;
   text-align: center;
   border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
-  min-height: 28px;
+  min-height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,10 +111,10 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 0.65rem;
   font-weight: 600;
-  padding: 5px;
+  padding: 4px 5px;
   text-align: center;
   border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
-  min-height: 28px;
+  min-height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -152,14 +152,14 @@
 
   .points {
     font-size: 0.7rem;
-    padding: 4px;
-    min-height: 24px;
+    padding: 3px 4px;
+    min-height: 20px;
   }
 
   .fixture {
     font-size: 0.6rem;
-    padding: 4px;
-    min-height: 24px;
+    padding: 3px 4px;
+    min-height: 20px;
   }
 
   .captainBadge,
@@ -202,14 +202,14 @@
 
   .points {
     font-size: 0.75rem;
-    padding: 4px;
-    min-height: 24px;
+    padding: 3px 4px;
+    min-height: 20px;
   }
 
   .fixture {
     font-size: 0.65rem;
-    padding: 4px;
-    min-height: 24px;
+    padding: 3px 4px;
+    min-height: 20px;
   }
 
   .captainBadge,
