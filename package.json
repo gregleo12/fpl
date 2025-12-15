@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,7 +8,8 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "migrate:analytics": "npx ts-node src/scripts/migrate-analytics.ts",
-    "migrate:players": "npx tsx src/scripts/run-player-migration.ts"
+    "migrate:players": "npx tsx src/scripts/run-player-migration.ts",
+    "migrate:columns": "npx tsx src/scripts/add-missing-columns.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
