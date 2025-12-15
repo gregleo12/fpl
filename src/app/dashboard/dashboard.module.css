@@ -64,7 +64,7 @@
 /* Desktop: Match content max-width */
 @media (min-width: 769px) {
   .tabs {
-    max-width: 1400px;
+    max-width: var(--app-max-width);
   }
 }
 
@@ -151,7 +151,7 @@
 }
 
 .content {
-  max-width: 1400px;
+  max-width: var(--app-max-width);
   margin: 0 auto;
 
   /* DEFAULT: Mobile - padding for status bar and bottom nav */

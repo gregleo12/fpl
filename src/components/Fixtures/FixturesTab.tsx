@@ -11,6 +11,11 @@ import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
 import { TeamFixtures } from './TeamFixtures';
 
+// Helper function to format score - show negative scores in parentheses
+function formatScore(score: number): string {
+  return score < 0 ? `(${Math.abs(score)})` : String(score);
+}
+
 interface Match {
   id: number;
   event: number;
@@ -151,13 +156,19 @@ interface MatchDetailsData {
       playerName: string;
       avgPoints: number;
       form: number[];
+      formMinutes: number[];
       position: string;
+      currentGwPoints: number;
+      currentGwMinutes: number;
     }>;
     entry_2: Array<{
       playerName: string;
       avgPoints: number;
       form: number[];
+      formMinutes: number[];
       position: string;
+      currentGwPoints: number;
+      currentGwMinutes: number;
     }>;
   };
 }
@@ -648,7 +659,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                 {/* SCORE */}
                 <div className={styles.scoreBox}>
                   <div className={styles.score}>
-                    {match.entry_1.score} - {match.entry_2.score}
+                    {formatScore(match.entry_1.score)} - {formatScore(match.entry_2.score)}
                   </div>
                 </div>
 

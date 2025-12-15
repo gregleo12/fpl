@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Flame, Skull } from 'lucide-react';
 import type { BestGameweekData } from '../SeasonView';
 import styles from './Leaderboard.module.css';
 import { FullRankingModal } from './FullRankingModal';
@@ -15,7 +16,13 @@ export function BestWorstGW({ bestData, worstData }: Props) {
   const [showModal, setShowModal] = useState(false);
 
   const data = view === 'best' ? bestData : worstData;
-  const title = view === 'best' ? '🔥 Best Gameweeks' : '💀 Worst Gameweeks';
+  const IconComponent = view === 'best' ? Flame : Skull;
+  const titleText = view === 'best' ? 'Best Gameweeks' : 'Worst Gameweeks';
+  const title = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <IconComponent size={18} color="#00ff87" /> {titleText}
+    </div>
+  );
 
   // Render function for items (used by both card and modal)
   const renderItem = (item: BestGameweekData, index: number) => (
@@ -75,7 +82,7 @@ export function BestWorstGW({ bestData, worstData }: Props) {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={`${view === 'best' ? 'Best' : 'Worst'} Gameweeks - Full Rankings`}
-        icon={view === 'best' ? '🔥' : '💀'}
+        icon={<IconComponent size={18} color="#00ff87" />}
         data={data}
         renderItem={renderItem}
       />

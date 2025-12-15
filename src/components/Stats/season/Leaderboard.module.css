@@ -195,6 +195,17 @@
   letter-spacing: 0.05em;
 }
 
+/* Chip color coding */
+.chipWin {
+  color: #00ff87;
+  font-weight: 600;
+}
+
+.chipLoss {
+  color: #ff4757;
+  font-weight: 600;
+}
+
 /* Mobile Responsive */
 @media (max-width: 640px) {
   .streaksContainer {

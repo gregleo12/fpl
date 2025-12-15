@@ -105,13 +105,13 @@ export function createSquadFromPicks(
 
     if (pick.position <= 11) {
       starting11.push(player);
-    } else if (pick.position <= 14) {
-      // Bench positions 12-14 (15 is typically not used for auto-subs)
+    } else if (pick.position <= 15) {
+      // Bench positions 12-15 (all 4 bench players)
       bench.push(player);
     }
   });
 
-  // Sort bench by position to maintain order (12, 13, 14 = 1st, 2nd, 3rd bench)
+  // Sort bench by position to maintain order (12, 13, 14, 15 = 1st, 2nd, 3rd, 4th bench)
   bench.sort((a, b) => {
     const posA = picks.find((p: any) => p.element === a.id)?.position || 0;
     const posB = picks.find((p: any) => p.element === b.id)?.position || 0;
@@ -493,16 +493,27 @@ export interface LivePointsWithBonus {
 
 export function calculateLivePointsWithBonus(
   squad: Squad,
-  fixturesData?: any[]
+  fixturesData?: any[],
+  chip?: string | null
 ): LivePointsWithBonus {
-  // Apply auto-substitutions first
-  const { squad: adjustedSquad, substitutions } = applyAutoSubstitutions(squad);
+  const isBenchBoost = chip === 'bboost';
 
-  // Calculate provisional bonus for starting 11 (after auto-subs)
+  // Apply auto-substitutions first (skip for Bench Boost since all players count)
+  const { squad: adjustedSquad, substitutions } = isBenchBoost
+    ? { squad, substitutions: [] }
+    : applyAutoSubstitutions(squad);
+
+  // For Bench Boost, include all players (starting 11 + bench)
+  // Otherwise use starting 11 after auto-subs
+  const playersToCount = isBenchBoost
+    ? [...adjustedSquad.starting11, ...adjustedSquad.bench]
+    : adjustedSquad.starting11;
+
+  // Calculate provisional bonus for all counting players
   // Use fixtures data if available (more accurate), otherwise fall back to squad-only calculation
   const bonusMap = fixturesData
-    ? calculateProvisionalBonusFromFixtures(adjustedSquad.starting11, fixturesData)
-    : calculateProvisionalBonus(adjustedSquad.starting11);
+    ? calculateProvisionalBonusFromFixtures(playersToCount, fixturesData)
+    : calculateProvisionalBonus(playersToCount);
 
   let basePoints = 0;
   let provisionalBonus = 0;
@@ -515,7 +526,7 @@ export function calculateLivePointsWithBonus(
     isOfficial: boolean;
   }> = [];
 
-  for (const player of adjustedSquad.starting11) {
+  for (const player of playersToCount) {
     const bonusInfo = bonusMap.get(player.id);
 
     if (bonusInfo) {

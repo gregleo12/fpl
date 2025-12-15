@@ -1,5 +1,6 @@
 'use client';
 
+import { Zap } from 'lucide-react';
 import type { HitData } from '../StatsHub';
 import styles from './Section.module.css';
 
@@ -11,7 +12,9 @@ export function HitsTaken({ data }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>💸 Hits Taken</h3>
+        <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Zap size={18} color="#00ff87" /> Hits Taken
+        </h3>
         <div className={styles.noData}>No hits taken this gameweek</div>
       </div>
     );
@@ -22,7 +25,9 @@ export function HitsTaken({ data }: Props) {
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.sectionTitle}>💸 Hits Taken</h3>
+      <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Zap size={18} color="#00ff87" /> Hits Taken
+      </h3>
       <div className={styles.subtitle}>
         {totalHits} hit{totalHits !== 1 ? 's' : ''} by {managersCount} manager{managersCount !== 1 ? 's' : ''}
       </div>

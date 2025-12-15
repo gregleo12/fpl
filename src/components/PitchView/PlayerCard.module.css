@@ -1,0 +1,217 @@
+/* FPL-Style Player Card - Compact card container with cropped jersey */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 70px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1a1a2e;  /* Dark background for card container */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card.bench {
+  opacity: 0.85;
+}
+
+.card.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.clickable:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 255, 135, 0.3);
+  z-index: 10;
+}
+
+/* Captain/Vice Badge - Top-left of jersey */
+.captainBadge,
+.viceBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  z-index: 3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.captainBadge {
+  background: #fbbf24;  /* Gold for captain */
+}
+
+.viceBadge {
+  background: #94a3b8;  /* Gray for vice-captain */
+}
+
+/* Jersey Container - CROPPED to show only top 60-70% */
+.kitContainer {
+  position: relative;
+  width: 100%;
+  height: 60px;  /* Fixed height crops the jersey */
+  display: flex;
+  align-items: flex-start;  /* Align jersey to top */
+  justify-content: center;
+  padding-top: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;  /* KEY: This crops the jersey */
+}
+
+.kit {
+  width: 56px;
+  height: auto;  /* Natural aspect ratio - will be cropped */
+  object-fit: contain;
+}
+
+/* Player Name Bar - Dark purple background (FPL style) */
+.name {
+  background: #37003c;  /* FPL purple */
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 5px 4px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+}
+
+/* Zero points - Red name bar instead of purple */
+.name.zeroPoints {
+  background: #dc2626;  /* Red for zero points */
+}
+
+/* Points Bar - Green background (FPL style) */
+.points {
+  background: #00ff87;  /* FPL green */
+  color: #1a1a2e;  /* Dark text on green */
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px;
+  text-align: center;
+  border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
+  line-height: 1;
+}
+
+/* Fixture Bar - Muted purple/gray for upcoming fixtures */
+.fixture {
+  background: #2d2d44;  /* Muted purple/gray - different from played */
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 5px;
+  text-align: center;
+  border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
+  line-height: 1;
+}
+
+/* Position Label (for bench players) */
+.positionLabel {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .card {
+    width: 60px;
+  }
+
+  .kitContainer {
+    height: 50px;
+    padding-top: 4px;
+  }
+
+  .kit {
+    width: 48px;
+  }
+
+  .name {
+    font-size: 0.55rem;
+    padding: 4px 3px;
+  }
+
+  .points {
+    font-size: 0.7rem;
+    padding: 4px;
+  }
+
+  .fixture {
+    font-size: 0.6rem;
+    padding: 4px;
+  }
+
+  .captainBadge,
+  .viceBadge {
+    width: 16px;
+    height: 16px;
+    font-size: 0.6rem;
+    top: 4px;
+    left: 4px;
+  }
+
+  .positionLabel {
+    font-size: 0.65rem;
+    margin-bottom: 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    width: 64px;
+  }
+
+  .card.bench {
+    width: 58px;
+  }
+
+  .kitContainer {
+    height: 54px;
+    padding-top: 5px;
+  }
+
+  .kit {
+    width: 52px;
+  }
+
+  .name {
+    font-size: 0.6rem;
+    padding: 4px 3px;
+  }
+
+  .points {
+    font-size: 0.75rem;
+    padding: 4px;
+  }
+
+  .fixture {
+    font-size: 0.65rem;
+    padding: 4px;
+  }
+
+  .captainBadge,
+  .viceBadge {
+    width: 14px;
+    height: 14px;
+    font-size: 0.55rem;
+    top: 5px;
+    left: 5px;
+  }
+
+  .positionLabel {
+    font-size: 0.6rem;
+  }
+}

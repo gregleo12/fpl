@@ -277,8 +277,8 @@ export async function GET(
     // Calculate common players and differentials
     let commonPlayers = { count: 0, percentage: 0, players: [] as string[] };
     let differentialPlayers = {
-      entry_1: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>,
-      entry_2: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>
+      entry_1: [] as Array<{ playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string }>,
+      entry_2: [] as Array<{ playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string }>
     };
 
     try {
@@ -318,9 +318,8 @@ export async function GET(
         const team1Differentials = team1Players.filter((id: number) => !team2Players.includes(id));
         const team2Differentials = team2Players.filter((id: number) => !team1Players.includes(id));
 
-        // Get last 5 GWs (using completed gameweeks)
-        const lastCompletedGW = currentGW - 1;
-        const last5GWs = Array.from({ length: 5 }, (_, i) => lastCompletedGW - i).filter(gw => gw > 0).reverse();
+        // Get last 5 GWs (including current GW to show live data)
+        const last5GWs = Array.from({ length: 5 }, (_, i) => currentGW - i).filter(gw => gw > 0).reverse();
 
         // Fetch all GW data once (cache it) to avoid redundant API calls
         const gwDataCache: Map<number, any> = new Map();
@@ -341,14 +340,18 @@ export async function GET(
 
           // Fetch player's performance for last 5 GWs using cached data
           const playerHistory: number[] = [];
+          const playerMinutes: number[] = [];
           for (const gw of last5GWs) {
             const eventLiveData = gwDataCache.get(gw);
             if (eventLiveData && eventLiveData.elements) {
               const playerLiveData = eventLiveData.elements.find((e: any) => e.id === playerId);
               const points = playerLiveData?.stats?.total_points || 0;
+              const minutes = playerLiveData?.stats?.minutes || 0;
               playerHistory.push(points);
+              playerMinutes.push(minutes);
             } else {
               playerHistory.push(0);
+              playerMinutes.push(0);
             }
           }
 
@@ -360,11 +363,18 @@ export async function GET(
           const positionMap: { [key: number]: string } = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
           const position = positionMap[player.element_type] || 'Unknown';
 
+          // Get current GW data (last element in arrays since we now include current GW)
+          const currentGwPoints = playerHistory.length > 0 ? playerHistory[playerHistory.length - 1] : 0;
+          const currentGwMinutes = playerMinutes.length > 0 ? playerMinutes[playerMinutes.length - 1] : 0;
+
           return {
             playerName: player.web_name,
             avgPoints: parseFloat(avgPoints.toFixed(1)),
             form: playerHistory,
-            position
+            formMinutes: playerMinutes,
+            position,
+            currentGwPoints,
+            currentGwMinutes
           };
         };
 
@@ -374,11 +384,11 @@ export async function GET(
 
         // Filter out nulls and sort by avg points (high to low)
         differentialPlayers.entry_1 = team1DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string; currentGwPoints: number; currentGwMinutes: number } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
 
         differentialPlayers.entry_2 = team2DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string; currentGwPoints: number; currentGwMinutes: number } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
       }
     } catch (error) {

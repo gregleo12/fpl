@@ -1,0 +1,345 @@
+.panel {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  height: fit-content;
+}
+
+/* Consistent padding at all sizes - no sticky behavior for unified layout */
+
+.loading {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 0.9rem;
+}
+
+.teamHeader {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.managerName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.teamName {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statRow:last-child {
+  border-bottom: none;
+}
+
+.statLabel {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.statValue {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.transferCost {
+  font-size: 0.85rem;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.transferDetail {
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.playerOut {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.playerIn {
+  color: #10b981;
+}
+
+.points {
+  font-weight: 600;
+}
+
+.arrow {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.netGain {
+  font-weight: 600;
+  color: #10b981;
+}
+
+.netGain.negative {
+  color: #ef4444;
+}
+
+.transferDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.75rem 0;
+}
+
+.transferPlayers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.transferOut {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.transferArrow {
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 8px;
+}
+
+.transferIn {
+  color: #00ff87;
+  font-weight: 500;
+}
+
+.transferPoints {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8em;
+}
+
+.transferPointsDiff {
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: right;
+}
+
+.transferPointsDiff.positive {
+  color: #00ff87;
+}
+
+.transferPointsDiff.negative {
+  color: #ff4757;
+}
+
+.transferPointsDiff.neutral {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Hit row - Receipt style line item */
+.hitRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.hitLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.hitValue {
+  color: #ff4757;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Separator line */
+.transferSeparator {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 8px 0;
+}
+
+/* Net result row - Receipt style */
+.netResultRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.netResultLabel {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.netResultValue {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.netResultValue.positive {
+  color: #00ff87;
+}
+
+.netResultValue.negative {
+  color: #ff4757;
+}
+
+.netResultValue.neutral {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Legacy - kept for compatibility */
+.transferSummary {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* GW Transfers - Static Container */
+.gwTransfersContainer {
+  /* No background/border - .panel wrapper provides container styling */
+  padding: 0;
+  width: 100%;
+}
+
+.gwTransfersTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 1rem 0;
+}
+
+/* Transfer rows - NO wrapper, just rows */
+.transferRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.transferRow:last-of-type {
+  border-bottom: none;
+}
+
+/* Collapsible Sections - Match app card style */
+.collapsibleSection {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.sectionToggle {
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: #00ff87;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.sectionToggle:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.toggleIcon {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s;
+}
+
+.sectionContent {
+  padding: 0 16px 16px;
+}
+
+.sectionContent.open {
+  display: block;
+}
+
+.sectionContent.closed {
+  display: none;
+}
+
+/* Desktop: Sections always open, no collapse UI */
+@media (min-width: 1024px) {
+  .collapsibleSection {
+    margin-bottom: 1.5rem;
+  }
+
+  .sectionToggle {
+    pointer-events: none;
+    background: transparent;
+    border: none;
+    padding: 0 0 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+  }
+
+  .sectionToggle:hover {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .toggleIcon {
+    display: none;
+  }
+
+  .sectionContent,
+  .sectionContent.closed {
+    display: block;
+  }
+}
+
+/* No layout changes at breakpoints - consistent behavior at all sizes */
+
+/* Small screen adjustments - only padding changes */
+@media (max-width: 480px) {
+  .panel {
+    padding: 1rem;
+  }
+}

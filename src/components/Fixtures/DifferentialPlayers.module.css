@@ -104,6 +104,14 @@
   color: #00ff87;
 }
 
+.avgPoints.played {
+  color: #00ff87;
+}
+
+.avgPoints.notPlayed {
+  color: rgba(255, 255, 255, 0.4);
+}
+
 .formBadges {
   display: flex;
   gap: 3px;

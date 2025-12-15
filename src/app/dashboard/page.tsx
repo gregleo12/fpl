@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Shirt, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
@@ -17,7 +18,7 @@ type TabType = 'league' | 'fixtures' | 'myteam' | 'stats' | 'settings';
 export default function DashboardPage() {
   const router = useRouter();
   const [state, setState] = useState<SavedState | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('league');
+  const [activeTab, setActiveTab] = useState<TabType>('myteam');
   const [leagueData, setLeagueData] = useState<any>(null);
   const [playerData, setPlayerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -200,38 +201,58 @@ export default function DashboardPage() {
       <div className={styles.tabsWrapper}>
         <nav className={styles.tabs}>
           <button
+            className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
+            onClick={() => setActiveTab('myteam')}
+          >
+            <Shirt
+              size={24}
+              color={activeTab === 'myteam' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
+            <span className={styles.tabLabel}>My Team</span>
+          </button>
+          <button
             className={`${styles.tab} ${activeTab === 'league' ? styles.active : ''}`}
             onClick={() => setActiveTab('league')}
           >
-            <span className={styles.tabIcon}>📊</span>
+            <BarChart3
+              size={24}
+              color={activeTab === 'league' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Rankings</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
             onClick={() => setActiveTab('fixtures')}
           >
-            <span className={styles.tabIcon}>🎯</span>
+            <Target
+              size={24}
+              color={activeTab === 'fixtures' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Fixtures</span>
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'myteam' ? styles.active : ''}`}
-            onClick={() => setActiveTab('myteam')}
-          >
-            <span className={styles.tabIcon}>🏆</span>
-            <span className={styles.tabLabel}>My Team</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'stats' ? styles.active : ''}`}
             onClick={() => setActiveTab('stats')}
           >
-            <span className={styles.tabIcon}>📈</span>
+            <TrendingUp
+              size={24}
+              color={activeTab === 'stats' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Stats</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            <span className={styles.tabIcon}>⚙️</span>
+            <SettingsIcon
+              size={24}
+              color={activeTab === 'settings' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+              className={styles.tabIcon}
+            />
             <span className={styles.tabLabel}>Settings</span>
           </button>
         </nav>
@@ -252,7 +273,7 @@ export default function DashboardPage() {
           <FixturesTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
-            maxGW={leagueData.maxGW || 1}
+            maxGW={38}
             defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
           />
         )}
@@ -274,6 +295,8 @@ export default function DashboardPage() {
           <StatsTab
             leagueId={state.leagueId}
             myTeamId={state.myTeamId}
+            myTeamName={state.myTeamName}
+            myManagerName={state.myManagerName}
           />
         )}
         {activeTab === 'settings' && (

@@ -1,8 +1,1934 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 181+ versions
-**Current Version:** v2.0.20 (December 9, 2025)
+**Total Releases:** 249+ versions
+**Current Version:** v2.6.7 (December 15, 2025)
+
+---
+
+## 📊 v2.6.x - Players Tab Database Integration (Dec 2025)
+
+### v2.6.7 - Switch PlayersTab to Use Database Instead of FPL Proxy (Dec 15, 2025)
+**DATABASE:** Migrated PlayersTab from temporary FPL proxy to production database
+- **Database Setup:**
+  - Added missing columns to `players` table:
+    - `team_code` (INTEGER) - for jersey image URLs
+    - `event_points` (INTEGER) - current gameweek points
+    - `cost_change_start` (INTEGER) - price changes since season start
+  - Added missing column to `player_gameweek_stats` table:
+    - `defensive_contribution` (INTEGER) - defensive stats
+  - Updated `playerSync.ts` to populate all new fields from FPL API
+- **Code Updates:**
+  - Updated `PlayersTab.tsx` to fetch from `/api/players` endpoint instead of `/api/fpl-proxy`
+  - Updated all Player interfaces across components to use database field names:
+    - `position` (string: 'GKP'/'DEF'/'MID'/'FWD') instead of `element_type` (number: 1/2/3/4)
+    - `team_id` instead of `team`
+    - Added `team_name`, `team_short` fields
+  - Updated `PlayerCell.tsx` to use `position` string directly
+  - Updated `PlayersTable.tsx` teamMap to use `team_id` for lookups
+- **Sync Process:**
+  - Running full player sync (760 players + gameweek history)
+  - Database will contain complete player season and per-gameweek stats
+- **Result:** Players tab now loads from database instead of making external API calls
+  - ✓ Faster load times from local database
+  - ✓ No dependency on FPL API availability
+  - ✓ Consistent data structure with rest of app
+  - ✓ Build successful with no TypeScript errors
+
+### v2.6.6 - Fix Players Tab with FPL API Proxy (Dec 15, 2025)
+**FIX:** Created server-side proxy to bypass CORS restrictions
+- Created `/api/fpl-proxy/route.ts` to fetch from FPL API server-side
+- Reverted all Player interfaces back to FPL API structure
+- Temporary solution until database is populated
+
+### v2.6.5 - Attempt Database API for Players Tab (Dec 15, 2025)
+**ATTEMPT:** Tried switching to database API (failed - tables didn't exist yet)
+- Updated PlayersTab to use `/api/players` endpoint
+- Updated interfaces to match database structure
+- Failed with "relation 'players' does not exist" error
+
+### v2.6.4 - Improve Error Handling for Players Tab (Dec 15, 2025)
+**UX:** Enhanced error display with retry functionality
+- Added detailed error messages with HTTP status codes
+- Added retry button for failed fetches
+- Styled error states in PlayersTab.module.css
+
+### v2.6.3 - Integrate New PlayersTab into Stats Section (Dec 15, 2025)
+**INTEGRATION:** Connected new PlayersTab component to app
+- Updated StatsHub.tsx import from relative to absolute path
+- Changed from `./Players/PlayersTab` to `@/components/Players/PlayersTab`
+- Build successful, component now active in Stats section
+
+### v2.6.2 - Simplify Version Numbering (Dec 15, 2025)
+**PROCESS:** Simplified versioning from "2.6.0-alpha.1" to "2.6.2"
+- Removed alpha/beta suffixes for cleaner version numbers
+- Updated package.json version field
+
+---
+## 🎯 v2.6.0-alpha - Players Tab Foundation (Dec 2025)
+
+### v2.6.0-alpha.2 - Add All Stats Columns with Compact/All Toggle (Dec 15, 2025)
+**FEATURE:** Expanded player statistics with view mode toggle
+- **View Modes:**
+  - Compact view: £, TSB%, Pts, Form (4 essential columns)
+  - All Stats view: 25 comprehensive columns across all categories
+- **Categories:**
+  - Basic: Price, ownership, points, form
+  - Appearances: Starts, minutes
+  - Attacking: Goals, assists, expected goals (xG), expected assists (xA), xGI
+  - Defensive: Clean sheets, goals conceded, saves
+  - Bonus: BPS, bonus points
+  - Value: Transfers, price changes
+- **Implementation:**
+  - Created `columns.ts` with column definitions and formatters
+  - Added format functions for £, %, xG, xA, xGI, price changes
+  - Styled toggle buttons with active state
+  - Dynamic column rendering based on viewMode
+- **Files Added:**
+  - `src/components/Players/columns.ts` - Column definitions with formatters
+- **Files Modified:**
+  - `PlayersTab.tsx` - Add viewMode state and toggle UI
+  - `PlayersTable.tsx` - Accept viewMode, render dynamic columns
+  - `PlayerRow.tsx` - Render cells based on columns config
+  - `PlayersTab.module.css` - Add toggle styling
+- **Next Steps:** K-26.3 (filtering), K-26.4 (sorting/search), K-26.5 (player modal)
+
+### v2.6.0-alpha.1 - Add Players Tab Foundation (Dec 15, 2025)
+**FOUNDATION:** Initial Players tab implementation in Stats Hub
+- Created new Players sub-tab in Stats section
+- Basic player table structure with jersey images
+- Player info displays: name, position, team
+- Initial stats columns setup
+- Layout foundation for upcoming features
+- **Components Added:**
+  - `PlayersTab.tsx` - Main container component
+  - `PlayersTable.tsx` - Table component
+  - `PlayerRow.tsx` - Row component
+  - `PlayerCell.tsx` - Player info cell
+  - `PlayersTab.module.css` - Styling
+- **Integration:** Connected to Stats Hub navigation
+
+---
+
+## 🎮 v2.5.x - Player Features & UI Polish (Dec 2025)
+
+### v2.5.29 - Make Player Card Name and Points/Fixture Bars Equal Height (Dec 15, 2025)
+**UX:** Consistent heights for player card sections
+- Made name bar and points/fixture bars equal height
+- Improved visual balance in player cards
+- Better proportions across all card elements
+
+### v2.5.28 - Fix Chip Badge Icon Alignment (Dec 15, 2025)
+**FIX:** Proper fix for chip badge icon alignment
+- Corrected icon vertical alignment in chip badges
+- Ensured consistent spacing
+- Clean visual presentation
+
+### v2.5.27 - Reduce Player Card Box Height for Better Proportions (Dec 15, 2025)
+**UX:** Improved player card proportions
+- Reduced box height for better visual balance
+- More compact, professional appearance
+- Optimized spacing ratios
+
+### v2.5.26 - Fix Player Card Size Consistency (Dec 15, 2025)
+**FIX:** Fixed player card size consistency for points and fixture boxes
+- Ensured equal sizing across all cards
+- Consistent layout regardless of content
+- Better grid alignment
+
+### v2.5.25 - Fix Icon Alignment in Chip Badges (Dec 15, 2025)
+**FIX:** Icon alignment in chip badges
+- Corrected vertical alignment issues
+- Improved spacing between icon and text
+- Cleaner badge presentation
+
+### v2.5.24 - Replace Final Two Emojis in Stats Hub (Dec 15, 2025)
+**UI:** Replaced final two emojis in Stats Hub with Lucide icons
+- Completed emoji replacement project
+- All UI now uses consistent Lucide icons
+- Professional, modern icon system throughout
+
+### v2.5.23 - Replace Trophy Icon with Cleaner Shirt Icon (Dec 15, 2025)
+**UI:** Replace Trophy icon with cleaner Shirt icon in navigation
+- Changed to more appropriate icon for player stats
+- Better visual consistency
+- Cleaner navigation appearance
+
+### v2.5.22 - Replace Remaining Emojis in Stats Hub (Dec 15, 2025)
+**UI:** Replace remaining emojis in Stats Hub with Lucide icons
+- Continued systematic replacement of emojis
+- Improved visual consistency
+- Professional icon system
+
+### v2.5.21 - Replace Emojis with Color-Matched Lucide Icons (Dec 15, 2025)
+**UI:** Replace emojis with color-matched Lucide icons
+- Migrated from emojis to professional icon library
+- Color-matched icons to existing theme
+- Better cross-platform consistency
+- Improved accessibility
+
+### v2.5.20 - Fix LiveMatchModal Player Colors (Dec 15, 2025)
+**FIX:** Use hasPlayed instead of points for player status colors
+- More accurate player status indication
+- Fixed edge cases where player played but scored 0
+- Improved visual feedback
+
+### v2.5.19 - Final Color Fixes (Dec 15, 2025)
+**FIX:** Final color fixes for name bar and differential players
+- Corrected name bar colors
+- Fixed differential player color states
+- Polished visual presentation
+
+### v2.5.18 - Fix Differential Players Colors (Dec 15, 2025)
+**FIX:** Fixed differential players colors - include current GW minutes
+- Improved color logic for differential players
+- Accounts for current gameweek minutes played
+- More accurate status indication
+
+### v2.5.17 - Show Fixture Info for Players Who Haven't Played (Dec 15, 2025)
+**FEATURE:** Show fixture info for players who haven't played yet
+- Display upcoming fixture for players yet to play
+- Better information density
+- Improved planning capability
+
+### v2.5.16 - Add Script to Sync All Players with Defensive Contribution (Dec 15, 2025)
+**TOOLS:** Add script to sync all players with defensive contribution data
+- Created bulk sync script for DEFCON data
+- Populates defensive_contribution for all players
+- Ensures complete historical data
+- **Files Added:**
+  - `src/scripts/sync-all-players-defcon.ts`
+
+### v2.5.15 - Fix Defensive Contribution Display (Dec 15, 2025)
+**FIX:** Always show Defensive Contribution for DEF/MID positions
+- Fixed display logic to always show DC for defenders and midfielders
+- Consistent stat presentation
+- Proper position-based filtering
+
+### v2.5.14 - Dynamic Stats When Navigating Gameweeks (Dec 15, 2025)
+**FEATURE:** Dynamic stats when navigating gameweeks in My Team
+- Stats update when changing gameweek
+- Real-time data loading
+- Accurate historical view
+
+### v2.5.13 - Fix Player Status Colors (Dec 15, 2025)
+**FIX:** Use minutes instead of points for player status colors
+- More accurate status indication
+- Fixes edge case of 0-point performances
+- Better visual feedback
+
+### v2.5.12 - Add Defensive Contribution Points (DEFCON) (Dec 15, 2025)
+**FEATURE:** Defensive contribution points now calculated and displayed
+- **Database:** Added `defensive_contribution` column to `player_gameweek_stats` table
+- **Sync:** Updated `playerSync.ts` to sync defensive contribution from FPL API
+- **Calculation:**
+  - Defenders (pos 2): +2 pts per 10 DC (Math.floor(DC / 10) * 2)
+  - Midfielders (pos 3): +2 pts per 12 DC (Math.floor(DC / 12) * 2)
+  - GKP and FWD: no DC points
+- **Display:** Added to PlayerModal stats display (DEF/MID only)
+- **Migration:** Created migration script `add-defensive-contribution.ts`
+- **Verification:** Tested with Senesi GW15: 11 DC = 2 pts ✓ (Total: 8 pts)
+- **Files Added:**
+  - `src/db/migrations/add_defensive_contribution.sql`
+  - `src/scripts/add-defensive-contribution.ts`
+  - `src/scripts/sync-player-defcon.ts`
+- **Files Modified:**
+  - `src/lib/sync/playerSync.ts` - Added DC to INSERT/UPDATE
+  - `src/components/PitchView/PlayerModal.tsx` - DC calculation & display
+  - `package.json` (v2.5.12)
+
+### v2.5.11 - Complete Player Modal with FPL-Style Points Breakdown (Dec 15, 2025)
+**FEATURE:** Full points breakdown like official FPL app
+- **Points Calculation:** Complete FPL points rules implementation
+  - Minutes: 1-59 min = 1 pt, 60+ min = 2 pts
+  - Goals: GKP/DEF = 6, MID = 5, FWD = 4
+  - Assists: 3 pts each
+  - Clean sheets: GKP/DEF = 4, MID = 1
+  - Goals conceded: -1 per 2 goals (GKP/DEF only)
+  - Saves: +1 per 3 saves (GKP only)
+  - Penalties saved: 5 pts, Penalties missed: -2 pts
+  - Yellow card: -1, Red card: -3
+  - Own goals: -2 pts each
+  - Bonus: 1:1 points
+- **Display:**
+  - Points shown for each stat (e.g., "Assists: 2 → +6 pts")
+  - Only non-zero stats shown (cleaner, FPL-style)
+  - BPS shown as "(info only)"
+  - Captain multiplier in total (e.g., "11 ×2 = 22")
+  - Grid layout for label/value/points columns
+- **Missing Stats Added:** own_goals, penalties_saved, penalties_missed
+- **Verification:** Saka GW16: 90 min + 2 assists + 3 bonus = 11 pts ✓
+
+### v2.5.10 - Fix PlayerModal (Dec 15, 2025)
+**FIX:** Remove external API call, copy working pattern
+- Fixed PlayerModal to use existing database pattern
+- Removed external FPL API dependency
+- Consistent with other modals
+
+### v2.5.9 - Add Mandatory Testing Section to CLAUDE.md (Dec 15, 2025)
+**DOCS:** Added mandatory testing guidelines to CLAUDE.md
+- Defined testing requirements for all changes
+- Build verification steps
+- Quality assurance process
+
+### v2.5.8 - Copy Working PlayerDetailModal Pattern to PlayerModal (Dec 15, 2025)
+**REFACTOR:** Standardized modal pattern across codebase
+- Applied working pattern from PlayerDetailModal
+- Consistent architecture
+- Reusable modal structure
+
+### v2.5.7 - Update Version Number for Debug Logging (Dec 15, 2025)
+**DEBUG:** Version bump for debug logging
+- Incremented version to track debug changes
+- Better version tracking
+
+### v2.5.6-debug - Add Debug Logging to PlayerModal (Dec 15, 2025)
+**DEBUG:** Added debug logging to PlayerModal
+- Temporary debug version
+- Investigation of modal issues
+- Diagnostic logging
+
+### v2.5.6 - Fix My Team Modal (Dec 15, 2025)
+**FIX:** Use working /api/players endpoint
+- Fixed My Team modal data fetching
+- Switched to reliable API endpoint
+- Improved reliability
+
+### v2.5.5 - Fix K-23 Critical Bugs + Database Migration (Dec 14, 2025)
+**FIX:** Critical bug fixes and database migration
+- Resolved K-23 critical issues
+- Database schema updates
+- Stability improvements
+
+### v2.5.4 - Fix TypeScript Error in PlayerDetailModal (Dec 14, 2025)
+**FIX:** TypeScript compilation error
+- Fixed type errors in PlayerDetailModal
+- Clean build
+- Type safety maintained
+
+### v2.5.3 - Add Missing lucide-react Dependency (Dec 14, 2025)
+**FIX:** Added missing lucide-react package
+- Installed lucide-react dependency
+- Fixed import errors
+- Enabled icon usage
+
+### v2.5.2 - Fix K-21c - Connect PlayerModal to Backend API (Dec 14, 2025)
+**FIX:** Connect PlayerModal to backend API
+- Integrated PlayerModal with database API
+- Real data fetching
+- Proper data flow
+
+### v2.5.1 - Bump Version for Player Detail Modal Feature (Dec 14, 2025)
+**VERSION:** Version bump for Player Detail Modal feature
+- Incremented to v2.5.1
+- Prepared for feature release
+
+### v2.5.0 K-23d - Add Player Detail Modal (Dec 14, 2025)
+**FEATURE:** Player Detail Modal implementation
+- Full player detail view
+- Stats breakdown
+- Interactive modal component
+
+### v2.5.0 (K-23c-v2) - Fix Players List UI - Styling & All Stats (Dec 14, 2025)
+**UI:** Fixed Players List UI styling and all stats display
+- Improved styling
+- Complete stats display
+- Better UX
+
+### v2.5.0 (K-23c) - Add Players List UI to Stats Hub (Dec 14, 2025)
+**FEATURE:** Players List UI in Stats Hub
+- Added player list interface
+- Integrated into Stats Hub
+- Foundation for player browsing
+
+### v2.5.0 (K-23b) - Add Players API Endpoints (Dec 14, 2025)
+**API:** Players API endpoints implementation
+- **Endpoints:**
+  - GET /api/players - Query players with filters
+  - GET /api/players/[id] - Get individual player
+  - GET /api/players/[id]/gameweek/[gw] - Get player gameweek stats
+- **Features:**
+  - Filtering by position, team, price range
+  - Sorting by any stat (points, form, price, etc.)
+  - Search by name
+  - Pagination support
+- **Files Added:**
+  - `src/app/api/players/route.ts`
+  - `src/app/api/players/[id]/route.ts`
+  - `src/app/api/players/[id]/gameweek/[gw]/route.ts`
+
+### v2.5.0 - Add Players Database Schema + Sync Job (K-23a) (Dec 14, 2025)
+**DATABASE:** Complete player database infrastructure
+- **Schema Changes:**
+  - Created `players` table (~760 rows) with comprehensive stats
+  - Created `player_gameweek_stats` table for per-GW history
+  - Created `teams` table (20 teams) for reference data
+  - Added appropriate indexes for performance
+- **Sync Implementation:**
+  - Created `playerSync.ts` with `syncPlayers()` function
+  - Syncs all players from FPL bootstrap API
+  - Syncs team data (strength, attack/defence ratings)
+  - Created `syncPlayerHistory(playerId)` for per-GW data
+  - Comprehensive logging and error handling
+- **API Endpoints:**
+  - POST /api/admin/sync/players - triggers player sync
+  - Returns success status, count, and any errors
+- **Data Structure:**
+  - Players: ID, name, team, position, price, ownership stats
+  - Stats: Total points, form, minutes, goals, assists, xG, xA
+  - Defensive: Clean sheets, goals conceded, xGC
+  - Bonus: BPS, ICT index (influence, creativity, threat)
+  - Status: Injury status, availability, news
+- **Testing:**
+  - Added `test-player-sync.ts` script
+  - Verified 760 players synced successfully
+  - Verified 20 teams synced successfully
+  - Verified data accuracy (top scorers, prices, positions)
+- **Files Added:**
+  - `src/db/migrations/add_players_tables.sql`
+  - `src/lib/sync/playerSync.ts`
+  - `src/app/api/admin/sync/players/route.ts`
+  - `src/scripts/test-player-sync.ts`
+- **Next Phase:** Ready for K-23b (API endpoints for querying player data)
+
+---
+
+## 🎨 v2.4.x - My Team Mobile-First Layout Restructure (Dec 2025)
+
+### v2.4.45 - Add RivalFPL Branding to Welcome Screen (Dec 12, 2025)
+**BRANDING:** Added RivalFPL logo to welcome screen above existing title
+- **Purpose:** Establish brand identity with RivalFPL logo on first screen users see
+  - Logo displays prominently at top of welcome screen
+  - Positioned above "FPL H2H Analytics" title
+  - Creates strong brand presence on landing page
+- **Logo Design:**
+  - Text-based logo using CSS/HTML: "Rival/FPL"
+  - Three components: "Rival" + "/" + "FPL"
+  - Color scheme:
+    - "Rival": White (#ffffff) - matches text on dark background
+    - "/": FPL green (#00ff87) - official FPL brand color
+    - "FPL": FPL green (#00ff87) - official FPL brand color
+  - Diagonal slash connects "Rival" to "FPL"
+  - Clean, modern, professional appearance
+- **Implementation:**
+  - **1. JSX Structure (page.tsx:37-41):**
+    - Added `.logo` div above existing title
+    - Three `<span>` elements: `.logoRival`, `.logoSlash`, `.logoFPL`
+    - Flex container for horizontal alignment
+  - **2. Typography & Styling (landing.module.css:17-40):**
+    - Font: Poppins/Montserrat with fallbacks
+    - Weight: 700 (bold)
+    - Size: 3rem desktop (slightly smaller than 3.5rem title)
+    - Letter-spacing: -1px (tight, modern look)
+    - Slash: italic style with -2px margins (tightened spacing)
+    - Centered alignment via flexbox
+    - Margin bottom: 1.5rem (space before title)
+  - **3. Responsive Design:**
+    - Desktop (>768px): 3rem, 1.5rem margin
+    - Tablet (≤768px): 2.25rem, 1.25rem margin
+    - Mobile (≤480px): 1.75rem, 1rem margin
+    - Scales proportionally with screen size
+- **Result:** Professional branding on welcome screen
+  - ✓ RivalFPL logo prominently displayed
+  - ✓ Positioned above existing FPL H2H Analytics title
+  - ✓ Uses official FPL brand colors (#00ff87 green)
+  - ✓ Clean, modern text-based design
+  - ✓ Responsive across all screen sizes
+  - ✓ Strong brand identity established
+- **Visual Hierarchy:**
+  - RivalFPL logo (top, 3rem)
+  - FPL H2H Analytics title (3.5rem)
+  - Subtitle (1.2rem)
+  - League input form
+- **Technical Notes:**
+  - Text-based logo (no image assets needed)
+  - CSS-only implementation
+  - Minimal bundle size impact (+41 lines)
+  - Flexible for future design iterations
+- **Future Enhancements (not in this version):**
+  - Page title update to "RivalFPL"
+  - PWA manifest name update
+  - Favicon with RivalFPL branding
+- **Implements:** Brief K-19 specifications (RivalFPL branding)
+- **Files:**
+  - Modified: `src/app/page.tsx` (added logo markup)
+  - Modified: `src/app/landing.module.css` (added logo styles + responsive)
+  - Modified: `package.json` (v2.4.44 → v2.4.45)
+
+### v2.4.44 - Fix Breakpoint Mismatch (Align to 769px) (Dec 12, 2025)
+**BUG FIX:** Fixed layout inconsistency caused by mismatched media query breakpoints
+- **Problem:** Between 769px and 1023px screen width, nav bar was full-width but My Team content was narrow
+  - Nav bar desktop layout triggered at `@media (min-width: 769px)` ✅
+  - My Team content desktop layout triggered at `@media (min-width: 1024px)` ❌
+  - 255px "dead zone" where layouts were inconsistent
+  - Visual mismatch: full-width nav bar with narrow content
+- **Root Cause Analysis:**
+  - Nav bar (.tabs) used 769px breakpoint - matching content padding breakpoint
+  - My Team content (.myTeamContent) used 1024px breakpoint - inconsistent
+  - Mobile styles (.section) applied up to 1024px, overlapping with desktop
+  - Investigation identified all breakpoints across CSS files
+- **Solution:** Align all desktop transitions to 769px breakpoint
+- **Changes:**
+  - **1. My Team Content Breakpoint:**
+    - Changed `.myTeamContent` from `@media (min-width: 1024px)` to `@media (min-width: 769px)`
+    - Location: Dashboard.module.css:892
+    - Now matches nav bar and content padding breakpoints
+  - **2. Mobile Section Breakpoint:**
+    - Changed `.section` from `@media (max-width: 1024px)` to `@media (max-width: 768px)`
+    - Location: Dashboard.module.css:567
+    - Eliminates breakpoint overlap
+    - Mobile styles now end at 768px, desktop starts at 769px
+- **Result:** Consistent layout at all screen widths
+  - ✓ Nav bar desktop layout: 769px+ (unchanged)
+  - ✓ Content padding desktop: 769px+ (unchanged)
+  - ✓ My Team content desktop: 769px+ (changed from 1024px)
+  - ✓ Mobile styles: ≤768px (changed from ≤1024px)
+  - ✓ No more "dead zone" - smooth transition at single breakpoint
+  - ✓ Nav bar and content always match width
+- **Technical Details:**
+  - All desktop transitions now happen at exactly 769px
+  - Clean breakpoint: mobile ≤768px, desktop ≥769px
+  - No overlapping media queries
+  - Matches established app-wide desktop breakpoint
+- **Investigation Process:**
+  - Searched all CSS files for 1024px breakpoints
+  - Identified Dashboard.module.css and StatsPanel.module.css
+  - Compared nav bar vs content CSS
+  - Found 255px mismatch range (769px-1023px)
+  - Root cause: inconsistent breakpoint values
+- **Implements:** Brief K-17b specifications (fix breakpoint mismatch)
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (2 breakpoint changes)
+  - Modified: `package.json` (v2.4.43 → v2.4.44)
+
+### v2.4.43 - My Team as Default Screen (First in Nav) (Dec 12, 2025)
+**UX IMPROVEMENT:** Made My Team the default landing screen and moved it to first position in navigation
+- **Problem:** Opening the app landed on Rankings, but My Team is the most-used feature
+  - Users had to click through to My Team every time they opened the app
+  - My Team was in middle position (3rd of 5) in nav bar
+  - Rankings as default didn't match actual usage patterns
+- **Solution:** Make My Team the default screen and move it to first position in nav
+- **Changes:**
+  - **1. Default Tab:**
+    - Changed `useState<TabType>('league')` to `useState<TabType>('myteam')` in page.tsx:20
+    - App now lands on My Team when opened
+    - My Team becomes the "home" screen of the app
+  - **2. Nav Bar Order:**
+    - Moved My Team button from 3rd position to 1st position in nav bar (page.tsx:202-208)
+    - New order: My Team | Rankings | Fixtures | Stats | Settings
+    - Old order: Rankings | Fixtures | My Team | Stats | Settings
+    - My Team now leftmost (most prominent) position
+- **Result:** Better UX with My Team as home screen
+  - ✓ Opening app lands directly on My Team
+  - ✓ My Team is first (leftmost) nav item
+  - ✓ No extra click needed to see your team
+  - ✓ Matches actual user behavior
+  - ✓ My Team feels like the primary feature
+- **Technical Details:**
+  - Only changed page.tsx (dashboard component)
+  - No CSS changes needed
+  - No breaking changes to other components
+- **Implements:** Brief K-18 specifications (My Team as default, first in nav)
+- **Files:**
+  - Modified: `src/app/dashboard/page.tsx` (default tab + nav order)
+  - Modified: `package.json` (v2.4.42 → v2.4.43)
+
+### v2.4.42 - Remove Pitch Markings for Cleaner View (Dec 12, 2025)
+**VISUAL SIMPLIFICATION:** Removed all pitch markings for cleaner, simpler pitch view
+- **Problem:** Pitch markings (goal, boxes, arcs, circles, border) added visual clutter
+  - Too many lines and elements on the pitch
+  - Distracted from the player cards
+  - Not essential for understanding team formation
+- **Solution:** Remove all pitch markings, keep only purple gradient background and bench separator
+- **Changes:**
+  - **1. TSX Cleanup:**
+    - Removed entire `<div className={styles.pitchMarkings}>` section from PitchView.tsx
+    - Removed 8 pitch marking divs: pitchBorder, goalFrame, sixYardBox, penaltyArea, penaltySpot, penaltyArc, halfwayLine, centerCircle
+    - Kept bench separator line (border-top on .bench class)
+  - **2. CSS Cleanup:**
+    - Commented out all pitch marking CSS classes (desktop + mobile) in PitchView.module.css
+    - Marked as "REMOVED (v2.4.42)" with explanation
+    - Preserved CSS in comments for potential restoration if needed
+    - Kept bench border-top: 2px solid rgba(255,255,255,0.2) for separation
+- **Result:** Clean, minimal pitch view
+  - ✓ Purple gradient background only
+  - ✓ Player cards in formation clearly visible
+  - ✓ Bench separator line maintained
+  - ✓ No distracting pitch lines
+  - ✓ Cleaner, more modern look
+  - ✓ Focus on players, not geometry
+- **Note:** Max-width already correctly set to 1400px from v2.4.41
+  - CSS variable --app-max-width: 1400px in globals.css
+  - Applied to nav bar, content, and My Team content
+  - No changes needed for max-width in this version
+- **Visual Comparison:**
+  - Before: Purple gradient + 8 pitch markings (border, goal, boxes, arcs, circles)
+  - After: Purple gradient + bench separator only
+- **Implements:** Brief K-17 specifications (remove pitch markings, max-width already correct)
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed pitch markings div, -13 lines)
+  - Modified: `src/components/PitchView/PitchView.module.css` (commented out pitch marking CSS)
+  - Modified: `package.json` (v2.4.41 → v2.4.42)
+
+### v2.4.41 - Max-Width Consistency at 1400px (Dec 12, 2025)
+**LAYOUT CONSISTENCY:** Unified max-width of 1400px for all layout elements using CSS variables for consistent layout at larger screen widths
+- **Problem:** Inconsistent max-widths at larger screen sizes
+  - Nav bar (.tabs): 1400px
+  - Content container: 1400px
+  - My Team content (.myTeamContent): 600px (too narrow!)
+  - Layout looked awkward at very wide viewports (1500px+)
+  - Different elements had different max-widths causing visual inconsistency
+- **Solution:** Use CSS variable `--app-max-width: 1400px` and apply to ALL layout elements
+- **Key Changes:**
+  - **1. CSS Variable Creation:**
+    - Added `--app-max-width: 1400px` to `:root` selector in `globals.css`
+    - Single source of truth for all max-width declarations
+    - Easy to change globally if needed in future
+  - **2. Nav Bar Update:**
+    - Changed `.tabs` max-width from `1400px` to `var(--app-max-width)` in `dashboard.module.css`
+    - Nav bar now uses CSS variable (though value stayed 1400px)
+  - **3. Content Container Update:**
+    - Changed `.content` max-width from `1400px` to `var(--app-max-width)` in `dashboard.module.css`
+    - Content container now uses CSS variable (though value stayed 1400px)
+  - **4. My Team Content Update (Key Change):**
+    - Changed `.myTeamContent` max-width from `600px` to `var(--app-max-width)` in `Dashboard.module.css`
+    - My Team content now grows to full 1400px width on desktop (was limited to 600px)
+    - Much better use of screen space at larger viewports
+- **Technical Implementation:**
+  - **globals.css:**
+    - Added `--app-max-width: 1400px` to existing `:root` selector
+    - Placed alongside other CSS variables (--status-bar-height, --bottom-bar-height)
+  - **dashboard.module.css:**
+    - Updated `.tabs` in @media (min-width: 769px) to use variable
+    - Updated `.content` to use variable
+  - **Dashboard.module.css:**
+    - Updated `.myTeamContent` in @media (min-width: 1024px) to use variable
+    - Changed from 600px to 1400px via the variable
+- **Result:** Consistent 1400px max-width across all layout elements
+  - ✓ Nav bar, content, and My Team content all stop growing at 1400px
+  - ✓ Better layout consistency at larger viewports (1500px+)
+  - ✓ My Team content uses full available width (no longer constrained to 600px)
+  - ✓ Single source of truth via CSS variable
+  - ✓ Easy to adjust globally if needed in future
+  - ✓ Professional, consistent layout at all screen sizes
+- **Visual Comparison:**
+  - Before: My Team content capped at 600px while nav bar and main content at 1400px
+  - After: All elements consistently stop growing at 1400px
+- **Implements:** Brief K-16 specifications (max-width consistency)
+- **Files:**
+  - Modified: `src/app/globals.css` (added CSS variable)
+  - Modified: `src/app/dashboard/dashboard.module.css` (tabs and content use variable)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (myTeamContent uses variable, 600px→1400px)
+  - Modified: `package.json` (v2.4.40 → v2.4.41)
+
+### v2.4.40 - Redesign Player Cards to FPL Style (Dec 12, 2025)
+**VISUAL REDESIGN:** Completely redesigned player cards to match official FPL app style with compact layout and professional appearance
+- **Problem:** Current player cards had several design issues
+  - Too much vertical space (full jersey + name below + points below = tall cards)
+  - No card container (jersey just floated with text underneath)
+  - Bench missing position labels (no GKP/MID/DEF/FWD indicators)
+  - Generic styling didn't match FPL app quality
+- **Solution:** Implement FPL-style card design with cropped jerseys, color-coded bars, and position labels
+- **Key Design Changes:**
+  - **1. Card Container Structure:**
+    - Added rounded card container (8px border-radius) with dark background (#1a1a2e)
+    - Box shadow for depth (0 2px 6px rgba(0,0,0,0.3))
+    - Compact, square-ish cards instead of tall vertical layout
+    - Better proportions matching FPL app
+  - **2. Jersey Cropping (Key Feature):**
+    - Fixed height kitContainer (60px desktop, 50px mobile, 54px small mobile)
+    - `overflow: hidden` crops bottom of jersey to show only top 60-70%
+    - `align-items: flex-start` aligns jersey to top of container
+    - Natural aspect ratio maintained but bottom is cut off
+    - Creates compact look without distorting jersey
+  - **3. Color Scheme (FPL Official Colors):**
+    - Name bar: Dark purple (#37003c) with white text - official FPL purple
+    - Points bar: FPL green (#00ff87) with dark text (#1a1a2e) - official FPL green
+    - Zero points: Red name bar (#dc2626) instead of purple
+    - Card background: Dark navy (#1a1a2e)
+    - Removed positive/negative gradient styling from points bar
+  - **4. Bench Position Labels:**
+    - Added GKP/DEF/MID/FWD labels above bench player cards
+    - Uppercase, semi-transparent gray text (rgba(255,255,255,0.6))
+    - Position mapping: 1=GKP (Goalkeeper), 2=DEF (Defender), 3=MID (Midfielder), 4=FWD (Forward)
+    - New `.benchPlayerContainer` wrapper with flex column layout
+    - New `.benchPosition` class for label styling
+  - **5. Captain/Vice Badges Repositioned:**
+    - Moved from top-center to top-left of jersey (6px from top/left)
+    - Gold background (#fbbf24) for captain (C)
+    - Gray background (#94a3b8) for vice-captain (V)
+    - Slightly larger (18px desktop, 16px tablet, 14px mobile)
+    - Box shadow for better visibility
+- **Technical Implementation:**
+  - **PlayerCard.module.css:**
+    - Complete rewrite with FPL structure
+    - Card container with rounded corners and shadow
+    - Fixed-height jersey container with overflow hidden
+    - Purple name bar, green points bar
+    - Zero points red name bar conditional styling
+    - Position label styles
+    - Responsive: 70px → 60px → 64px card widths
+  - **PlayerCard.tsx:**
+    - Added `isZeroPoints` logic (points === 0)
+    - Conditional className for red name bar on zero points
+    - Removed positive/negative points styling logic
+    - Updated comments for cropped jersey feature
+  - **PitchView.tsx:**
+    - Wrapped bench players in `.benchPlayerContainer` div
+    - Added position label rendering with mapping object
+    - Position labels: {1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD'}
+    - Conditional rendering of position label if exists
+  - **PitchView.module.css:**
+    - Added `.benchPlayerContainer` with flex column layout
+    - Added `.benchPosition` class for label styling
+    - Changed `.benchRow` align-items to flex-start
+    - Added mobile responsive styles for position labels
+- **Result:** Professional FPL-style player cards with compact layout
+  - ✓ Jersey cropped to show only top 60-70% (much more compact)
+  - ✓ Card container with rounded corners and shadow
+  - ✓ Dark purple name bar with white text (FPL official color)
+  - ✓ FPL green points bar with dark text (FPL official color)
+  - ✓ Red name bar for zero points (like FPL app)
+  - ✓ Position labels on bench players (GKP, DEF, MID, FWD)
+  - ✓ Captain/Vice badges on top-left of jersey with box shadow
+  - ✓ Less vertical space = more compact pitch view
+  - ✓ Better info density and professional appearance
+  - ✓ Matches official FPL app quality and style
+- **Visual Comparison:**
+  - Before: Tall cards with full jersey visible, floating text
+  - After: Compact square-ish cards with cropped jersey, integrated card design
+- **Implements:** Brief K-15 specifications (FPL-style player cards)
+- **Files:**
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (complete rewrite, FPL structure)
+  - Modified: `src/components/PitchView/PlayerCard.tsx` (zero points logic)
+  - Modified: `src/components/PitchView/PitchView.tsx` (bench position labels)
+  - Modified: `src/components/PitchView/PitchView.module.css` (bench container & position label styles)
+
+### v2.4.39 - Fix Desktop Layout with Unified Vertical Layout (Dec 12, 2025)
+**LAYOUT FIX:** Fixed desktop layout breaking issues by implementing unified vertical layout for all screen sizes
+- **Problem:** Desktop layout (≥1024px) broke with side-by-side design
+  - Desktop showed 30% transfers panel | 70% pitch (two-column grid)
+  - Missing stat boxes: GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK not visible on desktop
+  - Missing pitch elements: Center circle and penalty arc disappeared (likely due to 70% width constraint)
+  - Different GW selector style: Desktop showed "Gameweek 15" while mobile showed compact "GW 15"
+  - Mobile (< 1024px) worked correctly with all elements visible
+- **Solution:** Unified vertical layout for all screen sizes (Option A from Brief K-14)
+  - Same layout on mobile, tablet, and desktop - just wider on larger screens
+  - No separate desktop/mobile layouts - single consistent structure
+  - Desktop gets max-width and centered to prevent over-stretching
+- **Changes:**
+  - **1. MyTeamTab.tsx - Removed Dual Layout System:**
+    - Removed `.mobileLayout` wrapper div (lines 112-187)
+    - Removed `.desktopLayout` div with 30%/70% grid (lines 189-225)
+    - Single `.myTeamContent` wrapper for all screen sizes
+    - Layout order: GW Selector → Stat Boxes (2 rows) → Pitch → Team Value → GW Transfers
+    - All components visible at all screen sizes
+  - **2. Dashboard.module.css - Unified Layout CSS:**
+    - Removed `.mobileLayout` class and styles
+    - Removed `.desktopLayout` class and 30%/70% grid styles
+    - Removed `@media (min-width: 1024px)` hiding mobile layout
+    - Single `.myTeamContent` with flex column layout
+    - Added desktop-specific styles: `max-width: 600px; margin: 0 auto`
+    - Net reduction: -56 lines (67 insertions, 123 deletions)
+- **Result:** Consistent layout across all devices with all elements visible
+  - ✓ Desktop shows all 5 stat boxes (GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK)
+  - ✓ Desktop shows all pitch elements (goal, boxes, penalty spot, penalty arc, halfway line, center circle)
+  - ✓ Same compact GW selector style on all devices ("GW 15")
+  - ✓ Consistent vertical stack layout: mobile, tablet, desktop
+  - ✓ Desktop layout centered with 600px max-width to prevent over-stretching
+  - ✓ GW Transfers section visible with receipt-style layout
+  - ✓ All elements properly sized and visible
+- **Technical Details:**
+  - Removed conditional rendering based on screen size
+  - Single source of truth for layout structure
+  - Responsive design through max-width instead of separate layouts
+  - Cleaner, more maintainable code
+- **Implements:** Brief K-14 Option A (recommended solution)
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed dual layout system)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (unified layout CSS, removed desktop grid)
+
+### v2.4.38 - Proper Pitch Geometry with True Semicircles (Dec 12, 2025)
+**GEOMETRY FIX:** Implemented proper semicircular arcs with correct proportions and true geometric shapes
+- **Problem:** Pitch arcs needed proper sizing and geometry
+  - Center circle too small (80px wide) - not proportional to pitch size
+  - Penalty arc removed in v2.4.34 - needed to be re-added with correct geometry
+  - Arcs must be TRUE semicircles (height = width/2), not ovals or ellipses
+  - User clarification: "circles should be half circles, not whatever you have been drawing"
+- **Solution:** Re-add penalty arc and enlarge center circle as proper TRUE semicircles
+- **Changes:**
+  - **1. Re-added Penalty Arc as TRUE Semicircle:**
+    - Desktop: `width: 180px; height: 90px` (height = width/2 for true semicircle)
+    - Mobile: `width: 150px; height: 75px`
+    - Curves DOWNWARD from bottom of 18-yard box: `border-radius: 0 0 90px 90px`
+    - Border radius equals height (90px) for perfect circular arc
+    - Positioned at `top: 145px` (25px goal + 120px penalty area)
+    - Width is ~50% of penalty area width
+    - Added to HTML: `<div className={styles.penaltyArc} />`
+  - **2. Increased Center Circle Size as TRUE Semicircle:**
+    - Desktop: `width: 150px; height: 75px` (was 80x40 - almost doubled)
+    - Mobile: `width: 120px; height: 60px` (was 70x35 - proportionally larger)
+    - Curves UPWARD toward goal: `border-radius: 75px 75px 0 0`
+    - Border radius equals height (75px) for perfect circular arc
+    - Much larger for proper pitch proportions
+  - **3. TRUE Semicircle Geometry Principle:**
+    - Height always equals half the width (creates true half-circle)
+    - Border radius equals the height (creates proper curve)
+    - Not ovals or ellipses - geometric semicircles like cutting a circle in half
+    - Example: 150px wide circle cut in half = 75px tall semicircle
+- **Result:** Proper football pitch geometry with correctly sized and shaped arcs
+  - ✓ Penalty arc: TRUE semicircle curving DOWNWARD from 18-yard box
+  - ✓ Center circle: MUCH larger TRUE semicircle curving UPWARD on halfway line
+  - ✓ Both arcs use proper geometric ratios (height = width/2)
+  - ✓ Border radius = height ensures perfect circular curves
+  - ✓ Proportions match real football pitch layout
+  - ✓ Desktop and mobile styles both use true semicircle geometry
+- **Technical Note:** All semicircles maintain 1:2 height-to-width ratio with border-radius equal to height
+- **Implements:** User clarification answers from pitch design specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added penaltyArc div)
+  - Modified: `src/components/PitchView/PitchView.module.css` (penalty arc styles, center circle size increase, desktop & mobile)
+
+### v2.4.37 - Final Pitch Layout Following Annotated Design (Dec 12, 2025)
+**LAYOUT FIX:** Implemented 5 design changes to create proper pitch layout with two borders and clear hierarchy
+- **Problem:** Pitch layout needed refinement based on annotated design specifications
+  - Container needed standard border like other app containers
+  - Pitch border too close to container edge (only 10px margin)
+  - Penalty area floating in center (75% width), should connect to pitch sides
+  - Halfway line cutting through forwards, should mark bottom of pitch
+  - Bench inside pitch area, should be clearly OUTSIDE
+- **Solution:** Implement 5 specific changes from Brief K-13d-v8 annotated design
+- **Changes:**
+  - **1. Re-added Container Border:** Added standard border to `.pitch` container: `1px solid rgba(255, 255, 255, 0.1)`
+  - **2. Increased Pitch Border Margins:**
+    - Desktop: `top/left/right: 10px → 20px`, `bottom: 90px → 140px`
+    - Mobile: `top/left/right: 8px → 15px`, `bottom: 70px → 100px`
+    - More space between pitch border and container creates clear visual separation
+  - **3. Connected Penalty Area to Pitch Border Sides:**
+    - Desktop: Changed from `width: 75%` centered to `left: 20px; right: 20px`
+    - Mobile: Changed from `width: 70%` centered to `left: 15px; right: 15px`
+    - 18-yard box now TOUCHES pitch border on both sides like real pitch
+  - **4. Moved Halfway Line to Bottom of Pitch Border:**
+    - Desktop: `bottom: 100px → 140px`, added `left: 20px; right: 20px` alignment
+    - Mobile: `bottom: 75px → 100px`, added `left: 15px; right: 15px` alignment
+    - Halfway line = bottom edge of pitch border (where pitch ends)
+  - **5. All Elements Adjusted for New Layout:**
+    - Center circle moved to new halfway line position (bottom: 140px desktop, 100px mobile)
+    - Goal frame, 6-yard box, penalty spot maintain positions relative to top
+    - Bench now clearly OUTSIDE pitch area (below halfway line)
+- **Result:** Clear visual hierarchy matching annotated design
+  - ✓ Two distinct borders: container border (purple/rounded) + pitch border (white rectangle inside)
+  - ✓ 20px gap between container and pitch border on desktop (15px mobile)
+  - ✓ Penalty area spans full width, side lines connect to pitch border
+  - ✓ Halfway line marks bottom of pitch where it ends
+  - ✓ Bench positioned clearly OUTSIDE the pitch rectangle
+  - ✓ Forwards (Haaland, etc.) positioned INSIDE pitch, ABOVE halfway line
+  - ✓ Center circle sits on halfway line at bottom of pitch
+- **Visual Layout:** Matches user's annotated drawing exactly
+- **Implements:** Brief K-13d-v8 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (container border, pitch border margins, penalty area positioning, halfway line/center circle positions, mobile styles)
+
+### v2.4.36 - Convert Pitch Border from CSS Border to Drawn Element (Dec 12, 2025)
+**CORRECTION:** Fixed pitch border implementation - converted from CSS border on container to drawn rectangle element inside
+- **Problem:** v2.4.35 incorrectly added CSS border directly to .pitch container
+  - Used `border: 2px solid rgba(255, 255, 255, 0.25)` on container element
+  - This created a container border, not a pitch marking drawn inside
+  - User explicitly corrected: "You added a thick border to the container. That's WRONG."
+  - Pitch markings should be drawn INSIDE container like all other markings (goal, penalty box, etc.)
+- **Solution:** Convert pitch border to drawn rectangle element positioned inside container
+- **Changes:**
+  - **Pitch Container (`PitchView.module.css`):** Removed CSS border from `.pitch` container
+  - **HTML (`PitchView.tsx`):** Added `<div className={styles.pitchBorder} />` element to pitch markings
+  - **CSS (`PitchView.module.css`):** Added `.pitchBorder` class with absolute positioning
+    - Desktop: `top: 10px; left: 10px; right: 10px; bottom: 90px` (stops above bench)
+    - Mobile: `top: 8px; left: 8px; right: 8px; bottom: 70px` (stops above mobile bench)
+    - Border: `1px solid rgba(255, 255, 255, 0.25)`
+    - Border radius: `4px`
+    - Z-index: `0` (behind other markings)
+    - Pointer events: `none` (doesn't block player clicks)
+- **Result:** Pitch border now correctly renders as drawn rectangle INSIDE container
+  - ✓ Border is drawn element positioned absolutely within pitch container
+  - ✓ Stops above bench area (doesn't extend to container edges)
+  - ✓ Matches style of other pitch markings (goal frame, penalty area, etc.)
+  - ✓ Z-index 0 ensures it renders behind other pitch elements
+  - ✓ 4px border radius provides subtle corner smoothing
+- **Implements:** Brief K-13d-v7 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added pitchBorder HTML element)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed CSS border from container, added pitchBorder class for desktop & mobile)
+
+### v2.4.35 - Add Pitch Border and Fix Center Circle Direction (Dec 12, 2025)
+**VISUAL FIX:** Added visible pitch border and corrected center circle to curve upward toward goal
+- **Problem:** Two geometry issues needed correction
+  - No visible border around pitch container - pitch blended into background
+  - Center circle curving DOWNWARD instead of UPWARD toward goal
+  - Center circle had `border-radius: 0 0 50% 50%` (curves bottom) and `border-top: none`
+- **Solution:** Add pitch border and fix center circle curvature
+- **Changes:**
+  - **Pitch Border (`PitchView.module.css`):**
+    - Changed `.pitch` border from `1px solid rgba(255, 255, 255, 0.1)` → `2px solid rgba(255, 255, 255, 0.25)`
+    - More prominent border (2px instead of 1px, 0.25 opacity instead of 0.1)
+    - Clearly defines pitch playing area
+  - **Center Circle - Desktop:**
+    - `border-radius: 0 0 50% 50%` → `border-radius: 50% 50% 0 0` (curves UPWARD)
+    - `border-top: none` → `border-bottom: none` (flat edge on halfway line)
+    - Enhanced comment: "curves UPWARD toward goal"
+  - **Center Circle - Mobile:**
+    - Added `border-radius: 50% 50% 0 0` (was missing explicit value)
+    - Added `border-bottom: none` (was missing)
+- **Result:** Pitch now has clear visible boundary and center circle correctly curves upward
+  - ✓ Pitch border clearly visible and defines playing area
+  - ✓ Center circle curves UPWARD like real football pitch
+  - ✓ Flat edge of center circle aligns with halfway line
+  - ✓ Consistent geometry across desktop and mobile
+- **Implements:** Brief K-13d-v6 specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (pitch border, center circle curvature for desktop & mobile)
+
+### v2.4.34 - Remove Penalty Arc for Cleaner Pitch View (Dec 12, 2025)
+**SIMPLIFICATION:** Removed penalty arc element completely to simplify pitch markings
+- **Problem:** Penalty arc was problematic despite multiple positioning attempts
+  - Initial implementation had arc in wrong position
+  - v2.4.32-v2.4.33 attempts to fix positioning and geometry
+  - Arc proved difficult to position correctly and visually match reference
+- **Solution:** Remove penalty arc completely - it's a nice-to-have, not essential
+- **Changes:**
+  - **HTML (`PitchView.tsx`):** Removed `<div className={styles.penaltyArc} />` element
+  - **CSS (`PitchView.module.css`):** Removed `.penaltyArc` class from both desktop and mobile sections
+  - Updated element numbering: 5. Halfway Line, 6. Center Circle (was 6. and 7.)
+  - Updated comment: "6 essential elements" (was 7)
+- **Result:** Cleaner, simpler pitch with 6 essential elements
+  - ✓ Goal frame
+  - ✓ 6-yard box
+  - ✓ 18-yard box (penalty area)
+  - ✓ Penalty spot
+  - ✓ Halfway line
+  - ✓ Center circle
+- **Justification:** FPL app's penalty arc is also very subtle/minimal in their official design
+- **Future:** Can add penalty arc back later once other elements look perfect
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed penalty arc div)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed penalty arc CSS, updated comments)
+
+### v2.4.33 - Correct Penalty Spot Geometry and Enhance Pitch Comments (Dec 12, 2025)
+**ACCURACY FIX:** Corrected penalty spot position to accurate 12-yard distance with detailed geometry documentation
+- **Problem:** Penalty spot positioned slightly too high (100px desktop, 80px mobile)
+  - Should be exactly 12 yards from goal line, which is 12/18 (66.67%) of penalty area depth
+  - Current positioning was approximately 62.5% of penalty area depth
+  - Brief K-13d-v4 flagged geometry concerns
+- **Solution:** Corrected penalty spot position with precise calculations
+- **Desktop Changes:**
+  - Penalty spot: `100px → 105px` (25px goal + 80px where 80 = 12/18 × 120px penalty area)
+  - Calculation: 25 + (12/18 × 120) = 25 + 80 = **105px** ✓
+- **Mobile Changes:**
+  - Penalty spot: `80px → 83px` (20px goal + 63px where 63 = 12/18 × 95px penalty area)
+  - Calculation: 20 + (12/18 × 95) = 20 + 63 = **83px** ✓
+- **Enhanced Documentation:**
+  - Added explicit inline geometry calculations in CSS comments
+  - Clarified penalty area starts at goal line (after goal frame)
+  - Clarified penalty arc sits at BOTTOM EDGE of 18-yard box and curves DOWNWARD into field
+  - Added "D" shape description for penalty arc
+- **Verified Correct Layout:**
+  - ✓ Penalty spot is ABOVE the arc (105px < 145px desktop, 83px < 115px mobile)
+  - ✓ Penalty spot is INSIDE the penalty box (between 25-145px desktop, 20-115px mobile)
+  - ✓ Penalty arc at exact bottom edge of 18-yard box
+  - ✓ Arc curves downward away from goal (like letter "D" rotated 90°)
+- **Result:** Pitch markings now geometrically accurate to real football pitch proportions
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (corrected penalty spot position, enhanced comments for desktop & mobile)
+
+### v2.4.32 - Explicit Pitch Markings with Standardized Structure (Dec 12, 2025)
+**REFACTOR:** Complete overhaul of pitch markings implementation with explicit specifications and standardized class names
+- **Problem:** Previous pitch marking implementation had inconsistent naming and could be improved
+  - Class names had suffixes like "Top", "Bottom" that were confusing (`.penaltyBoxTop`, `.goalAreaTop`)
+  - Corner arcs included but not relevant for half-pitch view
+  - Goal frame used compound classes (`.goalFrame.top`)
+  - Implementation could benefit from clearer structure
+- **Solution:** Implement exact pitch markings specification with standardized class names
+- **Changes:**
+  - **HTML Structure (`PitchView.tsx`):**
+    - Simplified to exactly 7 marking elements (no corner arcs)
+    - Standardized class names: `.goalFrame`, `.sixYardBox`, `.penaltyArea`, `.penaltySpot`, `.penaltyArc`, `.halfwayLine`, `.centerCircle`
+    - Removed compound classes and "Top" suffixes
+    - Self-closing JSX tags for cleaner code
+  - **CSS Implementation (`PitchView.module.css`):**
+    - Complete rewrite of pitch markings section with exact specifications
+    - All 7 elements with clear numeric comments (1. Goal Frame, 2. Six-Yard Box, etc.)
+    - Opacity values meet visibility requirements: goal frame 0.3, penalty spot 0.35, halfway line 0.3, others 0.25
+    - Sizing: goal 100px×25px, 6-yard 160px×40px, penalty area 75% width×120px height
+    - Updated mobile responsive styles to match new class names
+  - **Code Quality:**
+    - Reduced total lines (134 removed, 87 added = -47 net lines)
+    - Better maintainability with standardized naming
+    - Clear documentation in comments
+- **7 Required Elements Verified:**
+  - ✓ Goal frame (100px wide, 25px high, 0.3 opacity)
+  - ✓ Six-yard box (160px wide, 40px high, 0.25 opacity)
+  - ✓ Penalty area (75% wide, 120px high, 0.25 opacity)
+  - ✓ Penalty spot (8px diameter, 0.35 opacity)
+  - ✓ Penalty arc (100px wide, 50px high, 0.25 opacity)
+  - ✓ Halfway line (90% width, 0.3 opacity)
+  - ✓ Center circle (80px wide, 40px high, 0.25 opacity)
+- **Result:** Cleaner, more maintainable pitch markings with standardized naming and exact specifications
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (simplified HTML structure)
+  - Modified: `src/components/PitchView/PitchView.module.css` (complete rewrite of markings section, updated mobile styles)
+
+### v2.4.31 - Enhance Pitch Markings Visibility (Dec 12, 2025)
+**VISUAL FIX:** Increased opacity of all pitch markings to make pitch more recognizable as football field
+- **Problem:** Pitch markings too subtle (0.12-0.15 opacity) - barely visible, doesn't visually read as football pitch
+  - Penalty boxes, goal area, arcs, lines all at `rgba(255, 255, 255, 0.12)` (too faint)
+  - Penalty spot at `0.15` opacity (hard to see)
+  - Goal frame at `0.25` border opacity (too subtle)
+  - Net pattern at `0.06` opacity (almost invisible)
+  - Overall pitch felt like generic purple container, not football field
+- **Solution:** Enhanced markings by increasing opacity ~2x for better visibility while keeping brand colors
+- **Opacity Changes (Desktop & Mobile):**
+  - Penalty box (18-yard): `border: 0.12 → 0.25` (doubled)
+  - 6-yard box (goal area): `border: 0.12 → 0.25` (doubled)
+  - Penalty spot: `background: 0.15 → 0.3` (doubled), size `5px → 6px` (slightly larger)
+  - Penalty arc: `border: 0.12 → 0.25` (doubled)
+  - Halfway line: `background: 0.12 → 0.25` (doubled)
+  - Center mark: `border: 0.12 → 0.25` (doubled)
+  - Goal frame: `border: 0.25 → 0.35`, `background: 0.25 → 0.3` (more prominent)
+  - Net pattern: `0.06 → 0.08` (more visible)
+- **Result:** Pitch now immediately recognizable as football field at a glance
+  - Markings visible but not overpowering
+  - Purple gradient background maintained for brand consistency
+  - Better visual hierarchy: goal, penalty area, and halfway line stand out
+  - Professional football pitch appearance without changing colors
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (enhanced all marking opacities, desktop & mobile)
+
+### v2.4.30 - GW Transfers Receipt-Style Layout (Dec 12, 2025)
+**STYLING FIX:** Transform GW Transfers section into clean receipt/ledger format with clear hierarchy
+- **Problem:** Title too small and not bold, transferred-out players gray instead of white, hit cost buried in awkward summary text
+  - Title was 0.85rem and font-weight 600 (too subtle)
+  - Player out names were `rgba(255, 255, 255, 0.7)` (gray, hard to read)
+  - Hit cost hidden in summary line: "Net: +15 pts (after -4 hit: +11 pts)"
+  - Summary layout awkward and hard to scan
+- **Solution:** Receipt-style layout with proper visual hierarchy and clear line items
+- **JSX Changes (`StatsPanel.tsx`):**
+  - Changed title from `<div>` to `<h3>` for semantic markup
+  - Separated hit as dedicated row that only shows if `gwTransfers.cost > 0`
+  - Added `<hr className={styles.transferSeparator} />` before net result
+  - Net result now dedicated row with left label ("Net result:") and right value
+  - Renamed CSS class from `transferDiff` to `transferPointsDiff` for clarity
+- **CSS Changes (`StatsPanel.module.css`):**
+  - **Title:** `font-size: 0.85rem → 1rem`, `font-weight: 600 → 700` (bigger, bolder)
+  - **Player out:** `color: rgba(255, 255, 255, 0.7) → #ffffff` (WHITE, not gray) + `font-weight: 500`
+  - **Hit row:** New styles - `display: flex`, `justify-content: space-between`, red value (`#ff4757`)
+  - **Separator:** `border-top: 1px solid rgba(255, 255, 255, 0.15)` (subtle line)
+  - **Net result:** New dedicated row styles with larger font (`1.1rem`), bold (`700`)
+  - **Point diff:** Renamed from `.transferDiff` to `.transferPointsDiff`, `font-weight: 700 → 600`
+- **Visual Result (Receipt Style):**
+  ```
+  GW15 TRANSFERS                                  ← Bigger, BOLD
+
+  Mateta (2pts)      →   Thiago (2pts)        0  ← WHITE "Mateta"
+  Semenyo (3pts)     →   B.Fernandes (18pts) +15 ← WHITE "Semenyo"
+  Hit                                         -4  ← Separate line, RED
+                                         ───────  ← Separator
+  Net result:                            +11 pts  ← Clear label + value
+  ```
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (new JSX structure)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (receipt-style formatting)
+
+### v2.4.29 - Spread Players Wider on Pitch (Dec 12, 2025)
+**LAYOUT FIX:** Players now spread across more of the pitch width for a natural formation feel
+- **Problem:** Players clustered in center of pitch using only ~70% of available width
+  - `justify-content: center` kept players tightly grouped in middle
+  - Unused space on left and right edges of pitch
+  - Formation felt cramped and unnatural
+  - Gap between players was `0.6rem` with no edge padding
+- **Solution:** Changed flexbox distribution from center to space-evenly for better horizontal spread
+- **Changes to Desktop (`PitchView.module.css`):**
+  - `.pitchRow`: Changed `justify-content: center → space-evenly` (distribute across width)
+  - `.pitchRow`: Reduced `gap: 0.6rem → 0.5rem` (tighter gaps between players)
+  - `.pitchRow`: Added `padding: 0 8px` (small edge buffer so players don't touch container edges)
+  - `.benchRow`: Changed `justify-content: center → space-evenly` (match pitch rows)
+  - `.benchRow`: Reduced `gap: 0.6rem → 0.5rem`, added `padding: 0 8px`
+- **Changes to Mobile:**
+  - `.pitchRow`: Reduced `gap: 0.4rem → 0.35rem`, added `padding: 0 6px`
+  - `.benchRow`: Reduced `gap: 0.4rem → 0.35rem`, added `padding: 0 6px`
+- **Result:** Players now spread across ~85-95% of pitch width with natural spacing
+  - Defenders, midfielders, forwards utilize more horizontal space
+  - GK remains centered (only 1 player)
+  - Better use of available space without feeling cramped
+  - Formation looks more like real football pitch
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (updated flexbox distribution and spacing)
+
+### v2.4.28 - Reformat Hit Display in Transfers Stat Box (Dec 12, 2025)
+**LAYOUT FIX:** Hit cost now displays inline with transfer count for cleaner, balanced stat box
+- **Problem:** Hit cost (-4) displayed below "TRANSFERS" label, making stat box taller and unbalanced
+  - Current layout stacked: "2 / TRANSFERS / (-4)"
+  - Stat box was taller than others due to extra line
+  - Hit cost as separate div with margin-top creating awkward spacing
+- **Solution:** Move hit cost inline with transfer count using flexbox
+- **JSX Changes (`MyTeamTab.tsx`):**
+  - Moved hit cost span inside statBoxValue div instead of as separate sibling
+  - Changed from `<div className={styles.statBoxSub}>` to `<span className={styles.statBoxSub}>`
+  - Added space before parenthesis for proper formatting: `{' (-'}{gwTransfers.cost}{')'}`
+- **CSS Changes (`Dashboard.module.css`):**
+  - Updated `.statBoxValue`: Added `display: flex`, `align-items: baseline`, `justify-content: center`, `gap: 4px`
+  - Updated `.statBoxSub`: Changed `font-size: 0.7rem → 0.9rem`, `color: #ef4444 → #ff4757` (app red), removed `margin-top`
+- **Result:** Cleaner, more balanced layout - "2 (-4)" displays on one line, "TRANSFERS" below
+- **Visual Comparison:**
+  - Before: "2 / TRANSFERS / (-4)" (stacked, unbalanced)
+  - After: "2 (-4) / TRANSFERS" (inline, balanced)
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (moved hit cost inline)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (flexbox layout for inline display)
+
+### v2.4.27 - Update GW Transfers Styling to Match App Branding (Dec 12, 2025)
+**STYLING FIX:** GW Transfers now uses app's color palette for visual consistency
+- **Problem:** GW Transfers container colors didn't match app branding
+  - Using teal (#10b981) instead of app's green (#00ff87)
+  - Text not white enough (opacity too low)
+  - Overall felt inconsistent with other containers (points badges, GW selector, etc.)
+- **Solution:** Updated all colors to match app's established palette
+- **Color Updates:**
+  - Title color: #10b981 → #00ff87 (app green)
+  - Player In color: #10b981 → #00ff87 + font-weight: 500
+  - Positive diff: #10b981 → #00ff87
+  - Negative diff: #ef4444 → #ff4757 (app red)
+  - Transfer Out: rgba(255, 255, 255, 0.6) → 0.7 (brighter)
+  - Transfer Arrow: rgba(255, 255, 255, 0.3) → 0.4 (brighter)
+  - Transfer Points: rgba(255, 255, 255, 0.4) → 0.5 (brighter)
+  - Summary: rgba(255, 255, 255, 0.5) → 0.6 (brighter)
+- **Typography Improvements:**
+  - Letter spacing: 0.05em → 0.5px (more precise)
+  - Font sizes optimized: 0.8rem → 0.85rem for summary
+  - Added margin to transfer arrow: 0 8px (better spacing)
+  - Border opacity: 0.06 → 0.1 (more visible)
+- **Result:** GW Transfers now visually consistent with rest of app
+  - Green highlights match GW selector hover, points badges, etc.
+  - Red accents match app's error/negative color
+  - Text more readable with improved opacity levels
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (updated all transfer-related colors and typography)
+
+### v2.4.26 - Make GW Transfers Dynamic (Dec 12, 2025)
+**FUNCTIONALITY FIX:** GW Transfers section now updates dynamically when navigating gameweeks
+- **Problem:** GW Transfers section stayed fixed on current GW (e.g., "GW15 TRANSFERS") regardless of selected GW
+  - Transfers API endpoint hardcoded to fetch only current GW transfers
+  - StatsPanel component didn't pass selected GW to transfers endpoint
+  - Navigating to GW14 still showed "GW15 TRANSFERS" with GW15 data
+- **Solution:** Made transfers API accept gameweek query parameter and updated component to pass it
+- **API Changes (`/api/team/[teamId]/transfers/route.ts`):**
+  - Added `gw` query parameter support (e.g., `?gw=14`)
+  - Falls back to current GW if no query param provided (backward compatible)
+  - Replaced hardcoded `currentGW` with dynamic `targetGW` based on query param
+  - Fetch player points from live data (`/api/event/${targetGW}/live/`) for accurate historical GW points
+  - Filter transfers by `targetGW` instead of always using current GW
+  - Fallback to bootstrap data if live data unavailable (for very old GWs)
+- **Component Changes (`StatsPanel.tsx`):**
+  - Updated transfers fetch to include `?gw=${selectedGW}` query parameter
+  - Transfers now re-fetch automatically when selectedGW changes (already in useEffect deps)
+  - Display updates with correct GW number and transfer data
+- **Result:** Navigating gameweeks now shows correct transfers for each GW
+  - GW15 selected → Shows "GW15 TRANSFERS" with GW15 transfers and points
+  - GW14 selected → Shows "GW14 TRANSFERS" with GW14 transfers and points
+  - GW1 selected → Shows nothing (no transfers possible first week)
+  - GW with no transfers → Section hidden (no transfers made that week)
+- **Files:**
+  - Modified: `src/app/api/team/[teamId]/transfers/route.ts` (added GW parameter support, live data fetching)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (pass selectedGW to API)
+
+### v2.4.25 - Fix Pitch Width and Spacing (Dec 12, 2025)
+**LAYOUT FIX:** Pitch container now follows same width and spacing rules as other containers
+- **Problem:** Pitch was narrower than stat boxes above it and had inconsistent vertical spacing
+  - Pitch had `max-width: 600px` limiting its width
+  - Pitch had `margin: 0 auto` centering it (breaking edge-to-edge alignment)
+  - Pitch had `padding: 1rem` instead of relying on parent's padding
+  - Vertical gaps around pitch were larger than the consistent 8px between other elements
+- **Solution:** Removed all width constraints and margins from pitch container
+- **Changes to `.container` class:**
+  - Removed `max-width: 600px` (was limiting width)
+  - Removed `margin: 0 auto` (was centering, breaking alignment)
+  - Removed `padding: 1rem` (parent handles padding)
+  - Set to `width: 100%` only
+- **Changes to Mobile @media query:**
+  - Removed `padding: 0.75rem` from `.container`
+  - Kept `width: 100%` only
+- **Result:** Pitch now fills 100% width like all other containers with consistent 8px vertical gaps
+- **Design Principle Applied:** "ONE parent controls spacing. Children just fill 100% width." - Pitch is no exception
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed width constraints and padding)
+
+### v2.4.24 - Fix Container Widths and Spacing Consistency (Dec 12, 2025)
+**LAYOUT FIX:** All containers now have same width and consistent spacing via single parent wrapper
+- **Problem:** Different containers had different widths and inconsistent vertical gaps
+  - GW Selector narrower than stat boxes below
+  - Team Value boxes narrower than pitch above
+  - Vertical spacing between containers inconsistent
+- **Solution:** Wrapped all mobile layout content in `.myTeamContent` parent container
+- **Single Parent Controller:** Parent div controls all spacing with gap: 8px and padding: 0 12px
+- **Child Containers Updated:**
+  - All set to `width: 100%` for full width alignment
+  - Removed individual padding from `.statBoxesContainer`
+  - Changed `.teamValueBox` from `min-width: 130px` to `flex: 1` for equal distribution
+  - Updated `.teamValueBoxes` to remove individual padding, add `width: 100%`, gap: 8px
+- **Mobile Breakpoint:** At <400px, gap reduces to 6px and padding to 0 10px
+- **Result:** All containers (GW Selector, stat boxes, pitch, team value boxes) now edge-to-edge aligned with consistent 8px gaps
+- **Design Principle:** "ONE parent controls spacing. Children just fill 100% width."
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added .myTeamContent wrapper div)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added .myTeamContent styles, updated children)
+
+### v2.4.23 - Copy Stats Tab GW Selector EXACTLY (Dec 12, 2025)
+**SIMPLIFICATION:** Replaced reinvented GW selector with EXACT copy from Stats tab
+- **Problem:** My Team GW selector looked completely different from Stats tab despite Brief K-12d request
+  - Full width container with arrows on far edges (purple gradient style)
+  - Didn't match Stats tab's compact centered design
+- **User Feedback:** "Stop reinventing - just COPY the Stats tab component"
+- **Solution:** Found actual Stats tab GW selector in StatsHub.tsx and copied EXACT code
+- **Copied From:** `/src/components/Stats/StatsHub.tsx` lines 142-166 (JSX) and StatsHub.module.css lines 58-116 (CSS)
+- **New Design:**
+  - Compact centered layout (not full width)
+  - Dark semi-transparent background: `rgba(0, 0, 0, 0.3)` (not purple gradient)
+  - Arrows in subtle boxes: `rgba(255, 255, 255, 0.1)` background
+  - Green hover effects: `rgba(0, 255, 135, 0.2)` + `#00ff87` border (not purple)
+  - Proper spacing: gap 0.75rem, padding 0.5rem 1rem
+- **Result:** GW selector now matches Stats tab exactly with proper compact design
+- **Files:**
+  - Modified: `src/components/PitchView/GWSelector.tsx` (copied exact JSX structure)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (copied exact styles with comment "EXACT copy from Stats tab")
+
+### v2.4.22 - Add Proper Half-Pitch Markings Inside Container (Dec 12, 2025)
+**VISUAL FIX:** Added missing pitch markings - penalty arc, halfway line, and center mark
+- **Problem:** Pitch was missing standard football pitch markings inside purple container
+  - No penalty arc below penalty box
+  - Halfway line was ::after pseudo-element (not explicit element)
+  - No center mark circle
+- **Solution:** Added explicit HTML elements for each marking inside pitch container
+- **Added Markings:**
+  - **Penalty arc:** Curved arc below penalty box, positioned at top 75px, 80x40px, border-radius 0 0 50% 50%
+  - **Halfway line:** Explicit div element at bottom 85px, left/right 8% margin, 1px height
+  - **Center mark:** Small circle at halfway line, bottom 80px, 10x10px with border-radius 50%
+- **All Markings:** Subtle white lines `rgba(255, 255, 255, 0.12)` on purple background
+- **Removed:** Old ::after pseudo-element for halfway line (replaced with explicit element)
+- **Visual Result:** Proper half-pitch view with all standard football pitch markings visible
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added penalty arc, halfway line, center mark JSX)
+  - Modified: `src/components/PitchView/PitchView.module.css` (added CSS for new markings, removed ::after)
+
+### v2.4.21 - GW Selector Match Stats Tab Style (Dec 12, 2025)
+**NOTE:** This version was superseded by v2.4.23 which copied Stats tab EXACTLY instead of interpreting
+- **Original Problem:** GW selector was just plain text with arrows, no container styling
+- **First Solution (v2.4.21):** Added purple gradient container with styled arrow buttons
+  - Background: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)`
+  - Arrows in darker boxes with rounded corners
+  - Format: "GW 15" (not "Gameweek 15")
+- **User Feedback:** Requested EXACT copy from Stats tab instead of interpretation
+- **Result:** v2.4.23 replaced this implementation with actual Stats tab code (compact dark design)
+- **Files:**
+  - Modified: `src/components/PitchView/GWSelector.tsx` (updated to "GW" format)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (added purple gradient - later replaced)
+
+### v2.4.20 - Fix GW Transfers - Remove Nested Purple Container (Dec 12, 2025)
+**SIMPLIFICATION:** Removed duplicate purple container styling from gwTransfersContainer
+- **Problem:** GW Transfers had TWO purple containers nested inside each other
+  - Outer: `.panel` with purple gradient
+  - Inner: `.gwTransfersContainer` with same purple gradient (duplicate!)
+- **Root Cause:** Both `.panel` and `.gwTransfersContainer` had identical styling
+  - Background: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)`
+  - Border: `1px solid rgba(255, 255, 255, 0.1)`
+  - Border-radius: `16px`
+- **Solution:** Removed styling from `.gwTransfersContainer`, kept only `.panel` styled
+- **Updated .gwTransfersContainer:**
+  - Removed: `background` (no longer needed)
+  - Removed: `border` (no longer needed)
+  - Removed: `border-radius` (no longer needed)
+  - Removed: `padding: 1.25rem` (now `padding: 0`)
+  - Kept: `width: 100%` for layout
+  - Now acts as layout container only, styling comes from parent `.panel`
+- **Updated .gwTransfersTitle:**
+  - margin-bottom: 0.75rem (was 1rem) - adjusted for removed container padding
+- **Result:** Single purple container with transfers directly inside
+- **Visual Effect:** Clean single container, no nested box appearance
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (removed duplicate styling)
+
+### v2.4.19 - Stat Boxes Match Pitch Width - Dynamic Alignment (Dec 12, 2025)
+**ALIGNMENT:** Removed width constraints so stat boxes dynamically fill to match pitch width
+- **Problem:** Stat boxes (both rows) were narrower than pitch container due to min/max-width constraints
+- **Solution:** Use flex: 1 with no width limits to fill available space
+- **Removed Width Constraints:**
+  - Deleted `min-width: 95px` from `.statBox`
+  - Deleted `max-width: 115px` from `.statBox`
+  - Deleted `.statBoxRow:last-child .statBox` rule (min-width 120px, max-width 150px)
+  - Boxes now use `flex: 1` only - equal distribution within each row
+- **Updated Container Padding:**
+  - `.statBoxesContainer`: padding changed from `12px` to `0 1rem` (horizontal only)
+  - Now matches PitchView `.container` padding: 1rem
+  - Mobile: padding changed from `0 8px` to `0 0.75rem` (matches mobile pitch padding)
+- **Updated Row Layout:**
+  - `.statBoxRow`: added `width: 100%` for full width expansion
+  - Boxes distribute equally: Row 1 has 3 boxes, Row 2 has 2 boxes
+  - Row 2 boxes naturally larger since there are only 2 (flex: 1 handles this)
+- **Mobile Breakpoint (<400px):**
+  - Removed `min-width: 80px` and `max-width: 95px` from `.statBox`
+  - Removed `.statBoxRow:last-child .statBox` mobile override
+  - Updated padding to `0 0.75rem`
+- **Visual Result:** All containers (Row 1, Row 2, Pitch) now align perfectly with same width
+- **Design Goal:** Visual consistency - all elements span the same horizontal space
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (removed constraints, matched padding)
+
+### v2.4.18 - Fix StatsPanel Background - Use Purple Gradient (Dec 12, 2025)
+**CONSISTENCY:** Updated StatsPanel .panel class to use purple gradient, removing nested container effect
+- **Problem:** StatsPanel .panel wrapper had old dark blue gradient (#1e293b → #0f172a)
+- **Root Cause:** .panel background wasn't updated in Brief K-10 when all other containers were changed to purple
+- **Visual Issue:** Created nested box effect - dark blue panel with purple gwTransfersContainer inside
+- **Solution:** Updated .panel background to match all other containers
+- **Updated .panel Background:**
+  - Old: `linear-gradient(135deg, #1e293b 0%, #0f172a 100%)` (dark blue)
+  - New: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)` (purple)
+- **Cleaned Up Duplicate CSS:**
+  - Removed duplicate `.transferRow` definition (line 104)
+  - Removed duplicate `.transferPlayers` definition (line 150)
+  - Removed duplicate `.transferSummary` definition (line 142)
+  - Kept only the correct definitions (from Brief K-11a)
+- **Result:** StatsPanel now blends seamlessly with gwTransfersContainer, no visible nested boxes
+- **Design Goal:** Complete app-wide purple gradient consistency
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (updated .panel background, removed duplicates)
+
+### v2.4.17 - Stat Boxes 2-Row Layout (Dec 12, 2025)
+**READABILITY:** Changed 5 cramped boxes in single row to spacious 2-row layout
+- **Problem:** 5 stat boxes cramped in single row, hard to read, boxes too small
+- **Solution:** Split into 2 logical rows with larger boxes
+- **Row 1: This Gameweek (3 boxes)**
+  - GW PTS
+  - GW RANK
+  - TRANSFERS (with hit cost if applicable)
+- **Row 2: Season Totals (2 boxes)**
+  - TOTAL PTS
+  - OVERALL RANK
+- **JSX Changes:**
+  - Added `.statBoxRow` wrapper divs for each row
+  - Split 5 boxes into two rows (3 + 2)
+  - Updated all labels to uppercase (GW PTS, GW RANK, TRANSFERS, TOTAL PTS, OVERALL RANK)
+- **CSS Changes:**
+  - `.statBoxesContainer`: flex-direction column (was row), gap 8px
+  - `.statBoxRow`: new class for row layout, flex with center justify, gap 8px
+  - `.statBox`: min-width 95px (was 62px), max-width 115px (was 85px), padding 14px 12px
+  - `.statBoxValue`: font-size 1.5rem (was 1.4rem)
+  - `.statBoxLabel`: font-size 0.6rem (was 0.55rem)
+  - `.statBoxRow:last-child .statBox`: min-width 120px, max-width 150px (row 2 boxes wider)
+- **Mobile Breakpoint (<400px):**
+  - `.statBoxRow`: gap 6px
+  - `.statBox`: padding 10px 8px, min-width 80px, max-width 95px
+  - `.statBoxRow:last-child .statBox`: min-width 100px, max-width 120px
+  - `.statBoxValue`: font-size 1.3rem
+  - `.statBoxLabel`: font-size 0.55rem
+- **Visual Result:** Much more readable with larger boxes and logical grouping
+- **Design Goal:** Improve readability by giving boxes more space
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (split into 2 rows)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added row layout, increased sizes)
+
+### v2.4.16 - Fix GW Transfers - Remove Nested Container (Dec 12, 2025)
+**SIMPLIFICATION:** Removed container-within-container effect for cleaner single-box design
+- **Problem:** GW Transfers had nested boxes - purple outer container with grey/green inner cards
+- **Solution:** Single purple container with transfer rows directly inside
+- **Removed Nested Structure:**
+  - Deleted `.gwTransfersList` wrapper div
+  - Removed `.transferCard` styles (background, border, border-radius, padding, margin)
+  - Changed to simple `.transferRow` with separator lines
+- **Updated JSX Structure:**
+  - Transfer rows now map directly inside `.gwTransfersContainer`
+  - No intermediate wrapper div
+  - Changed className from `transferCard` to `transferRow`
+- **Updated CSS Styles:**
+  - `.gwTransfersContainer`: padding reduced to 1.25rem, added width: 100%
+  - `.gwTransfersTitle`: margin-bottom increased to 1rem
+  - `.transferRow`: Simple row with 12px padding, separator lines (rgba(255,255,255,0.06))
+  - `.transferRow:last-of-type`: No bottom border
+  - `.transferPlayers`: font-size increased to 0.9rem
+  - `.transferOut`: color lightened to rgba(255,255,255,0.6)
+  - `.transferArrow`: color lightened to rgba(255,255,255,0.3)
+  - `.transferPoints`: color adjusted to rgba(255,255,255,0.4), font-size 0.8rem
+  - `.transferDiff`: font-weight 700, font-size 1rem (larger, bolder)
+  - `.transferDiff.neutral`: color rgba(255,255,255,0.4)
+  - `.transferSummary`: color rgba(255,255,255,0.5), padding-top 12px, border rgba(255,255,255,0.06)
+- **Visual Result:** Clean single container matching pitch width with subtle separator lines between transfers
+- **Design Goal:** Remove visual clutter, match Stats tab container simplicity
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed nested div, changed to transferRow)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (removed card styles, added row styles)
+
+### v2.4.15 - Use Exact Stats Tab CSS for All Containers (Dec 12, 2025)
+**CONSISTENCY:** Applied Stats tab styling to all My Team containers for cohesive design
+- **Purple Gradient Background:** Changed all containers to Stats tab gradient
+  - Old: `linear-gradient(135deg, #1e293b 0%, #0f172a 100%)` (dark blue)
+  - New: `linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%)` (purple/magenta)
+  - Source: `/src/components/Stats/season/Leaderboard.module.css` `.card`
+- **Increased Border Radius:** Changed from 12px to 16px for all containers
+  - More rounded corners match Stats tab appearance
+- **Updated Stat Boxes (5 above pitch):**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 14px 10px (slightly increased for better proportion)
+- **Updated Team Value Boxes (2 below pitch):**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 16px 24px (unchanged)
+- **Updated Pitch Container:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Border and padding unchanged
+- **Updated GW Transfers Container:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Padding: 1.5rem (increased from 16px for consistency)
+- **Updated Collapsible Sections:**
+  - Background: Purple gradient (was dark blue)
+  - Border-radius: 16px (was 12px)
+  - Overflow: hidden (unchanged)
+- **Impact:** My Team tab now matches Stats tab appearance with unified purple gradient theme
+- **Design Goal:** App-wide visual consistency - all tabs feel like the same application
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (stat boxes, team value boxes)
+  - Modified: `src/components/PitchView/PitchView.module.css` (pitch container)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (GW transfers, collapsible sections)
+
+### v2.4.14 - Fix Container Styling + GW Transfers Static Display (Dec 12, 2025)
+**CONSISTENCY:** Made all boxes match app UI styling, converted GW Transfers to static display
+- **Fixed Stat Boxes Styling:** Updated to match Stats tab design
+  - Border-radius: 12px (was 10px)
+  - Container padding: 12px (was 0 8px)
+  - Flex-wrap: nowrap (was wrap)
+  - Min-width: 62px, max-width: 85px
+  - Value font-size: 1.4rem (was 1.3rem)
+  - Label font-size: 0.55rem (was 0.6rem)
+  - Label color: rgba(255,255,255,0.5) (was 0.6)
+  - Label margin-top: 6px (was 4px)
+  - Sub font-size: 0.7rem (was 0.65rem)
+- **Fixed Team Value Boxes Styling:** Updated to match app card design
+  - Border-radius: 12px (was 10px)
+  - Padding: 16px 24px (was 12px 20px)
+  - Container padding: 16px 12px (was 12px 8px)
+  - Min-width: 130px (was 100px)
+  - Value font-size: 1.4rem (was 1.2rem)
+  - Label color: rgba(255,255,255,0.5) (was 0.6)
+  - Label margin-top: 6px (was 4px)
+- **Converted GW Transfers to Static Container:** Removed collapsible dropdown
+  - Changed from CollapsibleSection component to static div
+  - Always visible when transfers exist
+  - Container background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%)
+  - Container border: 1px solid rgba(255,255,255,0.1), 12px border-radius
+  - Container padding: 16px with 12px margin-top
+  - Title: 0.85rem, #10b981 color, uppercase, 0.05em letter-spacing
+  - List: flex column with 8px gap
+  - Maintains transfer card styling with player details and net summary
+- **Mobile Breakpoint:** Added for screens under 400px
+  - Stat boxes: 56px min-width, 1.2rem value, 0.5rem label
+  - Container gap: 6px, padding: 8px
+  - Border-radius: 10px on mobile
+- **Impact:** All containers now have consistent app UI styling, GW Transfers always visible
+- **Files:**
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (updated stat boxes and team value boxes)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (converted GW Transfers to static container)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (added GW Transfers container styles)
+
+### v2.4.13 - Increase Player Card Size & Improve Pitch Markings (Dec 11, 2025)
+**SIZE & VISIBILITY:** Increased player card sizes and made pitch markings more visible
+- **Increased Player Card Sizes:** Players were too small to see clearly
+  - Card width: 58-68px (was 52-60px)
+  - Kit container: 48x52px (was 40x44px)
+  - Name font: 0.65rem (was 0.6rem)
+  - Name padding: 3px 6px (was 2px 4px)
+  - Name max-width: 66px (was 58px)
+  - Points font: 0.75rem (was 0.65rem)
+  - Points padding: 4px 12px (was 3px 10px)
+  - Points min-width: 32px (was 28px)
+- **Mobile Player Card Sizes:** Scaled appropriately for small screens
+  - Card width: 54-64px (was 46-50px)
+  - Kit container: 44x48px (was 30x34px)
+  - Name font: 0.6rem (was 0.48rem)
+  - Name max-width: 60px (was 50px)
+  - Points font: 0.7rem (was 0.6rem)
+  - Points padding: 3px 10px
+  - Bench cards: 48-56px wide
+- **Improved Pitch Markings:** Made lines more visible with better sizing
+  - Pitch min-height: 420px (was 400px)
+  - Penalty box: 200x75px with rgba(255,255,255,0.12) lines
+  - 6-yard box: 110x32px with 3px border-radius
+  - Penalty spot: 5x5px at top 55px
+  - Goal frame: 80x22px with subtle net (7px grid)
+  - Halfway line: bottom 85px, 8% margin, 0.12 opacity
+  - All lines use consistent subtle white: rgba(255,255,255,0.12)
+- **Mobile Pitch Adjustments:** Scaled pitch markings for mobile
+  - Penalty box: 160x60px
+  - 6-yard box: 90x26px
+  - Penalty spot: top 45px
+  - Goal frame: 70x18px
+  - Halfway line: bottom 75px
+- **Impact:** Players are now clearly visible and readable, pitch markings provide proper football field context
+- **Files:**
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (increased all card sizes)
+  - Modified: `src/components/PitchView/PitchView.module.css` (improved pitch markings visibility)
+
+### v2.4.12 - Pitch Redesign - App UI Colors & Simple Line Drawing (Dec 11, 2025)
+**VISUAL REDESIGN:** Replaced green grass pitch with dark app UI colors and simple line markings
+- **Background:** Changed from green grass to dark app card gradient
+  - Removed: Green gradient (#2d4a3e → #35573f)
+  - New: Dark gradient linear-gradient(135deg, #1e293b 0%, #0f172a 100%)
+  - Matches app's overall dark theme and card styling
+  - Border-radius: 12px, min-height: 400px
+- **Removed Grass Texture:** Deleted grass stripes (::before pseudo-element)
+  - No more fake grass texture
+  - Clean, flat background
+  - Minimalist design
+- **Updated Pitch Markings:** Simple white line drawings
+  - All lines: rgba(255,255,255,0.15) for subtle appearance
+  - Penalty box: 180x70px with rounded bottom corners
+  - 6-yard box: 100x30px with rounded bottom corners
+  - Halfway line: positioned 70px from bottom
+  - Penalty spot: 4x4px at top 50px
+- **Simplified Goal Frame:** Cleaner design
+  - Size: 90x25px (desktop), 80x20px (mobile)
+  - Border: 2px solid rgba(255,255,255,0.3)
+  - Background: rgba(0,0,0,0.3)
+  - Simple net pattern with 8px grid
+  - Net lines: rgba(255,255,255,0.08)
+- **Hidden Corner Arcs:** Removed for cleaner look
+  - display: none on all corner arcs
+  - Less visual clutter
+  - Focus on essential pitch elements
+- **Mobile Adjustments:** Scaled down markings
+  - Penalty box: 160x60px
+  - 6-yard box: 90x28px
+  - Goal frame: 80x20px
+  - Penalty spot: top 42px
+  - Halfway line: bottom 60px
+- **Impact:** Pitch now matches app's dark theme, looks more professional and less game-like
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (all pitch styling)
+
+### v2.4.11 - Transfers Section Cleanup (Dec 11, 2025)
+**CLEANUP:** Removed redundant "Transfers" section and restyled "GW Transfers" with card design
+- **Removed "TRANSFERS" Section:** Deleted season totals collapsible section
+  - Season Total transfers (not actionable info)
+  - Hits Taken with cost (not actionable info)
+  - Removed transfersTotal, transfersHits, transfersHitsCost state
+- **Restyled "GW TRANSFERS" Section:** Card-based design matching app aesthetic
+  - **Transfer Cards:** Each transfer displayed in individual card
+    - Background: rgba(255,255,255,0.03)
+    - Border: 1px solid rgba(255,255,255,0.08)
+    - Border-radius: 8px, padding: 10px 12px
+    - Horizontal layout with players and point differential
+  - **Player Display:**
+    - Player Out: rgba(255,255,255,0.7) color
+    - Arrow: → in rgba(255,255,255,0.4)
+    - Player In: #10b981 (green) color
+    - Points shown in smaller font (0.75rem) in rgba(255,255,255,0.5)
+  - **Point Differential:** Right-aligned, color-coded
+    - Positive: +X in #10b981 (green)
+    - Negative: -X in #ef4444 (red)
+    - Neutral: 0 in rgba(255,255,255,0.5)
+    - Font size: 0.9rem, bold
+  - **Summary:** Net points shown at bottom
+    - "Net: +X pts (after -Y hit: +Z pts)" format
+    - Border-top separator (1px solid rgba(255,255,255,0.05))
+    - Font size: 0.8rem, lighter color
+- **Impact:** Cleaner stats panel, transfer details more readable with card design
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed Transfers section, restyled GW Transfers)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (added transfer card styles)
+
+### v2.4.10 - Team Value Boxes Below Pitch (Dec 11, 2025)
+**LAYOUT ENHANCEMENT:** Moved Squad Value info from collapsible section to prominent boxes below pitch
+- **Added Team Value Boxes:** 2 boxes displayed below pitch (after bench)
+  - **Team Value:** Shows total squad value (e.g., "£103.8m")
+  - **In Bank:** Shows available funds (e.g., "£0.0m")
+  - Positioned between pitch and stats sections
+  - Visible on both mobile and desktop layouts
+- **App Card Styling:** Boxes match other stat boxes design
+  - Dark gradient background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border: 1px solid rgba(255,255,255,0.1)
+  - Border-radius: 10px
+  - Centered text with uppercase labels
+  - Min-width: 100px, padding: 12px 20px
+  - Gap: 12px between boxes
+- **Data Formatting:** Values formatted as £X.Xm (e.g., £103.8m)
+  - Fetched from team info API (teamValue and bank in 0.1m units)
+  - Formula: £${(value / 10).toFixed(1)}m
+- **Removed Squad Value Section:** Deleted collapsible section from StatsPanel
+  - No duplicate information
+  - Cleaner stats panel
+  - Removed teamValue and bank state from StatsPanel
+- **Impact:** Squad value more prominent and visible, consistent box design, no need to expand section
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added teamValue/bank state, fetch data, team value boxes JSX)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (team value boxes styles)
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed Squad Value section and related state)
+
+### v2.4.9 - Remove Redundant Stats Sections (Dec 11, 2025)
+**CLEANUP:** Removed redundant "This Gameweek" and "Overall" stats sections now that data is shown in boxes above pitch
+- **Removed "THIS GAMEWEEK" Section:** Deleted entire collapsible section
+  - Points (now in boxes)
+  - Rank (now in boxes)
+  - Transfers (now in boxes)
+  - Average Points (removed - not critical)
+- **Removed "OVERALL" Section:** Deleted entire collapsible section
+  - Points (now in boxes)
+  - Rank (now in boxes)
+  - Total Players (removed - not critical)
+- **Kept Remaining Sections:** Other sections still visible
+  - Squad Value (Team Value, In Bank)
+  - Transfers (Season Total, Hits Taken)
+  - GW Transfers (Transfer details)
+- **Cleaned Up Code:** Removed unused state variables and data fetching
+  - Removed: overallPoints, overallRank, totalPlayers, gwPoints, gwRank, averagePoints state
+  - Kept: teamValue, bank, gwTransfers, transfersTotal, transfersHits, transfersHitsCost, currentGW, currentGWTransfers
+  - Simplified data fetching to only set needed state
+- **Impact:** Cleaner stats panel, no duplicate information, faster rendering, less API data to process
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed sections, cleaned state)
+
+### v2.4.8 - Stats Boxes Above Pitch - 5 Boxes in App Style (Dec 11, 2025)
+**MAJOR LAYOUT CHANGE:** Moved stats from pitch overlay to 5 separate boxes above pitch in app card style
+- **Removed Pitch Stats Overlay:** Stats no longer displayed ON the pitch
+  - Deleted stats overlay boxes from pitch (Points and Transfers)
+  - Goalkeeper now fully visible without overlay blocking view
+  - Cleaner pitch appearance
+- **Removed Overall Stats Row:** Deleted old 2-stat row above GW selector
+- **Added 5 Stat Boxes Above Pitch:** New card-style boxes showing all key stats
+  - **GW Points:** Current gameweek points (e.g., "66")
+  - **GW Rank:** Gameweek rank formatted (e.g., "1.3M" for 1,315,462)
+  - **Transfers:** Transfer count with hit cost in red if applicable (e.g., "2" with "(-4)")
+  - **Total Points:** Overall points with comma formatting (e.g., "896")
+  - **Overall Rank:** Overall rank formatted (e.g., "248K" for 247,994)
+- **Number Formatting:** Smart formatting for large numbers
+  - 1M+ shows as "X.XM" (e.g., "1.3M")
+  - 1K+ shows as "XK" (e.g., "248K")
+  - <1K shows as-is (e.g., "896")
+- **App Card Styling:** Boxes match Stats tab card design
+  - Dark gradient background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border: 1px solid rgba(255,255,255,0.1)
+  - Border-radius: 10px
+  - Centered text, uppercase labels
+  - Flexible width with min 60px, max 80px
+- **Responsive Layout:** 5 boxes wrap on mobile (3+2 or all in one row)
+  - Gap: 8px between boxes
+  - Centered alignment
+  - Padding: 0 8px on container
+- **Impact:** All key stats visible at a glance, cleaner pitch view, consistent card design, better mobile layout
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (added 5 stat boxes, removed old row, added formatRank helper)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (stat boxes styles, removed old overall stats row)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed stats overlay, removed gwPoints/gwTransfers props)
+  - Modified: `src/components/PitchView/PitchView.module.css` (removed pitch stats overlay styles)
+  - Modified: `src/app/api/team/[teamId]/info/route.ts` (already returns gwRank - no changes needed)
+
+### v2.4.7 - My Team - Copy FPL App Layout Exactly (Dec 11, 2025)
+**MAJOR REDESIGN:** Copied official FPL app layout exactly - no creativity, just matching the source
+- **Overall Stats Row:** Added above GW selector
+  - Overall Points displayed on left (e.g., "896")
+  - Overall Rank on right with arrow indicator (e.g., "▲ 247,994")
+  - Underlined labels matching FPL app style
+  - Fetched from team info API endpoint
+- **Removed View Stats Toggle:** Stats sections now always visible and scrollable
+  - Deleted toggle button entirely from mobile layout
+  - Stats scroll normally below pitch like FPL app
+  - Better UX - no hidden content
+- **Fixed Stats Boxes on Pitch:** Made larger and properly positioned
+  - Increased padding: 10px 16px (was 8px 14px)
+  - Increased min-width: 85px (was 75px)
+  - Larger value font: 1.8rem (was 1.6rem)
+  - Better background: rgba(30,41,59,0.95) with proper border
+  - Hit cost now has red background pill
+- **Dark Grey-Green Pitch:** Changed from bright green to muted FPL colors
+  - New gradient: #2d4a3e → #35573f → #2d4a3e (was #1e4d2b → #236b38)
+  - More subtle grass stripes (30px/60px pattern with rgba(0,0,0,0.05))
+  - Border-radius: 8px (was 16px)
+  - Border: 1px solid (was 2px)
+  - Professional muted appearance matching FPL app
+- **Proper Goal Net:** Updated net pattern to match FPL
+  - Wider goal: 120px (was 110px), taller: 35px (was 32px)
+  - Net lines at 6px intervals with rgba(255,255,255,0.15)
+  - Darker background: rgba(0,0,0,0.5) (was 0.4)
+  - Thicker border: 3px solid rgba(255,255,255,0.5) (was 0.6)
+- **Smaller Player Cards:** Compact size matching FPL app
+  - Card width: 52-60px (was 54-58px)
+  - Kit size: 40x44px (was 38x42px)
+  - Name font: 0.6rem with dark background pill
+  - Points font: 0.65rem with proper padding (3px 10px)
+  - Removed bench-specific sizing - uses same opacity modifier
+- **Subtle Pitch Markings:** Reduced prominence
+  - Border width: 1px (was 2px)
+  - Opacity: 0.2 (was 0.25)
+  - Halfway line: 1px height, 0.15 opacity (was 2px, 0.25)
+  - All markings more subtle matching FPL app
+- **Stats Sections UI Consistency:** Match app card style exactly
+  - Card background: linear-gradient(135deg, #1e293b, #0f172a)
+  - Border-radius: 12px, margin: 12px bottom
+  - Toggle padding: 14px 16px, green title (#10b981)
+  - Content padding: 0 16px 16px
+  - Stat rows: 10px padding, rgba text colors
+  - Hover: rgba(255,255,255,0.03) background
+- **Impact:** Exact FPL app aesthetic, professional appearance, consistent UI across all sections
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (overall stats, removed toggle, always show stats)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (overall stats styles, deleted toggle styles)
+  - Modified: `src/components/PitchView/PitchView.module.css` (dark pitch, goal net, stat boxes, subtle markings)
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (smaller cards, proper sizing)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (match app card style)
+
+### v2.4.6 - My Team Visual Polish - Compact Cards & Darker Pitch (Dec 11, 2025)
+**MAJOR VISUAL POLISH:** Enhanced pitch aesthetics with stats overlay, darker colors, smaller cards matching official FPL app
+- **Stats Overlay:** Added semi-transparent stat boxes ON the pitch itself
+  - Points displayed in top-left corner
+  - Transfers displayed in top-right corner with hit cost in red when applicable
+  - Dark background (rgba(15,23,42,0.9)) with backdrop blur
+  - Always visible without taking vertical space
+- **Darker Pitch:** Changed from bright green to muted gradient (#1e4d2b → #236b38)
+  - More subtle grass stripes using rgba(0,0,0,0.06) transparency
+  - All pitch markings reduced from 0.4 to 0.25 opacity (penalty boxes, goal area, corner arcs)
+  - More professional appearance matching official FPL app
+- **Goal Net Texture:** Added visible crosshatch pattern to goal
+  - Dual repeating-linear-gradient for vertical and horizontal net lines
+  - White lines at 0.12 opacity on dark background
+  - Height increased from 12px to 32px for better visibility
+- **Smaller Player Cards:** Made cards compact like FPL app
+  - Desktop: min-width 80px → 54px, kit 70px → 38x42px, name 0.8rem → 0.55rem
+  - Bench cards even more compact: 48px min-width
+  - Points badge smaller: 0.85rem → 0.7rem, reduced padding
+  - Captain/vice badges: 20px → 16px
+  - Mobile (768px): Cards 50px, kit 34x38px, name 0.5rem
+  - Mobile (480px): Cards 46px, kit 30x34px, name 0.48rem
+- **Tighter Spacing:** Reduced gaps between rows with smaller cards
+  - Pitch row gap: 0.75rem → 0.6rem, margin-bottom: 1.5rem → 1rem
+  - Bench gap: 0.75rem → 0.6rem, padding-top: 1rem → 0.75rem
+  - Mobile (768px): gap 0.4rem, margin-bottom 0.75rem
+- **Mobile Responsive:** Stats overlay scales down on smaller screens
+  - 768px: Stat boxes 60px min-width, value 1.3rem, label 0.6rem
+  - 480px: Stat boxes 50px min-width, value 1.1rem, label 0.55rem
+- **Impact:** Professional FantasyPL aesthetic, more compact pitch view, better information density
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.tsx` (added gwPoints/gwTransfers props, stats overlay JSX)
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (fetch stats, pass to PitchView)
+  - Modified: `src/components/PitchView/PitchView.module.css` (darker pitch, subtle markings, goal net, stats overlay, tighter spacing, mobile adjustments)
+  - Modified: `src/components/PitchView/PlayerCard.module.css` (smaller cards, reduced sizes, mobile breakpoints)
+
+### v2.4.5 - My Team Structure - Remove Clutter, Add Stats Toggle (Dec 11, 2025)
+**MAJOR STRUCTURE CHANGES:** Removed unnecessary UI elements and added stats toggle for cleaner, more focused mobile experience
+- **Removed Header Bar:** Deleted TeamHeader component showing "FC Matos* / Greg Lienart" + stats - users know their own team
+- **Removed Formation Badge:** Deleted "3-4-3" pill from pitch - formation visible from player positions
+- **Removed BENCH Label:** Hidden "BENCH" text label - visual separation (border line) sufficient
+- **Simplified GW Selector:** Removed button borders and backgrounds - minimal arrows and text only
+- **Added Stats Toggle:** "View Stats" button below pitch reveals/hides all stats sections (hidden by default)
+- **Cleaner Mobile Layout:** Pitch takes center stage without header clutter
+- **Impact:** Faster focus on pitch, cleaner visual hierarchy, stats available on demand
+- **Files:**
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed TeamHeader, added stats toggle state/button)
+  - Modified: `src/components/Dashboard/Dashboard.module.css` (added viewStatsButton styles)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed formation badge JSX)
+  - Modified: `src/components/PitchView/PitchView.module.css` (hidden bench label)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (minimal button styling)
+  - Deleted: `src/components/PitchView/TeamHeader.tsx`, `TeamHeader.module.css`
+  - Deleted: `src/components/PitchView/QuickStats.tsx`, `QuickStats.module.css`
+
+### v2.4.4 - UI Consistency - Match App Style (Dec 11, 2025)
+**UX POLISH:** Unified My Team tab visual style with rest of app for consistent look and feel
+- **Green Accent Color:** Section titles now use app-wide green accent (#10b981) instead of faded white
+- **Brighter Text:** Increased text opacity across all components for better readability
+  - Manager name: 0.6 → 0.7
+  - Stat labels: 0.5 → 0.7
+  - Section toggle headers: #fff → rgba(255,255,255,0.9)
+  - Toggle icons: 0.5 → 0.7
+- **Interactive Elements:** Added green accent to hover states
+  - GW selector buttons show green border/background on hover
+  - Collapsible section headers show green border on hover
+- **Visual Consistency:** My Team now matches styling of Stats, Rankings, and Match Details
+- **Impact:** Cohesive app-wide design, improved text contrast, better visual hierarchy
+- **Files:**
+  - Modified: `src/components/PitchView/TeamHeader.module.css` (brighter text)
+  - Modified: `src/components/PitchView/StatsPanel.module.css` (green section titles, brighter text, green hover accent)
+  - Modified: `src/components/PitchView/GWSelector.module.css` (green hover accent)
+  - Modified: `src/components/PitchView/QuickStats.module.css` (brighter text)
+
+### v2.4.3 - Pitch Redesign - FantasyPL Style Half-Pitch (Dec 11, 2025)
+**MAJOR VISUAL REDESIGN:** Transformed full-pitch view into half-pitch perspective matching official FantasyPL app
+- **Half-Pitch Perspective:** Only shows from goal to midfield (removed full-field view)
+- **Goal Frame Enhanced:** Visible goal frame behind goalkeeper with thicker borders
+- **Bench Integrated:** Bench now part of pitch container (not separate card) with divider line
+- **Removed Elements:**
+  - Center circle and center spot (not needed for half-pitch)
+  - Bottom penalty box, goal area, and penalty spot
+  - Bottom corner arcs (kept only top corners)
+  - Bottom goal frame (hidden)
+- **Halfway Line:** Repositioned from 35% to bottom of pitch (above bench area)
+- **Visual Depth:** Maintained grass stripes for realistic field appearance
+- **Layout:** GK positioned in goal, DEF near penalty box, MID in middle, FWD near halfway line
+- **Impact:** More focused view matching official FPL aesthetic, cleaner design, better use of space
+- **Files:**
+  - Modified: `src/components/PitchView/PitchView.module.css` (half-pitch styling, removed full-field elements)
+  - Modified: `src/components/PitchView/PitchView.tsx` (removed bottom markings, bench integration)
+
+### v2.4.2 - Stats Section Cleanup (Dec 11, 2025)
+**UX IMPROVEMENT:** Removed noise and fixed incorrect hits calculation
+- **Removed:** "Highest Points" from This Gameweek section (not useful information)
+- **Fixed:** "Hits Taken" now shows correct season total instead of 0
+- **API Update:** Fetches entry history to sum all `event_transfers_cost` values
+- **Calculation:** Divides total cost by 4 to get number of hits
+- **Display:** Shows both hit count and total points lost (e.g., "3 (-12pts)")
+- **Impact:** Users now see accurate season hits data
+- **Files:**
+  - Modified: `src/components/PitchView/StatsPanel.tsx` (removed highestPoints, updated display)
+  - Modified: `src/app/api/team/[teamId]/transfers/route.ts` (fixed hits calculation)
+
+### v2.4.1 - Compact Header - Merge Team Info + Stats (Dec 11, 2025)
+**UX IMPROVEMENT:** Saved vertical space by merging team header and stats into one compact bar
+- **Mobile Layout:** Merged TeamHeader and QuickStats into single compact component
+- **Layout:** Team info on left (team name primary, manager name secondary), stats on right
+- **Removed:** Separate QuickStats component from mobile layout
+- **Vertical Space Saved:** One row instead of two before pitch
+- **Stats:** Points, Rank, Transfers displayed inline with team info
+- **Responsive:** Further compacted on small screens (< 768px and < 375px)
+- **Impact:** Users see their pitch even faster with more compact mobile header
+- **Files:**
+  - Modified: `src/components/PitchView/TeamHeader.tsx` (added stats props and display)
+  - Modified: `src/components/PitchView/TeamHeader.module.css` (horizontal layout)
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx` (removed QuickStats, pass stats to TeamHeader)
+
+### v2.4.0 - Mobile Layout Restructure (Dec 11, 2025)
+**MAJOR UX IMPROVEMENT:** Completely restructured My Team layout for mobile-first experience
+- **Mobile Layout (< 1024px):**
+  - Team header with manager name and team name at top
+  - GW selector moved above pitch for easier access
+  - Quick stats row (Points | Rank | Transfers) before pitch
+  - Pitch and bench fully visible without scrolling past stats wall
+  - Detailed collapsible stats sections below pitch
+- **Desktop Layout (≥ 1024px):**
+  - Unchanged: Two-column layout with full stats panel on left, pitch on right
+  - Stats panel shows team header and all sections (full mode)
+  - Pitch view includes GW selector
+- **New Components:**
+  - `TeamHeader`: Displays manager and team name in mobile header
+  - `GWSelector`: Standalone gameweek selector (reusable)
+  - `QuickStats`: Horizontal stats row for mobile (Points, Rank, Transfers)
+- **Component Updates:**
+  - `StatsPanel`: Added `mode` prop ('full' | 'collapsible-only') for responsive rendering
+  - `PitchView`: Added `showGWSelector` prop to conditionally show/hide GW selector
+  - `MyTeamTab`: Separate mobile and desktop layouts with responsive CSS switching
+- **Impact:** Mobile users see their team immediately without scrolling through massive stats panel
+- **Impact:** Better information hierarchy on mobile with quick stats at top, detailed stats below
+- **Files:**
+  - Created: `src/components/PitchView/TeamHeader.tsx`, `src/components/PitchView/TeamHeader.module.css`
+  - Created: `src/components/PitchView/GWSelector.tsx`, `src/components/PitchView/GWSelector.module.css`
+  - Created: `src/components/PitchView/QuickStats.tsx`, `src/components/PitchView/QuickStats.module.css`
+  - Modified: `src/components/PitchView/StatsPanel.tsx`
+  - Modified: `src/components/PitchView/PitchView.tsx`
+  - Modified: `src/components/Dashboard/MyTeamTab.tsx`
+  - Modified: `src/components/Dashboard/Dashboard.module.css`
+
+---
+
+## 🎨 v2.3.x - My Team UI Polish & Mobile Optimization (Dec 2025)
+
+### v2.3.1 - Fix Desktop Collapsible Sections Bug (Dec 11, 2025)
+**CRITICAL FIX:** Desktop now shows all section content correctly
+- Bug: Sections with `defaultOpen={false}` hid content on desktop
+- Root Cause: Conditional rendering (`{isOpen && <div>}`) prevented CSS override
+- Fix: Always render content div, control visibility with CSS classes
+- Added: `.open` and `.closed` classes for state-based styling
+- Desktop: Both classes override to `display: block` (always visible)
+- Mobile: `.closed` hides with `display: none`, `.open` shows
+- Impact: Desktop users can now see Overall, Squad Value, Transfers sections
+- Files: `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
+
+### v2.3.0 - Add Collapsible Sections & Compact Mobile Layout (Dec 10, 2025)
+**UI POLISH:** Improved stats panel with collapsible sections for better mobile experience
+- Added: Collapsible sections on mobile (tap to expand/collapse)
+- Desktop: Sections always open with cleaner header styling
+- Mobile: "This Gameweek" open by default, others collapsed to reduce scrolling
+- Sections: This Gameweek, Overall, Squad Value, Transfers, GW Transfers
+- Added: Hover states and tap affordance for future interactivity
+- Styling: More compact desktop padding (1.5rem → 1.25rem)
+- Styling: Mobile padding reduced (1.5rem → 1rem)
+- Impact: Mobile users no longer scroll through massive stats block to reach pitch
+- Impact: Cleaner, more organized information architecture
+- Files: `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
+
+---
+
+## 🎨 v2.2.x - My Team Redesign (Dec 2025)
+
+### v2.2.7 - Sync Left Panel with Gameweek Selection (Dec 10, 2025)
+**FEATURE:** Left panel stats now update when gameweek changes
+- Fixed: StatsPanel now syncs with selected GW from arrow navigation
+- Lifted: GW state from PitchView to MyTeamTab for shared control
+- Added: `selectedGW` prop to both StatsPanel and PitchView
+- Added: GW query parameter support to `/api/team/[teamId]/info` route
+- Flow: Arrow click → MyTeamTab state update → both panels refetch with new GW
+- Impact: Users can now view historical GW stats in left panel, not just current GW
+- Files: `src/components/Dashboard/MyTeamTab.tsx`, `src/components/PitchView/PitchView.tsx`, `src/components/PitchView/StatsPanel.tsx`, `src/app/api/team/[teamId]/info/route.ts`
+
+### v2.2.6 - Improve Formation Badge Placement (Dec 10, 2025)
+**UX FIX:** Formation badge now positioned inside pitch area
+- Moved: Formation badge from floating above pitch to top-left corner inside pitch
+- Styled: Smaller, more subtle design with dark background and blur effect
+- Changed: Position from `inline-block` to `absolute` at top-left (1rem, 1rem)
+- Reduced: Font size from 0.85rem to 0.75rem (desktop) and 0.7rem (mobile)
+- Added: Backdrop blur, subtle shadow, and better opacity for modern look
+- Impact: Badge looks intentional and integrated with pitch, not awkwardly floating
+- Files: `src/components/PitchView/PitchView.tsx`, `src/components/PitchView/PitchView.module.css`
+
+### v2.2.5 - Add Current GW Transfer Details (Dec 10, 2025)
+**FEATURE:** Display detailed transfer information with player names and points
+- Added: Current GW transfers section showing player-by-player breakdown
+- Display Format: "PlayerOut (Xpts) → PlayerIn (Ypts) = ±Z"
+- Added: Net gain calculation for each transfer
+- Added: Total net gain summary with hit cost factored in
+- Backend: Updated `/api/team/[teamId]/transfers` to fetch player points from bootstrap
+- Frontend: New transfer detail section with styled player names and net gains
+- Impact: Users can now see exactly how their transfers performed in current gameweek
+- Files: `src/app/api/team/[teamId]/transfers/route.ts`, `src/components/PitchView/StatsPanel.tsx`, `src/components/PitchView/StatsPanel.module.css`
+
+### v2.2.4 - Add FPL-wide Average and Highest Points (Dec 10, 2025)
+**FEATURE:** Display league-wide statistics in My Team Stats panel
+- Added: Average Points row to "This Gameweek" section
+- Added: Highest Points row to "This Gameweek" section
+- Backend: Updated `/api/team/[teamId]/info` to extract stats from bootstrap events array
+- Frontend: Updated StatsPanel to display `averagePoints` and `highestPoints`
+- Data Source: FPL bootstrap-static API events[currentGW-1].average_entry_score and .highest_score
+- Impact: Users can now compare their GW performance against FPL-wide averages
+- Files: `src/app/api/team/[teamId]/info/route.ts`, `src/components/PitchView/StatsPanel.tsx`
+
+### v2.2.3 - Remove Duplicate Header Stats (Dec 10, 2025)
+**UX CLEANUP:** Removed redundant Points and Transfers boxes from pitch view header
+- Removed: Duplicate GW Stats section showing Points and Transfers
+- Reason: Information already displayed in left panel's "This Gameweek" section
+- Result: Cleaner layout without redundant information
+- Impact: Left panel still shows Points, Rank, and Transfers as comprehensive stats
+- Files: `src/components/PitchView/PitchView.tsx`
+
+### v2.2.2 - Fix Pitch Markings Alignment (Dec 10, 2025)
+**UX FIX:** Pitch markings now properly positioned relative to player rows
+- Fixed: Halfway line moved from 50% to 35% from top
+- Fixed: Center circle repositioned to 35% (aligned with halfway line)
+- Fixed: Center spot repositioned to 35% (aligned with halfway line)
+- Result: Halfway line now clearly between defenders and midfielders
+- Result: Center circle no longer cuts through defender row
+- Impact: Pitch looks like actual football pitch with proper perspective
+- Files: `src/components/PitchView/PitchView.module.css`
+
+### v2.2.1 - Negative Scores & Bigger Player Cards (Dec 10, 2025)
+**UX IMPROVEMENTS:** Enhanced fixtures and pitch view display
+- Added: Negative fixture scores show in parentheses format (4) instead of -4
+- Reason: Prevents confusing displays like "-4 - 4" → now shows as "(4) - 4"
+- Fixed: Player cards made bigger to prevent name truncation
+- Desktop: Cards 60px → 80px, kits 70px, name max-width 95px
+- Mobile: Cards 50px → 65px, kits 60px, name max-width 80px
+- Impact: Names like "B.Fernandes" and "Woltemade" now display fully
+- Files: `src/components/Fixtures/FixturesTab.tsx`, `src/components/PitchView/PlayerCard.module.css`
 
 ---
 
@@ -931,5 +2857,5 @@ Added comprehensive error logging to diagnose failures
 
 ---
 
-**Last Updated:** December 8, 2025
+**Last Updated:** December 12, 2025
 **Maintained By:** Claude Code (automated after every deployment)

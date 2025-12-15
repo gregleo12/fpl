@@ -1,5 +1,6 @@
 'use client';
 
+import { Star } from 'lucide-react';
 import type { CaptainPickData } from '../StatsHub';
 import styles from './Section.module.css';
 
@@ -12,7 +13,9 @@ export function CaptainPicks({ data, totalManagers }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>⭐ Captain Picks</h3>
+        <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Star size={18} color="#00ff87" /> Captain Picks
+        </h3>
         <div className={styles.noData}>Data not available - visit Rankings to sync</div>
       </div>
     );
@@ -20,7 +23,9 @@ export function CaptainPicks({ data, totalManagers }: Props) {
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.sectionTitle}>⭐ Captain Picks</h3>
+      <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Star size={18} color="#00ff87" /> Captain Picks
+      </h3>
       <div className={styles.content}>
         {data.slice(0, 5).map((captain, index) => (
           <div key={captain.player_id} className={styles.item}>

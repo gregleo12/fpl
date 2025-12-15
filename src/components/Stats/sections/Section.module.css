@@ -261,10 +261,12 @@
   background: rgba(0, 255, 135, 0.1);
   border-radius: 4px;
   white-space: nowrap;
+  line-height: 1;
 }
 
 .chipIcon {
-  font-size: 1rem;
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Expand Button */

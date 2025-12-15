@@ -17,19 +17,43 @@ export async function GET(
 
     const db = await getDatabase();
 
+    // Get bootstrap data to check which gameweeks have started
+    // Fallback to 38 if bootstrap fetch fails (include all GWs)
+    let maxStartedGW = 38;
+    try {
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const events = bootstrapData?.events || [];
+
+        // Find the highest gameweek that has started (is_current or finished)
+        const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
+        if (startedGameweeks.length > 0) {
+          maxStartedGW = Math.max(...startedGameweeks.map((e: any) => e.id));
+        }
+      }
+    } catch (error) {
+      console.log('Could not fetch bootstrap data, including all gameweeks');
+    }
+
     // Fetch all matches for the league to determine completed gameweeks
-    // Only count gameweeks where matches were actually played (points > 0)
+    // Include matches from gameweeks that have started (even if 0-0)
     const matchesResult = await db.query(`
       SELECT DISTINCT event
       FROM h2h_matches
       WHERE league_id = $1
-      AND entry_1_points IS NOT NULL
-      AND entry_2_points IS NOT NULL
-      AND (entry_1_points > 0 OR entry_2_points > 0)
+      AND event <= $2
       ORDER BY event
-    `, [leagueId]);
+    `, [leagueId, maxStartedGW]);
 
     const completedGameweeks = matchesResult.rows.map(r => r.event);
+
+    // DEBUG: Log what gameweeks we found
+    console.log(`[Season Stats Debug] League ${leagueId}:`);
+    console.log(`  maxStartedGW from bootstrap: ${maxStartedGW}`);
+    console.log(`  completedGameweeks in DB: ${completedGameweeks.join(', ')}`);
+    console.log(`  Missing GW15? ${!completedGameweeks.includes(15)}`);
+    console.log(`  Missing GW16? ${!completedGameweeks.includes(16)}`);
 
     if (completedGameweeks.length === 0) {
       return NextResponse.json({
@@ -236,11 +260,25 @@ async function calculateChipPerformance(
           (chip: any) => gameweeks.includes(chip.event)
         );
 
+        // Get match results for this manager to determine win/loss for each chip
+        const matchesResult = await db.query(`
+          SELECT event, winner
+          FROM h2h_matches
+          WHERE league_id = $1
+          AND event = ANY($2)
+          AND (entry_1_id = $3 OR entry_2_id = $3)
+        `, [leagueId, gameweeks, manager.entry_id]);
+
+        const matchResults = new Map(
+          matchesResult.rows.map((m: any) => [m.event, m.winner === manager.entry_id ? 'W' : m.winner ? 'L' : 'D'])
+        );
+
         return {
           manager,
           chips: chips.map((c: any) => ({
             name: c.name,
-            event: c.event
+            event: c.event,
+            result: matchResults.get(c.event) || 'D'
           }))
         };
       } catch (error) {
@@ -252,25 +290,35 @@ async function calculateChipPerformance(
 
     // LEADERBOARD 1: Most Chips Played
     const chipsPlayed = allChipData
-      .map(({ manager, chips }) => ({
-        entry_id: manager.entry_id,
-        player_name: manager.player_name,
-        team_name: manager.team_name,
-        chip_count: chips.length,
-        chips_detail: chips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', ')
-      }))
+      .map(({ manager, chips }) => {
+        // Sort chips by GW
+        const sortedChips = [...chips].sort((a: any, b: any) => a.event - b.event);
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          chip_count: chips.length,
+          chips_detail: sortedChips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
+          chips_played_data: sortedChips.map((c: any) => ({
+            chip: CHIP_NAMES[c.name] || c.name,
+            gw: c.event,
+            result: c.result
+          }))
+        };
+      })
       .filter(m => m.chip_count > 0)
       .sort((a, b) => b.chip_count - a.chip_count);
 
     // LEADERBOARD 2: Most Chips Faced
+    // Changed to use FPL API (like Chips Played) instead of database active_chip columns
     const chipsFaced = await Promise.all(
       managers.map(async (manager) => {
-        // Get all matches where this manager played
+        // Get all matches where this manager played (including winner info)
         const matchesResult = await db.query(`
           SELECT
-            entry_1_id, entry_2_id,
-            active_chip_1, active_chip_2,
-            event
+            entry_1_id, entry_2_id, entry_1_points, entry_2_points,
+            winner, event
           FROM h2h_matches
           WHERE league_id = $1
           AND event = ANY($2)
@@ -278,25 +326,61 @@ async function calculateChipPerformance(
         `, [leagueId, gameweeks, manager.entry_id]);
 
         const matches = matchesResult.rows;
-        let opponentChips: string[] = [];
+        let opponentChipsData: Array<{chip: string, gw: number, result: string}> = [];
 
+        // For each match, get opponent's entry ID and fetch their chip history from FPL API
         for (const match of matches) {
-          // If manager is entry_1, count entry_2's chip
-          if (match.entry_1_id === manager.entry_id && match.active_chip_2) {
-            opponentChips.push(`${CHIP_NAMES[match.active_chip_2] || match.active_chip_2} (GW${match.event})`);
+          const opponentId = match.entry_1_id === manager.entry_id ? match.entry_2_id : match.entry_1_id;
+
+          // Skip AVERAGE opponent (-1)
+          if (opponentId === -1) continue;
+
+          // Determine result for this manager
+          let result = 'D';
+          if (match.winner === manager.entry_id) {
+            result = 'W';
+          } else if (match.winner && match.winner !== manager.entry_id) {
+            result = 'L';
           }
-          // If manager is entry_2, count entry_1's chip
-          if (match.entry_2_id === manager.entry_id && match.active_chip_1) {
-            opponentChips.push(`${CHIP_NAMES[match.active_chip_1] || match.active_chip_1} (GW${match.event})`);
+
+          try {
+            // Fetch opponent's chip history from FPL API
+            const response = await fetch(
+              `https://fantasy.premierleague.com/api/entry/${opponentId}/history/`
+            );
+            if (!response.ok) continue;
+
+            const data = await response.json();
+            const chips = data.chips || [];
+
+            // Check if opponent used a chip in this gameweek
+            const chipUsed = chips.find((c: any) => c.event === match.event);
+            if (chipUsed) {
+              opponentChipsData.push({
+                chip: CHIP_NAMES[chipUsed.name] || chipUsed.name,
+                gw: match.event,
+                result: result
+              });
+            }
+          } catch (error) {
+            // Skip if can't fetch opponent data
+            continue;
           }
         }
+
+        // Sort by GW (oldest to newest)
+        opponentChipsData.sort((a, b) => a.gw - b.gw);
+
+        // Create display string
+        const chipsDetail = opponentChipsData.map(c => `${c.chip} (GW${c.gw})`).join(', ');
 
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
-          chips_faced_count: opponentChips.length,
-          chips_faced_detail: opponentChips.join(', ')
+          chips_faced_count: opponentChipsData.length,
+          chips_faced_detail: chipsDetail,
+          chips_faced_data: opponentChipsData // Include structured data for frontend
         };
       })
     );

@@ -34,6 +34,11 @@ export default function Landing() {
   return (
     <div className={styles.container}>
       <main className={styles.main}>
+        <div className={styles.logo}>
+          <span className={styles.logoRival}>Rival</span>
+          <span className={styles.logoSlash}>/</span>
+          <span className={styles.logoFPL}>FPL</span>
+        </div>
         <h1 className={styles.title}>FPL H2H Analytics</h1>
         <p className={styles.subtitle}>Track your Head-to-Head league performance</p>
         <LeagueInput />

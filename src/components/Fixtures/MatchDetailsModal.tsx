@@ -51,7 +51,10 @@ interface DifferentialPlayer {
   playerName: string;
   avgPoints: number;
   form: number[];
+  formMinutes: number[];
   position: string;
+  currentGwPoints: number;
+  currentGwMinutes: number;
 }
 
 interface DifferentialPlayers {

@@ -1,0 +1,327 @@
+.container {
+  width: 100%;
+}
+
+.loading,
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+.error {
+  color: #ef4444;
+}
+
+/* Overall Stats */
+.overallStats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statBox {
+  flex: 1;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* GW Selector */
+.gwSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gwButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gwButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.gwButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.gwDisplay {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* GW Stats */
+.gwStats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.gwStatBox {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gwStatValue {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.gwStatLabel {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.gwStatCost {
+  font-size: 0.7rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+/* Formation Badge */
+.formationBadge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Pitch - half-pitch with integrated bench */
+.pitch {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);  /* Standard container border */
+  border-radius: 16px;
+  padding: 1rem 0.5rem;
+  position: relative;
+  min-height: 420px;
+}
+
+/* ====== PITCH MARKINGS - REMOVED (v2.4.42) ====== */
+/* Pitch markings removed for cleaner look - just players on purple background */
+/*
+.pitchMarkings {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pitchBorder {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 140px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.goalFrame {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 25px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: none;
+  background: transparent;
+}
+
+.sixYardBox {
+  position: absolute;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: none;
+  background: transparent;
+}
+
+.penaltyArea {
+  position: absolute;
+  top: 25px;
+  left: 20px;
+  right: 20px;
+  height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: none;
+  background: transparent;
+}
+
+.penaltySpot {
+  position: absolute;
+  top: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+}
+
+.penaltyArc {
+  position: absolute;
+  top: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 90px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0 0 90px 90px;
+  border-top: none;
+  background: transparent;
+}
+
+.halfwayLine {
+  position: absolute;
+  bottom: 140px;
+  left: 20px;
+  right: 20px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.centerCircle {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 75px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 75px 75px 0 0;
+  border-bottom: none;
+  background: transparent;
+}
+*/
+
+.pitchRow {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  padding: 0 8px;
+}
+
+.pitchRow:last-child {
+  margin-bottom: 0;
+}
+
+/* Bench - integrated into pitch container */
+.bench {
+  position: relative;
+  z-index: 2;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.benchLabel {
+  display: none;
+}
+
+.benchRow {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start;  /* Changed to flex-start to accommodate position labels */
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0 8px;
+}
+
+.benchPlayerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.benchPosition {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 4px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Small screen padding adjustments only - no layout changes */
+@media (max-width: 480px) {
+  .pitch {
+    padding: 1rem 0.25rem 0.75rem;
+  }
+
+  .pitchRow {
+    padding: 0 6px;
+  }
+
+  .benchRow {
+    padding: 0 6px;
+  }
+}

@@ -435,6 +435,16 @@
   letter-spacing: 0.5px;
 }
 
+.chipWin {
+  background: rgba(0, 255, 135, 0.2);
+  color: #00ff87;
+}
+
+.chipLoss {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
 /* Result Badge */
 .resultBadge {
   display: inline-flex;
@@ -563,46 +573,17 @@
   font-size: 0.9rem;
 }
 
-/* Mobile Responsive */
-@media (max-width: 1024px) {
-  .section {
-    padding: 1.5rem;
-  }
+/* Removed desktop/mobile breakpoint switches - consistent layout at all widths */
 
-  .table th,
-  .table td {
-    padding: 0.75rem 0.5rem;
-    font-size: 0.85rem;
-  }
-
-  .formIndicator {
-    width: 20px;
-    height: 20px;
-    font-size: 0.7rem;
-  }
-
-  .streak {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.6rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .leagueTab,
-  .myTeamTab {
-    gap: 0.5rem; /* 8px to match mobile fixtures container spacing */
-  }
-
+/* Mobile Responsive - Table and Stats Styling */
+@media (max-width: 978px) {
+  /* Section spacing */
   .section {
     padding: 1rem;
   }
 
   .sectionHeader {
     margin-bottom: 1rem;
-  }
-
-  .sectionHeaderWithToggle {
-    margin-bottom: 10px;
   }
 
   .sectionTitle {
@@ -614,48 +595,7 @@
     margin-left: 6px;
   }
 
-  .teamHeader {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .managerName {
-    font-size: 1.25rem;
-  }
-
-  .teamNameSubtitle {
-    font-size: 0.875rem;
-  }
-
-  .rankBadge {
-    padding: 6px 10px;
-    flex-shrink: 0;
-  }
-
-  .rankNumber {
-    font-size: 1.25rem;
-  }
-
-  .rankLabel {
-    font-size: 0.625rem;
-  }
-
-  .formGrid {
-    gap: 8px;
-  }
-
-  .formCircle {
-    width: 48px;
-    height: 48px;
-    font-size: 1.125rem;
-  }
-
-  .gameweekLabel {
-    font-size: 0.6875rem;
-  }
-
+  /* Stats Grid - 4 columns on mobile */
   .statsGrid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -682,18 +622,19 @@
     font-weight: 700;
   }
 
-  /* Highlighted stat card (Total Points) */
-  .statCard.highlight {
-    background: rgba(0, 255, 135, 0.08);
-    border-color: rgba(0, 255, 135, 0.3);
+  /* Form Grid */
+  .formGrid {
+    gap: 8px;
   }
 
-  .statCard.highlight .statValue {
-    color: #00ff87;
+  .formCircle {
+    width: 48px;
+    height: 48px;
+    font-size: 1.125rem;
   }
 
-  .rankNumber {
-    font-size: 2rem;
+  .gameweekLabel {
+    font-size: 0.6875rem;
   }
 
   .formIndicator {
@@ -702,6 +643,7 @@
     font-size: 0.65rem;
   }
 
+  /* Rankings Table Styling */
   .table {
     font-size: 0.8rem;
   }
@@ -711,23 +653,14 @@
     padding: 0.5rem 0.35rem;
   }
 
-  .chipBadgeSmall {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.4rem;
-  }
-
-  .chipsCell {
-    gap: 0.25rem;
-  }
-
-  /* Hide non-essential columns on mobile portrait */
+  /* Hide non-essential columns on mobile */
   .formCol,
   .pfCol,
   .diffCol {
     display: none;
   }
 
-  /* Show streak on mobile - valuable quick insight */
+  /* Show streak on mobile */
   .streakCol {
     display: table-cell;
     padding: 0.5rem 0.25rem 0.5rem 0.5rem !important;
@@ -741,7 +674,7 @@
     min-width: 36px !important;
   }
 
-  /* Ensure team column shows both team and manager */
+  /* Team column sizing */
   .teamCol {
     min-width: 140px;
     max-width: 140px;
@@ -771,7 +704,7 @@
     font-size: 0.85rem;
   }
 
-  /* Compact rank indicators on mobile */
+  /* Compact rank indicators */
   .currentRank {
     font-size: 0.9rem;
   }
@@ -782,11 +715,42 @@
     gap: 1px;
   }
 
-  /* Compact points column but keep it prominent */
+  /* Points column */
   .ptsCol {
     padding: 0.5rem 0.3rem !important;
     text-align: center;
     font-weight: 700;
+  }
+
+  /* Chip badges */
+  .chipBadgeSmall {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+
+  .chipsCell {
+    gap: 0.25rem;
+  }
+
+  /* Rank badge */
+  .rankBadge {
+    padding: 6px 10px;
+    flex-shrink: 0;
+  }
+
+  .rankNumber {
+    font-size: 1.25rem;
+  }
+
+  .rankLabel {
+    font-size: 0.625rem;
+  }
+}
+
+/* Small screen padding adjustments only - no layout changes */
+@media (max-width: 480px) {
+  .section {
+    padding: 1.5rem;
   }
 }
 
@@ -879,3 +843,135 @@
     box-shadow: 0 0 0 8px rgba(255, 71, 87, 0);
   }
 }
+
+/* My Team Content - Consistent spacing wrapper, unified layout for all screen sizes */
+.myTeamContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+/* Desktop: Center layout and add max-width to prevent over-stretching */
+@media (min-width: 769px) {
+  .myTeamContent {
+    max-width: var(--app-max-width);
+    margin: 0 auto;
+  }
+}
+
+/* Stat Boxes Container - 2 Rows */
+.statBoxesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.statBoxRow {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.statBox {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 14px 12px;
+  flex: 1;
+  text-align: center;
+}
+
+.statBoxValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.statBoxLabel {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+.statBoxSub {
+  font-size: 0.9rem;
+  color: #ff4757;
+  font-weight: 600;
+}
+
+/* Team Value Boxes - Below pitch */
+.teamValueBoxes {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.teamValueBox {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 16px 24px;
+  text-align: center;
+  flex: 1;
+}
+
+.teamValueBoxValue {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.teamValueBoxLabel {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  margin-top: 6px;
+  letter-spacing: 0.03em;
+}
+
+/* Mobile - slightly smaller */
+@media (max-width: 400px) {
+  .myTeamContent {
+    gap: 6px;
+    padding: 0 10px;
+  }
+
+  .statBoxesContainer {
+    gap: 6px;
+  }
+
+  .statBoxRow {
+    gap: 6px;
+  }
+
+  .statBox {
+    padding: 10px 8px;
+    border-radius: 10px;
+  }
+
+  .statBoxValue {
+    font-size: 1.3rem;
+  }
+
+  .statBoxLabel {
+    font-size: 0.55rem;
+  }
+
+  .teamValueBoxes {
+    gap: 6px;
+  }
+}
+
+/* Desktop layout removed - using unified layout for all screen sizes */

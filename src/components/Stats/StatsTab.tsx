@@ -6,9 +6,11 @@ import { StatsHub } from './StatsHub';
 interface StatsTabProps {
   leagueId: string;
   myTeamId: string;
+  myTeamName: string;
+  myManagerName: string;
 }
 
-export default function StatsTab({ leagueId, myTeamId }: StatsTabProps) {
+export default function StatsTab({ leagueId, myTeamId, myTeamName, myManagerName }: StatsTabProps) {
   const [leagueData, setLeagueData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,6 +79,9 @@ export default function StatsTab({ leagueId, myTeamId }: StatsTabProps) {
       currentGW={currentGW}
       maxGW={maxGW}
       isCurrentGWLive={leagueData.isCurrentGWLive || false}
+      myTeamId={myTeamId}
+      myTeamName={myTeamName}
+      myManagerName={myManagerName}
     />
   );
 }

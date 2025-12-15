@@ -1,6 +1,7 @@
 :root {
   --status-bar-height: env(safe-area-inset-top);
   --bottom-bar-height: env(safe-area-inset-bottom);
+  --app-max-width: 1400px;
 }
 
 * {

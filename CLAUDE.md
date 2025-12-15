@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-08
+Last Updated: 2025-12-15 (v2.6.7)
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -392,6 +392,67 @@ NEVER push without bumping version and documenting it!
 - `/src/app/setup/select-league/select-league.module.css`
 
 **Result:** Clean, simple, maintainable codebase with proven League ID entry flow.
+
+---
+
+## MANDATORY: Test Before Committing
+
+**NEVER commit untested code. This is non-negotiable.**
+
+### Before Every Commit:
+
+1. **Run the dev server**
+   ```bash
+   npm run dev
+   ```
+
+2. **Open browser and test**
+   - Go to http://localhost:3001
+   - Navigate to the feature you changed
+   - Verify it works as expected
+
+3. **Check browser console**
+   - Open DevTools (F12) or check terminal for errors
+   - Look for any errors in Console tab
+   - Check Network tab if API calls are involved
+
+4. **Only commit if it works**
+   - If it works → commit and push
+   - If it doesn't work → debug and fix first
+   - DO NOT commit broken code hoping it will work in production
+
+5. **Confirm testing in commit message**
+   - Include "Tested locally" or "Verified working" in commit
+   - If you cannot test, explain why and flag it
+
+### Example Workflow
+
+```bash
+# 1. Make changes
+# 2. Test locally
+npm run dev
+# 3. Open browser, test feature, check console
+# 4. Only then commit
+git add .
+git commit -m "v2.5.9: Fix player modal - Tested locally, shows correct assists"
+git push
+```
+
+### Why This Matters
+
+- Saves time: Catching bugs locally is faster than debugging deployed code
+- Saves deployments: Railway has limited build minutes
+- Saves frustration: User doesn't have to test broken builds repeatedly
+- Professional practice: No developer ships untested code
+
+### Red Flags - Stop and Test
+
+If you're about to say:
+- "It should work"
+- "This will fix it"
+- "Once deployed, it will work"
+
+STOP. Test it first. Verify it actually works.
 
 ---
 
@@ -1190,7 +1251,85 @@ const [data1, data2] = await Promise.all([
 
 ## Version History
 
-**Latest (v2.0.x Series - Dec 2025):**
+**Latest (v2.6.x Series - Dec 2025):**
+- **v2.6.7 (Dec 15)** - 🗄️ **Switch PlayersTab to database** - migrated from FPL proxy to /api/players endpoint, added missing DB columns (team_code, event_points, cost_change_start, defensive_contribution), updated all interfaces to use DB field names (position instead of element_type, team_id instead of team), synced 760 players + 11,850 gameweek stats to production DB
+- **v2.6.6 (Dec 15)** - 🔧 Fix Players tab with FPL API proxy - created /api/fpl-proxy server-side route to bypass CORS, temporary solution
+- **v2.6.5 (Dec 15)** - ❌ Attempt database API (failed - tables didn't exist)
+- **v2.6.4 (Dec 15)** - 🎨 Improve error handling - added retry button, detailed HTTP status codes
+- **v2.6.3 (Dec 15)** - 🔗 Integrate PlayersTab into Stats section - updated import path to @/components/Players
+- **v2.6.2 (Dec 15)** - 📝 Simplify version numbering - removed alpha/beta suffixes
+
+**v2.6.0-alpha Series (Dec 15):**
+- **v2.6.0-alpha.2** - 🎯 Add all stats columns with Compact/All toggle - 25 comprehensive columns (price, ownership, attacking, defensive, bonus, value), view mode toggle, format functions for £/%, dynamic rendering
+- **v2.6.0-alpha.1** - 🎯 Add Players tab foundation - initial table structure, jersey images, position/team display, layout foundation
+
+**v2.5.x Series (Dec 14-15):**
+- **v2.5.29** - 🎨 Make player card name and points/fixture bars equal height
+- **v2.5.28** - 🐛 Fix chip badge icon alignment (proper fix)
+- **v2.5.27** - 🎨 Reduce player card box height for better proportions
+- **v2.5.26** - 🐛 Fix player card size consistency for points and fixture boxes
+- **v2.5.25** - 🐛 Fix icon alignment in chip badges
+- **v2.5.24** - 🎨 Replace final two emojis in Stats Hub with Lucide icons - completed emoji replacement project
+- **v2.5.23** - 🎨 Replace Trophy icon with cleaner Shirt icon in navigation
+- **v2.5.22** - 🎨 Replace remaining emojis in Stats Hub with Lucide icons
+- **v2.5.21** - 🎨 Replace emojis with color-matched Lucide icons - professional icon library migration
+- **v2.5.20** - 🐛 Fix LiveMatchModal player colors - use hasPlayed instead of points
+- **v2.5.19** - 🐛 Final color fixes - name bar & differential players
+- **v2.5.18** - 🐛 Fix differential players colors - include current GW minutes
+- **v2.5.17** - ✨ Show fixture info for players who haven't played yet
+- **v2.5.16** - 🔧 Add script to sync all players with defensive contribution data
+- **v2.5.15** - 🐛 Fix Defensive Contribution display - always show for DEF/MID
+- **v2.5.14** - ✨ Dynamic stats when navigating gameweeks in My Team
+- **v2.5.13** - 🐛 Fix player status colors - use minutes instead of points
+- **v2.5.12** - ✨ **Add Defensive Contribution points (DEFCON)** - +2 per 10 DC (DEF), +2 per 12 DC (MID), added defensive_contribution column, migration script, verified with Senesi GW15 (11 DC = 2 pts)
+- **v2.5.11** - ✨ **Complete Player Modal - FPL-style points breakdown** - full points calculation (minutes, goals, assists, CS, GC, saves, penalties, cards, bonus), "Assists: 2 → +6 pts" format, captain multiplier, grid layout
+- **v2.5.10** - 🐛 Fix PlayerModal - remove external API call, copy working pattern
+- **v2.5.9** - 📝 Add mandatory testing section to CLAUDE.md
+- **v2.5.8** - 🔧 Copy working PlayerDetailModal pattern to PlayerModal
+- **v2.5.7** - 🔧 Update version number for debug logging
+- **v2.5.6-debug** - 🔧 Add debug logging to PlayerModal
+- **v2.5.6** - 🐛 Fix My Team modal - use working /api/players endpoint
+- **v2.5.5** - 🐛 Fix K-23 critical bugs + database migration
+- **v2.5.4** - 🐛 Fix TypeScript error in PlayerDetailModal
+- **v2.5.3** - 📦 Add missing lucide-react dependency
+- **v2.5.2** - 🔧 Fix K-21c - Connect PlayerModal to backend API
+- **v2.5.1** - 🔖 Bump version for Player Detail Modal feature
+- **v2.5.0 (K-23d)** - ✨ Add Player Detail Modal
+- **v2.5.0 (K-23c-v2)** - 🎨 Fix Players List UI - Styling & All Stats
+- **v2.5.0 (K-23c)** - ✨ Add Players List UI to Stats Hub
+- **v2.5.0 (K-23b)** - 🔌 **Add Players API Endpoints** - GET /api/players (filters, sorting, search, pagination), GET /api/players/[id], GET /api/players/[id]/gameweek/[gw]
+- **v2.5.0 (K-23a)** - 🗄️ **Add Players Database Schema + Sync Job** - players table (760 rows), player_gameweek_stats table, teams table (20), playerSync.ts, POST /api/admin/sync/players, test-player-sync.ts, verified all data accuracy
+
+**Previous (v2.4.x Series - Dec 2025):**
+- **v2.4.45 (Dec 12)** - 🎨 Add RivalFPL branding - text logo on welcome screen, "Rival" (white) + "/" (green) + "FPL" (green), 3rem desktop, responsive scaling, strong brand identity
+- **v2.4.44 (Dec 12)** - 🐛 Fix breakpoint mismatch - aligned all desktop layouts to 769px, changed .myTeamContent from 1024px to 769px, eliminated 255px "dead zone", consistent nav/content width
+- **v2.4.43 (Dec 12)** - 🏠 My Team as default screen - first in nav bar, changed default tab to 'myteam', moved to leftmost position, My Team now "home" screen
+- **v2.4.42 (Dec 12)** - 🎨 Remove pitch markings - cleaner pitch view, removed 8 marking elements (goal, boxes, arcs, circles, border), kept bench separator, purple gradient only
+- **v2.4.41 (Dec 12)** - 🎨 Max-width consistency at 1400px - CSS variable --app-max-width, unified nav/content/My Team max-width, My Team content now 1400px (was 600px)
+- **v2.4.40 (Dec 12)** - 🎨 FPL-style player cards - cropped jerseys (60-70% height), purple name bar, green points bar, red for zero points, bench position labels (GKP/DEF/MID/FWD)
+- **v2.4.39 (Dec 12)** - 🔧 Fix desktop layout - unified vertical layout for all screen sizes, removed 30%/70% grid, all stat boxes + pitch elements visible, -56 lines
+- **v2.4.38 (Dec 12)** - 🎨 Proper pitch geometry - TRUE semicircles: penalty arc re-added (180x90), center circle enlarged (150x75), height = width/2
+- **v2.4.37 (Dec 12)** - 🎨 Final pitch layout - 5 changes: container border, 20px margins, penalty area touches sides, halfway line at bottom, bench outside pitch
+- **v2.4.36 (Dec 12)** - 🔧 Convert pitch border to drawn element - fixed v2.4.35 error, border now drawn INSIDE container not CSS border
+- **v2.4.35 (Dec 12)** - 🔧 Add pitch border + fix center circle direction - visible 2px border, circle curves upward
+- **v2.4.34 (Dec 12)** - 🔧 Remove penalty arc - simplified to 6 essential elements, can add back later
+- **v2.4.33 (Dec 12)** - 🔧 Correct penalty spot geometry - accurate 12-yard position (100→105px desktop, 80→83px mobile), enhanced comments
+- **v2.4.32 (Dec 12)** - 🔧 Explicit pitch markings - standardized class names, 7 elements with exact specs, -47 lines
+- **v2.4.31 (Dec 12)** - 🎨 Enhance pitch markings visibility - doubled opacity for recognizable football pitch
+- **v2.4.30 (Dec 12)** - 🎨 GW Transfers receipt-style layout - clear hierarchy, hit as line item, white player names
+- **v2.4.29 (Dec 12)** - 🎨 Spread players wider on pitch - natural formation with space-evenly distribution
+- **v2.4.28 (Dec 12)** - 🎨 Reformat hit display - inline with transfer count for balanced stat box
+- **v2.4.27 (Dec 12)** - 🎨 Update GW Transfers styling - match app branding colors
+- **v2.4.26 (Dec 12)** - 🔧 Make GW Transfers dynamic - updates with selected gameweek
+- **v2.4.25 (Dec 12)** - 🎨 Fix pitch width and spacing - remove constraints, match other containers
+- **v2.4.24 (Dec 12)** - 🎨 Fix container widths and spacing consistency - single parent controls all spacing
+- **v2.4.23 (Dec 12)** - 🎨 Copy Stats tab GW selector EXACTLY - compact dark design
+- **v2.4.22 (Dec 12)** - 🎨 Add proper half-pitch markings inside container
+- **v2.4.21 (Dec 12)** - 🎨 GW selector match Stats tab style (superseded by v2.4.23)
+- **v2.4.20 (Dec 12)** - 🎨 Fix GW Transfers - Remove nested purple container
+- **v2.4.0-v2.4.19 (Dec 11-12)** - 🎨 My Team Mobile-First Layout Restructure
+
+**Previous (v2.0.x Series - Dec 2025):**
 - **v2.0.18 (Dec 8)** - 📝 Documentation update
 - **v2.0.16 (Dec 8)** - 🔧 **CRITICAL: Admin panel force-dynamic fix**
 - **v2.0.11 (Dec 5)** - 🔧 Fix analytics tracking

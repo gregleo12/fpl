@@ -1,8 +1,17 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
-import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
-import PositionHistory from './PositionHistory';
+import { PitchView } from '@/components/PitchView/PitchView';
+import { StatsPanel } from '@/components/PitchView/StatsPanel';
+import { GWSelector } from '@/components/PitchView/GWSelector';
+
+// Format large numbers for readability
+function formatRank(num: number): string {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return Math.round(num / 1000) + 'K';
+  return num.toString();
+}
 
 interface Props {
   data: any;
@@ -15,53 +24,62 @@ interface Props {
   onBackToMyTeam?: () => void;
 }
 
-// Helper to get chip abbreviation
-function getChipAbbreviation(chipName: string): string {
-  const chipMap: { [key: string]: string } = {
-    'wildcard': 'WC',
-    'bboost': 'BB',
-    '3xc': 'TC',
-    'freehit': 'FH'
-  };
+export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamName, isViewingOther, onBackToMyTeam }: Props) {
+  const [selectedGW, setSelectedGW] = useState<number>(1);
+  const [maxGW, setMaxGW] = useState<number>(1);
+  const [isLiveGW, setIsLiveGW] = useState<boolean>(false);
+  const [liveGWNumber, setLiveGWNumber] = useState<number>(0);
+  const [gwPoints, setGwPoints] = useState<number>(0);
+  const [gwRank, setGwRank] = useState<number>(0);
+  const [gwTransfers, setGwTransfers] = useState<{ count: number; cost: number }>({ count: 0, cost: 0 });
+  const [overallPoints, setOverallPoints] = useState<number>(0);
+  const [overallRank, setOverallRank] = useState<number>(0);
+  const [teamValue, setTeamValue] = useState<number>(0);
+  const [bank, setBank] = useState<number>(0);
 
-  const normalized = chipName.toLowerCase().replace(/\s+/g, '');
-  return chipMap[normalized] || chipName;
-}
+  // Fetch current GW and max GW
+  useEffect(() => {
+    async function fetchLeagueInfo() {
+      try {
+        const response = await fetch(`/api/league/${leagueId}/stats`);
+        if (!response.ok) throw new Error('Failed to fetch league info');
+        const data = await response.json();
+        const currentGW = data.isCurrentGWLive ? data.liveGameweekNumber : (data.activeGW || 1);
+        setSelectedGW(currentGW);
+        setMaxGW(data.maxGW || 1);
+        setIsLiveGW(data.isCurrentGWLive || false);
+        setLiveGWNumber(data.liveGameweekNumber || 0);
+      } catch (err: any) {
+        console.error('Error fetching league info:', err);
+      }
+    }
 
-// Helper to get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
-function getOrdinalSuffix(num: number): string {
-  const j = num % 10;
-  const k = num % 100;
+    fetchLeagueInfo();
+  }, [leagueId]);
 
-  if (j === 1 && k !== 11) {
-    return num + 'st';
-  }
-  if (j === 2 && k !== 12) {
-    return num + 'nd';
-  }
-  if (j === 3 && k !== 13) {
-    return num + 'rd';
-  }
-  return num + 'th';
-}
+  // Fetch stats for stat boxes
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`);
+        if (!response.ok) throw new Error('Failed to fetch stats');
+        const data = await response.json();
+        setGwPoints(data.gwPoints || 0);
+        setGwRank(data.gwRank || 0);
+        setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
+        setOverallPoints(data.overallPoints || 0);
+        setOverallRank(data.overallRank || 0);
+        setTeamValue(data.teamValue || 0);
+        setBank(data.bank || 0);
+      } catch (err: any) {
+        console.error('Error fetching stats:', err);
+      }
+    }
 
-export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, myTeamName, leagueId, isViewingOther, onBackToMyTeam }: Props) {
-  if (!data || !data.standings) {
-    return <div className={styles.emptyState}>No team data available</div>;
-  }
-
-  if (!playerData) {
-    return <div className={styles.emptyState}>Loading your profile...</div>;
-  }
-
-  const myTeam = data.standings.find((team: any) => team.entry_id.toString() === myTeamId);
-
-  if (!myTeam) {
-    return <div className={styles.emptyState}>Team not found in league</div>;
-  }
-
-  const differential = playerData.stats.totalPointsFor -
-    playerData.matchHistory.reduce((sum: number, m: any) => sum + m.opponentPoints, 0);
+    if (selectedGW > 0) {
+      fetchStats();
+    }
+  }, [myTeamId, selectedGW]);
 
   return (
     <div className={styles.myTeamTab}>
@@ -95,301 +113,84 @@ export default function MyTeamTab({ data, playerData, myTeamId, myManagerName, m
         </button>
       )}
 
-      {/* Team Overview with Rank */}
-      <div className={styles.section}>
-        <div className={styles.teamHeader}>
-          <div>
-            <h2 className={styles.managerName}>{shortenManagerName(myManagerName)}</h2>
-            <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
-          </div>
-          <div className={styles.rankBadge}>
-            <span className={styles.rankNumber}>{getOrdinalSuffix(myTeam.rank)}</span>
-          </div>
-        </div>
-      </div>
+      {/* Unified Layout - Same on all screen sizes */}
+      <div className={styles.myTeamContent}>
+        <GWSelector
+          selectedGW={selectedGW}
+          maxGW={maxGW}
+          onGWChange={setSelectedGW}
+          isLive={isLiveGW && selectedGW === liveGWNumber}
+        />
 
-      {/* Performance Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Performance</h3>
-        <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
-          <span className={styles.statLabel}>PLY</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.totalPointsFor}</span>
-          <span className={styles.statLabel}>PTS</span>
-        </div>
-        <div className={`${styles.statCard}`}>
-          <span className={`${styles.statValue} ${
-            differential > 0 ? styles.positive :
-            differential < 0 ? styles.negative :
-            ''
-          }`}>
-            {differential > 0 ? `+${differential}` : differential}
-          </span>
-          <span className={styles.statLabel}>+/-</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
-          <span className={styles.statLabel}>AVG</span>
-        </div>
-      </div>
-
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.wins}</span>
-          <span className={styles.statLabel}>WIN</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.draws}</span>
-          <span className={styles.statLabel}>DRW</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.losses}</span>
-          <span className={styles.statLabel}>LSS</span>
-        </div>
-        <div className={`${styles.statCard} ${styles.highlight}`}>
-          <span className={styles.statValue}>{myTeam.total}</span>
-          <span className={styles.statLabel}>TOT</span>
-        </div>
-      </div>
-      </div>
-
-      {/* Recent Form */}
-      {playerData.matchHistory && playerData.matchHistory.length > 0 && (
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>
-            Recent Form <span className={styles.subtitle}>(Last 5)</span>
-          </h3>
-          <div className={styles.formGrid}>
-            {playerData.matchHistory.slice().reverse().slice(0, 5).map((match: any) => (
-              <div key={match.event} className={styles.formItem}>
-                <div
-                  className={`${styles.formCircle} ${
-                    match.result === 'W' ? styles.formWin :
-                    match.result === 'D' ? styles.formDraw :
-                    styles.formLoss
-                  }`}
-                  title={`GW${match.event}: ${shortenManagerName(match.opponentName)} (${match.playerPoints}-${match.opponentPoints})`}
-                >
-                  {match.result}
-                </div>
-                <div className={styles.gameweekLabel}>GW{match.event}</div>
+        {/* Stat Boxes - 2 Rows */}
+        <div className={styles.statBoxesContainer}>
+          {/* Row 1: This Gameweek */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{gwPoints}</div>
+              <div className={styles.statBoxLabel}>GW PTS</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
+              <div className={styles.statBoxLabel}>GW RANK</div>
+            </div>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>
+                {gwTransfers.count}
+                {gwTransfers.cost > 0 && (
+                  <span className={styles.statBoxSub}> (-{gwTransfers.cost})</span>
+                )}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Season Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Season Stats</h3>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>{playerData.stats.highestScore}</span>
-            <span className={styles.statLabel}>Highest Score</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>{playerData.stats.lowestScore}</span>
-            <span className={styles.statLabel}>Lowest Score</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={`${styles.statValue} ${styles.positive}`}>
-              +{playerData.stats.biggestWin}
-            </span>
-            <span className={styles.statLabel}>Biggest Win</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={`${styles.statValue} ${styles.negative}`}>
-              {playerData.stats.biggestLoss}
-            </span>
-            <span className={styles.statLabel}>Biggest Loss</span>
-          </div>
-        </div>
-      </div>
-
-      {/* League Position Over Time */}
-      <PositionHistory
-        leagueId={leagueId}
-        entryId={myTeamId}
-        standings={data.standings}
-        myManagerName={myManagerName}
-      />
-
-      {/* Chips Played */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Chips Played</h3>
-        {playerData.chipsPlayed.length > 0 ? (
-          <div className={styles.table}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Chip</th>
-                  <th>GW</th>
-                  <th>Opponent</th>
-                  <th>Score</th>
-                  <th>Result</th>
-                </tr>
-              </thead>
-              <tbody>
-                {playerData.chipsPlayed.map((chip: any) => {
-                  const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
-                  return (
-                    <tr key={chip.event}>
-                      <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.name)}</span></td>
-                      <td>GW{chip.event}</td>
-                      <td>{match?.opponentName ? shortenManagerName(match.opponentName) : '-'}</td>
-                      <td>
-                        {match ? `${match.playerPoints}-${match.opponentPoints}` : '-'}
-                      </td>
-                      <td>
-                        {match && (
-                          <span className={`${styles.resultBadge} ${
-                            match.result === 'W' ? styles.resultWin :
-                            match.result === 'D' ? styles.resultDraw :
-                            styles.resultLoss
-                          }`}>
-                            {match.result}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className={styles.emptyState}>No chips played yet</p>
-        )}
-      </div>
-
-      {/* Chips Faced */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Chips Faced Against</h3>
-        {playerData.chipsFaced.length > 0 ? (
-          <>
-            <div className={styles.chipsSummary}>
-              <span>Faced <strong>{playerData.chipsFaced.length}</strong> chips total - </span>
-              <span className={styles.positive}>
-                Won {playerData.chipsFaced.filter((c: any) => c.result === 'W').length}
-              </span>
-              <span> / </span>
-              <span className={styles.negative}>
-                Lost {playerData.chipsFaced.filter((c: any) => c.result === 'L').length}
-              </span>
+              <div className={styles.statBoxLabel}>TRANSFERS</div>
             </div>
-            <div className={styles.table}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Chip</th>
-                    <th>GW</th>
-                    <th>Opponent</th>
-                    <th>Score</th>
-                    <th>Result</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {playerData.chipsFaced.map((chip: any, idx: number) => {
-                    const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
-                    const yourScore = match?.playerPoints || 0;
-                    return (
-                      <tr key={idx}>
-                        <td><span className={styles.oppChip}>{getChipAbbreviation(chip.chipName)}</span></td>
-                        <td>GW{chip.event}</td>
-                        <td>{shortenManagerName(chip.opponentName)}</td>
-                        <td>{yourScore}-{chip.opponentPoints}</td>
-                        <td>
-                          <span className={`${styles.resultBadge} ${
-                            chip.result === 'W' ? styles.resultWin :
-                            chip.result === 'D' ? styles.resultDraw :
-                            styles.resultLoss
-                          }`}>
-                            {chip.result}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          </div>
+
+          {/* Row 2: Season Totals */}
+          <div className={styles.statBoxRow}>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
+              <div className={styles.statBoxLabel}>TOTAL PTS</div>
             </div>
-          </>
-        ) : (
-          <p className={styles.emptyState}>No chips faced yet</p>
-        )}
-      </div>
-
-      {/* Match History */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Match History</h3>
-        <div className={styles.table}>
-          <table>
-            <thead>
-              <tr>
-                <th>GW</th>
-                <th>Opponent</th>
-                <th>Score</th>
-                <th>Chips</th>
-                <th>Margin</th>
-                <th>Result</th>
-              </tr>
-            </thead>
-            <tbody>
-              {playerData.matchHistory.slice().reverse().map((match: any) => {
-                // Check if you played a chip in this GW
-                const yourChip = playerData.chipsPlayed.find((c: any) => c.event === match.event);
-                // Check if opponent played a chip in this GW
-                const oppChip = playerData.chipsFaced.find((c: any) => c.event === match.event);
-
-                return (
-                  <tr key={match.event}>
-                    <td>GW{match.event}</td>
-                    <td>{shortenManagerName(match.opponentName)}</td>
-                    <td>{match.playerPoints}-{match.opponentPoints}</td>
-                    <td>
-                      <div className={styles.chipsCell}>
-                        {yourChip && (
-                          <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
-                            {getChipAbbreviation(yourChip.name)}
-                          </span>
-                        )}
-                        {oppChip && (
-                          <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
-                            {getChipAbbreviation(oppChip.chipName)}
-                          </span>
-                        )}
-                        {!yourChip && !oppChip && (
-                          <span className={styles.noChip}>-</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={
-                        match.margin > 0 ? styles.positive :
-                        match.margin < 0 ? styles.negative :
-                        ''
-                      }>
-                        {match.margin > 0 ? `+${match.margin}` : match.margin}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`${styles.resultBadge} ${
-                        match.result === 'W' ? styles.resultWin :
-                        match.result === 'D' ? styles.resultDraw :
-                        styles.resultLoss
-                      }`}>
-                        {match.result}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            <div className={styles.statBox}>
+              <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
+              <div className={styles.statBoxLabel}>OVERALL RANK</div>
+            </div>
+          </div>
         </div>
+
+        <PitchView
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          selectedGW={selectedGW}
+          maxGW={maxGW}
+          onGWChange={setSelectedGW}
+          showGWSelector={false}
+        />
+
+        {/* Team Value Boxes */}
+        <div className={styles.teamValueBoxes}>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(teamValue / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>Team Value</div>
+          </div>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(bank / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>In Bank</div>
+          </div>
+        </div>
+
+        <StatsPanel
+          leagueId={leagueId}
+          myTeamId={myTeamId}
+          myTeamName={myTeamName}
+          myManagerName={myManagerName}
+          selectedGW={selectedGW}
+          mode="collapsible-only"
+        />
       </div>
     </div>
   );
