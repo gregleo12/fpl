@@ -158,6 +158,8 @@ interface MatchDetailsData {
       form: number[];
       formMinutes: number[];
       position: string;
+      currentGwPoints: number;
+      currentGwMinutes: number;
     }>;
     entry_2: Array<{
       playerName: string;
@@ -165,6 +167,8 @@ interface MatchDetailsData {
       form: number[];
       formMinutes: number[];
       position: string;
+      currentGwPoints: number;
+      currentGwMinutes: number;
     }>;
   };
 }

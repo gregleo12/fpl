@@ -363,12 +363,18 @@ export async function GET(
           const positionMap: { [key: number]: string } = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
           const position = positionMap[player.element_type] || 'Unknown';
 
+          // Get current GW data (last element in arrays since we now include current GW)
+          const currentGwPoints = playerHistory.length > 0 ? playerHistory[playerHistory.length - 1] : 0;
+          const currentGwMinutes = playerMinutes.length > 0 ? playerMinutes[playerMinutes.length - 1] : 0;
+
           return {
             playerName: player.web_name,
             avgPoints: parseFloat(avgPoints.toFixed(1)),
             form: playerHistory,
             formMinutes: playerMinutes,
-            position
+            position,
+            currentGwPoints,
+            currentGwMinutes
           };
         };
 
@@ -378,11 +384,11 @@ export async function GET(
 
         // Filter out nulls and sort by avg points (high to low)
         differentialPlayers.entry_1 = team1DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string; currentGwPoints: number; currentGwMinutes: number } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
 
         differentialPlayers.entry_2 = team2DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string; currentGwPoints: number; currentGwMinutes: number } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
       }
     } catch (error) {

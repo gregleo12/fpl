@@ -6,6 +6,8 @@ interface DifferentialPlayer {
   form: number[];
   formMinutes: number[];
   position: string;
+  currentGwPoints: number;
+  currentGwMinutes: number;
 }
 
 interface DifferentialPlayersProps {
@@ -60,7 +62,7 @@ export function DifferentialPlayers({
                     <span className={styles.playerName}>{player.playerName}</span>
                   </div>
                   <div className={styles.playerStats}>
-                    <div className={styles.avgPoints}>
+                    <div className={`${styles.avgPoints} ${player.currentGwMinutes > 0 ? styles.played : styles.notPlayed}`}>
                       {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>
@@ -107,7 +109,7 @@ export function DifferentialPlayers({
                     <span className={styles.playerName}>{player.playerName}</span>
                   </div>
                   <div className={styles.playerStats}>
-                    <div className={styles.avgPoints}>
+                    <div className={`${styles.avgPoints} ${player.currentGwMinutes > 0 ? styles.played : styles.notPlayed}`}>
                       {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>

@@ -64,8 +64,8 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
         />
       </div>
 
-      {/* Player Name - Red bar if hasn't played, green/purple if played */}
-      <div className={`${styles.name} ${hasNotPlayed ? styles.zeroPoints : ''}`}>
+      {/* Player Name - Purple bar for all players (status shown in points/fixture bar) */}
+      <div className={styles.name}>
         {player.web_name}
       </div>
 
