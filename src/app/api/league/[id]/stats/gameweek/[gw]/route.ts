@@ -42,7 +42,7 @@ export async function GET(
 
     // Fetch remaining data in parallel
     const [captainData, chipsData, scoresData, liveData, picksData, hitsData, benchData] = await Promise.all([
-      fetchCaptainPicks(db, leagueId, gw),
+      fetchCaptainPicks(db, leagueId, gw, managersData, status),
       fetchChipsPlayed(db, leagueId, gw),
       fetchScores(db, leagueId, gw, managersData, status),
       fetchLiveData(gw),
@@ -81,16 +81,52 @@ export async function GET(
   }
 }
 
-// Fetch captain picks from FPL API (same pattern as chips in v1.11.9)
-async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
-  // Get all managers in the league
-  const managers = await fetchManagers(db, leagueId);
+// Fetch captain picks - uses database for completed GWs, FPL API for live/upcoming
+async function fetchCaptainPicks(
+  db: any,
+  leagueId: number,
+  gw: number,
+  managers: any[],
+  status: 'completed' | 'in_progress' | 'upcoming'
+) {
+  // For completed gameweeks, use database
+  if (status === 'completed') {
+    console.log(`GW${gw} is completed - fetching captain picks from manager_picks table`);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Fetching captain picks from FPL API for ${managers.length} managers in GW${gw}...`);
+    const result = await db.query(`
+      SELECT
+        mp.player_id,
+        p.web_name as player_name,
+        mp.multiplier,
+        COUNT(*) as count,
+        SUM(pgs.total_points * mp.multiplier) as total_points
+      FROM manager_picks mp
+      JOIN players p ON p.id = mp.player_id
+      LEFT JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = $2
+      WHERE mp.league_id = $1
+        AND mp.event = $2
+        AND mp.is_captain = TRUE
+      GROUP BY mp.player_id, p.web_name, mp.multiplier
+      ORDER BY count DESC
+      LIMIT 10
+    `, [leagueId, gw]);
+
+    console.log(`Found ${result.rows.length} unique captain picks from database`);
+
+    return result.rows.map((row: any) => ({
+      player_id: row.player_id,
+      player_name: row.player_name,
+      team_name: '', // Not needed
+      count: parseInt(row.count),
+      percentage: (parseInt(row.count) / managers.length) * 100,
+      avg_points: row.total_points ? row.total_points / parseInt(row.count) : 0,
+    }));
   }
 
-  // Fetch live data once for this gameweek (performance optimization)
+  // For live/upcoming GWs, use FPL API
+  console.log(`GW${gw} is ${status} - fetching captain picks from FPL API`);
+
+  // Fetch live data once for this gameweek
   const liveResponse = await fetch(
     `https://fantasy.premierleague.com/api/event/${gw}/live/`
   );
@@ -142,9 +178,7 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
 
   const allPicks = (await Promise.all(picksPromises)).filter((p) => p !== null);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Found ${allPicks.length} captain picks in GW${gw}`);
-  }
+  console.log(`Found ${allPicks.length} captain picks from FPL API`);
 
   // Group by captain ID and calculate totals
   const captainMap = new Map<number, { count: number; totalPoints: number }>();
