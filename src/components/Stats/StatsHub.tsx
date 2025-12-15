@@ -9,7 +9,7 @@ import { GameweekWinners } from './sections/GameweekWinners';
 import { TopPerformers } from './sections/TopPerformers';
 import { SeasonView } from './SeasonView';
 import { MyTeamView } from './MyTeamView';
-import PlayersTab from './Players/PlayersTab';
+import { PlayersTab } from '@/components/Players/PlayersTab';
 
 type ViewType = 'myteam' | 'gameweek' | 'season' | 'players';
 
