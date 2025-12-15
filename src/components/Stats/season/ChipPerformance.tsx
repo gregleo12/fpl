@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Gamepad2 } from 'lucide-react';
 import styles from './Leaderboard.module.css';
 import { FullRankingModal } from './FullRankingModal';
 
@@ -93,7 +94,9 @@ export function ChipPerformance({ data }: Props) {
     <>
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
-          <h4 className={styles.cardTitle}>🎮 Chip Performance</h4>
+          <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Gamepad2 size={18} color="#00ff87" /> Chip Performance
+          </h4>
           <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
             <button
               className={`${styles.toggleButton} ${view === 'played' ? styles.active : ''}`}
@@ -132,7 +135,7 @@ export function ChipPerformance({ data }: Props) {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={`Chips ${view === 'played' ? 'Played' : 'Faced'} - Full Rankings`}
-        icon="🎮"
+        icon={<Gamepad2 size={18} color="#00ff87" />}
         data={currentData}
         renderItem={renderItem}
       />
