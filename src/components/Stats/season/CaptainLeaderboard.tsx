@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { CaptainLeaderboardData } from '../SeasonView';
 import styles from './Leaderboard.module.css';
 import { FullRankingModal } from './FullRankingModal';
@@ -33,7 +34,9 @@ export function CaptainLeaderboard({ data }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.card}>
-        <h4 className={styles.cardTitle}>⭐ Captain Points</h4>
+        <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Star size={18} color="#00ff87" /> Captain Points
+        </h4>
         <div className={styles.noData}>No data available</div>
       </div>
     );
@@ -45,7 +48,9 @@ export function CaptainLeaderboard({ data }: Props) {
         className={`${styles.card} ${styles.clickable}`}
         onClick={() => setShowModal(true)}
       >
-        <h4 className={styles.cardTitle}>⭐ Captain Points</h4>
+        <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Star size={18} color="#00ff87" /> Captain Points
+        </h4>
         <div className={styles.list}>
           {data.slice(0, 5).map((item, index) => (
             <div key={item.entry_id}>
@@ -60,7 +65,7 @@ export function CaptainLeaderboard({ data }: Props) {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title="Captain Points - Full Rankings"
-        icon="⭐"
+        icon={<Star size={18} color="#00ff87" />}
         data={data}
         renderItem={renderItem}
       />

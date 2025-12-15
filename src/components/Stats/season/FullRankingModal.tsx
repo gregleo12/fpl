@@ -6,7 +6,7 @@ interface FullRankingModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   data: any[];
   renderItem: (item: any, index: number) => React.ReactNode;
 }

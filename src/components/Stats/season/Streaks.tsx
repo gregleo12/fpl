@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { Flame, Skull } from 'lucide-react';
 import styles from './Leaderboard.module.css';
 import { FullRankingModal } from './FullRankingModal';
 
@@ -23,7 +24,13 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
   const currentData = view === 'best' ? winningStreaks : losingStreaks;
   const isEmpty = !currentData || currentData.length === 0;
 
-  const title = view === 'best' ? '🔥 Best Streaks' : '💀 Worst Streaks';
+  const IconComponent = view === 'best' ? Flame : Skull;
+  const titleText = view === 'best' ? 'Best Streaks' : 'Worst Streaks';
+  const title = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <IconComponent size={18} color="#00ff87" /> {titleText}
+    </div>
+  );
 
   // Render function for items (used by both card and modal)
   const renderItem = (manager: StreakData, index: number) => (
@@ -91,7 +98,7 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         title={`${view === 'best' ? 'Winning' : 'Losing'} Streaks - Full Rankings`}
-        icon={view === 'best' ? '🔥' : '💀'}
+        icon={<IconComponent size={18} color="#00ff87" />}
         data={currentData}
         renderItem={renderItem}
       />

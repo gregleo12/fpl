@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Star } from 'lucide-react';
 import type { TopPerformer } from '../StatsHub';
 import styles from './Section.module.css';
 
@@ -15,7 +16,9 @@ export function TopPerformers({ data, totalManagers }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>🌟 Top Performers</h3>
+        <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Star size={18} color="#00ff87" /> Top Performers
+        </h3>
         <div className={styles.noData}>Data not available - visit Rankings to sync</div>
       </div>
     );
@@ -26,7 +29,9 @@ export function TopPerformers({ data, totalManagers }: Props) {
 
   return (
     <div className={styles.section}>
-      <h3 className={styles.sectionTitle}>🌟 Top Performers</h3>
+      <h3 className={styles.sectionTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Star size={18} color="#00ff87" /> Top Performers
+      </h3>
       <div className={styles.subtitle}>
         Highest scoring players this gameweek
       </div>
