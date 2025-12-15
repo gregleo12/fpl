@@ -57,10 +57,14 @@ export function PlayersTab() {
   async function fetchPlayers() {
     try {
       setIsLoading(true);
-      const response = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      setError('');
+
+      const response = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
+        cache: 'no-store'
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch player data');
+        throw new Error(`Failed to fetch player data (Status: ${response.status})`);
       }
 
       const data = await response.json();
@@ -73,8 +77,8 @@ export function PlayersTab() {
       setPlayers(sortedPlayers);
       setTeams(data.teams);
     } catch (err: any) {
-      setError(err.message || 'Failed to load players');
       console.error('Error fetching players:', err);
+      setError(err.message || 'Failed to load players');
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +95,15 @@ export function PlayersTab() {
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>{error}</div>
+        <div className={styles.error}>
+          <p>{error}</p>
+          <button
+            onClick={fetchPlayers}
+            className={styles.retryButton}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
