@@ -33,50 +33,24 @@ interface Props {
 
 export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [data, setData] = useState<any>(null);
-  const [teamName, setTeamName] = useState<string>('');
-  const [positionName, setPositionName] = useState<string>('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchDetailedData() {
+      setLoading(true);
       try {
-        // Fetch bootstrap data for team names and full player data from our backend
-        const [bootstrapRes, playerDataRes] = await Promise.all([
-          fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-          fetch(`/api/players/${player.id}`)
-        ]);
-
-        if (bootstrapRes.ok) {
-          const bootstrapData = await bootstrapRes.json();
-
-          // Get team name
-          const team = bootstrapData.teams.find((t: any) => t.id === player.team);
-          setTeamName(team?.name || 'Unknown Team');
-
-          // Get position name
-          const positions: { [key: number]: string } = {
-            1: 'GKP',
-            2: 'DEF',
-            3: 'MID',
-            4: 'FWD'
-          };
-          setPositionName(positions[player.element_type] || '');
-        }
-
-        // Get detailed stats from our backend API
-        if (playerDataRes.ok) {
-          const playerData = await playerDataRes.json();
-          setData(playerData);
-        }
+        const res = await fetch(`/api/players/${player.id}`);
+        const json = await res.json();
+        setData(json);
       } catch (error) {
-        console.error('[PlayerModal] ❌ Error fetching detailed data:', error);
+        console.error('[PlayerModal] Error fetching player:', error);
       } finally {
         setLoading(false);
       }
     }
 
     fetchDetailedData();
-  }, [player.id, player.team, player.element_type, gameweek]);
+  }, [player.id]);
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
@@ -95,7 +69,7 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           <div className={styles.headerText}>
             <h2 className={styles.playerName}>{player.web_name}</h2>
             <p className={styles.teamInfo}>
-              {teamName} · {positionName}
+              {data?.player?.team_name || ''} · {data?.player?.position || ''}
               {pick.is_captain && <span className={styles.captainTag}> (C)</span>}
             </p>
           </div>
