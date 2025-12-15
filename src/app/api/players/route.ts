@@ -68,9 +68,10 @@ export async function GET(request: NextRequest) {
     const playersResult = await db.query(`
       SELECT
         id, web_name, first_name, second_name,
-        team_id, team_name, team_short, position,
+        team_id, team_name, team_short, team_code, position,
         now_cost, selected_by_percent,
         total_points, points_per_game, form,
+        event_points,
         minutes, starts, goals_scored, assists,
         clean_sheets, goals_conceded,
         bonus, bps,
@@ -79,6 +80,7 @@ export async function GET(request: NextRequest) {
         saves, penalties_saved,
         yellow_cards, red_cards, penalties_missed,
         own_goals,
+        cost_change_start,
         status, news, chance_of_playing_next_round
       FROM players
       WHERE ${whereClause}

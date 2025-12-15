@@ -10,15 +10,17 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  element_type: number;
-  team: number;
+  position: string;
+  team_id: number;
+  team_name: string;
+  team_short: string;
   team_code: number;
   now_cost: number;
   selected_by_percent: string;
   total_points: number;
   form: string;
   points_per_game: string;
-  event_points: number;
+  event_points?: number;
   starts: number;
   minutes: number;
   goals_scored: number;
@@ -33,13 +35,14 @@ interface Player {
   bps: number;
   yellow_cards: number;
   red_cards: number;
-  cost_change_start: number;
+  cost_change_start?: number;
+  [key: string]: any;
 }
 
 interface Team {
   id: number;
   name: string;
-  short_name: string;
+  short: string;
 }
 
 interface Props {
@@ -49,12 +52,6 @@ interface Props {
 }
 
 export function PlayersTable({ players, teams, viewMode }: Props) {
-  // Create team lookup map
-  const teamMap = teams.reduce((acc, team) => {
-    acc[team.id] = team;
-    return acc;
-  }, {} as Record<number, Team>);
-
   const columns = viewMode === 'compact' ? COMPACT_COLUMNS : ALL_COLUMNS;
 
   return (
@@ -80,7 +77,6 @@ export function PlayersTable({ players, teams, viewMode }: Props) {
             <PlayerRow
               key={player.id}
               player={player}
-              team={teamMap[player.team]}
               columns={columns}
             />
           ))}
