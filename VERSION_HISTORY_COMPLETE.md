@@ -1,7 +1,7 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 217+ versions
+**Total Releases:** 249+ versions
 **Current Version:** v2.6.7 (December 15, 2025)
 
 ---
@@ -63,6 +63,333 @@
 **PROCESS:** Simplified versioning from "2.6.0-alpha.1" to "2.6.2"
 - Removed alpha/beta suffixes for cleaner version numbers
 - Updated package.json version field
+
+---
+## 🎯 v2.6.0-alpha - Players Tab Foundation (Dec 2025)
+
+### v2.6.0-alpha.2 - Add All Stats Columns with Compact/All Toggle (Dec 15, 2025)
+**FEATURE:** Expanded player statistics with view mode toggle
+- **View Modes:**
+  - Compact view: £, TSB%, Pts, Form (4 essential columns)
+  - All Stats view: 25 comprehensive columns across all categories
+- **Categories:**
+  - Basic: Price, ownership, points, form
+  - Appearances: Starts, minutes
+  - Attacking: Goals, assists, expected goals (xG), expected assists (xA), xGI
+  - Defensive: Clean sheets, goals conceded, saves
+  - Bonus: BPS, bonus points
+  - Value: Transfers, price changes
+- **Implementation:**
+  - Created `columns.ts` with column definitions and formatters
+  - Added format functions for £, %, xG, xA, xGI, price changes
+  - Styled toggle buttons with active state
+  - Dynamic column rendering based on viewMode
+- **Files Added:**
+  - `src/components/Players/columns.ts` - Column definitions with formatters
+- **Files Modified:**
+  - `PlayersTab.tsx` - Add viewMode state and toggle UI
+  - `PlayersTable.tsx` - Accept viewMode, render dynamic columns
+  - `PlayerRow.tsx` - Render cells based on columns config
+  - `PlayersTab.module.css` - Add toggle styling
+- **Next Steps:** K-26.3 (filtering), K-26.4 (sorting/search), K-26.5 (player modal)
+
+### v2.6.0-alpha.1 - Add Players Tab Foundation (Dec 15, 2025)
+**FOUNDATION:** Initial Players tab implementation in Stats Hub
+- Created new Players sub-tab in Stats section
+- Basic player table structure with jersey images
+- Player info displays: name, position, team
+- Initial stats columns setup
+- Layout foundation for upcoming features
+- **Components Added:**
+  - `PlayersTab.tsx` - Main container component
+  - `PlayersTable.tsx` - Table component
+  - `PlayerRow.tsx` - Row component
+  - `PlayerCell.tsx` - Player info cell
+  - `PlayersTab.module.css` - Styling
+- **Integration:** Connected to Stats Hub navigation
+
+---
+
+## 🎮 v2.5.x - Player Features & UI Polish (Dec 2025)
+
+### v2.5.29 - Make Player Card Name and Points/Fixture Bars Equal Height (Dec 15, 2025)
+**UX:** Consistent heights for player card sections
+- Made name bar and points/fixture bars equal height
+- Improved visual balance in player cards
+- Better proportions across all card elements
+
+### v2.5.28 - Fix Chip Badge Icon Alignment (Dec 15, 2025)
+**FIX:** Proper fix for chip badge icon alignment
+- Corrected icon vertical alignment in chip badges
+- Ensured consistent spacing
+- Clean visual presentation
+
+### v2.5.27 - Reduce Player Card Box Height for Better Proportions (Dec 15, 2025)
+**UX:** Improved player card proportions
+- Reduced box height for better visual balance
+- More compact, professional appearance
+- Optimized spacing ratios
+
+### v2.5.26 - Fix Player Card Size Consistency (Dec 15, 2025)
+**FIX:** Fixed player card size consistency for points and fixture boxes
+- Ensured equal sizing across all cards
+- Consistent layout regardless of content
+- Better grid alignment
+
+### v2.5.25 - Fix Icon Alignment in Chip Badges (Dec 15, 2025)
+**FIX:** Icon alignment in chip badges
+- Corrected vertical alignment issues
+- Improved spacing between icon and text
+- Cleaner badge presentation
+
+### v2.5.24 - Replace Final Two Emojis in Stats Hub (Dec 15, 2025)
+**UI:** Replaced final two emojis in Stats Hub with Lucide icons
+- Completed emoji replacement project
+- All UI now uses consistent Lucide icons
+- Professional, modern icon system throughout
+
+### v2.5.23 - Replace Trophy Icon with Cleaner Shirt Icon (Dec 15, 2025)
+**UI:** Replace Trophy icon with cleaner Shirt icon in navigation
+- Changed to more appropriate icon for player stats
+- Better visual consistency
+- Cleaner navigation appearance
+
+### v2.5.22 - Replace Remaining Emojis in Stats Hub (Dec 15, 2025)
+**UI:** Replace remaining emojis in Stats Hub with Lucide icons
+- Continued systematic replacement of emojis
+- Improved visual consistency
+- Professional icon system
+
+### v2.5.21 - Replace Emojis with Color-Matched Lucide Icons (Dec 15, 2025)
+**UI:** Replace emojis with color-matched Lucide icons
+- Migrated from emojis to professional icon library
+- Color-matched icons to existing theme
+- Better cross-platform consistency
+- Improved accessibility
+
+### v2.5.20 - Fix LiveMatchModal Player Colors (Dec 15, 2025)
+**FIX:** Use hasPlayed instead of points for player status colors
+- More accurate player status indication
+- Fixed edge cases where player played but scored 0
+- Improved visual feedback
+
+### v2.5.19 - Final Color Fixes (Dec 15, 2025)
+**FIX:** Final color fixes for name bar and differential players
+- Corrected name bar colors
+- Fixed differential player color states
+- Polished visual presentation
+
+### v2.5.18 - Fix Differential Players Colors (Dec 15, 2025)
+**FIX:** Fixed differential players colors - include current GW minutes
+- Improved color logic for differential players
+- Accounts for current gameweek minutes played
+- More accurate status indication
+
+### v2.5.17 - Show Fixture Info for Players Who Haven't Played (Dec 15, 2025)
+**FEATURE:** Show fixture info for players who haven't played yet
+- Display upcoming fixture for players yet to play
+- Better information density
+- Improved planning capability
+
+### v2.5.16 - Add Script to Sync All Players with Defensive Contribution (Dec 15, 2025)
+**TOOLS:** Add script to sync all players with defensive contribution data
+- Created bulk sync script for DEFCON data
+- Populates defensive_contribution for all players
+- Ensures complete historical data
+- **Files Added:**
+  - `src/scripts/sync-all-players-defcon.ts`
+
+### v2.5.15 - Fix Defensive Contribution Display (Dec 15, 2025)
+**FIX:** Always show Defensive Contribution for DEF/MID positions
+- Fixed display logic to always show DC for defenders and midfielders
+- Consistent stat presentation
+- Proper position-based filtering
+
+### v2.5.14 - Dynamic Stats When Navigating Gameweeks (Dec 15, 2025)
+**FEATURE:** Dynamic stats when navigating gameweeks in My Team
+- Stats update when changing gameweek
+- Real-time data loading
+- Accurate historical view
+
+### v2.5.13 - Fix Player Status Colors (Dec 15, 2025)
+**FIX:** Use minutes instead of points for player status colors
+- More accurate status indication
+- Fixes edge case of 0-point performances
+- Better visual feedback
+
+### v2.5.12 - Add Defensive Contribution Points (DEFCON) (Dec 15, 2025)
+**FEATURE:** Defensive contribution points now calculated and displayed
+- **Database:** Added `defensive_contribution` column to `player_gameweek_stats` table
+- **Sync:** Updated `playerSync.ts` to sync defensive contribution from FPL API
+- **Calculation:**
+  - Defenders (pos 2): +2 pts per 10 DC (Math.floor(DC / 10) * 2)
+  - Midfielders (pos 3): +2 pts per 12 DC (Math.floor(DC / 12) * 2)
+  - GKP and FWD: no DC points
+- **Display:** Added to PlayerModal stats display (DEF/MID only)
+- **Migration:** Created migration script `add-defensive-contribution.ts`
+- **Verification:** Tested with Senesi GW15: 11 DC = 2 pts ✓ (Total: 8 pts)
+- **Files Added:**
+  - `src/db/migrations/add_defensive_contribution.sql`
+  - `src/scripts/add-defensive-contribution.ts`
+  - `src/scripts/sync-player-defcon.ts`
+- **Files Modified:**
+  - `src/lib/sync/playerSync.ts` - Added DC to INSERT/UPDATE
+  - `src/components/PitchView/PlayerModal.tsx` - DC calculation & display
+  - `package.json` (v2.5.12)
+
+### v2.5.11 - Complete Player Modal with FPL-Style Points Breakdown (Dec 15, 2025)
+**FEATURE:** Full points breakdown like official FPL app
+- **Points Calculation:** Complete FPL points rules implementation
+  - Minutes: 1-59 min = 1 pt, 60+ min = 2 pts
+  - Goals: GKP/DEF = 6, MID = 5, FWD = 4
+  - Assists: 3 pts each
+  - Clean sheets: GKP/DEF = 4, MID = 1
+  - Goals conceded: -1 per 2 goals (GKP/DEF only)
+  - Saves: +1 per 3 saves (GKP only)
+  - Penalties saved: 5 pts, Penalties missed: -2 pts
+  - Yellow card: -1, Red card: -3
+  - Own goals: -2 pts each
+  - Bonus: 1:1 points
+- **Display:**
+  - Points shown for each stat (e.g., "Assists: 2 → +6 pts")
+  - Only non-zero stats shown (cleaner, FPL-style)
+  - BPS shown as "(info only)"
+  - Captain multiplier in total (e.g., "11 ×2 = 22")
+  - Grid layout for label/value/points columns
+- **Missing Stats Added:** own_goals, penalties_saved, penalties_missed
+- **Verification:** Saka GW16: 90 min + 2 assists + 3 bonus = 11 pts ✓
+
+### v2.5.10 - Fix PlayerModal (Dec 15, 2025)
+**FIX:** Remove external API call, copy working pattern
+- Fixed PlayerModal to use existing database pattern
+- Removed external FPL API dependency
+- Consistent with other modals
+
+### v2.5.9 - Add Mandatory Testing Section to CLAUDE.md (Dec 15, 2025)
+**DOCS:** Added mandatory testing guidelines to CLAUDE.md
+- Defined testing requirements for all changes
+- Build verification steps
+- Quality assurance process
+
+### v2.5.8 - Copy Working PlayerDetailModal Pattern to PlayerModal (Dec 15, 2025)
+**REFACTOR:** Standardized modal pattern across codebase
+- Applied working pattern from PlayerDetailModal
+- Consistent architecture
+- Reusable modal structure
+
+### v2.5.7 - Update Version Number for Debug Logging (Dec 15, 2025)
+**DEBUG:** Version bump for debug logging
+- Incremented version to track debug changes
+- Better version tracking
+
+### v2.5.6-debug - Add Debug Logging to PlayerModal (Dec 15, 2025)
+**DEBUG:** Added debug logging to PlayerModal
+- Temporary debug version
+- Investigation of modal issues
+- Diagnostic logging
+
+### v2.5.6 - Fix My Team Modal (Dec 15, 2025)
+**FIX:** Use working /api/players endpoint
+- Fixed My Team modal data fetching
+- Switched to reliable API endpoint
+- Improved reliability
+
+### v2.5.5 - Fix K-23 Critical Bugs + Database Migration (Dec 14, 2025)
+**FIX:** Critical bug fixes and database migration
+- Resolved K-23 critical issues
+- Database schema updates
+- Stability improvements
+
+### v2.5.4 - Fix TypeScript Error in PlayerDetailModal (Dec 14, 2025)
+**FIX:** TypeScript compilation error
+- Fixed type errors in PlayerDetailModal
+- Clean build
+- Type safety maintained
+
+### v2.5.3 - Add Missing lucide-react Dependency (Dec 14, 2025)
+**FIX:** Added missing lucide-react package
+- Installed lucide-react dependency
+- Fixed import errors
+- Enabled icon usage
+
+### v2.5.2 - Fix K-21c - Connect PlayerModal to Backend API (Dec 14, 2025)
+**FIX:** Connect PlayerModal to backend API
+- Integrated PlayerModal with database API
+- Real data fetching
+- Proper data flow
+
+### v2.5.1 - Bump Version for Player Detail Modal Feature (Dec 14, 2025)
+**VERSION:** Version bump for Player Detail Modal feature
+- Incremented to v2.5.1
+- Prepared for feature release
+
+### v2.5.0 K-23d - Add Player Detail Modal (Dec 14, 2025)
+**FEATURE:** Player Detail Modal implementation
+- Full player detail view
+- Stats breakdown
+- Interactive modal component
+
+### v2.5.0 (K-23c-v2) - Fix Players List UI - Styling & All Stats (Dec 14, 2025)
+**UI:** Fixed Players List UI styling and all stats display
+- Improved styling
+- Complete stats display
+- Better UX
+
+### v2.5.0 (K-23c) - Add Players List UI to Stats Hub (Dec 14, 2025)
+**FEATURE:** Players List UI in Stats Hub
+- Added player list interface
+- Integrated into Stats Hub
+- Foundation for player browsing
+
+### v2.5.0 (K-23b) - Add Players API Endpoints (Dec 14, 2025)
+**API:** Players API endpoints implementation
+- **Endpoints:**
+  - GET /api/players - Query players with filters
+  - GET /api/players/[id] - Get individual player
+  - GET /api/players/[id]/gameweek/[gw] - Get player gameweek stats
+- **Features:**
+  - Filtering by position, team, price range
+  - Sorting by any stat (points, form, price, etc.)
+  - Search by name
+  - Pagination support
+- **Files Added:**
+  - `src/app/api/players/route.ts`
+  - `src/app/api/players/[id]/route.ts`
+  - `src/app/api/players/[id]/gameweek/[gw]/route.ts`
+
+### v2.5.0 - Add Players Database Schema + Sync Job (K-23a) (Dec 14, 2025)
+**DATABASE:** Complete player database infrastructure
+- **Schema Changes:**
+  - Created `players` table (~760 rows) with comprehensive stats
+  - Created `player_gameweek_stats` table for per-GW history
+  - Created `teams` table (20 teams) for reference data
+  - Added appropriate indexes for performance
+- **Sync Implementation:**
+  - Created `playerSync.ts` with `syncPlayers()` function
+  - Syncs all players from FPL bootstrap API
+  - Syncs team data (strength, attack/defence ratings)
+  - Created `syncPlayerHistory(playerId)` for per-GW data
+  - Comprehensive logging and error handling
+- **API Endpoints:**
+  - POST /api/admin/sync/players - triggers player sync
+  - Returns success status, count, and any errors
+- **Data Structure:**
+  - Players: ID, name, team, position, price, ownership stats
+  - Stats: Total points, form, minutes, goals, assists, xG, xA
+  - Defensive: Clean sheets, goals conceded, xGC
+  - Bonus: BPS, ICT index (influence, creativity, threat)
+  - Status: Injury status, availability, news
+- **Testing:**
+  - Added `test-player-sync.ts` script
+  - Verified 760 players synced successfully
+  - Verified 20 teams synced successfully
+  - Verified data accuracy (top scorers, prices, positions)
+- **Files Added:**
+  - `src/db/migrations/add_players_tables.sql`
+  - `src/lib/sync/playerSync.ts`
+  - `src/app/api/admin/sync/players/route.ts`
+  - `src/scripts/test-player-sync.ts`
+- **Next Phase:** Ready for K-23b (API endpoints for querying player data)
 
 ---
 
