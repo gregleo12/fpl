@@ -12,6 +12,7 @@ import {
   Player,
   Squad
 } from './fpl-calculations';
+import { getDatabase } from './db';
 
 // ============ TYPES ============
 
@@ -69,22 +70,56 @@ function processFixturesData(fixturesRaw: any[], liveData: any): any[] {
 }
 
 /**
+ * Fetch manager picks - tries database first for completed GWs, falls back to FPL API
+ */
+async function fetchManagerPicks(entryId: number, gameweek: number, status: 'upcoming' | 'in_progress' | 'completed'): Promise<any> {
+  // For completed gameweeks, try database first
+  if (status === 'completed') {
+    try {
+      const db = await getDatabase();
+      const result = await db.query(`
+        SELECT player_id as element, position, multiplier, is_captain, is_vice_captain
+        FROM manager_picks
+        WHERE entry_id = $1 AND event = $2
+        ORDER BY position
+      `, [entryId, gameweek]);
+
+      if (result.rows.length === 15) {
+        // Found complete picks in database
+        return {
+          picks: result.rows,
+          active_chip: null, // Chips not stored in manager_picks (available in manager_gw_history if needed)
+          entry_history: {
+            event_transfers_cost: 0 // Transfer cost in manager_gw_history if needed
+          }
+        };
+      }
+    } catch (error) {
+      console.error(`Error fetching picks from database for entry ${entryId} GW${gameweek}:`, error);
+      // Fall through to FPL API
+    }
+  }
+
+  // Fall back to FPL API for live/upcoming GWs or if DB fetch failed
+  const response = await fetch(`https://fantasy.premierleague.com/api/entry/${entryId}/event/${gameweek}/picks/`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch picks for entry ${entryId}`);
+  }
+  return await response.json();
+}
+
+/**
  * Fetch all data needed for score calculation
  */
-async function fetchScoreData(entryId: number, gameweek: number) {
-  const [picksResponse, liveResponse, bootstrapResponse, fixturesResponse] = await Promise.all([
-    fetch(`https://fantasy.premierleague.com/api/entry/${entryId}/event/${gameweek}/picks/`),
+async function fetchScoreData(entryId: number, gameweek: number, status: 'upcoming' | 'in_progress' | 'completed') {
+  const [picksData, liveResponse, bootstrapResponse, fixturesResponse] = await Promise.all([
+    fetchManagerPicks(entryId, gameweek, status),
     fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`),
     fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
     fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`),
   ]);
 
-  if (!picksResponse.ok) {
-    throw new Error(`Failed to fetch picks for entry ${entryId}`);
-  }
-
-  const [picksData, liveData, bootstrapData, fixturesRaw] = await Promise.all([
-    picksResponse.json(),
+  const [liveData, bootstrapData, fixturesRaw] = await Promise.all([
     liveResponse.json(),
     bootstrapResponse.json(),
     fixturesResponse.json(),
@@ -111,7 +146,7 @@ export async function calculateManagerLiveScore(
   gameweek: number,
   status: 'upcoming' | 'in_progress' | 'completed'
 ): Promise<ManagerScoreResult> {
-  const { picksData, liveData, bootstrapData, fixturesData } = await fetchScoreData(entryId, gameweek);
+  const { picksData, liveData, bootstrapData, fixturesData } = await fetchScoreData(entryId, gameweek, status);
 
   return calculateScoreFromData(entryId, picksData, liveData, bootstrapData, fixturesData, status);
 }
@@ -217,10 +252,9 @@ export async function calculateMultipleManagerScores(
 
   const fixturesData = processFixturesData(fixturesRaw, liveData);
 
-  // Fetch picks for all managers in parallel
+  // Fetch picks for all managers in parallel (uses DB cache for completed GWs)
   const picksPromises = entryIds.map(entryId =>
-    fetch(`https://fantasy.premierleague.com/api/entry/${entryId}/event/${gameweek}/picks/`)
-      .then(res => res.ok ? res.json() : null)
+    fetchManagerPicks(entryId, gameweek, status)
       .then(data => ({ entryId, data }))
       .catch(() => ({ entryId, data: null }))
   );

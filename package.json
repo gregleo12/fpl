@@ -11,7 +11,9 @@
     "migrate:players": "npx tsx src/scripts/run-player-migration.ts",
     "migrate:columns": "npx tsx src/scripts/add-missing-columns.ts",
     "migrate:manager-history": "npx tsx src/scripts/run-manager-history-migration.ts",
-    "sync:manager-history": "npx tsx src/scripts/sync-manager-history.ts"
+    "sync:manager-history": "npx tsx src/scripts/sync-manager-history.ts",
+    "migrate:manager-picks": "npx tsx src/scripts/run-manager-picks-migration.ts",
+    "sync:manager-picks": "npx tsx src/scripts/sync-manager-picks.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
