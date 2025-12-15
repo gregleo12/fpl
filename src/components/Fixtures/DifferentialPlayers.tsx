@@ -4,6 +4,7 @@ interface DifferentialPlayer {
   playerName: string;
   avgPoints: number;
   form: number[];
+  formMinutes: number[];
   position: string;
 }
 
@@ -63,19 +64,27 @@ export function DifferentialPlayers({
                       {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>
-                      {player.form.map((pts, i) => (
-                        <div
-                          key={i}
-                          className={`${styles.formBadge} ${
-                            pts >= 10 ? styles.excellent :
-                            pts >= 6 ? styles.good :
-                            pts >= 3 ? styles.ok :
-                            styles.poor
-                          }`}
-                        >
-                          {pts}
-                        </div>
-                      ))}
+                      {player.form.map((pts, i) => {
+                        const minutes = player.formMinutes?.[i] || 0;
+                        const hasPlayed = minutes > 0;
+
+                        // Determine color based on minutes (played status) and points
+                        const badgeClass = hasPlayed
+                          ? (pts >= 10 ? styles.excellent :
+                             pts >= 6 ? styles.good :
+                             pts >= 3 ? styles.ok :
+                             styles.good) // Played but 0-2 pts → green (good)
+                          : styles.poor; // Didn't play → gray (poor)
+
+                        return (
+                          <div
+                            key={i}
+                            className={`${styles.formBadge} ${badgeClass}`}
+                          >
+                            {pts}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -102,19 +111,27 @@ export function DifferentialPlayers({
                       {player.avgPoints.toFixed(1)}
                     </div>
                     <div className={styles.formBadges}>
-                      {player.form.map((pts, i) => (
-                        <div
-                          key={i}
-                          className={`${styles.formBadge} ${
-                            pts >= 10 ? styles.excellent :
-                            pts >= 6 ? styles.good :
-                            pts >= 3 ? styles.ok :
-                            styles.poor
-                          }`}
-                        >
-                          {pts}
-                        </div>
-                      ))}
+                      {player.form.map((pts, i) => {
+                        const minutes = player.formMinutes?.[i] || 0;
+                        const hasPlayed = minutes > 0;
+
+                        // Determine color based on minutes (played status) and points
+                        const badgeClass = hasPlayed
+                          ? (pts >= 10 ? styles.excellent :
+                             pts >= 6 ? styles.good :
+                             pts >= 3 ? styles.ok :
+                             styles.good) // Played but 0-2 pts → green (good)
+                          : styles.poor; // Didn't play → gray (poor)
+
+                        return (
+                          <div
+                            key={i}
+                            className={`${styles.formBadge} ${badgeClass}`}
+                          >
+                            {pts}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

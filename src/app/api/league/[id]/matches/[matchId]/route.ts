@@ -277,8 +277,8 @@ export async function GET(
     // Calculate common players and differentials
     let commonPlayers = { count: 0, percentage: 0, players: [] as string[] };
     let differentialPlayers = {
-      entry_1: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>,
-      entry_2: [] as Array<{ playerName: string; avgPoints: number; form: number[]; position: string }>
+      entry_1: [] as Array<{ playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string }>,
+      entry_2: [] as Array<{ playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string }>
     };
 
     try {
@@ -341,14 +341,18 @@ export async function GET(
 
           // Fetch player's performance for last 5 GWs using cached data
           const playerHistory: number[] = [];
+          const playerMinutes: number[] = [];
           for (const gw of last5GWs) {
             const eventLiveData = gwDataCache.get(gw);
             if (eventLiveData && eventLiveData.elements) {
               const playerLiveData = eventLiveData.elements.find((e: any) => e.id === playerId);
               const points = playerLiveData?.stats?.total_points || 0;
+              const minutes = playerLiveData?.stats?.minutes || 0;
               playerHistory.push(points);
+              playerMinutes.push(minutes);
             } else {
               playerHistory.push(0);
+              playerMinutes.push(0);
             }
           }
 
@@ -364,6 +368,7 @@ export async function GET(
             playerName: player.web_name,
             avgPoints: parseFloat(avgPoints.toFixed(1)),
             form: playerHistory,
+            formMinutes: playerMinutes,
             position
           };
         };
@@ -374,11 +379,11 @@ export async function GET(
 
         // Filter out nulls and sort by avg points (high to low)
         differentialPlayers.entry_1 = team1DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
 
         differentialPlayers.entry_2 = team2DiffStats
-          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; position: string } => stat !== null)
+          .filter((stat: any): stat is { playerName: string; avgPoints: number; form: number[]; formMinutes: number[]; position: string } => stat !== null)
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
       }
     } catch (error) {

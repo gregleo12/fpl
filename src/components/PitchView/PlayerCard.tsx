@@ -15,6 +15,7 @@ interface PlayerInfo {
   team_code: number;
   element_type: number;
   event_points: number;
+  minutes?: number;
 }
 
 interface Props {
@@ -28,7 +29,8 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   // For bench players, show their actual points without multiplying by 0
   const points = isBench ? player.event_points : (player.event_points * pick.multiplier);
-  const isZeroPoints = points === 0;
+  // Use minutes to determine if player has played, not points
+  const hasNotPlayed = !player.minutes || player.minutes === 0;
 
   return (
     <div
@@ -56,8 +58,8 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
         />
       </div>
 
-      {/* Player Name - Red bar for zero points, purple otherwise */}
-      <div className={`${styles.name} ${isZeroPoints ? styles.zeroPoints : ''}`}>
+      {/* Player Name - Red bar if hasn't played, green/purple if played */}
+      <div className={`${styles.name} ${hasNotPlayed ? styles.zeroPoints : ''}`}>
         {player.web_name}
       </div>
 
