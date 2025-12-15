@@ -122,6 +122,40 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Upcoming Match Section */
+.upcomingMatch {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+.upcomingTitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.opponent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.kickoff {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 /* Stats Section */
 .stats {
   padding: 1rem 1.5rem;
@@ -236,5 +270,18 @@
 
   .total {
     padding: 1rem 1.25rem;
+  }
+
+  .upcomingMatch {
+    padding: 2.5rem 1.25rem;
+    min-height: 180px;
+  }
+
+  .opponent {
+    font-size: 1.25rem;
+  }
+
+  .kickoff {
+    font-size: 0.85rem;
   }
 }

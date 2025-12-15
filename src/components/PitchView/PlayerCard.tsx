@@ -16,6 +16,10 @@ interface PlayerInfo {
   element_type: number;
   event_points: number;
   minutes?: number;
+  opponent_short?: string | null;
+  was_home?: boolean | null;
+  fixture_started?: boolean;
+  fixture_finished?: boolean;
 }
 
 interface Props {
@@ -31,6 +35,8 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
   const points = isBench ? player.event_points : (player.event_points * pick.multiplier);
   // Use minutes to determine if player has played, not points
   const hasNotPlayed = !player.minutes || player.minutes === 0;
+  // Show fixture only if player hasn't played AND fixture hasn't started
+  const showFixture = hasNotPlayed && !player.fixture_started && player.opponent_short;
 
   return (
     <div
@@ -63,10 +69,16 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
         {player.web_name}
       </div>
 
-      {/* Points - Green bar with dark text */}
-      <div className={styles.points}>
-        {points}
-      </div>
+      {/* Points or Fixture - Show upcoming fixture or points */}
+      {showFixture ? (
+        <div className={styles.fixture}>
+          {player.opponent_short} ({player.was_home ? 'H' : 'A'})
+        </div>
+      ) : (
+        <div className={styles.points}>
+          {points}
+        </div>
+      )}
     </div>
   );
 }

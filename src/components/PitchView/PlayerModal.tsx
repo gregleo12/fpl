@@ -14,6 +14,11 @@ interface PlayerInfo {
   bonus?: number;
   minutes?: number;
   multiplier?: number;
+  opponent_short?: string | null;
+  opponent_name?: string | null;
+  was_home?: boolean | null;
+  kickoff_time?: string | null;
+  fixture_started?: boolean;
 }
 
 interface Pick {
@@ -131,6 +136,27 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   // Find gameweek stats from history array (same as PlayerHistory.tsx does)
   const gwStats = data?.history?.find((h: any) => h.gameweek === gameweek);
 
+  // Check if player has played
+  const hasPlayed = gwStats?.minutes > 0;
+  const showFixture = !hasPlayed && !player.fixture_started && player.opponent_name;
+
+  // Format kickoff time if available
+  const formatKickoffTime = (kickoffTime: string | null | undefined) => {
+    if (!kickoffTime) return null;
+    try {
+      const date = new Date(kickoffTime);
+      return date.toLocaleString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return null;
+    }
+  };
+
   // Define stats to display with their labels
   const stats = [
     { key: 'minutes', label: 'Minutes played' },
@@ -168,6 +194,19 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
         {loading ? (
           <div className={styles.loadingContainer}>
             <p>Loading stats...</p>
+          </div>
+        ) : showFixture ? (
+          /* Upcoming Match View - Show when player hasn't played yet */
+          <div className={styles.upcomingMatch}>
+            <h3 className={styles.upcomingTitle}>Upcoming Match</h3>
+            <p className={styles.opponent}>
+              vs {player.opponent_name} ({player.was_home ? 'H' : 'A'})
+            </p>
+            {player.kickoff_time && formatKickoffTime(player.kickoff_time) && (
+              <p className={styles.kickoff}>
+                {formatKickoffTime(player.kickoff_time)}
+              </p>
+            )}
           </div>
         ) : (
           <>

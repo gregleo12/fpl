@@ -39,8 +39,8 @@ export async function GET(
     // Use shared score calculator - SINGLE SOURCE OF TRUTH
     const scoreResult = await calculateManagerLiveScore(entryId, gameweek, status);
 
-    // Fetch bootstrap data for team info and entry info for overall stats
-    const [bootstrapResponse, entryResponse] = await Promise.all([
+    // Fetch bootstrap data for team info, entry info, and fixtures for the gameweek
+    const [bootstrapResponse, entryResponse, fixturesResponse] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -51,11 +51,17 @@ export async function GET(
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         }
+      }),
+      fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
       })
     ]);
 
     const bootstrapData = bootstrapResponse.ok ? await bootstrapResponse.json() : null;
     const entryData = entryResponse.ok ? await entryResponse.json() : null;
+    const fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
 
     // Create element lookup for team info
     const elementLookup: { [key: number]: any } = {};
@@ -65,6 +71,37 @@ export async function GET(
       });
     }
 
+    // Create team lookup for fixture info
+    const teamLookup: { [key: number]: any } = {};
+    if (bootstrapData) {
+      bootstrapData.teams.forEach((team: any) => {
+        teamLookup[team.id] = team;
+      });
+    }
+
+    // Create fixture lookup for each team
+    const teamFixtureLookup: { [key: number]: any } = {};
+    fixturesData.forEach((fixture: any) => {
+      teamFixtureLookup[fixture.team_h] = {
+        opponent_id: fixture.team_a,
+        opponent_short: teamLookup[fixture.team_a]?.short_name || 'UNK',
+        opponent_name: teamLookup[fixture.team_a]?.name || 'Unknown',
+        was_home: true,
+        kickoff_time: fixture.kickoff_time,
+        started: fixture.started || false,
+        finished: fixture.finished || false
+      };
+      teamFixtureLookup[fixture.team_a] = {
+        opponent_id: fixture.team_h,
+        opponent_short: teamLookup[fixture.team_h]?.short_name || 'UNK',
+        opponent_name: teamLookup[fixture.team_h]?.name || 'Unknown',
+        was_home: false,
+        kickoff_time: fixture.kickoff_time,
+        started: fixture.started || false,
+        finished: fixture.finished || false
+      };
+    });
+
     // Transform squad data to match frontend expectations
     const allPlayers = [...scoreResult.squad.starting11, ...scoreResult.squad.bench];
     const playerLookup: { [key: number]: any } = {};
@@ -72,18 +109,27 @@ export async function GET(
     allPlayers.forEach(player => {
       const element = elementLookup[player.id];
       const positionMap: { [key: string]: number } = { GK: 1, DEF: 2, MID: 3, FWD: 4 };
+      const playerTeam = element?.team || 0;
+      const fixtureInfo = teamFixtureLookup[playerTeam] || null;
 
       playerLookup[player.id] = {
         id: player.id,
         web_name: player.name,
-        team: element?.team || 0,
+        team: playerTeam,
         team_code: element?.team_code || 0,
         element_type: positionMap[player.position] || 0,
         event_points: player.points,
         bps: player.bps || 0,
         bonus: player.bonus || 0,
         minutes: player.minutes || 0,
-        multiplier: player.multiplier
+        multiplier: player.multiplier,
+        // Fixture info for players who haven't played
+        opponent_short: fixtureInfo?.opponent_short || null,
+        opponent_name: fixtureInfo?.opponent_name || null,
+        was_home: fixtureInfo?.was_home ?? null,
+        kickoff_time: fixtureInfo?.kickoff_time || null,
+        fixture_started: fixtureInfo?.started || false,
+        fixture_finished: fixtureInfo?.finished || false
       };
     });
 

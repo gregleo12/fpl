@@ -101,6 +101,17 @@
   border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
 }
 
+/* Fixture Bar - Muted purple/gray for upcoming fixtures */
+.fixture {
+  background: #2d2d44;  /* Muted purple/gray - different from played */
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 5px;
+  text-align: center;
+  border-radius: 0 0 6px 6px;  /* Rounded bottom corners only */
+}
+
 /* Position Label (for bench players) */
 .positionLabel {
   font-size: 0.7rem;
@@ -133,6 +144,11 @@
 
   .points {
     font-size: 0.7rem;
+    padding: 4px;
+  }
+
+  .fixture {
+    font-size: 0.6rem;
     padding: 4px;
   }
 
@@ -176,6 +192,11 @@
 
   .points {
     font-size: 0.75rem;
+    padding: 4px;
+  }
+
+  .fixture {
+    font-size: 0.65rem;
     padding: 4px;
   }
 
