@@ -7,14 +7,15 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  element_type: number;
-  team: number;
+  position: string;
+  team_id: number;
   team_code: number;
+  team_short: string;
   now_cost: number;
-  selected_by_percent: string;
+  selected_by_percent: string | number;
   total_points: number;
-  form: string;
-  points_per_game: string;
+  form: string | number;
+  points_per_game: string | number;
 }
 
 interface Team {
@@ -28,18 +29,11 @@ interface Props {
   team: Team;
 }
 
-const POSITION_MAP: Record<number, string> = {
-  1: 'GKP',
-  2: 'DEF',
-  3: 'MID',
-  4: 'FWD',
-};
-
 export function PlayerCell({ player, team }: Props) {
-  const position = POSITION_MAP[player.element_type] || 'UNK';
+  const position = player.position || 'UNK';
 
   // Determine if goalkeeper for jersey variant
-  const isGK = player.element_type === 1;
+  const isGK = player.position === 'GKP';
   const jerseyUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}${isGK ? '_1' : ''}-110.webp`;
 
   return (
@@ -58,7 +52,7 @@ export function PlayerCell({ player, team }: Props) {
               {position}
             </span>
             <span className={styles.separator}>·</span>
-            <span className={styles.teamName}>{team?.short_name || 'N/A'}</span>
+            <span className={styles.teamName}>{player.team_short || team?.short_name || 'N/A'}</span>
           </div>
         </div>
       </div>

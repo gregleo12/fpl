@@ -10,22 +10,24 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  element_type: number;
-  team: number;
+  position: string;
+  team_id: number;
   team_code: number;
+  team_name: string;
+  team_short: string;
   now_cost: number;
-  selected_by_percent: string;
+  selected_by_percent: string | number;
   total_points: number;
-  form: string;
-  points_per_game: string;
+  form: string | number;
+  points_per_game: string | number;
   event_points: number;
   starts: number;
   minutes: number;
   goals_scored: number;
-  expected_goals: string;
+  expected_goals: string | number;
   assists: number;
-  expected_assists: string;
-  expected_goal_involvements: string;
+  expected_assists: string | number;
+  expected_goal_involvements: string | number;
   clean_sheets: number;
   goals_conceded: number;
   saves: number;
@@ -81,7 +83,7 @@ export function PlayersTable({ players, teams, viewMode }: Props) {
             <PlayerRow
               key={player.id}
               player={player}
-              team={teamMap[player.team]}
+              team={teamMap[player.team_id]}
               columns={columns}
             />
           ))}

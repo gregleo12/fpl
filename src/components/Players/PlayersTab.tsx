@@ -9,22 +9,24 @@ interface Player {
   web_name: string;
   first_name: string;
   second_name: string;
-  element_type: number;
-  team: number;
+  position: string;
+  team_id: number;
   team_code: number;
+  team_name: string;
+  team_short: string;
   now_cost: number;
-  selected_by_percent: string;
+  selected_by_percent: string | number;
   total_points: number;
-  form: string;
-  points_per_game: string;
+  form: string | number;
+  points_per_game: string | number;
   event_points: number;
   starts: number;
   minutes: number;
   goals_scored: number;
-  expected_goals: string;
+  expected_goals: string | number;
   assists: number;
-  expected_assists: string;
-  expected_goal_involvements: string;
+  expected_assists: string | number;
+  expected_goal_involvements: string | number;
   clean_sheets: number;
   goals_conceded: number;
   saves: number;
@@ -60,7 +62,8 @@ export function PlayersTab() {
       setIsLoading(true);
       setError('');
 
-      const response = await fetch('/api/fpl-proxy', {
+      // Fetch all players (no pagination, sorted by total_points desc)
+      const response = await fetch('/api/players?limit=1000&sort=total_points&order=desc', {
         cache: 'no-store'
       });
 
@@ -70,13 +73,12 @@ export function PlayersTab() {
 
       const data = await response.json();
 
-      // Sort by total_points descending by default
-      const sortedPlayers = data.elements.sort((a: Player, b: Player) =>
-        b.total_points - a.total_points
-      );
-
-      setPlayers(sortedPlayers);
-      setTeams(data.teams);
+      setPlayers(data.players);
+      setTeams(data.filters.teams.map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        short_name: t.short
+      })));
     } catch (err: any) {
       console.error('Error fetching players:', err);
       setError(err.message || 'Failed to load players');

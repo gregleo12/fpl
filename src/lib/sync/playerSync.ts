@@ -82,10 +82,10 @@ export async function syncPlayers(): Promise<SyncResult> {
       await db.query(`
         INSERT INTO players (
           id, web_name, first_name, second_name,
-          team_id, team_name, team_short, element_type, position,
+          team_id, team_name, team_short, team_code, element_type, position,
           now_cost, selected_by_percent, transfers_in, transfers_out,
           transfers_in_event, transfers_out_event,
-          total_points, points_per_game, form,
+          total_points, points_per_game, form, event_points, cost_change_start,
           minutes, starts, goals_scored, assists,
           expected_goals, expected_assists, expected_goal_involvements,
           clean_sheets, goals_conceded, expected_goals_conceded, own_goals,
@@ -97,7 +97,7 @@ export async function syncPlayers(): Promise<SyncResult> {
           $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
           $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
           $31, $32, $33, $34, $35, $36, $37, $38, $39, $40,
-          $41, $42, $43, NOW()
+          $41, $42, $43, $44, $45, $46, NOW()
         )
         ON CONFLICT (id) DO UPDATE SET
           web_name = EXCLUDED.web_name,
@@ -106,6 +106,7 @@ export async function syncPlayers(): Promise<SyncResult> {
           team_id = EXCLUDED.team_id,
           team_name = EXCLUDED.team_name,
           team_short = EXCLUDED.team_short,
+          team_code = EXCLUDED.team_code,
           now_cost = EXCLUDED.now_cost,
           selected_by_percent = EXCLUDED.selected_by_percent,
           transfers_in = EXCLUDED.transfers_in,
@@ -115,6 +116,8 @@ export async function syncPlayers(): Promise<SyncResult> {
           total_points = EXCLUDED.total_points,
           points_per_game = EXCLUDED.points_per_game,
           form = EXCLUDED.form,
+          event_points = EXCLUDED.event_points,
+          cost_change_start = EXCLUDED.cost_change_start,
           minutes = EXCLUDED.minutes,
           starts = EXCLUDED.starts,
           goals_scored = EXCLUDED.goals_scored,
@@ -143,10 +146,11 @@ export async function syncPlayers(): Promise<SyncResult> {
           updated_at = NOW()
       `, [
         el.id, el.web_name, el.first_name, el.second_name,
-        el.team, team?.name, team?.short, el.element_type, positionMap[el.element_type],
+        el.team, team?.name, team?.short, el.team_code, el.element_type, positionMap[el.element_type],
         el.now_cost, parseFloat(el.selected_by_percent) || 0, el.transfers_in || 0, el.transfers_out || 0,
         el.transfers_in_event || 0, el.transfers_out_event || 0,
         el.total_points || 0, parseFloat(el.points_per_game) || 0, parseFloat(el.form) || 0,
+        el.event_points || 0, el.cost_change_start || 0,
         el.minutes || 0, el.starts || 0, el.goals_scored || 0, el.assists || 0,
         parseFloat(el.expected_goals) || 0, parseFloat(el.expected_assists) || 0,
         parseFloat(el.expected_goal_involvements) || 0,
