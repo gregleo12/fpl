@@ -43,7 +43,7 @@ export async function GET(
     // Fetch remaining data in parallel
     const [captainData, chipsData, scoresData, liveData, picksData, hitsData, benchData] = await Promise.all([
       fetchCaptainPicks(db, leagueId, gw, managersData, status),
-      fetchChipsPlayed(db, leagueId, gw),
+      fetchChipsPlayed(db, leagueId, gw, status),
       fetchScores(db, leagueId, gw, managersData, status),
       fetchLiveData(gw),
       fetchAllPicks(managersData, gw, status),
@@ -218,21 +218,55 @@ async function fetchCaptainPicks(
   return result;
 }
 
-// Fetch chips played directly from FPL API (like My Team does)
-async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
-  // Get all managers in the league
-  const managers = await fetchManagers(db, leagueId);
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
-  }
-
+// Fetch chips played - uses database for completed GWs, FPL API for live GWs
+async function fetchChipsPlayed(
+  db: any,
+  leagueId: number,
+  gw: number,
+  status: 'completed' | 'in_progress' | 'upcoming'
+) {
   const CHIP_NAMES: Record<string, string> = {
     'bboost': 'BB',
     '3xc': 'TC',
     'freehit': 'FH',
     'wildcard': 'WC',
   };
+
+  // For completed GWs, use database
+  if (status === 'completed') {
+    try {
+      const result = await db.query(`
+        SELECT
+          mc.entry_id,
+          m.player_name,
+          mc.chip_name
+        FROM manager_chips mc
+        JOIN managers m ON m.entry_id = mc.entry_id
+        WHERE mc.league_id = $1 AND mc.event = $2
+      `, [leagueId, gw]);
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Found ${result.rows.length} managers with chips played in GW${gw} (from database)`);
+      }
+
+      return result.rows.map((row: any) => ({
+        entry_id: row.entry_id,
+        player_name: row.player_name,
+        chip_name: row.chip_name,
+        chip_display: CHIP_NAMES[row.chip_name] || row.chip_name,
+      }));
+    } catch (error) {
+      console.error('[fetchChipsPlayed] Database error, falling back to FPL API:', error);
+      // Fall through to FPL API
+    }
+  }
+
+  // For live/upcoming GWs or database fallback, use FPL API
+  const managers = await fetchManagers(db, leagueId);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
+  }
 
   // Fetch chip history from FPL API for each manager
   const chipPromises = managers.map(async (manager: any) => {

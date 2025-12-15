@@ -13,7 +13,9 @@
     "migrate:manager-history": "npx tsx src/scripts/run-manager-history-migration.ts",
     "sync:manager-history": "npx tsx src/scripts/sync-manager-history.ts",
     "migrate:manager-picks": "npx tsx src/scripts/run-manager-picks-migration.ts",
-    "sync:manager-picks": "npx tsx src/scripts/sync-manager-picks.ts"
+    "sync:manager-picks": "npx tsx src/scripts/sync-manager-picks.ts",
+    "migrate:manager-chips": "npx tsx src/scripts/run-manager-chips-migration.ts",
+    "sync:manager-chips": "npx tsx src/scripts/sync-manager-chips.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
