@@ -41,16 +41,15 @@ export async function GET(
     console.log(`GW${gw} status: ${status}`);
 
     // Fetch remaining data in parallel
-    const [captainData, chipsData, scoresData, liveData, picksData] = await Promise.all([
-      fetchCaptainPicks(db, leagueId, gw),
-      fetchChipsPlayed(db, leagueId, gw),
+    const [captainData, chipsData, scoresData, liveData, picksData, hitsData, benchData] = await Promise.all([
+      fetchCaptainPicks(db, leagueId, gw, managersData, status),
+      fetchChipsPlayed(db, leagueId, gw, status),
       fetchScores(db, leagueId, gw, managersData, status),
       fetchLiveData(gw),
-      fetchAllPicks(managersData, gw),
+      fetchAllPicks(managersData, gw, status),
+      fetchHitsFromDatabase(db, leagueId, gw, managersData, status),
+      fetchBenchPointsFromDatabase(db, leagueId, gw, status),
     ]);
-
-    // Calculate hits statistics
-    const hitsData = calculateHits(picksData);
 
     // Calculate winners/losers
     const winnersData = calculateWinners(scoresData);
@@ -69,6 +68,7 @@ export async function GET(
       chipsPlayed: chipsData,
       hitsTaken: hitsData,
       winners: winnersData,
+      pointsOnBench: benchData,
       topPerformers: topPerformersData,
       totalManagers: managersData.length,
     });
@@ -81,16 +81,52 @@ export async function GET(
   }
 }
 
-// Fetch captain picks from FPL API (same pattern as chips in v1.11.9)
-async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
-  // Get all managers in the league
-  const managers = await fetchManagers(db, leagueId);
+// Fetch captain picks - uses database for completed GWs, FPL API for live/upcoming
+async function fetchCaptainPicks(
+  db: any,
+  leagueId: number,
+  gw: number,
+  managers: any[],
+  status: 'completed' | 'in_progress' | 'upcoming'
+) {
+  // For completed gameweeks, use database
+  if (status === 'completed') {
+    console.log(`GW${gw} is completed - fetching captain picks from manager_picks table`);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Fetching captain picks from FPL API for ${managers.length} managers in GW${gw}...`);
+    const result = await db.query(`
+      SELECT
+        mp.player_id,
+        p.web_name as player_name,
+        mp.multiplier,
+        COUNT(*) as count,
+        SUM(pgs.total_points * mp.multiplier) as total_points
+      FROM manager_picks mp
+      JOIN players p ON p.id = mp.player_id
+      LEFT JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = $2
+      WHERE mp.league_id = $1
+        AND mp.event = $2
+        AND mp.is_captain = TRUE
+      GROUP BY mp.player_id, p.web_name, mp.multiplier
+      ORDER BY count DESC
+      LIMIT 10
+    `, [leagueId, gw]);
+
+    console.log(`Found ${result.rows.length} unique captain picks from database`);
+
+    return result.rows.map((row: any) => ({
+      player_id: row.player_id,
+      player_name: row.player_name,
+      team_name: '', // Not needed
+      count: parseInt(row.count),
+      percentage: (parseInt(row.count) / managers.length) * 100,
+      avg_points: row.total_points ? row.total_points / parseInt(row.count) : 0,
+    }));
   }
 
-  // Fetch live data once for this gameweek (performance optimization)
+  // For live/upcoming GWs, use FPL API
+  console.log(`GW${gw} is ${status} - fetching captain picks from FPL API`);
+
+  // Fetch live data once for this gameweek
   const liveResponse = await fetch(
     `https://fantasy.premierleague.com/api/event/${gw}/live/`
   );
@@ -142,9 +178,7 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
 
   const allPicks = (await Promise.all(picksPromises)).filter((p) => p !== null);
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Found ${allPicks.length} captain picks in GW${gw}`);
-  }
+  console.log(`Found ${allPicks.length} captain picks from FPL API`);
 
   // Group by captain ID and calculate totals
   const captainMap = new Map<number, { count: number; totalPoints: number }>();
@@ -184,21 +218,55 @@ async function fetchCaptainPicks(db: any, leagueId: number, gw: number) {
   return result;
 }
 
-// Fetch chips played directly from FPL API (like My Team does)
-async function fetchChipsPlayed(db: any, leagueId: number, gw: number) {
-  // Get all managers in the league
-  const managers = await fetchManagers(db, leagueId);
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
-  }
-
+// Fetch chips played - uses database for completed GWs, FPL API for live GWs
+async function fetchChipsPlayed(
+  db: any,
+  leagueId: number,
+  gw: number,
+  status: 'completed' | 'in_progress' | 'upcoming'
+) {
   const CHIP_NAMES: Record<string, string> = {
     'bboost': 'BB',
     '3xc': 'TC',
     'freehit': 'FH',
     'wildcard': 'WC',
   };
+
+  // For completed GWs, use database
+  if (status === 'completed') {
+    try {
+      const result = await db.query(`
+        SELECT
+          mc.entry_id,
+          m.player_name,
+          mc.chip_name
+        FROM manager_chips mc
+        JOIN managers m ON m.entry_id = mc.entry_id
+        WHERE mc.league_id = $1 AND mc.event = $2
+      `, [leagueId, gw]);
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Found ${result.rows.length} managers with chips played in GW${gw} (from database)`);
+      }
+
+      return result.rows.map((row: any) => ({
+        entry_id: row.entry_id,
+        player_name: row.player_name,
+        chip_name: row.chip_name,
+        chip_display: CHIP_NAMES[row.chip_name] || row.chip_name,
+      }));
+    } catch (error) {
+      console.error('[fetchChipsPlayed] Database error, falling back to FPL API:', error);
+      // Fall through to FPL API
+    }
+  }
+
+  // For live/upcoming GWs or database fallback, use FPL API
+  const managers = await fetchManagers(db, leagueId);
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`Fetching chip history from FPL API for ${managers.length} managers in GW${gw}...`);
+  }
 
   // Fetch chip history from FPL API for each manager
   const chipPromises = managers.map(async (manager: any) => {
@@ -349,8 +417,14 @@ async function fetchLiveData(gw: number) {
   }
 }
 
-// Fetch picks data from FPL API for all managers
-async function fetchAllPicks(managers: any[], gw: number) {
+// Fetch picks data from FPL API for all managers (only for top performers calculation)
+async function fetchAllPicks(managers: any[], gw: number, status: string) {
+  // Only fetch picks for in-progress/upcoming GWs (for top performers)
+  if (status !== 'in_progress' && status !== 'upcoming') {
+    console.log(`GW${gw} is completed - skipping picks fetch (not needed for top performers)`);
+    return [];
+  }
+
   if (process.env.NODE_ENV === 'development') {
     console.log(`Fetching picks for ${managers.length} managers in GW${gw}...`);
   }
@@ -370,8 +444,6 @@ async function fetchAllPicks(managers: any[], gw: number) {
         player_name: manager.player_name,
         picks: data.picks || [],
         active_chip: data.active_chip || null,
-        transfer_cost: data.entry_history?.event_transfers_cost || 0,
-        points: data.entry_history?.points || 0,
       };
     } catch (error) {
       console.error(`Error fetching picks for entry ${manager.entry_id}:`, error);
@@ -383,18 +455,114 @@ async function fetchAllPicks(managers: any[], gw: number) {
   return results.filter((r) => r !== null);
 }
 
-// Calculate hits statistics
-function calculateHits(picksData: any[]) {
-  const managersWithHitsData = picksData
-    .filter((p) => p.transfer_cost > 0)
-    .map((p) => ({
-      entry_id: p.entry_id,
-      player_name: p.player_name,
-      hits_taken: p.transfer_cost / 4, // Convert cost to number of hits
-    }))
-    .sort((a, b) => b.hits_taken - a.hits_taken); // Sort by most hits first
+// Fetch hits from database (manager_gw_history) - falls back to FPL API for live GWs
+async function fetchHitsFromDatabase(
+  db: any,
+  leagueId: number,
+  gw: number,
+  managers: any[],
+  status: string
+) {
+  // For completed gameweeks, use database
+  if (status === 'completed') {
+    console.log(`GW${gw} is completed - fetching hits from manager_gw_history table`);
 
-  return managersWithHitsData;
+    const result = await db.query(`
+      SELECT
+        mh.entry_id,
+        m.player_name,
+        mh.event_transfers_cost / 4 as hits_taken
+      FROM manager_gw_history mh
+      JOIN managers m ON m.entry_id = mh.entry_id
+      WHERE mh.league_id = $1
+        AND mh.event = $2
+        AND mh.event_transfers_cost > 0
+      ORDER BY mh.event_transfers_cost DESC
+    `, [leagueId, gw]);
+
+    console.log(`Found ${result.rows.length} managers with hits from database`);
+    return result.rows;
+  }
+
+  // For live/upcoming GWs, fall back to FPL API
+  console.log(`GW${gw} is ${status} - fetching hits from FPL API`);
+
+  const hitsPromises = managers.map(async (manager: any) => {
+    try {
+      const response = await fetch(
+        `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      const transferCost = data.entry_history?.event_transfers_cost || 0;
+
+      if (transferCost === 0) {
+        return null;
+      }
+
+      return {
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        hits_taken: transferCost / 4,
+      };
+    } catch (error) {
+      console.error(`Error fetching hits for entry ${manager.entry_id}:`, error);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(hitsPromises);
+  return results.filter((r) => r !== null).sort((a, b) => b.hits_taken - a.hits_taken);
+}
+
+// Fetch bench points from database (manager_gw_history) - falls back to FPL API for live GWs
+async function fetchBenchPointsFromDatabase(
+  db: any,
+  leagueId: number,
+  gw: number,
+  status: string
+) {
+  // For completed gameweeks, use database
+  if (status === 'completed') {
+    console.log(`GW${gw} is completed - fetching bench points from manager_gw_history table`);
+
+    const result = await db.query(`
+      SELECT
+        mh.entry_id,
+        m.player_name,
+        mh.points_on_bench
+      FROM manager_gw_history mh
+      JOIN managers m ON m.entry_id = mh.entry_id
+      WHERE mh.league_id = $1
+        AND mh.event = $2
+        AND mh.points_on_bench > 0
+      ORDER BY mh.points_on_bench DESC
+    `, [leagueId, gw]);
+
+    console.log(`Found ${result.rows.length} managers with bench points from database`);
+
+    // Calculate totals
+    const totalBenchPoints = result.rows.reduce((sum: number, row: any) => sum + row.points_on_bench, 0);
+    const avgBenchPoints = result.rows.length > 0 ? totalBenchPoints / result.rows.length : 0;
+
+    return {
+      managers: result.rows,
+      total: totalBenchPoints,
+      average: avgBenchPoints,
+    };
+  }
+
+  // For live/upcoming GWs, return empty data (bench points are complex to calculate live)
+  console.log(`GW${gw} is ${status} - bench points not available for live gameweeks`);
+  return {
+    managers: [],
+    total: 0,
+    average: 0,
+  };
 }
 
 // Calculate winners/losers

@@ -9,7 +9,17 @@
     "lint": "next lint",
     "migrate:analytics": "npx ts-node src/scripts/migrate-analytics.ts",
     "migrate:players": "npx tsx src/scripts/run-player-migration.ts",
-    "migrate:columns": "npx tsx src/scripts/add-missing-columns.ts"
+    "migrate:columns": "npx tsx src/scripts/add-missing-columns.ts",
+    "migrate:manager-history": "npx tsx src/scripts/run-manager-history-migration.ts",
+    "sync:manager-history": "npx tsx src/scripts/sync-manager-history.ts",
+    "migrate:manager-picks": "npx tsx src/scripts/run-manager-picks-migration.ts",
+    "sync:manager-picks": "npx tsx src/scripts/sync-manager-picks.ts",
+    "migrate:manager-chips": "npx tsx src/scripts/run-manager-chips-migration.ts",
+    "sync:manager-chips": "npx tsx src/scripts/sync-manager-chips.ts",
+    "migrate:manager-transfers": "npx tsx src/scripts/run-manager-transfers-migration.ts",
+    "sync:manager-transfers": "npx tsx src/scripts/sync-manager-transfers.ts",
+    "migrate:pl-fixtures": "npx tsx src/scripts/run-pl-fixtures-migration.ts",
+    "sync:pl-fixtures": "npx tsx src/scripts/sync-pl-fixtures.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
