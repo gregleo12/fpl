@@ -8,7 +8,7 @@ interface Props {
   data: ChipData[];
 }
 
-const CHIP_ICON_COMPONENTS: Record<string, React.ComponentType<{ size: number; color: string }>> = {
+const CHIP_ICON_COMPONENTS: Record<string, any> = {
   'BB': Target,
   'TC': Star,
   'WC': RefreshCw,
