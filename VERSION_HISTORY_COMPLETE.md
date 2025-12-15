@@ -1,8 +1,68 @@
 # FPL H2H Analytics - Complete Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 210+ versions
-**Current Version:** v2.4.45 (December 12, 2025)
+**Total Releases:** 217+ versions
+**Current Version:** v2.6.7 (December 15, 2025)
+
+---
+
+## 📊 v2.6.x - Players Tab Database Integration (Dec 2025)
+
+### v2.6.7 - Switch PlayersTab to Use Database Instead of FPL Proxy (Dec 15, 2025)
+**DATABASE:** Migrated PlayersTab from temporary FPL proxy to production database
+- **Database Setup:**
+  - Added missing columns to `players` table:
+    - `team_code` (INTEGER) - for jersey image URLs
+    - `event_points` (INTEGER) - current gameweek points
+    - `cost_change_start` (INTEGER) - price changes since season start
+  - Added missing column to `player_gameweek_stats` table:
+    - `defensive_contribution` (INTEGER) - defensive stats
+  - Updated `playerSync.ts` to populate all new fields from FPL API
+- **Code Updates:**
+  - Updated `PlayersTab.tsx` to fetch from `/api/players` endpoint instead of `/api/fpl-proxy`
+  - Updated all Player interfaces across components to use database field names:
+    - `position` (string: 'GKP'/'DEF'/'MID'/'FWD') instead of `element_type` (number: 1/2/3/4)
+    - `team_id` instead of `team`
+    - Added `team_name`, `team_short` fields
+  - Updated `PlayerCell.tsx` to use `position` string directly
+  - Updated `PlayersTable.tsx` teamMap to use `team_id` for lookups
+- **Sync Process:**
+  - Running full player sync (760 players + gameweek history)
+  - Database will contain complete player season and per-gameweek stats
+- **Result:** Players tab now loads from database instead of making external API calls
+  - ✓ Faster load times from local database
+  - ✓ No dependency on FPL API availability
+  - ✓ Consistent data structure with rest of app
+  - ✓ Build successful with no TypeScript errors
+
+### v2.6.6 - Fix Players Tab with FPL API Proxy (Dec 15, 2025)
+**FIX:** Created server-side proxy to bypass CORS restrictions
+- Created `/api/fpl-proxy/route.ts` to fetch from FPL API server-side
+- Reverted all Player interfaces back to FPL API structure
+- Temporary solution until database is populated
+
+### v2.6.5 - Attempt Database API for Players Tab (Dec 15, 2025)
+**ATTEMPT:** Tried switching to database API (failed - tables didn't exist yet)
+- Updated PlayersTab to use `/api/players` endpoint
+- Updated interfaces to match database structure
+- Failed with "relation 'players' does not exist" error
+
+### v2.6.4 - Improve Error Handling for Players Tab (Dec 15, 2025)
+**UX:** Enhanced error display with retry functionality
+- Added detailed error messages with HTTP status codes
+- Added retry button for failed fetches
+- Styled error states in PlayersTab.module.css
+
+### v2.6.3 - Integrate New PlayersTab into Stats Section (Dec 15, 2025)
+**INTEGRATION:** Connected new PlayersTab component to app
+- Updated StatsHub.tsx import from relative to absolute path
+- Changed from `./Players/PlayersTab` to `@/components/Players/PlayersTab`
+- Build successful, component now active in Stats section
+
+### v2.6.2 - Simplify Version Numbering (Dec 15, 2025)
+**PROCESS:** Simplified versioning from "2.6.0-alpha.1" to "2.6.2"
+- Removed alpha/beta suffixes for cleaner version numbers
+- Updated package.json version field
 
 ---
 
