@@ -40,6 +40,13 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   useEffect(() => {
     async function fetchDetailedData() {
       try {
+        // 1. LOG: Fetch starting
+        console.log('[PlayerModal] 🔍 Fetching data for player:', {
+          playerId: player.id,
+          playerName: player.web_name,
+          gameweek: gameweek
+        });
+
         // Fetch bootstrap data for team names and full player data from our backend
         const [bootstrapRes, playerDataRes] = await Promise.all([
           fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
@@ -67,11 +74,29 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
         if (playerDataRes.ok) {
           const playerData = await playerDataRes.json();
 
+          // 2. LOG: API Response
+          console.log('[PlayerModal] ✅ API Response:', {
+            player: playerData.player?.web_name,
+            historyCount: playerData.history?.length,
+            gameweeksInHistory: playerData.history?.map((h: any) => h.gameweek)
+          });
+
           // Find the current gameweek stats from history array
           const gwStats = playerData.history?.find((h: any) => h.gameweek === gameweek);
 
+          // 3. LOG: Found gameweek stats
           if (gwStats) {
-            setDetailedStats({
+            console.log('[PlayerModal] 📊 Found GW stats:', {
+              gameweek: gwStats.gameweek,
+              minutes: gwStats.minutes,
+              goals_scored: gwStats.goals_scored,
+              assists: gwStats.assists,
+              bonus: gwStats.bonus,
+              bps: gwStats.bps,
+              total_points: gwStats.total_points
+            });
+
+            const statsToSet = {
               goals_scored: gwStats.goals_scored || 0,
               assists: gwStats.assists || 0,
               clean_sheets: gwStats.clean_sheets || 0,
@@ -93,19 +118,24 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
               creativity: gwStats.creativity || 0,
               threat: gwStats.threat || 0,
               ict_index: gwStats.ict_index || 0
-            });
+            };
+
+            // 4. LOG: Setting detailedStats
+            console.log('[PlayerModal] ⚙️  Setting detailedStats:', statsToSet);
+
+            setDetailedStats(statsToSet);
           } else {
-            console.error(`No stats found for gameweek ${gameweek}`);
+            console.error(`[PlayerModal] ❌ No stats found for gameweek ${gameweek}`);
             // Fallback to basic data from player prop
             setDetailedStats(null);
           }
         } else {
-          console.error('Failed to fetch player data from backend');
+          console.error('[PlayerModal] ❌ Failed to fetch player data from backend');
           // Fallback to basic data from player prop
           setDetailedStats(null);
         }
       } catch (error) {
-        console.error('Error fetching detailed data:', error);
+        console.error('[PlayerModal] ❌ Error fetching detailed data:', error);
         // Fallback to basic data from player prop
         setDetailedStats(null);
       } finally {
