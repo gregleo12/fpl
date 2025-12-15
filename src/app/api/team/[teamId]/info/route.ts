@@ -13,21 +13,32 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const gwParam = searchParams.get('gw');
 
-    // Fetch entry info
-    const entryResponse = await fetch(
-      `https://fantasy.premierleague.com/api/entry/${teamId}/`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    // Fetch entry info and history in parallel
+    const [entryResponse, historyResponse] = await Promise.all([
+      fetch(
+        `https://fantasy.premierleague.com/api/entry/${teamId}/`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          }
         }
-      }
-    );
+      ),
+      fetch(
+        `https://fantasy.premierleague.com/api/entry/${teamId}/history/`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          }
+        }
+      )
+    ]);
 
     if (!entryResponse.ok) {
       throw new Error(`Failed to fetch entry info: ${entryResponse.status}`);
     }
 
     const entryData = await entryResponse.json();
+    const historyData = historyResponse.ok ? await historyResponse.json() : null;
 
     // Fetch bootstrap data for total players count and current GW
     const bootstrapResponse = await fetch(
@@ -91,11 +102,23 @@ export async function GET(
       };
     }
 
+    // Find the selected GW's history entry
+    let gwHistory = null;
+    if (historyData && historyData.current) {
+      gwHistory = historyData.current.find((h: any) => h.event === currentGW);
+    }
+
+    // Use history data if available for selected GW, otherwise fall back to current values
+    const overallPoints = gwHistory?.total_points || entryData.summary_overall_points || 0;
+    const overallRank = gwHistory?.overall_rank || entryData.summary_overall_rank || 0;
+    const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
+    const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
+
     return NextResponse.json({
-      overallPoints: entryData.summary_overall_points || 0,
-      overallRank: entryData.summary_overall_rank || 0,
-      teamValue: entryData.last_deadline_value || 0,
-      bank: entryData.last_deadline_bank || 0,
+      overallPoints: overallPoints,
+      overallRank: overallRank,
+      teamValue: teamValue,
+      bank: bank,
       totalPlayers: totalPlayers,
       gwPoints: gwPoints,
       gwRank: gwRank,
