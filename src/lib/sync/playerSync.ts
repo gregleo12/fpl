@@ -201,12 +201,12 @@ export async function syncPlayerHistory(playerId: number): Promise<number> {
           clean_sheets, goals_conceded, expected_goals_conceded, own_goals,
           saves, penalties_saved, yellow_cards, red_cards, penalties_missed,
           bonus, bps, influence, creativity, threat, ict_index,
-          value, transfers_in, transfers_out, selected
+          value, transfers_in, transfers_out, selected, defensive_contribution
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
           $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
           $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
-          $31, $32, $33, $34, $35
+          $31, $32, $33, $34, $35, $36
         )
         ON CONFLICT (player_id, gameweek) DO UPDATE SET
           total_points = EXCLUDED.total_points,
@@ -227,7 +227,8 @@ export async function syncPlayerHistory(playerId: number): Promise<number> {
           value = EXCLUDED.value,
           transfers_in = EXCLUDED.transfers_in,
           transfers_out = EXCLUDED.transfers_out,
-          selected = EXCLUDED.selected
+          selected = EXCLUDED.selected,
+          defensive_contribution = EXCLUDED.defensive_contribution
       `, [
         playerId, h.round, h.fixture, h.opponent_team, teamMap.get(h.opponent_team) || null,
         h.was_home, h.team_h_score || 0, h.team_a_score || 0, h.total_points || 0, h.minutes || 0, h.starts || 0,
@@ -237,7 +238,7 @@ export async function syncPlayerHistory(playerId: number): Promise<number> {
         h.saves || 0, h.penalties_saved || 0, h.yellow_cards || 0, h.red_cards || 0, h.penalties_missed || 0,
         h.bonus || 0, h.bps || 0, parseFloat(h.influence) || 0, parseFloat(h.creativity) || 0,
         parseFloat(h.threat) || 0, parseFloat(h.ict_index) || 0,
-        h.value || 0, h.transfers_in || 0, h.transfers_out || 0, h.selected || 0
+        h.value || 0, h.transfers_in || 0, h.transfers_out || 0, h.selected || 0, h.defensive_contribution || 0
       ]);
 
       updated++;

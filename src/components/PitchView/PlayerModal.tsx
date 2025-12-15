@@ -89,6 +89,16 @@ function calculateStatPoints(stat: string, value: number, position: number): num
     case 'bonus':
       return value; // Bonus points are 1:1
 
+    case 'defensive_contribution':
+      // DEF: +2 per 10 DC, MID: +2 per 12 DC
+      if (position === 2) {
+        return Math.floor(value / 10) * 2;
+      }
+      if (position === 3) {
+        return Math.floor(value / 12) * 2;
+      }
+      return 0; // GKP and FWD don't get DC points
+
     default:
       return 0;
   }
@@ -134,6 +144,7 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
     { key: 'saves', label: 'Saves', gkOnly: true },
     { key: 'yellow_cards', label: 'Yellow cards' },
     { key: 'red_cards', label: 'Red cards' },
+    { key: 'defensive_contribution', label: 'Defensive contribution', defMidOnly: true },
     { key: 'bonus', label: 'Bonus', isBonus: true },
   ];
 
@@ -162,9 +173,12 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           <>
             {/* Stats Grid - Only show non-zero stats */}
             <div className={styles.stats}>
-              {stats.map(({ key, label, gkOnly, isBonus }) => {
+              {stats.map(({ key, label, gkOnly, defMidOnly, isBonus }) => {
                 // Skip GK-only stats for non-goalkeepers
                 if (gkOnly && player.element_type !== 1) return null;
+
+                // Skip DEF/MID-only stats for GKP and FWD
+                if (defMidOnly && player.element_type !== 2 && player.element_type !== 3) return null;
 
                 const value = gwStats?.[key] || 0;
 
