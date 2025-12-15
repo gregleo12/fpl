@@ -40,10 +40,10 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   useEffect(() => {
     async function fetchDetailedData() {
       try {
-        // Fetch bootstrap data for team names and player gameweek stats from our backend
-        const [bootstrapRes, playerStatsRes] = await Promise.all([
+        // Fetch bootstrap data for team names and full player data from our backend
+        const [bootstrapRes, playerDataRes] = await Promise.all([
           fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-          fetch(`/api/players/${player.id}/gameweek/${gameweek}`)
+          fetch(`/api/players/${player.id}`)
         ]);
 
         if (bootstrapRes.ok) {
@@ -64,34 +64,43 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
         }
 
         // Get detailed stats from our backend API
-        if (playerStatsRes.ok) {
-          const data = await playerStatsRes.json();
+        if (playerDataRes.ok) {
+          const playerData = await playerDataRes.json();
 
-          setDetailedStats({
-            goals_scored: data.goals_scored || 0,
-            assists: data.assists || 0,
-            clean_sheets: data.clean_sheets || 0,
-            goals_conceded: data.goals_conceded || 0,
-            own_goals: data.own_goals || 0,
-            penalties_saved: data.penalties_saved || 0,
-            penalties_missed: data.penalties_missed || 0,
-            yellow_cards: data.yellow_cards || 0,
-            red_cards: data.red_cards || 0,
-            saves: data.saves || 0,
-            bonus: data.bonus || 0,
-            bps: data.bps || 0,
-            minutes: data.minutes || 0,
-            total_points: data.total_points || 0,
-            expected_goals: data.expected_goals || 0,
-            expected_assists: data.expected_assists || 0,
-            expected_goal_involvements: data.expected_goal_involvements || 0,
-            influence: data.influence || 0,
-            creativity: data.creativity || 0,
-            threat: data.threat || 0,
-            ict_index: data.ict_index || 0
-          });
+          // Find the current gameweek stats from history array
+          const gwStats = playerData.history?.find((h: any) => h.gameweek === gameweek);
+
+          if (gwStats) {
+            setDetailedStats({
+              goals_scored: gwStats.goals_scored || 0,
+              assists: gwStats.assists || 0,
+              clean_sheets: gwStats.clean_sheets || 0,
+              goals_conceded: gwStats.goals_conceded || 0,
+              own_goals: gwStats.own_goals || 0,
+              penalties_saved: gwStats.penalties_saved || 0,
+              penalties_missed: gwStats.penalties_missed || 0,
+              yellow_cards: gwStats.yellow_cards || 0,
+              red_cards: gwStats.red_cards || 0,
+              saves: gwStats.saves || 0,
+              bonus: gwStats.bonus || 0,
+              bps: gwStats.bps || 0,
+              minutes: gwStats.minutes || 0,
+              total_points: gwStats.total_points || 0,
+              expected_goals: gwStats.expected_goals || 0,
+              expected_assists: gwStats.expected_assists || 0,
+              expected_goal_involvements: gwStats.expected_goal_involvements || 0,
+              influence: gwStats.influence || 0,
+              creativity: gwStats.creativity || 0,
+              threat: gwStats.threat || 0,
+              ict_index: gwStats.ict_index || 0
+            });
+          } else {
+            console.error(`No stats found for gameweek ${gameweek}`);
+            // Fallback to basic data from player prop
+            setDetailedStats(null);
+          }
         } else {
-          console.error('Failed to fetch player stats from backend');
+          console.error('Failed to fetch player data from backend');
           // Fallback to basic data from player prop
           setDetailedStats(null);
         }
