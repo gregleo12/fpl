@@ -156,12 +156,14 @@ interface MatchDetailsData {
       playerName: string;
       avgPoints: number;
       form: number[];
+      formMinutes: number[];
       position: string;
     }>;
     entry_2: Array<{
       playerName: string;
       avgPoints: number;
       form: number[];
+      formMinutes: number[];
       position: string;
     }>;
   };
