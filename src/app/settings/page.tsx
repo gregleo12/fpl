@@ -83,7 +83,7 @@ export default function SettingsPage() {
     }
 
     // For league 7381, always use force clear to fix corrupted data
-    const shouldForce = state.leagueId === 7381 ||
+    const shouldForce = state.leagueId === '7381' ||
                         confirm('Force clear all existing data before syncing? (Recommended if data looks incorrect)');
 
     console.log('[Settings] Starting manual sync for league:', state.leagueId, 'force:', shouldForce);
