@@ -122,103 +122,15 @@ async function calculateCaptainLeaderboard(
   gameweeks: number[],
   managers: any[]
 ) {
+  // TEMPORARY: Force FPL API fallback for testing
+  console.log('[Captain] Forcing FPL API - managers:', managers.length, 'gameweeks:', gameweeks.length);
   try {
-    // DEBUG: Check player_id overlap between tables
-    const picksPlayerIds = await db.query(`
-      SELECT DISTINCT player_id FROM manager_picks WHERE league_id = $1 LIMIT 10
-    `, [leagueId]);
-    const statsPlayerIds = await db.query(`
-      SELECT DISTINCT player_id FROM player_gameweek_stats LIMIT 10
-    `);
-    console.log('[K-28 DEBUG] manager_picks player_ids (sample):', picksPlayerIds.rows.map((r: any) => r.player_id));
-    console.log('[K-28 DEBUG] player_gameweek_stats player_ids (sample):', statsPlayerIds.rows.map((r: any) => r.player_id));
-
-    // Try database first
-    const captainPointsResult = await db.query(`
-      SELECT
-        mp.entry_id,
-        SUM(pgs.total_points * mp.multiplier) as total_captain_points,
-        COUNT(DISTINCT mp.event) as gameweeks_used
-      FROM manager_picks mp
-      JOIN player_gameweek_stats pgs
-        ON mp.player_id = pgs.player_id
-        AND mp.event = pgs.gameweek
-      WHERE mp.league_id = $1
-        AND mp.is_captain = true
-        AND mp.event = ANY($2)
-      GROUP BY mp.entry_id
-    `, [leagueId, gameweeks]);
-
-    console.log('[K-28 DEBUG] Captain query returned', captainPointsResult.rows.length, 'rows');
-
-    // Check if all captain points are 0 (happens when player_gameweek_stats is incomplete)
-    const totalCaptainPoints = captainPointsResult.rows.reduce(
-      (sum: number, row: any) => sum + (parseInt(row.total_captain_points) || 0),
-      0
-    );
-    console.log('[K-28 DEBUG] Total captain points from query:', totalCaptainPoints);
-
-    // Fallback to FPL API if database is empty OR all values are 0
-    if (captainPointsResult.rows.length === 0 || totalCaptainPoints === 0) {
-      console.log('[Captain Leaderboard] No captain points data (player_gameweek_stats incomplete), falling back to FPL API');
-      return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
-    }
-
-    const captainPointsMap = new Map<number, { total_captain_points: number; gameweeks_used: number }>(
-      captainPointsResult.rows.map((row: any) => [
-        row.entry_id,
-        {
-          total_captain_points: parseInt(row.total_captain_points) || 0,
-          gameweeks_used: parseInt(row.gameweeks_used) || 0
-        }
-      ])
-    );
-
-    // Get total season points from manager_gw_history
-    const seasonPointsResult = await db.query(`
-      SELECT
-        entry_id,
-        SUM(points) as total_season_points
-      FROM manager_gw_history
-      WHERE league_id = $1
-        AND event = ANY($2)
-      GROUP BY entry_id
-    `, [leagueId, gameweeks]);
-
-    const seasonPointsMap = new Map<number, number>(
-      seasonPointsResult.rows.map((row: any) => [
-        row.entry_id,
-        parseInt(row.total_season_points) || 0
-      ])
-    );
-
-    // Build leaderboard
-    const leaderboard = managers.map(manager => {
-      const captainDataResult = captainPointsMap.get(manager.entry_id);
-      const totalCaptainPoints = captainDataResult?.total_captain_points || 0;
-      const gameweeksUsed = captainDataResult?.gameweeks_used || 0;
-      const totalSeasonPoints = seasonPointsMap.get(manager.entry_id) || 0;
-
-      return {
-        entry_id: manager.entry_id,
-        player_name: manager.player_name,
-        team_name: manager.team_name,
-        total_points: totalCaptainPoints,
-        percentage: totalSeasonPoints > 0
-          ? parseFloat((totalCaptainPoints / totalSeasonPoints * 100).toFixed(1))
-          : 0,
-        average_per_gw: gameweeksUsed > 0
-          ? parseFloat((totalCaptainPoints / gameweeksUsed).toFixed(1))
-          : 0
-      };
-    }).sort((a, b) => b.total_points - a.total_points);
-
-    return leaderboard;
-
+    const result = await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
+    console.log('[Captain] FPL API returned', result.length, 'results, top:', result[0]?.total_points || 0);
+    return result;
   } catch (error) {
-    console.error('Error calculating captain leaderboard:', error);
-    // Fallback to FPL API on error
-    return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
+    console.error('[Captain] FPL API ERROR:', error);
+    return [];
   }
 }
 
@@ -227,7 +139,6 @@ async function calculateCaptainLeaderboardFromAPI(
   managers: any[],
   gameweeks: number[]
 ) {
-  console.log('[Captain Fallback] Starting FPL API fallback for', managers.length, 'managers,', gameweeks.length, 'gameweeks');
   try {
     const leaderboard = await Promise.all(
       managers.map(async (manager) => {
@@ -286,9 +197,7 @@ async function calculateCaptainLeaderboardFromAPI(
       })
     );
 
-    const sorted = leaderboard.sort((a, b) => b.total_points - a.total_points);
-    console.log('[Captain Fallback] FPL API fallback completed. Top 3:', sorted.slice(0, 3).map(m => `${m.player_name}: ${m.total_points}pts`));
-    return sorted;
+    return leaderboard.sort((a, b) => b.total_points - a.total_points);
   } catch (error) {
     console.error('Error calculating captain leaderboard from API:', error);
     return [];
@@ -302,142 +211,15 @@ async function calculateChipPerformance(
   gameweeks: number[],
   managers: any[]
 ) {
+  // TEMPORARY: Force FPL API fallback for testing
+  console.log('[Chips] Forcing FPL API - managers:', managers.length, 'gameweeks:', gameweeks.length);
   try {
-    const CHIP_NAMES: Record<string, string> = {
-      'bboost': 'BB',
-      '3xc': 'TC',
-      'freehit': 'FH',
-      'wildcard': 'WC',
-    };
-
-    // LEADERBOARD 1: Most Chips Played
-    // Get chips from manager_chips table
-    const chipsPlayedResult = await db.query(`
-      SELECT
-        mc.entry_id,
-        mc.chip_name,
-        mc.event,
-        CASE
-          WHEN hm.winner = mc.entry_id THEN 'W'
-          WHEN hm.winner IS NULL THEN 'D'
-          ELSE 'L'
-        END as result
-      FROM manager_chips mc
-      LEFT JOIN h2h_matches hm ON mc.league_id = hm.league_id
-        AND mc.event = hm.event
-        AND (mc.entry_id = hm.entry_1_id OR mc.entry_id = hm.entry_2_id)
-      WHERE mc.league_id = $1
-        AND mc.event = ANY($2)
-      ORDER BY mc.entry_id, mc.event
-    `, [leagueId, gameweeks]);
-
-    console.log('[K-28 DEBUG] Chips query returned', chipsPlayedResult.rows.length, 'rows');
-
-    // Fallback to FPL API if database is empty
-    if (chipsPlayedResult.rows.length === 0) {
-      console.log('[Chip Performance] manager_chips table empty, falling back to FPL API');
-      return await calculateChipPerformanceFromAPI(db, leagueId, managers, gameweeks);
-    }
-
-    // Group by manager
-    const chipsByManager = new Map<number, Array<{name: string, event: number, result: string}>>();
-    chipsPlayedResult.rows.forEach((row: any) => {
-      if (!chipsByManager.has(row.entry_id)) {
-        chipsByManager.set(row.entry_id, []);
-      }
-      chipsByManager.get(row.entry_id)!.push({
-        name: row.chip_name,
-        event: row.event,
-        result: row.result || 'D'
-      });
-    });
-
-    const chipsPlayed = managers
-      .map(manager => {
-        const chips = chipsByManager.get(manager.entry_id) || [];
-        // Sort chips by GW
-        const sortedChips = [...chips].sort((a, b) => a.event - b.event);
-
-        return {
-          entry_id: manager.entry_id,
-          player_name: manager.player_name,
-          team_name: manager.team_name,
-          chip_count: chips.length,
-          chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
-          chips_played_data: sortedChips.map(c => ({
-            chip: CHIP_NAMES[c.name] || c.name,
-            gw: c.event,
-            result: c.result
-          }))
-        };
-      })
-      .filter(m => m.chip_count > 0)
-      .sort((a, b) => b.chip_count - a.chip_count);
-
-    // LEADERBOARD 2: Most Chips Faced
-    // Get chips faced by matching opponent chips with h2h matches
-    const chipsFacedResult = await db.query(`
-      SELECT
-        CASE
-          WHEN mc.entry_id = hm.entry_1_id THEN hm.entry_2_id
-          ELSE hm.entry_1_id
-        END as opponent_entry_id,
-        mc.chip_name,
-        mc.event,
-        CASE
-          WHEN hm.winner = (CASE WHEN mc.entry_id = hm.entry_1_id THEN hm.entry_2_id ELSE hm.entry_1_id END) THEN 'W'
-          WHEN hm.winner IS NULL THEN 'D'
-          ELSE 'L'
-        END as result
-      FROM manager_chips mc
-      JOIN h2h_matches hm ON mc.league_id = hm.league_id
-        AND mc.event = hm.event
-        AND (mc.entry_id = hm.entry_1_id OR mc.entry_id = hm.entry_2_id)
-      WHERE mc.league_id = $1
-        AND mc.event = ANY($2)
-      ORDER BY opponent_entry_id, mc.event
-    `, [leagueId, gameweeks]);
-
-    // Group by opponent (the manager who faced the chip)
-    const chipsFacedByManager = new Map<number, Array<{chip: string, gw: number, result: string}>>();
-    chipsFacedResult.rows.forEach((row: any) => {
-      if (!chipsFacedByManager.has(row.opponent_entry_id)) {
-        chipsFacedByManager.set(row.opponent_entry_id, []);
-      }
-      chipsFacedByManager.get(row.opponent_entry_id)!.push({
-        chip: CHIP_NAMES[row.chip_name] || row.chip_name,
-        gw: row.event,
-        result: row.result || 'D'
-      });
-    });
-
-    const chipsFaced = managers
-      .map(manager => {
-        const chips = chipsFacedByManager.get(manager.entry_id) || [];
-        // Sort by GW
-        const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
-
-        return {
-          entry_id: manager.entry_id,
-          player_name: manager.player_name,
-          team_name: manager.team_name,
-          chips_faced_count: chips.length,
-          chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
-          chips_faced_data: sortedChips
-        };
-      })
-      .filter(m => m.chips_faced_count > 0)
-      .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
-
-    return {
-      chipsPlayed,
-      chipsFaced
-    };
-
+    const result = await calculateChipPerformanceFromAPI(db, leagueId, managers, gameweeks);
+    console.log('[Chips] FPL API returned - played:', result.chipsPlayed.length, 'faced:', result.chipsFaced.length);
+    return result;
   } catch (error) {
-    console.error('Error calculating chip performance:', error);
-    // Fallback to FPL API on error
-    return await calculateChipPerformanceFromAPI(db, leagueId, managers, gameweeks);
+    console.error('[Chips] FPL API ERROR:', error);
+    return { chipsPlayed: [], chipsFaced: [] };
   }
 }
 
@@ -448,7 +230,6 @@ async function calculateChipPerformanceFromAPI(
   managers: any[],
   gameweeks: number[]
 ) {
-  console.log('[Chip Fallback] Starting FPL API fallback for', managers.length, 'managers,', gameweeks.length, 'gameweeks');
   try {
     const CHIP_NAMES: Record<string, string> = {
       'bboost': 'BB',
@@ -576,8 +357,6 @@ async function calculateChipPerformanceFromAPI(
       })
       .filter(m => m.chips_faced_count > 0)
       .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
-
-    console.log('[Chip Fallback] FPL API fallback completed. Chips played:', chipsPlayed.length, 'managers, Chips faced:', chipsFaced.length, 'managers');
 
     return {
       chipsPlayed,
