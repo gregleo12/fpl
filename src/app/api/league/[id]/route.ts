@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
 import { updateLeagueMetadata } from '@/lib/analytics';
+import { shouldSyncLeague, syncLeagueData } from '@/lib/leagueSync';
 
 export async function GET(
   request: NextRequest,
@@ -13,6 +14,19 @@ export async function GET(
     if (isNaN(leagueId)) {
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
+
+    // Check if league needs syncing (non-blocking)
+    shouldSyncLeague(leagueId).then(needsSync => {
+      if (needsSync) {
+        console.log(`[League ${leagueId}] Triggering background sync...`);
+        // Sync in background - don't await
+        syncLeagueData(leagueId).catch(err => {
+          console.error(`[League ${leagueId}] Background sync failed:`, err);
+        });
+      }
+    }).catch(err => {
+      console.error(`[League ${leagueId}] Sync check failed:`, err);
+    });
 
     // Try to fetch H2H league data
     console.log(`[League ${leagueId}] Starting fetch...`);
