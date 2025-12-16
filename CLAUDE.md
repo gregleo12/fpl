@@ -102,6 +102,7 @@ Add this to the end of every task:
 - [ ] Test locally: `npm run build`
 - [ ] Bump version: `npm version patch --no-git-tag-version`
 - [ ] Update VERSION_HISTORY.md with new version entry
+- [ ] Update README.md version number
 - [ ] Update CLAUDE.md if any critical rules changed
 - [ ] Commit with version in message: "vX.Y.Z: Description"
 - [ ] Push to staging first, verify, then request production deploy
@@ -170,6 +171,7 @@ When creating briefs for tasks, ALWAYS include this footer at the end:
 - [ ] Test locally: `npm run build`
 - [ ] Bump version: `npm version patch --no-git-tag-version`
 - [ ] Update VERSION_HISTORY.md with new version entry
+- [ ] Update README.md version number
 - [ ] Update CLAUDE.md if any critical rules changed
 - [ ] Commit with version in message: "vX.Y.Z: Description"
 - [ ] Push to staging first, verify, then request production deploy
