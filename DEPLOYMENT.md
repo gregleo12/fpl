@@ -1,148 +1,210 @@
-# Deployment Guide - Railway
+# RivalFPL - Deployment Guide
 
-## 🚂 Current Deployment Method: Railway
-
-This project is deployed on **Railway** with automatic deployments from GitHub.
-
-**Database:** Internal PostgreSQL (`postgres.railway.internal`)
+**Last Updated:** December 16, 2025
+**Current Version:** v2.7.1
+**Platform:** Railway
 
 ---
 
-## 🌍 Environments
+## 🌐 Environments
 
 | Environment | URL | Branch | Auto-deploy |
 |-------------|-----|--------|-------------|
-| **Staging** | fpl-staging-production.up.railway.app | `staging` | ✅ Yes |
-| **Production** | dedoume.pronos.xyz | `main` | ❌ Needs approval |
+| **Production** | https://rivalfpl.com | `main` | ⚠️ Needs approval |
+| **Production** | https://www.rivalfpl.com | `main` | ⚠️ Needs approval |
+| **Staging** | https://fpl-staging-production.up.railway.app | `staging` | ✅ Yes |
 
-**Database:** All environments use internal Postgres in FPL project (`postgres.railway.internal`)
-
----
-
-## 📋 For AI Assistants / Claude Code
-
-### CRITICAL: Deployment Workflow
-
-**✅ STAGING WORKFLOW (No approval needed):**
-1. Make code changes locally
-2. Build and test locally: `npm run build`
-3. Bump version: `npm version patch --no-git-tag-version`
-4. Commit changes: `git add . && git commit -m "..."`
-5. Push to staging: `git push origin staging`
-6. Test on staging URL: `fpl-staging-production.up.railway.app`
-
-**⚠️ PRODUCTION WORKFLOW (Requires approval):**
-1. Complete staging workflow above
-2. **STOP - Ask Greg for approval:** "Ready to merge staging to main and deploy to production?"
-3. **Wait for explicit approval**
-4. Only after approval:
-   ```bash
-   git checkout main
-   git merge staging
-   git push origin main
-   ```
-
-**❌ DO NOT:**
-- Push directly to `main` branch without Greg's approval
-- Skip testing on staging first
-- Run any deployment scripts (none exist)
-- Attempt to SSH into servers
-- Use rsync, scp, or any file transfer tools
-- Look for NAS, Docker, or manual deployment methods
-
-### Key Rules
-- ✅ Push to `staging` branch freely - no approval needed
-- ❌ NEVER push directly to `main` without Greg's approval
-- ✅ **Exception:** `/admin` and `/api/admin` changes can go directly to `main` (admin-only, no user impact)
-- 📈 Version numbers stay sequential (main may jump versions after merge)
-- 🧪 Always test on staging first before requesting production deploy
-
-### Quick Reference
-- **Staging Deploy:** `git push origin staging` (auto-deploys, OK if it breaks)
-- **Production Deploy:** `git push origin main` (**requires approval first**)
-- **Check status:** Railway dashboard
-- **Database:** PostgreSQL connection string in Railway environment variables
-- **Environment:** All env vars managed in Railway dashboard
+**Note:** Both `rivalfpl.com` and `www.rivalfpl.com` work. The non-www redirects to www.
 
 ---
 
-## 🔍 How to Identify This is Railway
+## 🔌 Database
 
-If you're an AI assistant unsure about deployment:
-1. Check `git remote -v` - will show GitHub remote
-2. No `scripts/` directory exists
-3. No Docker files exist
-4. Database is PostgreSQL (not SQLite)
-5. This file says "Railway" at the top 😊
+| Type | Host | Port |
+|------|------|------|
+| Internal (Railway) | postgres.railway.internal | 5432 |
+| External (Scripts) | caboose.proxy.rlwy.net | 45586 |
+
+All environments use the same PostgreSQL database.
 
 ---
 
-## 🚀 Deployment Checklist
+## 🚀 Deployment Workflow
 
-When deploying a new version:
+### Staging (No Approval Needed)
+
+```bash
+# 1. Make changes
+# 2. Test locally
+npm run build
+
+# 3. Commit
+git add .
+git commit -m "vX.Y.Z: Description"
+
+# 4. Push to staging
+git push origin staging
+
+# 5. Verify on staging URL
+# https://fpl-staging-production.up.railway.app
+```
+
+### Production (Requires Approval)
+
+```bash
+# 1. Complete staging workflow above
+# 2. Verify everything works on staging
+
+# 3. ASK GREG: "Ready to deploy to production?"
+# 4. WAIT for explicit approval
+
+# 5. Only after approval:
+git checkout main
+git pull origin main
+git merge staging
+git push origin main
+
+# 6. Verify on production
+# https://rivalfpl.com
+```
+
+---
+
+## ⚠️ If Railway Doesn't Auto-Deploy
+
+Sometimes the Railway webhook doesn't trigger. Fix with an empty commit:
+
+```bash
+git commit --allow-empty -m "Trigger Railway deployment"
+git push origin main
+```
+
+This forces Railway to detect a new commit and start a build.
+
+---
+
+## 🔴 Critical Rules
+
+| Rule | Details |
+|------|---------|
+| ✅ Push to staging freely | No approval needed, OK if it breaks |
+| ❌ Never push to main without approval | Always ask Greg first |
+| ✅ Admin routes exception | `/admin` changes can go directly to main |
+| ✅ Always test staging first | Before requesting production deploy |
+
+---
+
+## 📋 Deployment Checklist
+
+Before deploying:
 
 - [ ] Code changes complete
-- [ ] Local build successful (`npm run build`)
+- [ ] Local build passes (`npm run build`)
 - [ ] Version bumped in package.json
-- [ ] Changes committed with clear message
-- [ ] Pushed to GitHub (`git push`)
-- [ ] Railway automatically picks up changes and deploys
-- [ ] Verify deployment in Railway dashboard (if needed)
+- [ ] VERSION_HISTORY.md updated
+- [ ] Committed with version in message
+
+After pushing:
+
+- [ ] Check Railway dashboard for build status
+- [ ] Verify app loads on target environment
+- [ ] Test key features work
+- [ ] Check for console errors
 
 ---
 
-## 📊 Tech Stack
-
-- **Frontend/Backend:** Next.js 14 (App Router)
-- **Database:** PostgreSQL (Railway)
-- **Hosting:** Railway
-- **Deployment:** Git push → Railway auto-deploy
-- **CI/CD:** Railway automatic deployments
-
----
-
-## 🔑 Environment Variables
+## 🔧 Environment Variables
 
 All environment variables are managed in Railway dashboard:
-- `DATABASE_URL` - PostgreSQL connection string
-- `NODE_ENV` - Set to `production`
-- Any FPL API related variables
 
-**Never commit .env files to git**
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `NODE_ENV` | `production` or `development` |
+
+**Never commit .env files to git.**
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Build fails on Railway
-- Check Railway build logs in dashboard
-- Ensure all dependencies are in package.json
-- Verify Next.js build succeeds locally
+### Build Fails on Railway
 
-### Database connection issues
-- Check DATABASE_URL is set in Railway
-- Verify PostgreSQL service is running
-- Check connection string format
+1. Check Railway build logs in dashboard
+2. Ensure all dependencies are in package.json
+3. Verify `npm run build` succeeds locally
 
-### App not reflecting changes
-- Confirm git push succeeded: `git log --oneline -1`
-- Check Railway deployment status
-- May need to trigger manual redeploy in Railway dashboard
+### Database Connection Issues
+
+1. Check DATABASE_URL is set in Railway
+2. Verify PostgreSQL service is running
+3. Check connection string format
+
+### App Not Reflecting Changes
+
+1. Confirm git push succeeded: `git log --oneline -1`
+2. Check Railway deployment status in dashboard
+3. Try empty commit to trigger deploy (see above)
+
+### Version Still Shows Old
+
+1. Railway build may still be in progress
+2. Check Railway dashboard for build status
+3. Wait 2-3 minutes for deployment to complete
+4. Hard refresh browser (Cmd+Shift+R)
 
 ---
 
-## 📝 Version History
+## 📊 Monitoring
 
-- **v2.0.20** - Current version (Odd-Numbered League Support + Admin Enhancements)
-- See VERSION_HISTORY_COMPLETE.md for full changelog
+### Check Current Version
+
+```bash
+curl -s https://rivalfpl.com/api/version
+```
+
+### Check Health
+
+```bash
+curl -s https://rivalfpl.com/api/health
+```
+
+### View Recent Commits
+
+```bash
+git log --oneline -10
+```
 
 ---
 
-## 🚨 IMPORTANT REMINDERS
+## 🗂️ Domain Setup (Reference)
 
-1. **Git is the ONLY deployment method**
-2. **No manual file copying or server access**
-3. **Railway handles everything after `git push`**
-4. **Database is PostgreSQL, not SQLite**
+### DNS Configuration (OVH)
 
-If you see any legacy deployment scripts, Docker files, or NAS references - **IGNORE THEM**. They are outdated.
+| Type | Name | Target |
+|------|------|--------|
+| CNAME | www | Railway app URL |
+| Redirect | @ | https://www.rivalfpl.com |
+
+The apex domain (rivalfpl.com) redirects to www.rivalfpl.com.
+
+---
+
+## 📝 Version Numbering
+
+| Type | When | Example |
+|------|------|---------|
+| Patch | Bug fixes | v2.7.1 |
+| Minor | New features | v2.8.0 |
+| Major | Breaking changes | v3.0.0 |
+
+Always bump version before deploying:
+
+```bash
+npm version patch --no-git-tag-version
+# or: npm version minor --no-git-tag-version
+```
+
+---
+
+**Questions?** Check Railway dashboard for logs and build status.
