@@ -1,8 +1,8 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 252+ versions
-**Current Version:** v2.7.4 (December 16, 2025)
+**Total Releases:** 253+ versions
+**Current Version:** v2.7.5 (December 16, 2025)
 
 ---
 
@@ -50,13 +50,14 @@ This project's complete version history has been split into multiple files for b
 
 ## 📝 Quick Reference
 
-### Latest Changes (v2.7.4 - Dec 16, 2025)
-- 🔧 **HOTFIX: FT Calculation Loop** - Fixed loop breaking before processing last completed GW
-  - Root cause: Loop used `currentGW` (last completed GW) instead of `upcomingGW`
-  - When currentGW=16, condition `gw.event >= currentGW` stopped loop before processing GW16
-  - Result: AFCON rule (5 FT for GW16) and GW16 transfers never applied
-  - Fix: Calculate `upcomingGW = maxCompletedGW + 1`, use for loop break condition
-  - Now processes ALL completed GWs including most recent one
+### Latest Changes (v2.7.5 - Dec 16, 2025)
+- ⚡ **K-28: Season Stats Database Migration** - 90% faster page load (1-2s vs 10-30s)
+  - Migrated from 300+ FPL API calls to K-27 database queries
+  - Captain Points: Uses `manager_picks` + `player_gameweek_stats` + `manager_gw_history`
+  - Chips: Uses `manager_chips` table with match results JOINs
+  - Best/Worst GWs: Uses `manager_gw_history` for all manager scores
+  - Trends: Uses `manager_chips` aggregated by gameweek
+  - All response structures unchanged (no frontend changes needed)
 
 ### Recent Highlights
 - **v2.7.0**: K-27 Comprehensive Database Caching (5 new tables, 10 new scripts)
