@@ -123,7 +123,22 @@ async function calculateCaptainLeaderboard(
   managers: any[]
 ) {
   try {
+    console.log('[CAPTAIN DEBUG] Input params:', {
+      leagueId,
+      gameweeksCount: gameweeks.length,
+      gameweeksRange: `${gameweeks[0]}-${gameweeks[gameweeks.length - 1]}`,
+      managersCount: managers.length,
+      managerIds: managers.map(m => m.entry_id).slice(0, 5),
+      managerIdTypes: managers.slice(0, 3).map(m => ({ id: m.entry_id, type: typeof m.entry_id }))
+    });
+
     // Get captain points from entry_captains table (already calculated!)
+    console.log('[CAPTAIN] About to query entry_captains...');
+    console.log('[CAPTAIN] Query params:', {
+      entryIds: managers.map(m => m.entry_id),
+      gameweeks
+    });
+
     const captainPointsResult = await db.query(`
       SELECT
         ec.entry_id,
@@ -135,6 +150,13 @@ async function calculateCaptainLeaderboard(
       GROUP BY ec.entry_id
     `, [managers.map(m => m.entry_id), gameweeks]);
 
+    console.log('[CAPTAIN] entry_captains query result:', {
+      rowCount: captainPointsResult.rows.length,
+      firstFiveRows: captainPointsResult.rows.slice(0, 5),
+      uniqueEntryIds: Array.from(new Set(captainPointsResult.rows.map((r: any) => r.entry_id))),
+      entryIdTypes: captainPointsResult.rows.slice(0, 3).map((r: any) => ({ id: r.entry_id, type: typeof r.entry_id }))
+    });
+
     const captainPointsMap = new Map<number, { total_captain_points: number; gameweeks_used: number }>(
       captainPointsResult.rows.map((row: any) => [
         row.entry_id,
@@ -145,7 +167,16 @@ async function calculateCaptainLeaderboard(
       ])
     );
 
+    console.log('[CAPTAIN] captainPointsMap after building:', {
+      size: captainPointsMap.size,
+      keys: Array.from(captainPointsMap.keys()).slice(0, 5),
+      keyTypes: Array.from(captainPointsMap.keys()).slice(0, 3).map(k => ({ key: k, type: typeof k })),
+      sampleValues: Array.from(captainPointsMap.entries()).slice(0, 3).map(([k, v]) => ({ key: k, value: v }))
+    });
+
     // Get total season points from manager_gw_history for percentage calc
+    console.log('[CAPTAIN] About to query manager_gw_history...');
+
     const seasonPointsResult = await db.query(`
       SELECT entry_id, SUM(points) as total_season_points
       FROM manager_gw_history
@@ -153,12 +184,25 @@ async function calculateCaptainLeaderboard(
       GROUP BY entry_id
     `, [leagueId, gameweeks]);
 
+    console.log('[CAPTAIN] manager_gw_history query result:', {
+      rowCount: seasonPointsResult.rows.length,
+      firstFiveRows: seasonPointsResult.rows.slice(0, 5),
+      uniqueEntryIds: Array.from(new Set(seasonPointsResult.rows.map((r: any) => r.entry_id)))
+    });
+
     const seasonPointsMap = new Map<number, number>(
       seasonPointsResult.rows.map((row: any) => [
         row.entry_id,
         parseInt(row.total_season_points) || 0
       ])
     );
+
+    console.log('[CAPTAIN] seasonPointsMap after building:', {
+      size: seasonPointsMap.size,
+      keys: Array.from(seasonPointsMap.keys()).slice(0, 5),
+      keyTypes: Array.from(seasonPointsMap.keys()).slice(0, 3).map(k => ({ key: k, type: typeof k })),
+      sampleValues: Array.from(seasonPointsMap.entries()).slice(0, 3).map(([k, v]) => ({ key: k, value: v }))
+    });
 
     // Build leaderboard
     const leaderboard = managers.map(manager => {
@@ -180,6 +224,42 @@ async function calculateCaptainLeaderboard(
           : 0
       };
     }).sort((a, b) => b.total_points - a.total_points);
+
+    console.log('[CAPTAIN] After mapping (before sort):', {
+      totalManagers: leaderboard.length,
+      withPoints: leaderboard.filter(m => m.total_points > 0).length,
+      withZeroPoints: leaderboard.filter(m => m.total_points === 0).length,
+      sample: leaderboard.slice(0, 3).map(m => ({
+        name: m.player_name,
+        total_points: m.total_points,
+        percentage: m.percentage,
+        average_per_gw: m.average_per_gw
+      }))
+    });
+
+    // Debug: Test explicit lookup for first manager
+    if (managers.length > 0) {
+      const testManagerId = managers[0].entry_id;
+      console.log('[CAPTAIN] Test lookup for first manager:', {
+        testManagerId,
+        testManagerIdType: typeof testManagerId,
+        lookupWithoutConversion: captainPointsMap.get(testManagerId as any),
+        lookupWithNumber: captainPointsMap.get(Number(testManagerId)),
+        lookupWithString: (captainPointsMap as any).get(String(testManagerId)),
+        mapHasNumberKey: captainPointsMap.has(Number(testManagerId)),
+        mapHasStringKey: (captainPointsMap as any).has(String(testManagerId)),
+        mapHasOriginalKey: captainPointsMap.has(testManagerId as any)
+      });
+    }
+
+    console.log('[CAPTAIN] Final leaderboard (after sort):', {
+      count: leaderboard.length,
+      topThree: leaderboard.slice(0, 3).map(m => ({
+        name: m.player_name,
+        total_points: m.total_points,
+        percentage: m.percentage
+      }))
+    });
 
     return leaderboard;
 
