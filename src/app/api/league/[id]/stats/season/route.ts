@@ -268,6 +268,14 @@ async function calculateChipPerformance(
   managers: any[]
 ) {
   try {
+    console.log('[CHIPS DEBUG] Input params:', {
+      leagueId,
+      gameweeksCount: gameweeks.length,
+      gameweeksRange: `${gameweeks[0]}-${gameweeks[gameweeks.length - 1]}`,
+      managersCount: managers.length,
+      managerIds: managers.map(m => m.entry_id).slice(0, 5)
+    });
+
     const CHIP_NAMES: Record<string, string> = {
       'bboost': 'BB',
       '3xc': 'TC',
@@ -276,6 +284,9 @@ async function calculateChipPerformance(
     };
 
     // CHIPS PLAYED - Get from manager_chips
+    console.log('[CHIPS PLAYED] About to query manager_chips...');
+    console.log('[CHIPS PLAYED] SQL params:', { leagueId, gameweeksArray: gameweeks });
+
     const chipsPlayedResult = await db.query(`
       SELECT
         mc.entry_id,
@@ -296,6 +307,12 @@ async function calculateChipPerformance(
       ORDER BY mc.entry_id, mc.event
     `, [leagueId, gameweeks]);
 
+    console.log('[CHIPS PLAYED] Raw query result:', {
+      rowCount: chipsPlayedResult.rows.length,
+      firstFiveRows: chipsPlayedResult.rows.slice(0, 5),
+      uniqueEntryIds: Array.from(new Set(chipsPlayedResult.rows.map((r: any) => r.entry_id)))
+    });
+
     // Group by manager
     const chipsByManager = new Map<number, Array<{name: string, event: number, result: string}>>();
     chipsPlayedResult.rows.forEach((row: any) => {
@@ -309,28 +326,52 @@ async function calculateChipPerformance(
       });
     });
 
-    const chipsPlayed = managers
-      .map(manager => {
-        const chips = chipsByManager.get(manager.entry_id) || [];
-        const sortedChips = [...chips].sort((a, b) => a.event - b.event);
+    const chipsPlayedBeforeFilter = managers.map(manager => {
+      const chips = chipsByManager.get(manager.entry_id) || [];
+      const sortedChips = [...chips].sort((a, b) => a.event - b.event);
 
-        return {
-          entry_id: manager.entry_id,
-          player_name: manager.player_name,
-          team_name: manager.team_name,
-          chip_count: chips.length,
-          chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
-          chips_played_data: sortedChips.map(c => ({
-            chip: CHIP_NAMES[c.name] || c.name,
-            gw: c.event,
-            result: c.result
-          }))
-        };
-      })
+      return {
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        chip_count: chips.length,
+        chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
+        chips_played_data: sortedChips.map(c => ({
+          chip: CHIP_NAMES[c.name] || c.name,
+          gw: c.event,
+          result: c.result
+        }))
+      };
+    });
+
+    console.log('[CHIPS PLAYED] After mapping (before filter):', {
+      totalManagers: chipsPlayedBeforeFilter.length,
+      withChips: chipsPlayedBeforeFilter.filter(m => m.chip_count > 0).length,
+      withoutChips: chipsPlayedBeforeFilter.filter(m => m.chip_count === 0).length,
+      sample: chipsPlayedBeforeFilter.slice(0, 3).map(m => ({
+        name: m.player_name,
+        chip_count: m.chip_count,
+        chips: m.chips_detail
+      }))
+    });
+
+    const chipsPlayed = chipsPlayedBeforeFilter
       .filter(m => m.chip_count > 0)
       .sort((a, b) => b.chip_count - a.chip_count);
 
+    console.log('[CHIPS PLAYED] Final result (after filter):', {
+      count: chipsPlayed.length,
+      sample: chipsPlayed.slice(0, 3).map(m => ({
+        name: m.player_name,
+        chip_count: m.chip_count,
+        chips: m.chips_detail
+      }))
+    });
+
     // CHIPS FACED - Get opponents' chips from h2h_matches
+    console.log('[CHIPS FACED] About to query manager_chips (same table as Chips Played)...');
+    console.log('[CHIPS FACED] SQL params:', { leagueId, gameweeksArray: gameweeks });
+
     const chipsFacedResult = await db.query(`
       SELECT
         CASE
@@ -354,6 +395,12 @@ async function calculateChipPerformance(
       ORDER BY opponent_entry_id, mc.event
     `, [leagueId, gameweeks]);
 
+    console.log('[CHIPS FACED] Raw query result:', {
+      rowCount: chipsFacedResult.rows.length,
+      firstFiveRows: chipsFacedResult.rows.slice(0, 5),
+      uniqueOpponentIds: Array.from(new Set(chipsFacedResult.rows.map((r: any) => r.opponent_entry_id)))
+    });
+
     // Group by opponent
     const chipsFacedByManager = new Map<number, Array<{chip: string, gw: number, result: string}>>();
     chipsFacedResult.rows.forEach((row: any) => {
@@ -367,22 +414,48 @@ async function calculateChipPerformance(
       });
     });
 
-    const chipsFaced = managers
-      .map(manager => {
-        const chips = chipsFacedByManager.get(manager.entry_id) || [];
-        const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
+    const chipsFacedBeforeFilter = managers.map(manager => {
+      const chips = chipsFacedByManager.get(manager.entry_id) || [];
+      const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
 
-        return {
-          entry_id: manager.entry_id,
-          player_name: manager.player_name,
-          team_name: manager.team_name,
-          chips_faced_count: chips.length,
-          chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
-          chips_faced_data: sortedChips
-        };
-      })
+      return {
+        entry_id: manager.entry_id,
+        player_name: manager.player_name,
+        team_name: manager.team_name,
+        chips_faced_count: chips.length,
+        chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
+        chips_faced_data: sortedChips
+      };
+    });
+
+    console.log('[CHIPS FACED] After mapping (before filter):', {
+      totalManagers: chipsFacedBeforeFilter.length,
+      withChips: chipsFacedBeforeFilter.filter(m => m.chips_faced_count > 0).length,
+      withoutChips: chipsFacedBeforeFilter.filter(m => m.chips_faced_count === 0).length,
+      sample: chipsFacedBeforeFilter.slice(0, 3).map(m => ({
+        name: m.player_name,
+        chips_faced_count: m.chips_faced_count,
+        chips: m.chips_faced_detail
+      }))
+    });
+
+    const chipsFaced = chipsFacedBeforeFilter
       .filter(m => m.chips_faced_count > 0)
       .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
+
+    console.log('[CHIPS FACED] Final result (after filter):', {
+      count: chipsFaced.length,
+      sample: chipsFaced.slice(0, 3).map(m => ({
+        name: m.player_name,
+        chips_faced_count: m.chips_faced_count,
+        chips: m.chips_faced_detail
+      }))
+    });
+
+    console.log('[CHIPS DEBUG] Returning results:', {
+      chipsPlayedCount: chipsPlayed.length,
+      chipsFacedCount: chipsFaced.length
+    });
 
     return { chipsPlayed, chipsFaced };
 
