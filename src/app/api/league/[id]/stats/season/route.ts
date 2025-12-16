@@ -17,6 +17,67 @@ export async function GET(
 
     const db = await getDatabase();
 
+    // K-27 Database Check: Verify tables exist and have data
+    try {
+      const tableCheckResult = await db.query(`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name IN ('manager_picks', 'player_gameweek_stats', 'manager_gw_history', 'manager_chips')
+      `);
+
+      const existingTables = tableCheckResult.rows.map((r: any) => r.table_name);
+      const requiredTables = ['manager_picks', 'player_gameweek_stats', 'manager_gw_history', 'manager_chips'];
+      const missingTables = requiredTables.filter(t => !existingTables.includes(t));
+
+      if (missingTables.length > 0) {
+        console.error('K-27 tables missing:', missingTables);
+        return NextResponse.json(
+          {
+            error: 'Database not ready',
+            message: `Missing K-27 tables: ${missingTables.join(', ')}. Please run migrations.`,
+            missing_tables: missingTables
+          },
+          { status: 503 }
+        );
+      }
+
+      // Check if tables have any data for this league
+      const dataCheckResult = await db.query(`
+        SELECT
+          (SELECT COUNT(*) FROM manager_picks WHERE league_id = $1) as picks_count,
+          (SELECT COUNT(*) FROM manager_gw_history WHERE league_id = $1) as history_count,
+          (SELECT COUNT(*) FROM player_gameweek_stats) as player_stats_count
+      `, [leagueId]);
+
+      const { picks_count, history_count, player_stats_count } = dataCheckResult.rows[0];
+
+      if (picks_count === 0 || history_count === 0 || player_stats_count === 0) {
+        console.warn('K-27 tables empty for league', leagueId, {
+          picks_count,
+          history_count,
+          player_stats_count
+        });
+        return NextResponse.json(
+          {
+            error: 'Data not synced',
+            message: 'K-27 database tables are empty. Please run sync scripts: npm run sync:manager-picks, npm run sync:manager-history',
+            counts: { picks_count, history_count, player_stats_count }
+          },
+          { status: 503 }
+        );
+      }
+    } catch (checkError: any) {
+      console.error('Error checking K-27 tables:', checkError);
+      return NextResponse.json(
+        {
+          error: 'Database check failed',
+          message: checkError.message
+        },
+        { status: 503 }
+      );
+    }
+
     // Get bootstrap data to check which gameweeks have started
     // Fallback to 38 if bootstrap fetch fails (include all GWs)
     let maxStartedGW = 38;
