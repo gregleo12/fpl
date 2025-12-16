@@ -17,67 +17,6 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // K-27 Database Check: Verify tables exist and have data
-    try {
-      const tableCheckResult = await db.query(`
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name IN ('manager_picks', 'player_gameweek_stats', 'manager_gw_history', 'manager_chips')
-      `);
-
-      const existingTables = tableCheckResult.rows.map((r: any) => r.table_name);
-      const requiredTables = ['manager_picks', 'player_gameweek_stats', 'manager_gw_history', 'manager_chips'];
-      const missingTables = requiredTables.filter(t => !existingTables.includes(t));
-
-      if (missingTables.length > 0) {
-        console.error('K-27 tables missing:', missingTables);
-        return NextResponse.json(
-          {
-            error: 'Database not ready',
-            message: `Missing K-27 tables: ${missingTables.join(', ')}. Please run migrations.`,
-            missing_tables: missingTables
-          },
-          { status: 503 }
-        );
-      }
-
-      // Check if tables have any data for this league
-      const dataCheckResult = await db.query(`
-        SELECT
-          (SELECT COUNT(*) FROM manager_picks WHERE league_id = $1) as picks_count,
-          (SELECT COUNT(*) FROM manager_gw_history WHERE league_id = $1) as history_count,
-          (SELECT COUNT(*) FROM player_gameweek_stats) as player_stats_count
-      `, [leagueId]);
-
-      const { picks_count, history_count, player_stats_count } = dataCheckResult.rows[0];
-
-      if (picks_count === 0 || history_count === 0 || player_stats_count === 0) {
-        console.warn('K-27 tables empty for league', leagueId, {
-          picks_count,
-          history_count,
-          player_stats_count
-        });
-        return NextResponse.json(
-          {
-            error: 'Data not synced',
-            message: 'K-27 database tables are empty. Please run sync scripts: npm run sync:manager-picks, npm run sync:manager-history',
-            counts: { picks_count, history_count, player_stats_count }
-          },
-          { status: 503 }
-        );
-      }
-    } catch (checkError: any) {
-      console.error('Error checking K-27 tables:', checkError);
-      return NextResponse.json(
-        {
-          error: 'Database check failed',
-          message: checkError.message
-        },
-        { status: 503 }
-      );
-    }
-
     // Get bootstrap data to check which gameweeks have started
     // Fallback to 38 if bootstrap fetch fails (include all GWs)
     let maxStartedGW = 38;
@@ -176,7 +115,7 @@ export async function GET(
   }
 }
 
-// Calculate season-long captain points from database (K-27)
+// Calculate season-long captain points from database (K-27) with FPL API fallback
 async function calculateCaptainLeaderboard(
   db: any,
   leagueId: number,
@@ -184,7 +123,7 @@ async function calculateCaptainLeaderboard(
   managers: any[]
 ) {
   try {
-    // Get captain points from manager_picks + player_gameweek_stats
+    // Try database first
     const captainPointsResult = await db.query(`
       SELECT
         mp.entry_id,
@@ -199,6 +138,12 @@ async function calculateCaptainLeaderboard(
         AND mp.event = ANY($2)
       GROUP BY mp.entry_id
     `, [leagueId, gameweeks]);
+
+    // Fallback to FPL API if database is empty
+    if (captainPointsResult.rows.length === 0) {
+      console.log('[Captain Leaderboard] manager_picks table empty, falling back to FPL API');
+      return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
+    }
 
     const captainPointsMap = new Map<number, { total_captain_points: number; gameweeks_used: number }>(
       captainPointsResult.rows.map((row: any) => [
@@ -253,11 +198,82 @@ async function calculateCaptainLeaderboard(
 
   } catch (error) {
     console.error('Error calculating captain leaderboard:', error);
+    // Fallback to FPL API on error
+    return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
+  }
+}
+
+// Fallback: Calculate captain points using FPL API (old approach)
+async function calculateCaptainLeaderboardFromAPI(
+  managers: any[],
+  gameweeks: number[]
+) {
+  try {
+    const leaderboard = await Promise.all(
+      managers.map(async (manager) => {
+        let totalCaptainPoints = 0;
+        let totalSeasonPoints = 0;
+        let gameweeksUsed = 0;
+
+        for (const gw of gameweeks) {
+          try {
+            // Fetch picks for this gameweek
+            const picksResponse = await fetch(
+              `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`
+            );
+            if (!picksResponse.ok) continue;
+            const picksData = await picksResponse.json();
+
+            // Fetch live data for this gameweek
+            const liveResponse = await fetch(
+              `https://fantasy.premierleague.com/api/event/${gw}/live/`
+            );
+            if (!liveResponse.ok) continue;
+            const liveData = await liveResponse.json();
+
+            // Find captain
+            const captain = picksData.picks.find((p: any) => p.is_captain);
+            if (captain) {
+              const captainStats = liveData.elements.find(
+                (e: any) => e.id === captain.element
+              );
+              if (captainStats) {
+                const captainPoints = captainStats.stats.total_points * captain.multiplier;
+                totalCaptainPoints += captainPoints;
+                gameweeksUsed++;
+              }
+            }
+
+            // Add to season total
+            totalSeasonPoints += picksData.entry_history.points;
+          } catch (err) {
+            // Skip this gameweek on error
+          }
+        }
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          total_points: totalCaptainPoints,
+          percentage: totalSeasonPoints > 0
+            ? parseFloat((totalCaptainPoints / totalSeasonPoints * 100).toFixed(1))
+            : 0,
+          average_per_gw: gameweeksUsed > 0
+            ? parseFloat((totalCaptainPoints / gameweeksUsed).toFixed(1))
+            : 0
+        };
+      })
+    );
+
+    return leaderboard.sort((a, b) => b.total_points - a.total_points);
+  } catch (error) {
+    console.error('Error calculating captain leaderboard from API:', error);
     return [];
   }
 }
 
-// Calculate chip performance with two leaderboards
+// Calculate chip performance with two leaderboards with FPL API fallback
 async function calculateChipPerformance(
   db: any,
   leagueId: number,
@@ -292,6 +308,12 @@ async function calculateChipPerformance(
         AND mc.event = ANY($2)
       ORDER BY mc.entry_id, mc.event
     `, [leagueId, gameweeks]);
+
+    // Fallback to FPL API if database is empty
+    if (chipsPlayedResult.rows.length === 0) {
+      console.log('[Chip Performance] manager_chips table empty, falling back to FPL API');
+      return await calculateChipPerformanceFromAPI(db, leagueId, managers, gameweeks);
+    }
 
     // Group by manager
     const chipsByManager = new Map<number, Array<{name: string, event: number, result: string}>>();
@@ -390,6 +412,152 @@ async function calculateChipPerformance(
 
   } catch (error) {
     console.error('Error calculating chip performance:', error);
+    // Fallback to FPL API on error
+    return await calculateChipPerformanceFromAPI(db, leagueId, managers, gameweeks);
+  }
+}
+
+// Fallback: Calculate chip performance using FPL API (old approach)
+async function calculateChipPerformanceFromAPI(
+  db: any,
+  leagueId: number,
+  managers: any[],
+  gameweeks: number[]
+) {
+  try {
+    const CHIP_NAMES: Record<string, string> = {
+      'bboost': 'BB',
+      '3xc': 'TC',
+      'freehit': 'FH',
+      'wildcard': 'WC',
+    };
+
+    // Get match results for determining W/D/L
+    const matchesData = await db.query(`
+      SELECT
+        entry_1_id,
+        entry_2_id,
+        event,
+        CASE
+          WHEN entry_1_points > entry_2_points THEN entry_1_id
+          WHEN entry_2_points > entry_1_points THEN entry_2_id
+          ELSE NULL
+        END as winner
+      FROM h2h_matches
+      WHERE league_id = $1 AND event = ANY($2)
+    `, [leagueId, gameweeks]);
+
+    const matchResultsMap = new Map<string, string | null>();
+    matchesData.rows.forEach((row: any) => {
+      const key1 = `${row.entry_1_id}-${row.event}`;
+      const key2 = `${row.entry_2_id}-${row.event}`;
+      matchResultsMap.set(key1, row.winner);
+      matchResultsMap.set(key2, row.winner);
+    });
+
+    // Fetch chips from FPL API
+    const managerChips = await Promise.all(
+      managers.map(async (manager) => {
+        try {
+          const response = await fetch(
+            `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/history/`
+          );
+          if (!response.ok) return { manager, chips: [] };
+          const data = await response.json();
+
+          const chips = (data.chips || [])
+            .filter((chip: any) => gameweeks.includes(chip.event))
+            .map((chip: any) => {
+              const matchKey = `${manager.entry_id}-${chip.event}`;
+              const winner = matchResultsMap.get(matchKey);
+              const result = winner === null ? 'D' : (winner === manager.entry_id ? 'W' : 'L');
+
+              return {
+                name: chip.name,
+                event: chip.event,
+                result
+              };
+            });
+
+          return { manager, chips };
+        } catch (err) {
+          return { manager, chips: [] };
+        }
+      })
+    );
+
+    // Build chips played leaderboard
+    const chipsPlayed = managerChips
+      .map(({ manager, chips }) => {
+        const sortedChips = [...chips].sort((a, b) => a.event - b.event);
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          chip_count: chips.length,
+          chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
+          chips_played_data: sortedChips.map(c => ({
+            chip: CHIP_NAMES[c.name] || c.name,
+            gw: c.event,
+            result: c.result
+          }))
+        };
+      })
+      .filter(m => m.chip_count > 0)
+      .sort((a, b) => b.chip_count - a.chip_count);
+
+    // Build chips faced leaderboard
+    const chipsFacedByManager = new Map<number, Array<{chip: string, gw: number, result: string}>>();
+
+    // For each chip played, find the opponent
+    for (const { manager, chips } of managerChips) {
+      for (const chip of chips) {
+        const match = matchesData.rows.find(
+          (m: any) => m.event === chip.event &&
+            (m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id)
+        );
+
+        if (match) {
+          const opponentId = match.entry_1_id === manager.entry_id ? match.entry_2_id : match.entry_1_id;
+          if (!chipsFacedByManager.has(opponentId)) {
+            chipsFacedByManager.set(opponentId, []);
+          }
+
+          const opponentWon = match.winner === opponentId;
+          const result = match.winner === null ? 'D' : (opponentWon ? 'W' : 'L');
+
+          chipsFacedByManager.get(opponentId)!.push({
+            chip: CHIP_NAMES[chip.name] || chip.name,
+            gw: chip.event,
+            result
+          });
+        }
+      }
+    }
+
+    const chipsFaced = managers
+      .map(manager => {
+        const chips = chipsFacedByManager.get(manager.entry_id) || [];
+        const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          chips_faced_count: chips.length,
+          chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
+          chips_faced_data: sortedChips
+        };
+      })
+      .filter(m => m.chips_faced_count > 0)
+      .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
+
+    return {
+      chipsPlayed,
+      chipsFaced
+    };
+  } catch (error) {
+    console.error('Error calculating chip performance from API:', error);
     return {
       chipsPlayed: [],
       chipsFaced: []
