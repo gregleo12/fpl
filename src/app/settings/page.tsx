@@ -78,36 +78,54 @@ export default function SettingsPage() {
       return;
     }
 
+    console.log('[Settings] Starting manual sync for league:', state.leagueId);
     setIsRefreshingData(true);
     setSyncStatus('Starting sync...');
 
     try {
+      console.log('[Settings] Calling POST /api/league/${state.leagueId}/sync');
       const response = await fetch(`/api/league/${state.leagueId}/sync`, {
         method: 'POST'
       });
 
+      console.log('[Settings] POST response status:', response.status);
       const data = await response.json();
+      console.log('[Settings] POST response data:', data);
 
       if (response.ok) {
-        setSyncStatus(data.message);
+        setSyncStatus(data.message || 'Sync started...');
+        console.log('[Settings] Sync started, polling for status...');
 
+        let pollCount = 0;
         // Poll for completion
         const checkInterval = setInterval(async () => {
-          const statusResponse = await fetch(`/api/league/${state.leagueId}/sync`);
-          const statusData = await statusResponse.json();
+          pollCount++;
+          console.log(`[Settings] Poll #${pollCount}: Checking sync status...`);
 
-          if (statusData.status === 'completed') {
-            clearInterval(checkInterval);
-            setSyncStatus('Sync completed! Refreshing page...');
-            setTimeout(() => {
-              window.location.reload();
-            }, 1000);
-          } else if (statusData.status === 'failed') {
-            clearInterval(checkInterval);
-            setSyncStatus('Sync failed. Please try again.');
-            setIsRefreshingData(false);
-          } else {
-            setSyncStatus(`Syncing... (${statusData.status})`);
+          try {
+            const statusResponse = await fetch(`/api/league/${state.leagueId}/sync`);
+            const statusData = await statusResponse.json();
+            console.log(`[Settings] Poll #${pollCount} status:`, statusData);
+
+            if (statusData.status === 'completed') {
+              clearInterval(checkInterval);
+              console.log('[Settings] Sync completed!');
+              setSyncStatus('Sync completed! Refreshing page...');
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else if (statusData.status === 'failed') {
+              clearInterval(checkInterval);
+              console.log('[Settings] Sync failed');
+              setSyncStatus('Sync failed. Please try again.');
+              setIsRefreshingData(false);
+            } else {
+              const statusText = `Syncing... (${statusData.status})`;
+              console.log(`[Settings] Poll #${pollCount}: ${statusText}`);
+              setSyncStatus(statusText);
+            }
+          } catch (pollError) {
+            console.error(`[Settings] Poll #${pollCount} error:`, pollError);
           }
         }, 3000);
 
@@ -115,18 +133,20 @@ export default function SettingsPage() {
         setTimeout(() => {
           clearInterval(checkInterval);
           if (isRefreshingData) {
+            console.log('[Settings] Sync timeout - taking longer than expected');
             setSyncStatus('Sync taking longer than expected. Check back later.');
             setIsRefreshingData(false);
           }
         }, 120000);
 
       } else {
+        console.error('[Settings] POST failed:', data);
         setSyncStatus(data.error || 'Failed to start sync');
         setIsRefreshingData(false);
       }
 
     } catch (error) {
-      console.error('Refresh failed:', error);
+      console.error('[Settings] Refresh failed:', error);
       setSyncStatus('Failed to refresh data. Please try again.');
       setIsRefreshingData(false);
     }
@@ -190,8 +210,22 @@ export default function SettingsPage() {
             className={styles.actionButton}
             disabled={isRefreshingData}
           >
-            {isRefreshingData ? 'Refreshing...' : 'Refresh Data'}
+            {isRefreshingData ? (syncStatus || 'Refreshing...') : 'Refresh Data'}
           </button>
+          {syncStatus && (
+            <div style={{
+              marginTop: '12px',
+              padding: '12px',
+              backgroundColor: isRefreshingData ? '#fef3c7' : '#dcfce7',
+              border: `1px solid ${isRefreshingData ? '#fbbf24' : '#10b981'}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#1f2937'
+            }}>
+              {syncStatus}
+            </div>
+          )}
         </section>
 
         {recentLeagues.length > 0 && (
