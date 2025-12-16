@@ -17,6 +17,7 @@ Before starting any task, be aware of these documentation files:
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | File structure, data flow | New features |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | How to deploy | Before deploying |
 | [VERSION_HISTORY.md](./VERSION_HISTORY.md) | What changed when | Check before fixing bugs |
+| [CONTEXT_MAINTENANCE_GUIDE.md](./CONTEXT_MAINTENANCE_GUIDE.md) | How to update docs | After completing any task |
 
 ---
 
@@ -157,6 +158,24 @@ Always include version in commit message: `"vX.Y.Z: Description"`
 2. Update VERSION_HISTORY.md if version was bumped
 3. Update this file if any critical rules changed
 4. Confirm staging/production deployment status with Greg
+
+---
+
+## 📋 Standard Brief Footer
+
+When creating briefs for tasks, ALWAYS include this footer at the end:
+
+```
+## After Completion
+- [ ] Test locally: `npm run build`
+- [ ] Bump version: `npm version patch --no-git-tag-version`
+- [ ] Update VERSION_HISTORY.md with new version entry
+- [ ] Update CLAUDE.md if any critical rules changed
+- [ ] Commit with version in message: "vX.Y.Z: Description"
+- [ ] Push to staging first, verify, then request production deploy
+```
+
+This ensures documentation stays updated and deployments are verified.
 
 ---
 
