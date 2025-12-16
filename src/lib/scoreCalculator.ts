@@ -77,20 +77,38 @@ async function fetchManagerPicks(entryId: number, gameweek: number, status: 'upc
   if (status === 'completed') {
     try {
       const db = await getDatabase();
-      const result = await db.query(`
-        SELECT player_id as element, position, multiplier, is_captain, is_vice_captain
-        FROM manager_picks
-        WHERE entry_id = $1 AND event = $2
-        ORDER BY position
-      `, [entryId, gameweek]);
 
-      if (result.rows.length === 15) {
-        // Found complete picks in database
+      // Fetch picks, GW history (points & transfers), and active chip in parallel
+      const [picksResult, historyResult, chipResult] = await Promise.all([
+        db.query(`
+          SELECT player_id as element, position, multiplier, is_captain, is_vice_captain
+          FROM manager_picks
+          WHERE entry_id = $1 AND event = $2
+          ORDER BY position
+        `, [entryId, gameweek]),
+        db.query(`
+          SELECT points, event_transfers_cost
+          FROM manager_gw_history
+          WHERE entry_id = $1 AND event = $2
+        `, [entryId, gameweek]),
+        db.query(`
+          SELECT chip_name
+          FROM manager_chips
+          WHERE entry_id = $1 AND event = $2
+        `, [entryId, gameweek])
+      ]);
+
+      if (picksResult.rows.length === 15 && historyResult.rows.length > 0) {
+        // Found complete data in database
+        const history = historyResult.rows[0];
+        const chip = chipResult.rows.length > 0 ? chipResult.rows[0].chip_name : null;
+
         return {
-          picks: result.rows,
-          active_chip: null, // Chips not stored in manager_picks (available in manager_gw_history if needed)
+          picks: picksResult.rows,
+          active_chip: chip,
           entry_history: {
-            event_transfers_cost: 0 // Transfer cost in manager_gw_history if needed
+            points: history.points,
+            event_transfers_cost: history.event_transfers_cost
           }
         };
       }
