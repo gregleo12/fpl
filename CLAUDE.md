@@ -6,6 +6,27 @@
 
 ---
 
+## ⚠️ MANDATORY - READ BEFORE DOING ANYTHING
+
+### Before Starting ANY Task:
+1. ✅ Read this entire CLAUDE.md file
+2. ✅ Check `git log --oneline -5` for recent changes
+3. ✅ Check `cat package.json | grep version` for current version
+4. ✅ Read relevant docs below if touching those areas
+
+### After Completing ANY Task:
+1. ✅ Test locally: `npm run build`
+2. ✅ Bump version: `npm version patch --no-git-tag-version`
+3. ✅ Update VERSION_HISTORY.md with new version entry
+4. ✅ Update README.md version number
+5. ✅ Update CLAUDE.md if critical rules changed
+6. ✅ Commit with version: `"vX.Y.Z: Description"`
+7. ✅ Push to staging first, verify, then request production deploy
+
+**⛔ DO NOT skip these steps. DO NOT say "I'll do it later." Do it NOW.**
+
+---
+
 ## 📚 Required Reading
 
 Before starting any task, be aware of these documentation files:
