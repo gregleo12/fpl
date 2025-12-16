@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { syncLeagueData } from '@/lib/leagueSync';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,15 @@ export async function GET(request: NextRequest) {
     results.push(`Reset sync status for ${resetResult.rowCount} leagues`);
     console.log(`[Admin Reset All] Reset sync status for ${resetResult.rowCount} leagues`);
 
+    // Trigger syncs for all leagues in background
+    results.push(`Triggering syncs for ${leagues.length} leagues (background process)`);
+    console.log(`[Admin Reset All] Triggering syncs for ${leagues.length} leagues`);
+
+    // Run syncs in background (don't await)
+    syncAllLeaguesSequentially(leagues.map(l => l.id)).catch(err => {
+      console.error('[Admin Reset All] Background sync failed:', err);
+    });
+
     // Return success page
     const html = `
       <!DOCTYPE html>
@@ -59,28 +69,37 @@ export async function GET(request: NextRequest) {
           </div>
 
           <div style="background: #1e293b; padding: 25px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; color: #60a5fa; font-size: 18px;">What Happens Next:</h3>
+            <h3 style="margin-top: 0; color: #60a5fa; font-size: 18px;">Syncing All Leagues Now:</h3>
             <p style="color: #94a3b8; line-height: 1.7; margin-bottom: 15px;">
-              All league data has been cleared. When users visit their leagues:
+              Background process is now syncing all ${leagues.length} leagues sequentially:
             </p>
             <ol style="line-height: 2; color: #94a3b8; margin: 0; padding-left: 20px;">
-              <li>The app will detect no synced data exists</li>
-              <li>Auto-sync will automatically trigger for that league</li>
-              <li>Fresh, correct data will be populated in 30-60 seconds</li>
+              <li>Each league syncs for 30-60 seconds</li>
+              <li>Estimated total time: ${Math.round(leagues.length * 45 / 60)} minutes</li>
+              <li>Fresh, correct data will be populated automatically</li>
+              <li>Monitor progress in Railway logs</li>
             </ol>
             <p style="color: #10b981; line-height: 1.7; margin-top: 20px; font-weight: 500;">
-              ✓ No action needed from you. Leagues will fix themselves as users visit.
+              ✓ Process running in background. Safe to close this page.
             </p>
           </div>
 
           <div style="background: #1e293b; padding: 25px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; color: #fbbf24; font-size: 18px;">Important Notes:</h3>
-            <ul style="line-height: 2; color: #94a3b8; margin: 0; padding-left: 20px;">
-              <li>First visit to each league will trigger 30-60 second sync</li>
-              <li>Stats will be empty until sync completes</li>
-              <li>All data will be fresh and correct (no corrupted column swaps)</li>
-              <li>Each league syncs independently on first visit</li>
+            <h3 style="margin-top: 0; color: #fbbf24; font-size: 18px;">Railway Logs:</h3>
+            <p style="color: #94a3b8; line-height: 1.7; margin-bottom: 10px;">
+              Watch the sync progress in Railway logs. You'll see:
+            </p>
+            <ul style="line-height: 2; color: #94a3b8; margin: 0; padding-left: 20px; font-family: monospace; font-size: 13px;">
+              <li>[Batch Sync] Starting league 1/120 (ID: XXXX)</li>
+              <li>[Sync] Starting sync for league XXXX</li>
+              <li>[Sync] Found 8 managers</li>
+              <li>[Sync] Manager XXXXX: Found 16 GW history entries</li>
+              <li>[Sync] League XXXX sync completed</li>
+              <li>[Batch Sync] Completed league 1/120</li>
             </ul>
+            <p style="color: #10b981; line-height: 1.7; margin-top: 15px; font-weight: 500;">
+              When complete: "[Batch Sync] All 120 leagues synced successfully!"
+            </p>
           </div>
 
           <p style="margin-top: 40px; text-align: center;">
@@ -130,4 +149,46 @@ export async function GET(request: NextRequest) {
       headers: { 'Content-Type': 'text/html' }
     });
   }
+}
+
+// Sync all leagues sequentially with delays to avoid rate limiting
+async function syncAllLeaguesSequentially(leagueIds: number[]): Promise<void> {
+  console.log(`[Batch Sync] Starting batch sync for ${leagueIds.length} leagues`);
+  const startTime = Date.now();
+
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (let i = 0; i < leagueIds.length; i++) {
+    const leagueId = leagueIds[i];
+    const progress = `${i + 1}/${leagueIds.length}`;
+
+    try {
+      console.log(`[Batch Sync] Starting league ${progress} (ID: ${leagueId})`);
+
+      // Sync this league
+      await syncLeagueData(leagueId);
+
+      successCount++;
+      console.log(`[Batch Sync] ✓ Completed league ${progress} (ID: ${leagueId})`);
+
+      // Small delay between leagues to avoid overwhelming FPL API
+      if (i < leagueIds.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+      }
+
+    } catch (error) {
+      failureCount++;
+      console.error(`[Batch Sync] ✗ Failed league ${progress} (ID: ${leagueId}):`, error);
+      // Continue with next league even if one fails
+    }
+  }
+
+  const duration = Math.round((Date.now() - startTime) / 1000 / 60);
+  console.log(`[Batch Sync] ===== BATCH SYNC COMPLETE =====`);
+  console.log(`[Batch Sync] Total leagues: ${leagueIds.length}`);
+  console.log(`[Batch Sync] Successful: ${successCount}`);
+  console.log(`[Batch Sync] Failed: ${failureCount}`);
+  console.log(`[Batch Sync] Duration: ${duration} minutes`);
+  console.log(`[Batch Sync] ================================`);
 }
