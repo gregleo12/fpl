@@ -13,6 +13,8 @@ export default function SettingsPage() {
   const [recentLeagues, setRecentLeagues] = useState(getRecentLeagues());
   const { updateAvailable, newVersion, currentVersion, applyUpdate } = useVersionCheck();
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isRefreshingData, setIsRefreshingData] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!state) {
@@ -69,6 +71,67 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleRefreshData() {
+    if (!state) return;
+
+    if (!confirm('Refresh all league data from FPL? This will take 30-60 seconds.')) {
+      return;
+    }
+
+    setIsRefreshingData(true);
+    setSyncStatus('Starting sync...');
+
+    try {
+      const response = await fetch(`/api/league/${state.leagueId}/sync`, {
+        method: 'POST'
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSyncStatus(data.message);
+
+        // Poll for completion
+        const checkInterval = setInterval(async () => {
+          const statusResponse = await fetch(`/api/league/${state.leagueId}/sync`);
+          const statusData = await statusResponse.json();
+
+          if (statusData.status === 'completed') {
+            clearInterval(checkInterval);
+            setSyncStatus('Sync completed! Refreshing page...');
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } else if (statusData.status === 'failed') {
+            clearInterval(checkInterval);
+            setSyncStatus('Sync failed. Please try again.');
+            setIsRefreshingData(false);
+          } else {
+            setSyncStatus(`Syncing... (${statusData.status})`);
+          }
+        }, 3000);
+
+        // Timeout after 2 minutes
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (isRefreshingData) {
+            setSyncStatus('Sync taking longer than expected. Check back later.');
+            setIsRefreshingData(false);
+          }
+        }, 120000);
+
+      } else {
+        setSyncStatus(data.error || 'Failed to start sync');
+        setIsRefreshingData(false);
+      }
+
+    } catch (error) {
+      console.error('Refresh failed:', error);
+      setSyncStatus('Failed to refresh data. Please try again.');
+      setIsRefreshingData(false);
+    }
+  }
+
   if (!state) {
     return null;
   }
@@ -115,7 +178,20 @@ export default function SettingsPage() {
             <div className={styles.infoValue}>
               {new Date(state.lastFetched).toLocaleString()}
             </div>
+            {syncStatus && (
+              <>
+                <div className={styles.infoLabel}>Sync Status</div>
+                <div className={styles.infoValue}>{syncStatus}</div>
+              </>
+            )}
           </div>
+          <button
+            onClick={handleRefreshData}
+            className={styles.actionButton}
+            disabled={isRefreshingData}
+          >
+            {isRefreshingData ? 'Refreshing...' : 'Refresh Data'}
+          </button>
         </section>
 
         {recentLeagues.length > 0 && (
