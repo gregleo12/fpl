@@ -569,7 +569,7 @@ async function calculateBestWorstGameweeks(
       m.player_name,
       m.team_name
     FROM manager_gw_history mgh
-    JOIN managers m ON mgh.entry_id = m.entry_id AND mgh.league_id = m.league_id
+    JOIN managers m ON mgh.entry_id = m.entry_id
     WHERE mgh.league_id = $1
       AND mgh.event = ANY($2)
     ORDER BY mgh.points DESC
