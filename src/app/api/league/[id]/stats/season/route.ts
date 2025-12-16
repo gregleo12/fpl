@@ -157,9 +157,9 @@ async function calculateCaptainLeaderboard(
       entryIdTypes: captainPointsResult.rows.slice(0, 3).map((r: any) => ({ id: r.entry_id, type: typeof r.entry_id }))
     });
 
-    const captainPointsMap = new Map<number, { total_captain_points: number; gameweeks_used: number }>(
+    const captainPointsMap = new Map<string, { total_captain_points: number; gameweeks_used: number }>(
       captainPointsResult.rows.map((row: any) => [
-        row.entry_id,
+        String(row.entry_id),  // Ensure consistent string key
         {
           total_captain_points: parseInt(row.total_captain_points) || 0,
           gameweeks_used: parseInt(row.gameweeks_used) || 0
@@ -190,9 +190,9 @@ async function calculateCaptainLeaderboard(
       uniqueEntryIds: Array.from(new Set(seasonPointsResult.rows.map((r: any) => r.entry_id)))
     });
 
-    const seasonPointsMap = new Map<number, number>(
+    const seasonPointsMap = new Map<string, number>(
       seasonPointsResult.rows.map((row: any) => [
-        row.entry_id,
+        String(row.entry_id),  // Consistent string key
         parseInt(row.total_season_points) || 0
       ])
     );
@@ -206,10 +206,10 @@ async function calculateCaptainLeaderboard(
 
     // Build leaderboard
     const leaderboard = managers.map(manager => {
-      const captainData = captainPointsMap.get(Number(manager.entry_id));
+      const captainData = captainPointsMap.get(String(manager.entry_id));
       const totalCaptainPoints = captainData?.total_captain_points || 0;
       const gameweeksUsed = captainData?.gameweeks_used || 0;
-      const totalSeasonPoints = seasonPointsMap.get(Number(manager.entry_id)) || 0;
+      const totalSeasonPoints = seasonPointsMap.get(String(manager.entry_id)) || 0;
 
       return {
         entry_id: manager.entry_id,
@@ -244,10 +244,10 @@ async function calculateCaptainLeaderboard(
         testManagerId,
         testManagerIdType: typeof testManagerId,
         lookupWithoutConversion: captainPointsMap.get(testManagerId as any),
-        lookupWithNumber: captainPointsMap.get(Number(testManagerId)),
-        lookupWithString: (captainPointsMap as any).get(String(testManagerId)),
-        mapHasNumberKey: captainPointsMap.has(Number(testManagerId)),
-        mapHasStringKey: (captainPointsMap as any).has(String(testManagerId)),
+        lookupWithNumber: (captainPointsMap as any).get(Number(testManagerId)),
+        lookupWithString: captainPointsMap.get(String(testManagerId)),
+        mapHasNumberKey: (captainPointsMap as any).has(Number(testManagerId)),
+        mapHasStringKey: captainPointsMap.has(String(testManagerId)),
         mapHasOriginalKey: captainPointsMap.has(testManagerId as any)
       });
     }
