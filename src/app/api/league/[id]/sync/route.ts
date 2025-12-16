@@ -15,7 +15,11 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    console.log(`[API] Manual sync requested for league ${leagueId}`);
+    // Check for force parameter in query string
+    const { searchParams } = new URL(request.url);
+    const force = searchParams.get('force') === 'true';
+
+    console.log(`[API] Manual sync requested for league ${leagueId}${force ? ' (force clear)' : ''}`);
 
     // Get current sync status
     const db = await getDatabase();
@@ -33,14 +37,16 @@ export async function POST(
       });
     }
 
-    // Trigger sync in background
-    syncLeagueData(leagueId).catch(err => {
+    // Trigger sync in background (with force clear if requested)
+    syncLeagueData(leagueId, force).catch(err => {
       console.error(`[API] Sync failed for league ${leagueId}:`, err);
     });
 
     return NextResponse.json({
       status: 'started',
-      message: 'Sync started. This will take 30-60 seconds.'
+      message: force
+        ? 'Force sync started. Clearing old data and re-syncing. This will take 30-60 seconds.'
+        : 'Sync started. This will take 30-60 seconds.'
     });
 
   } catch (error) {

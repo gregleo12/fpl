@@ -26,7 +26,7 @@ export async function shouldSyncLeague(leagueId: number): Promise<boolean> {
   return hoursSinceSync > SYNC_INTERVAL_HOURS;
 }
 
-export async function syncLeagueData(leagueId: number): Promise<void> {
+export async function syncLeagueData(leagueId: number, forceClear: boolean = false): Promise<void> {
   const db = await getDatabase();
 
   try {
@@ -35,7 +35,35 @@ export async function syncLeagueData(leagueId: number): Promise<void> {
       UPDATE leagues SET sync_status = 'syncing' WHERE id = $1
     `, [leagueId]);
 
-    console.log(`[Sync] Starting sync for league ${leagueId}`);
+    console.log(`[Sync] Starting sync for league ${leagueId}${forceClear ? ' (force clear mode)' : ''}`);
+
+    // If force clear, delete all existing data for this league
+    if (forceClear) {
+      console.log(`[Sync] Force clearing existing data for league ${leagueId}...`);
+
+      // Clear manager_gw_history
+      const gwResult = await db.query(
+        'DELETE FROM manager_gw_history WHERE league_id = $1',
+        [leagueId]
+      );
+      console.log(`[Sync] Deleted ${gwResult.rowCount} rows from manager_gw_history`);
+
+      // Clear entry_captains
+      const captainsResult = await db.query(`
+        DELETE FROM entry_captains
+        WHERE entry_id IN (
+          SELECT entry_id FROM league_standings WHERE league_id = $1
+        )
+      `, [leagueId]);
+      console.log(`[Sync] Deleted ${captainsResult.rowCount} rows from entry_captains`);
+
+      // Clear manager_chips
+      const chipsResult = await db.query(
+        'DELETE FROM manager_chips WHERE league_id = $1',
+        [leagueId]
+      );
+      console.log(`[Sync] Deleted ${chipsResult.rowCount} rows from manager_chips`);
+    }
 
     // Get all managers in this league
     const managersResult = await db.query(`

@@ -74,17 +74,26 @@ export default function SettingsPage() {
   async function handleRefreshData() {
     if (!state) return;
 
-    if (!confirm('Refresh all league data from FPL? This will take 30-60 seconds.')) {
+    // Ask if user wants to force clear old data
+    const forceMessage = 'Refresh all league data from FPL? This will take 30-60 seconds.\n\n' +
+      'For best results with corrupted data, choose "OK" to force clear old data first.';
+
+    if (!confirm(forceMessage)) {
       return;
     }
 
-    console.log('[Settings] Starting manual sync for league:', state.leagueId);
+    // For league 7381, always use force clear to fix corrupted data
+    const shouldForce = state.leagueId === 7381 ||
+                        confirm('Force clear all existing data before syncing? (Recommended if data looks incorrect)');
+
+    console.log('[Settings] Starting manual sync for league:', state.leagueId, 'force:', shouldForce);
     setIsRefreshingData(true);
-    setSyncStatus('Starting sync...');
+    setSyncStatus(shouldForce ? 'Force clearing old data...' : 'Starting sync...');
 
     try {
-      console.log('[Settings] Calling POST /api/league/${state.leagueId}/sync');
-      const response = await fetch(`/api/league/${state.leagueId}/sync`, {
+      const endpoint = `/api/league/${state.leagueId}/sync${shouldForce ? '?force=true' : ''}`;
+      console.log('[Settings] Calling POST', endpoint);
+      const response = await fetch(endpoint, {
         method: 'POST'
       });
 
