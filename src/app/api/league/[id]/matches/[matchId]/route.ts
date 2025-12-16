@@ -137,41 +137,30 @@ export async function GET(
             const maxCompletedGW = Math.max(...currentGWs.map((gw: any) => gw.event));
             const upcomingGW = maxCompletedGW + 1;
 
-            console.log(`\n=== FT CALCULATION FOR ENTRY ${entryId} ===`);
-            console.log(`currentGW: ${currentGW}, maxCompletedGW: ${maxCompletedGW}, upcomingGW: ${upcomingGW}`);
-
             for (const gw of currentGWs) {
               if (gw.event >= upcomingGW) {
-                console.log(`Stopping at GW${gw.event} (>= upcomingGW ${upcomingGW})`);
                 break;
               }
 
               if (gw.event === 1) {
                 ftBalance = 1;
-                console.log(`GW1: Set ftBalance = 1`);
                 continue;
               }
 
               // AFCON special rule: Everyone STARTS GW16 with 5 FT
               // This sets the balance before processing GW16 transfers
               if (gw.event === 16) {
-                console.log(`GW16 AFCON: Setting ftBalance from ${ftBalance} to 5`);
                 ftBalance = 5;
               }
 
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
-              console.log(`GW${gw.event}: transfers=${transfers}, chip=${chipUsed || 'none'}, ftBalance before=${ftBalance}`);
-
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
-                console.log(`  -> WC/FH used, skipping FT calculation`);
                 // WC/FH: Transfers don't consume FT, and no +1 FT for next GW
               } else {
                 // First consume transfers
-                const ftAfterTransfers = Math.max(0, ftBalance - transfers);
-                console.log(`  -> After transfers: ${ftBalance} - ${transfers} = ${ftAfterTransfers}`);
-                ftBalance = ftAfterTransfers;
+                ftBalance = Math.max(0, ftBalance - transfers);
 
                 // Then add +1 FT for the NEXT gameweek (but NOT if this is the last completed GW)
                 // We check if the NEXT gw exists and is before upcomingGW
@@ -181,22 +170,15 @@ export async function GET(
                 if (nextGW && nextGW.event < upcomingGW) {
                   // There's another completed GW after this one, so add the +1 FT
                   ftBalance = Math.min(5, ftBalance + 1);
-                  console.log(`  -> Added +1 rollover (next GW${nextGW.event} exists): ftBalance = ${ftBalance}`);
-                } else {
-                  // This is the last completed GW, DON'T add +1 FT
-                  console.log(`  -> No rollover added (no next completed GW)`);
                 }
               }
             }
 
             // Add +1 FT rollover for the upcoming gameweek
             // The loop only adds +1 between completed GWs, but we need the final +1 for the next GW
-            console.log(`After loop: ftBalance = ${ftBalance}`);
             ftBalance = Math.min(5, ftBalance + 1);
-            console.log(`After +1 rollover for upcoming GW: ftBalance = ${ftBalance}`);
 
             freeTransfers = ftBalance;
-            console.log(`=== FINAL FT: ${freeTransfers} ===\n`);
 
             // Bench points (last 5 GWs)
             const last5GWs = currentGWs.slice(-5);

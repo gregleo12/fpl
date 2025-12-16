@@ -2,7 +2,7 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v2.7.3 (December 16, 2025)
+**Current Version:** v2.7.4 (December 16, 2025)
 
 ---
 
@@ -50,11 +50,13 @@ This project's complete version history has been split into multiple files for b
 
 ## 📝 Quick Reference
 
-### Latest Changes (v2.7.1 - Dec 16, 2025)
-- 🔧 **HOTFIX: H2H Fixtures showing 0-0** - Fixed scoreCalculator to fetch complete data from K-27 tables
-  - Root cause: fetchManagerPicks() only got picks, missed points/transfers from manager_gw_history and chips from manager_chips
-  - Fixed by fetching all required data in parallel from 3 tables
-  - All completed GW fixtures now display correct scores
+### Latest Changes (v2.7.4 - Dec 16, 2025)
+- 🔧 **HOTFIX: FT Calculation Loop** - Fixed loop breaking before processing last completed GW
+  - Root cause: Loop used `currentGW` (last completed GW) instead of `upcomingGW`
+  - When currentGW=16, condition `gw.event >= currentGW` stopped loop before processing GW16
+  - Result: AFCON rule (5 FT for GW16) and GW16 transfers never applied
+  - Fix: Calculate `upcomingGW = maxCompletedGW + 1`, use for loop break condition
+  - Now processes ALL completed GWs including most recent one
 
 ### Recent Highlights
 - **v2.7.0**: K-27 Comprehensive Database Caching (5 new tables, 10 new scripts)
