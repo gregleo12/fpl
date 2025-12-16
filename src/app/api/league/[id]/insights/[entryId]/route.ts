@@ -272,6 +272,9 @@ export async function GET(
           }
         }
 
+        // Add +1 FT rollover for the upcoming gameweek
+        ftBalance = Math.min(5, ftBalance + 1);
+
         freeTransfers = ftBalance;
       }
     } catch (error) {

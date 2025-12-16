@@ -172,6 +172,10 @@ export async function GET(
               }
             }
 
+            // Add +1 FT rollover for the upcoming gameweek
+            // The loop only adds +1 between completed GWs, but we need the final +1 for the next GW
+            ftBalance = Math.min(5, ftBalance + 1);
+
             freeTransfers = ftBalance;
 
             // Bench points (last 5 GWs)
