@@ -151,9 +151,16 @@ async function calculateCaptainLeaderboard(
 
     console.log('[K-28 DEBUG] Captain query returned', captainPointsResult.rows.length, 'rows');
 
-    // Fallback to FPL API if database is empty
-    if (captainPointsResult.rows.length === 0) {
-      console.log('[Captain Leaderboard] JOIN returned 0 rows (player_gameweek_stats incomplete), falling back to FPL API');
+    // Check if all captain points are 0 (happens when player_gameweek_stats is incomplete)
+    const totalCaptainPoints = captainPointsResult.rows.reduce(
+      (sum: number, row: any) => sum + (parseInt(row.total_captain_points) || 0),
+      0
+    );
+    console.log('[K-28 DEBUG] Total captain points from query:', totalCaptainPoints);
+
+    // Fallback to FPL API if database is empty OR all values are 0
+    if (captainPointsResult.rows.length === 0 || totalCaptainPoints === 0) {
+      console.log('[Captain Leaderboard] No captain points data (player_gameweek_stats incomplete), falling back to FPL API');
       return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
     }
 
@@ -324,6 +331,8 @@ async function calculateChipPerformance(
       ORDER BY mc.entry_id, mc.event
     `, [leagueId, gameweeks]);
 
+    console.log('[K-28 DEBUG] Chips query returned', chipsPlayedResult.rows.length, 'rows');
+
     // Fallback to FPL API if database is empty
     if (chipsPlayedResult.rows.length === 0) {
       console.log('[Chip Performance] manager_chips table empty, falling back to FPL API');
@@ -439,6 +448,7 @@ async function calculateChipPerformanceFromAPI(
   managers: any[],
   gameweeks: number[]
 ) {
+  console.log('[Chip Fallback] Starting FPL API fallback for', managers.length, 'managers,', gameweeks.length, 'gameweeks');
   try {
     const CHIP_NAMES: Record<string, string> = {
       'bboost': 'BB',
@@ -566,6 +576,8 @@ async function calculateChipPerformanceFromAPI(
       })
       .filter(m => m.chips_faced_count > 0)
       .sort((a, b) => b.chips_faced_count - a.chips_faced_count);
+
+    console.log('[Chip Fallback] FPL API fallback completed. Chips played:', chipsPlayed.length, 'managers, Chips faced:', chipsFaced.length, 'managers');
 
     return {
       chipsPlayed,
