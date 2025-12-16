@@ -177,12 +177,13 @@ async function calculateCaptainLeaderboard(
     // Get total season points from manager_gw_history for percentage calc
     console.log('[CAPTAIN] About to query manager_gw_history...');
 
+    const managerIds = managers.map(m => m.entry_id);
     const seasonPointsResult = await db.query(`
       SELECT entry_id, SUM(points) as total_season_points
       FROM manager_gw_history
-      WHERE league_id = $1 AND event = ANY($2)
+      WHERE entry_id = ANY($1) AND event = ANY($2)
       GROUP BY entry_id
-    `, [leagueId, gameweeks]);
+    `, [managerIds, gameweeks]);
 
     console.log('[CAPTAIN] manager_gw_history query result:', {
       rowCount: seasonPointsResult.rows.length,

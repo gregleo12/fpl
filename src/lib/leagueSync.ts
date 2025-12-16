@@ -106,26 +106,34 @@ async function syncManagerData(
     }
 
     // 3. Sync GW history
-    for (const gw of history.current || []) {
+    const gwHistory = history.current || [];
+    console.log(`[Sync] Manager ${entryId}: Found ${gwHistory.length} GW history entries`);
+
+    for (const gw of gwHistory) {
       if (gameweeks.includes(gw.event)) {
-        await db.query(`
-          INSERT INTO manager_gw_history (
-            league_id, entry_id, event, points, total_points,
-            rank, rank_sort, overall_rank, event_transfers,
-            event_transfers_cost, value, bank, points_on_bench
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-          ON CONFLICT (entry_id, event) DO UPDATE SET
-            points = EXCLUDED.points,
-            total_points = EXCLUDED.total_points,
-            rank = EXCLUDED.rank,
-            event_transfers = EXCLUDED.event_transfers,
-            event_transfers_cost = EXCLUDED.event_transfers_cost,
-            points_on_bench = EXCLUDED.points_on_bench
-        `, [
-          leagueId, gw.event, entryId, gw.points, gw.total_points,
-          gw.rank, gw.rank_sort, gw.overall_rank, gw.event_transfers,
-          gw.event_transfers_cost, gw.value, gw.bank, gw.points_on_bench
-        ]);
+        try {
+          await db.query(`
+            INSERT INTO manager_gw_history (
+              league_id, entry_id, event, points, total_points,
+              rank, rank_sort, overall_rank, event_transfers,
+              event_transfers_cost, value, bank, points_on_bench
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            ON CONFLICT (entry_id, event) DO UPDATE SET
+              points = EXCLUDED.points,
+              total_points = EXCLUDED.total_points,
+              rank = EXCLUDED.rank,
+              event_transfers = EXCLUDED.event_transfers,
+              event_transfers_cost = EXCLUDED.event_transfers_cost,
+              points_on_bench = EXCLUDED.points_on_bench
+          `, [
+            leagueId, entryId, gw.event, gw.points, gw.total_points,
+            gw.rank, gw.rank_sort, gw.overall_rank, gw.event_transfers,
+            gw.event_transfers_cost, gw.value, gw.bank, gw.points_on_bench
+          ]);
+          console.log(`[Sync] Manager ${entryId} GW${gw.event}: Inserted/updated`);
+        } catch (error) {
+          console.error(`[Sync] Manager ${entryId} GW${gw.event}: INSERT FAILED:`, error);
+        }
       }
     }
 
