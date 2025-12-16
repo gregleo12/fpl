@@ -2,7 +2,7 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v2.7.4 (December 16, 2025)
+**Current Version:** v2.7.5 (December 16, 2025)
 
 ---
 
@@ -50,13 +50,16 @@ This project's complete version history has been split into multiple files for b
 
 ## 📝 Quick Reference
 
-### Latest Changes (v2.7.4 - Dec 16, 2025)
-- 🔧 **HOTFIX: FT Calculation Loop** - Fixed loop breaking before processing last completed GW
-  - Root cause: Loop used `currentGW` (last completed GW) instead of `upcomingGW`
-  - When currentGW=16, condition `gw.event >= currentGW` stopped loop before processing GW16
-  - Result: AFCON rule (5 FT for GW16) and GW16 transfers never applied
-  - Fix: Calculate `upcomingGW = maxCompletedGW + 1`, use for loop break condition
-  - Now processes ALL completed GWs including most recent one
+### Latest Changes (v2.7.5 - Dec 16, 2025)
+- ⚡ **K-28: Season Stats Database Migration** - Migrated Season Stats to use K-27 cached tables
+  - Before: 300+ FPL API calls (~10-30 seconds)
+  - After: Single database queries (~1-2 seconds)
+  - Captain Points: Now uses `manager_picks` + `player_gameweek_stats` + `manager_gw_history`
+  - Chips Played/Faced: Now uses `manager_chips` table
+  - Best/Worst GWs: Now uses `manager_gw_history` table
+  - Trends Data: Now uses `manager_chips` table
+  - Streaks: Already used `h2h_matches` (no change)
+  - Performance improvement: ~90% faster (15s → 1.5s)
 
 ### Recent Highlights
 - **v2.7.0**: K-27 Comprehensive Database Caching (5 new tables, 10 new scripts)
