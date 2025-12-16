@@ -415,7 +415,7 @@ async function calculateChipPerformance(
     });
 
     const chipsFacedBeforeFilter = managers.map(manager => {
-      const chips = chipsFacedByManager.get(Number(manager.entry_id)) || [];
+      const chips = chipsFacedByManager.get(manager.entry_id) || [];
       const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
 
       return {
