@@ -6,9 +6,14 @@
 
 ## Overview
 
-Claude Code has two main "memory files" that help maintain project context:
+Claude Code has these key "memory files" that help maintain project context:
 1. **`CLAUDE.md`** - Main context file (auto-read at session start)
-2. **`VERSION_HISTORY_COMPLETE.md`** - Complete changelog with version details
+2. **`VERSION_HISTORY.md`** - Changelog index with links to detailed version files
+3. **`DATABASE.md`** - Database tables, K-27 caching, sync scripts
+4. **`ENDPOINTS.md`** - All API routes and data sources
+5. **`ARCHITECTURE.md`** - File structure and data flow
+6. **`DEPLOYMENT.md`** - How to deploy to staging/production
+7. **`README.md`** - Project overview (update version number when bumping)
 
 Without these, Claude Code forgets everything between sessions and repeats mistakes.
 
@@ -30,17 +35,16 @@ Without these, Claude Code forgets everything between sessions and repeats mista
 - Deployment process changes
 
 **Key sections:**
-- Critical Information (database, domain, test league)
-- Critical Rules (database API routes, FT calculations)
-- Tech Stack
-- Architecture (Key Files, Data Flow)
-- Known Issues & Solutions (✅ FIXED, 🚧 IN PROGRESS)
-- Deployment Process
-- Testing Checklist
+- Required Reading (links to other docs)
+- Critical Rules (database, deployment, K-27 caching)
+- Quick Reference (URLs, database, test data)
+- Recent Bugs (don't repeat these)
+- After Every Task Checklist
+- Common Commands
 
 ---
 
-### `VERSION_HISTORY_COMPLETE.md` (Changelog)
+### `VERSION_HISTORY.md` (Changelog)
 **What it is:** Complete version history with detailed changes
 **Updates:** After every version bump
 **Think of it as:** Git commit messages expanded with context
@@ -59,7 +63,7 @@ Without these, Claude Code forgets everything between sessions and repeats mista
 2. **Adding a feature** → Update architecture section + version entry
 3. **Discovering a mistake pattern** → Add to Critical Rules in CLAUDE.md
 4. **Changing deployment process** → Update deployment section
-5. **Version bump** → Add entry to VERSION_HISTORY_COMPLETE.md
+5. **Version bump** → Add entry to VERSION_HISTORY.md
 
 ### ⏭️ Don't Update For:
 - Minor typo fixes
@@ -99,7 +103,7 @@ Update CLAUDE.md with new feature:
 Add to "Key Files":
 - `/src/[path]/[file].ts` - [Description of what it does]
 
-Then add to VERSION_HISTORY_COMPLETE.md:
+Then add to VERSION_HISTORY.md:
 ### v[version] - [Feature Name] ([Date])
 **FEATURE:** [Brief description]
 - Added: [what was added]
@@ -142,9 +146,9 @@ Commit the update.
 Before we finish, update context files with today's work:
 
 1. What bugs did we fix? (move from IN PROGRESS to FIXED in CLAUDE.md)
-2. What features did we add? (update Key Files + VERSION_HISTORY_COMPLETE.md)
+2. What features did we add? (update Key Files + VERSION_HISTORY.md)
 3. What new rules should we document? (add to Critical Rules in CLAUDE.md)
-4. Any version bumps? (update VERSION_HISTORY_COMPLETE.md)
+4. Any version bumps? (update VERSION_HISTORY.md)
 
 Update both files accordingly, then commit.
 ```
@@ -155,13 +159,15 @@ Update both files accordingly, then commit.
 
 | Type of Update | File to Update | Section |
 |----------------|---------------|---------|
-| Bug fixed | `CLAUDE.md` | Known Issues & Solutions (move to FIXED) |
-| New feature | `CLAUDE.md` | Key Files section |
+| Bug fixed | `CLAUDE.md` | Recent Bugs section |
+| New feature | `ARCHITECTURE.md` | Key Files or Component section |
 | Critical rule | `CLAUDE.md` | Critical Rules section |
-| Architecture change | `CLAUDE.md` | Architecture section |
-| Deployment change | `CLAUDE.md` | Deployment Process |
-| Version details | `VERSION_HISTORY_COMPLETE.md` | Add new version entry |
-| Testing insight | `CLAUDE.md` | Testing Checklist |
+| Architecture change | `ARCHITECTURE.md` | Relevant section |
+| Deployment change | `DEPLOYMENT.md` | Relevant section |
+| Version details | `VERSION_HISTORY.md` | Add new version entry |
+| Version bump | `README.md` | Update Current Version |
+| New API endpoint | `ENDPOINTS.md` | Add to endpoint table |
+| Database change | `DATABASE.md` | Add table/script documentation |
 
 ---
 
@@ -187,7 +193,7 @@ In CLAUDE.md:
 - **Solution**: Added `export const dynamic = 'force-dynamic'` to admin API routes
 - **Testing**: Verified admin panel shows real data
 
-3. In VERSION_HISTORY_COMPLETE.md add:
+3. In VERSION_HISTORY.md add:
 
 ### v2.0.16 - Fix Admin Panel - Add force-dynamic (Dec 8, 2025)
 **CRITICAL FIX:** Admin panel now displays real analytics data instead of zeros
@@ -244,12 +250,12 @@ If context files get out of sync or corrupted:
 
 **Step 1: Check git history**
 ```
-git log --oneline -- CLAUDE.md VERSION_HISTORY_COMPLETE.md
+git log --oneline -- CLAUDE.md VERSION_HISTORY.md
 ```
 
 **Step 2: Restore from last good version**
 ```
-git checkout <commit-hash> -- CLAUDE.md VERSION_HISTORY_COMPLETE.md
+git checkout <commit-hash> -- CLAUDE.md VERSION_HISTORY.md
 ```
 
 **Step 3: Rebuild from recent work**
@@ -278,7 +284,7 @@ Move [Bug Name] to FIXED section with:
 - Solution: [one sentence]
 - Version: v[X.Y.Z]
 
-Add to VERSION_HISTORY_COMPLETE.md:
+Add to VERSION_HISTORY.md:
 - v[X.Y.Z] entry with bug details
 
 Commit: "Document [bug] fix"
@@ -293,7 +299,7 @@ Update CLAUDE.md:
 Add to Key Files:
 - [filepath] - [description]
 
-Update VERSION_HISTORY_COMPLETE.md:
+Update VERSION_HISTORY.md:
 - v[X.Y.Z] - Added [feature]
 
 Commit: "Document [feature] addition"
@@ -323,7 +329,7 @@ Review today's work and update CLAUDE.md:
 3. Version bumped to: v[X.Y.Z]
 
 Move relevant items from IN PROGRESS to FIXED.
-Update VERSION_HISTORY_COMPLETE.md with version entries.
+Update VERSION_HISTORY.md with version entries.
 
 Commit: "Context update: [date] session"
 ```
@@ -363,7 +369,7 @@ Notice: Code commits and context commits are **separate** for clarity.
 ## Summary
 
 **The Golden Rule:**
-**After every major fix or feature, explicitly tell Claude Code to update CLAUDE.md and VERSION_HISTORY_COMPLETE.md.**
+**After every major fix or feature, explicitly tell Claude Code to update CLAUDE.md and VERSION_HISTORY.md.**
 
 **Make it a habit:**
 Before ending each work session, run the "End of Session Update" procedure.
@@ -378,7 +384,7 @@ CLAUDE.md is Claude Code's memory (automatically loaded each session). Keep it u
 Setting up for the first time:
 
 - [ ] `CLAUDE.md` created in project root (auto-read by Claude Code)
-- [ ] `VERSION_HISTORY_COMPLETE.md` created in project root
+- [ ] `VERSION_HISTORY.md` created in project root
 - [ ] Both files committed to git
 - [ ] This guide saved in project root
 - [ ] First update test completed successfully
