@@ -132,12 +132,17 @@ export async function GET(
             // NOT what you'll have after it completes
             let ftBalance = 0;
 
+            // Calculate upcomingGW from completed GWs
+            // currentGWs only contains completed GWs, so upcomingGW = last completed + 1
+            const maxCompletedGW = Math.max(...currentGWs.map((gw: any) => gw.event));
+            const upcomingGW = maxCompletedGW + 1;
+
             console.log(`\n=== FT CALCULATION FOR ENTRY ${entryId} ===`);
-            console.log(`Current GW: ${currentGW}`);
+            console.log(`currentGW: ${currentGW}, maxCompletedGW: ${maxCompletedGW}, upcomingGW: ${upcomingGW}`);
 
             for (const gw of currentGWs) {
-              if (gw.event >= currentGW) {
-                console.log(`Stopping at GW${gw.event} (>= currentGW ${currentGW})`);
+              if (gw.event >= upcomingGW) {
+                console.log(`Stopping at GW${gw.event} (>= upcomingGW ${upcomingGW})`);
                 break;
               }
 
@@ -169,11 +174,11 @@ export async function GET(
                 ftBalance = ftAfterTransfers;
 
                 // Then add +1 FT for the NEXT gameweek (but NOT if this is the last completed GW)
-                // We check if the NEXT gw exists and is before currentGW
+                // We check if the NEXT gw exists and is before upcomingGW
                 const nextGWIndex = currentGWs.findIndex((g: any) => g.event === gw.event) + 1;
                 const nextGW = currentGWs[nextGWIndex];
 
-                if (nextGW && nextGW.event < currentGW) {
+                if (nextGW && nextGW.event < upcomingGW) {
                   // There's another completed GW after this one, so add the +1 FT
                   ftBalance = Math.min(5, ftBalance + 1);
                   console.log(`  -> Added +1 rollover (next GW${nextGW.event} exists): ftBalance = ${ftBalance}`);

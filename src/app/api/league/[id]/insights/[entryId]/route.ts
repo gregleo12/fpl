@@ -236,8 +236,13 @@ export async function GET(
         // IMPORTANT: This calculates FT available FOR the current/upcoming GW
         let ftBalance = 0;
 
+        // Calculate upcomingGW from completed GWs
+        // currentGWs only contains completed GWs, so upcomingGW = last completed + 1
+        const maxCompletedGW = Math.max(...currentGWs.map((gw: any) => gw.event));
+        const upcomingGW = maxCompletedGW + 1;
+
         for (const gw of currentGWs) {
-          if (gw.event >= currentGW) {
+          if (gw.event >= upcomingGW) {
             break;
           }
 
@@ -265,7 +270,7 @@ export async function GET(
             const nextGWIndex = currentGWs.findIndex((g: any) => g.event === gw.event) + 1;
             const nextGW = currentGWs[nextGWIndex];
 
-            if (nextGW && nextGW.event < currentGW) {
+            if (nextGW && nextGW.event < upcomingGW) {
               // There's another completed GW after this one, so add the +1 FT
               ftBalance = Math.min(5, ftBalance + 1);
             }
