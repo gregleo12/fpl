@@ -123,6 +123,16 @@ async function calculateCaptainLeaderboard(
   managers: any[]
 ) {
   try {
+    // DEBUG: Check player_id overlap between tables
+    const picksPlayerIds = await db.query(`
+      SELECT DISTINCT player_id FROM manager_picks WHERE league_id = $1 LIMIT 10
+    `, [leagueId]);
+    const statsPlayerIds = await db.query(`
+      SELECT DISTINCT player_id FROM player_gameweek_stats LIMIT 10
+    `);
+    console.log('[K-28 DEBUG] manager_picks player_ids (sample):', picksPlayerIds.rows.map((r: any) => r.player_id));
+    console.log('[K-28 DEBUG] player_gameweek_stats player_ids (sample):', statsPlayerIds.rows.map((r: any) => r.player_id));
+
     // Try database first
     const captainPointsResult = await db.query(`
       SELECT
@@ -139,9 +149,11 @@ async function calculateCaptainLeaderboard(
       GROUP BY mp.entry_id
     `, [leagueId, gameweeks]);
 
+    console.log('[K-28 DEBUG] Captain query returned', captainPointsResult.rows.length, 'rows');
+
     // Fallback to FPL API if database is empty
     if (captainPointsResult.rows.length === 0) {
-      console.log('[Captain Leaderboard] manager_picks table empty, falling back to FPL API');
+      console.log('[Captain Leaderboard] JOIN returned 0 rows (player_gameweek_stats incomplete), falling back to FPL API');
       return await calculateCaptainLeaderboardFromAPI(managers, gameweeks);
     }
 
@@ -208,6 +220,7 @@ async function calculateCaptainLeaderboardFromAPI(
   managers: any[],
   gameweeks: number[]
 ) {
+  console.log('[Captain Fallback] Starting FPL API fallback for', managers.length, 'managers,', gameweeks.length, 'gameweeks');
   try {
     const leaderboard = await Promise.all(
       managers.map(async (manager) => {
@@ -266,7 +279,9 @@ async function calculateCaptainLeaderboardFromAPI(
       })
     );
 
-    return leaderboard.sort((a, b) => b.total_points - a.total_points);
+    const sorted = leaderboard.sort((a, b) => b.total_points - a.total_points);
+    console.log('[Captain Fallback] FPL API fallback completed. Top 3:', sorted.slice(0, 3).map(m => `${m.player_name}: ${m.total_points}pts`));
+    return sorted;
   } catch (error) {
     console.error('Error calculating captain leaderboard from API:', error);
     return [];
