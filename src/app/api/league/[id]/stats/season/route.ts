@@ -162,10 +162,10 @@ async function calculateCaptainLeaderboard(
 
     // Build leaderboard
     const leaderboard = managers.map(manager => {
-      const captainData = captainPointsMap.get(manager.entry_id);
+      const captainData = captainPointsMap.get(Number(manager.entry_id));
       const totalCaptainPoints = captainData?.total_captain_points || 0;
       const gameweeksUsed = captainData?.gameweeks_used || 0;
-      const totalSeasonPoints = seasonPointsMap.get(manager.entry_id) || 0;
+      const totalSeasonPoints = seasonPointsMap.get(Number(manager.entry_id)) || 0;
 
       return {
         entry_id: manager.entry_id,
@@ -327,7 +327,7 @@ async function calculateChipPerformance(
     });
 
     const chipsPlayedBeforeFilter = managers.map(manager => {
-      const chips = chipsByManager.get(manager.entry_id) || [];
+      const chips = chipsByManager.get(Number(manager.entry_id)) || [];
       const sortedChips = [...chips].sort((a, b) => a.event - b.event);
 
       return {
@@ -415,7 +415,7 @@ async function calculateChipPerformance(
     });
 
     const chipsFacedBeforeFilter = managers.map(manager => {
-      const chips = chipsFacedByManager.get(manager.entry_id) || [];
+      const chips = chipsFacedByManager.get(Number(manager.entry_id)) || [];
       const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
 
       return {
