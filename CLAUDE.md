@@ -1,6 +1,6 @@
 # FPL H2H Analytics - Project Context
 
-Last Updated: 2025-12-15 (v2.6.7)
+Last Updated: 2025-12-16 (v2.7.1)
 
 ## Critical Information
 - **Deployment**: Railway (auto-deploys from GitHub main)
@@ -122,6 +122,67 @@ export const dynamic = 'force-dynamic';
 - **Root Cause**: Stats API using `entry_history.points` which doesn't include auto-substitutions
 - **Solution**: Added `calculateLiveScoreWithAutoSubs` helper to stats API
 - **Location**: `/src/app/api/league/[id]/stats/route.ts`
+
+### ✅ FIXED: H2H Fixtures Showing 0-0 (v2.7.1)
+- **Problem**: H2H Fixtures tab displayed all completed GW matches as 0-0, but match modals showed correct scores
+- **Root Cause**: `scoreCalculator.ts` was incomplete when fetching from database for completed GWs - only got picks but missed official points/transfer costs from `manager_gw_history` and chips from `manager_chips` tables
+- **Solution**: Updated `fetchManagerPicks()` to fetch complete data from all 3 K-27 tables in parallel:
+  - `manager_picks` → team selections
+  - `manager_gw_history` → official points & transfer costs
+  - `manager_chips` → active chip for the GW
+- **Location**: `/src/lib/scoreCalculator.ts:75-119`
+- **Prevention**: When fetching completed GW data from database, always include all required fields (points, transfer costs, chips)
+
+## K-27: Comprehensive Database Caching (v2.7.0)
+
+**Project K-27** implemented comprehensive database caching to eliminate redundant FPL API calls and improve performance across all features. All historical data for completed gameweeks is now stored and served from the database, with the FPL API only used for live/upcoming gameweeks.
+
+### K-27 Tables & Purpose
+
+| Table | Purpose | Key Fields | Sync Frequency |
+|-------|---------|-----------|----------------|
+| `manager_gw_history` | GW points, ranks, transfers | points, rank, event_transfers, event_transfers_cost | After each GW completes |
+| `manager_picks` | Team selections per GW | player_id, position, multiplier, is_captain | After each GW completes |
+| `manager_chips` | Chip usage tracking | chip_name (WC/BB/TC/FH), event | After each GW completes |
+| `manager_transfers` | Transfer history | player_in, player_out, costs, time | After each GW completes |
+| `pl_fixtures` | All PL fixture data | teams, scores, FDR, kickoff times | Daily during season |
+
+### K-27 Sync Scripts
+
+All sync scripts are in `/src/scripts/` and have corresponding npm commands:
+
+```bash
+# Run migrations (one-time setup)
+npm run migrate:manager-history
+npm run migrate:manager-picks
+npm run migrate:manager-chips
+npm run migrate:manager-transfers
+npm run migrate:pl-fixtures
+
+# Sync data for league 804742 (run after each GW)
+npm run sync:manager-history
+npm run sync:manager-picks
+npm run sync:manager-chips
+npm run sync:manager-transfers
+npm run sync:pl-fixtures
+```
+
+### K-27 Data Sources
+
+**For Completed Gameweeks:**
+- ✅ Database first (fast, reliable)
+- ❌ No FPL API calls
+
+**For Live/Upcoming Gameweeks:**
+- ✅ FPL API (real-time data)
+- ⚡ Calculated on-demand with `scoreCalculator.ts`
+
+### K-27 Benefits
+
+- **Performance**: 100+ fewer FPL API calls per Stats Hub page load
+- **Reliability**: No dependency on FPL API availability for historical data
+- **Consistency**: Single source of truth for all historical gameweek data
+- **Scalability**: Database caching enables multi-league support at scale
 
 ## Deployment Process
 

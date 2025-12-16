@@ -1,8 +1,8 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 249+ versions
-**Current Version:** v2.6.7 (December 15, 2025)
+**Total Releases:** 252+ versions
+**Current Version:** v2.7.1 (December 16, 2025)
 
 ---
 
@@ -12,7 +12,8 @@ This project's complete version history has been split into multiple files for b
 
 ### Current & Recent Versions
 
-- **[v2.5.x - v2.6.x (Dec 2025)](./version-history/v2.5-v2.6.md)** - Latest development
+- **[v2.5.x - v2.7.x (Dec 2025)](./version-history/v2.5-v2.6.md)** - Latest development
+  - v2.7.x: K-27 Database Caching & Hotfixes
   - v2.6.x: Players Tab Database Integration
   - v2.6.0-alpha: Players Tab Foundation
   - v2.5.x: Player Features & UI Polish (30 versions)
@@ -49,13 +50,14 @@ This project's complete version history has been split into multiple files for b
 
 ## 📝 Quick Reference
 
-### Latest Changes (v2.6.7 - Dec 15, 2025)
-- 🗄️ **Switch PlayersTab to database** - migrated from FPL proxy to /api/players endpoint
-- Added missing DB columns (team_code, event_points, cost_change_start, defensive_contribution)
-- Updated all interfaces to use DB field names
-- Synced 760 players + 11,850 gameweek stats to production DB
+### Latest Changes (v2.7.1 - Dec 16, 2025)
+- 🔧 **HOTFIX: H2H Fixtures showing 0-0** - Fixed scoreCalculator to fetch complete data from K-27 tables
+  - Root cause: fetchManagerPicks() only got picks, missed points/transfers from manager_gw_history and chips from manager_chips
+  - Fixed by fetching all required data in parallel from 3 tables
+  - All completed GW fixtures now display correct scores
 
 ### Recent Highlights
+- **v2.7.0**: K-27 Comprehensive Database Caching (5 new tables, 10 new scripts)
 - **v2.6.x**: Complete Players tab with database integration
 - **v2.5.12**: Defensive Contribution points (DEFCON)
 - **v2.5.11**: FPL-style player points breakdown
