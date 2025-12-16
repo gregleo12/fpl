@@ -2,7 +2,7 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v2.7.1 (December 16, 2025)
+**Current Version:** v2.7.2 (December 16, 2025)
 
 ---
 

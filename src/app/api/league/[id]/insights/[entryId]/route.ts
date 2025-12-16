@@ -230,37 +230,49 @@ export async function GET(
     try {
       const historyData = await fplApi.getEntryHistory(targetEntryId);
       if (historyData && historyData.current && historyData.current.length > 0) {
-        // Get the most recent completed gameweek
-        const lastGW = historyData.current[historyData.current.length - 1];
+        const currentGWs = historyData.current;
 
-        // Calculate FT for next gameweek
-        // Logic:
-        // - Start each GW with 1 FT
-        // - If previous GW had 0 transfers and 1+ FT available, bank it (max 2 FT)
-        // - If chip was used (wildcard, freehit), FT resets based on chip type
+        // Calculate free transfers by tracking through the season
+        // IMPORTANT: This calculates FT available FOR the current/upcoming GW
+        let ftBalance = 0;
 
-        const lastGWTransfers = lastGW.event_transfers || 0;
-        const lastGWTransferCost = lastGW.event_transfers_cost || 0;
+        for (const gw of currentGWs) {
+          if (gw.event >= currentGW) {
+            break;
+          }
 
-        // Calculate how many FT they had last week
-        // If transfer_cost is 0, they used their FT(s)
-        // If transfer_cost > 0, they took hits (4 points per extra transfer)
-        let lastWeekFT = 1; // Default assumption
-        if (lastGWTransferCost === 0 && lastGWTransfers === 0) {
-          lastWeekFT = 1; // Had 1 FT, didn't use it
+          if (gw.event === 1) {
+            ftBalance = 1;
+            continue;
+          }
+
+          // AFCON special rule: Everyone STARTS GW16 with 5 FT
+          // This sets the balance before processing GW16 transfers
+          if (gw.event === 16) {
+            ftBalance = 5;
+          }
+
+          const transfers = gw.event_transfers || 0;
+          const chipUsed = gw.chip_name;
+
+          if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
+            // WC/FH: Transfers don't consume FT, and no +1 FT for next GW
+          } else {
+            // First consume transfers
+            ftBalance = Math.max(0, ftBalance - transfers);
+
+            // Then add +1 FT for the NEXT gameweek (but NOT if this is the last completed GW)
+            const nextGWIndex = currentGWs.findIndex((g: any) => g.event === gw.event) + 1;
+            const nextGW = currentGWs[nextGWIndex];
+
+            if (nextGW && nextGW.event < currentGW) {
+              // There's another completed GW after this one, so add the +1 FT
+              ftBalance = Math.min(5, ftBalance + 1);
+            }
+          }
         }
 
-        // Calculate current FT
-        // If they made 0 transfers last week, they bank the FT (max 2)
-        if (lastGWTransfers === 0) {
-          freeTransfers = Math.min(2, lastWeekFT + 1);
-        } else {
-          // They made transfers, so they start fresh with 1 FT
-          freeTransfers = 1;
-        }
-
-        // Note: This is a simplified calculation and may not account for all edge cases
-        // like wildcards or free hits which reset the FT count
+        freeTransfers = ftBalance;
       }
     } catch (error) {
       console.log('Could not fetch free transfers data:', error);

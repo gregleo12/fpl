@@ -142,6 +142,12 @@ export async function GET(
                 continue;
               }
 
+              // AFCON special rule: Everyone STARTS GW16 with 5 FT
+              // This sets the balance before processing GW16 transfers
+              if (gw.event === 16) {
+                ftBalance = 5;
+              }
+
               const transfers = gw.event_transfers || 0;
               const chipUsed = gw.chip_name;
 
@@ -164,13 +170,6 @@ export async function GET(
                   // (because that would show FT for AFTER currentGW, not FOR currentGW)
                 }
               }
-            }
-
-            // AFCON break: 5 FT for GW16 fixtures (check match gameweek, not current GW)
-            const matchGameweek = match.event;
-
-            if (matchGameweek >= 16) {
-              ftBalance = 5;
             }
 
             freeTransfers = ftBalance;
