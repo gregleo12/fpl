@@ -48,11 +48,12 @@ interface Props {
   player: Player;
   team: Team;
   columns: ColumnDef[];
+  onClick?: () => void;
 }
 
-export function PlayerRow({ player, team, columns }: Props) {
+export function PlayerRow({ player, team, columns, onClick }: Props) {
   return (
-    <tr className={styles.row}>
+    <tr className={`${styles.row} ${styles.clickableRow}`} onClick={onClick}>
       <PlayerCell player={player} team={team} />
       {columns.map((col) => {
         const value = player[col.key];

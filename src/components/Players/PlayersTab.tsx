@@ -12,6 +12,7 @@ interface Player {
   first_name: string;
   second_name: string;
   position: string;
+  element_type: number;
   team_id: number;
   team_code: number;
   team_name: string;
@@ -38,6 +39,7 @@ interface Player {
   red_cards: number;
   cost_change_start: number;
   status?: string;
+  news?: string;
   [key: string]: any;
 }
 
