@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12,7 +12,7 @@
 }
 
 .modal {
-  background: linear-gradient(135deg, #37003c 0%, #2d0033 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #16132b 100%);
   border: 1px solid rgba(0, 255, 135, 0.3);
   border-radius: 16px;
   padding: 2rem;
