@@ -2,7 +2,31 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v2.7.5 (December 16, 2025)
+**Current Version:** v3.0.0 (December 18, 2025)
+
+---
+
+## v3.0.0 - Sync Infrastructure Release (Dec 18, 2025)
+
+**MAJOR RELEASE:** Complete data sync infrastructure for all leagues.
+
+### New Features
+- **Auto-sync on first load (K-32a):** New leagues automatically sync all historical data with progress bar
+- **Incremental sync (K-32b):** Returning users get missing completed GWs synced automatically
+- **Quick Sync button (K-32d):** Fast sync of missing GWs only (1-5 seconds)
+- **Full Re-sync button (K-32c):** Complete re-sync of all historical data
+- **Transfers in sync pipeline:** GW Transfers now synced automatically for all leagues
+
+### Bug Fixes
+- Fixed GW Transfers SQL column error (pin.team → pin.team_id)
+- Fixed incremental sync SQL placeholder bug ($13)
+- Fixed player modal tabs data fetching
+
+### Technical
+- New sync functions in `/src/lib/leagueSync.ts`
+- Sync status tracking in `leagues` table
+- Progress bar component for first-time sync
+- Manager transfers included in all sync operations
 
 ---
 
