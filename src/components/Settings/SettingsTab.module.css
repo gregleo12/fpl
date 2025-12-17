@@ -111,6 +111,41 @@
   font-weight: 700;
 }
 
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.lastSynced {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+
+.successMessage {
+  color: #00ff87;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.errorMessage {
+  color: #ff4444;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
 .about {
   font-size: 0.875rem;
   line-height: 1.6;

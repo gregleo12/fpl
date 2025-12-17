@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw, Repeat, User, LogOut } from 'lucide-react';
 import { loadState, clearState } from '@/lib/storage';
@@ -18,6 +19,102 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   const router = useRouter();
   const state = loadState();
   const { currentVersion } = useVersionCheck();
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [lastSynced, setLastSynced] = useState<string | null>(null);
+
+  // Fetch last synced time on mount
+  useEffect(() => {
+    if (!state) return;
+
+    const leagueId = state.leagueId; // Capture in closure
+
+    async function fetchSyncStatus() {
+      try {
+        const res = await fetch(`/api/league/${leagueId}/sync`);
+        const data = await res.json();
+        if (data.lastSynced) {
+          setLastSynced(new Date(data.lastSynced).toLocaleString());
+        }
+      } catch (error) {
+        console.error('Failed to fetch sync status:', error);
+      }
+    }
+
+    fetchSyncStatus();
+  }, [state]);
+
+  const handleRefreshData = async () => {
+    if (!state || isSyncing) return;
+
+    const confirmed = confirm(
+      'This will re-sync all league data from FPL. This may take 30-60 seconds. Continue?'
+    );
+
+    if (!confirmed) return;
+
+    setIsSyncing(true);
+    setSyncStatus('idle');
+
+    try {
+      // Trigger sync with force=true to clear and re-sync
+      const response = await fetch(`/api/league/${state.leagueId}/sync?force=true`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start sync');
+      }
+
+      const result = await response.json();
+      console.log('[Settings] Sync started:', result);
+
+      // Poll for completion
+      let pollCount = 0;
+      const maxPolls = 30; // 30 polls * 3s = 90 seconds max
+
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+
+        try {
+          const statusRes = await fetch(`/api/league/${state.leagueId}/sync`);
+          const statusData = await statusRes.json();
+
+          console.log(`[Settings] Poll ${pollCount}: status=${statusData.status}`);
+
+          if (statusData.status === 'completed') {
+            clearInterval(pollInterval);
+            setSyncStatus('success');
+            setLastSynced(new Date().toLocaleString());
+
+            // Reload page to show fresh data
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else if (statusData.status === 'failed') {
+            clearInterval(pollInterval);
+            setSyncStatus('error');
+            setIsSyncing(false);
+          }
+
+          // Timeout
+          if (pollCount >= maxPolls) {
+            clearInterval(pollInterval);
+            setSyncStatus('error');
+            setIsSyncing(false);
+            console.error('[Settings] Sync timeout');
+          }
+        } catch (error) {
+          console.error('[Settings] Poll error:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+
+    } catch (error) {
+      console.error('[Settings] Sync error:', error);
+      setSyncStatus('error');
+      setIsSyncing(false);
+    }
+  };
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to log out? You will need to enter your league and team IDs again.')) {
@@ -82,21 +179,43 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
       </div>
 
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Actions</h3>
+        <h3 className={styles.sectionTitle}>League Data</h3>
+        {lastSynced && (
+          <p className={styles.lastSynced}>
+            Last synced: {lastSynced}
+          </p>
+        )}
         <button
-          onClick={onRefresh}
-          disabled={isRefreshing}
+          onClick={handleRefreshData}
+          disabled={isSyncing}
           className={styles.actionButton}
         >
           <RefreshCw
             size={20}
             color="#00ff87"
-            className={`${styles.buttonIcon} ${isRefreshing ? styles.spinning : ''}`}
+            className={`${styles.buttonIcon} ${isSyncing ? styles.spinning : ''}`}
           />
           <span className={styles.buttonText}>
-            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            {isSyncing ? 'Syncing...' : 'Refresh League Data'}
           </span>
         </button>
+        {syncStatus === 'success' && (
+          <p className={styles.successMessage}>
+            Sync complete! Reloading...
+          </p>
+        )}
+        {syncStatus === 'error' && (
+          <p className={styles.errorMessage}>
+            Sync failed. Please try again.
+          </p>
+        )}
+        <p className={styles.hint}>
+          Re-syncs all historical data for this league. Use if something looks wrong or data is missing.
+        </p>
+      </div>
+
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Actions</h3>
 
         <button
           onClick={handleChangeLeague}
