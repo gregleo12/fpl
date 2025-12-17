@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
 import { updateLeagueMetadata } from '@/lib/analytics';
-import { shouldSyncLeague, syncLeagueData } from '@/lib/leagueSync';
+import { shouldSyncLeague, syncLeagueData, checkForMissingGWs, syncMissingGWs } from '@/lib/leagueSync';
 
 export async function GET(
   request: NextRequest,
@@ -15,18 +15,37 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    // Check if league needs syncing (non-blocking)
-    shouldSyncLeague(leagueId).then(needsSync => {
-      if (needsSync) {
-        console.log(`[League ${leagueId}] Triggering background sync...`);
-        // Sync in background - don't await
-        syncLeagueData(leagueId).catch(err => {
-          console.error(`[League ${leagueId}] Background sync failed:`, err);
-        });
+    // Check if league needs syncing (blocking for first-time sync)
+    const needsSync = await shouldSyncLeague(leagueId);
+    let syncTriggered = false;
+
+    if (needsSync) {
+      console.log(`[League ${leagueId}] League needs sync - triggering background sync...`);
+      // Trigger sync in background - don't await to avoid blocking
+      syncLeagueData(leagueId).catch(err => {
+        console.error(`[League ${leagueId}] Background sync failed:`, err);
+      });
+      syncTriggered = true;
+    } else {
+      // Check for missing completed GWs (incremental sync)
+      const missingGWs = await checkForMissingGWs(leagueId);
+
+      if (missingGWs.length > 0) {
+        console.log(`[League ${leagueId}] Missing GWs detected:`, missingGWs);
+
+        // For 1-2 GWs, sync inline (fast enough - 1-2 seconds)
+        if (missingGWs.length <= 2) {
+          console.log(`[League ${leagueId}] Syncing ${missingGWs.length} missing GWs inline...`);
+          await syncMissingGWs(leagueId, missingGWs);
+        } else {
+          // For more GWs, trigger background sync to avoid blocking
+          console.log(`[League ${leagueId}] Syncing ${missingGWs.length} missing GWs in background...`);
+          syncMissingGWs(leagueId, missingGWs).catch(err => {
+            console.error(`[League ${leagueId}] Background GW sync failed:`, err);
+          });
+        }
       }
-    }).catch(err => {
-      console.error(`[League ${leagueId}] Sync check failed:`, err);
-    });
+    }
 
     // Try to fetch H2H league data
     console.log(`[League ${leagueId}] Starting fetch...`);
@@ -226,7 +245,8 @@ export async function GET(
         id: league.league.id,
         name: league.league.name
       },
-      standings: league.standings.results
+      standings: league.standings.results,
+      syncTriggered // Indicates if background sync was started
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);

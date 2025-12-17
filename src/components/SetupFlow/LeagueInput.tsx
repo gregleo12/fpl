@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getRecentLeagues } from '@/lib/storage';
+import { SyncProgress } from '@/components/SyncProgress/SyncProgress';
 import styles from './SetupFlow.module.css';
 
 export default function LeagueInput() {
@@ -10,6 +11,9 @@ export default function LeagueInput() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showSyncProgress, setShowSyncProgress] = useState(false);
+  const [syncPercent, setSyncPercent] = useState(0);
+  const [syncMessage, setSyncMessage] = useState('Starting sync...');
   const [showQuickAccess, setShowQuickAccess] = useState(() => {
     // Remember user's preference in localStorage
     if (typeof window !== 'undefined') {
@@ -36,6 +40,60 @@ export default function LeagueInput() {
     }
 
     await fetchAndNavigate(leagueId);
+  }
+
+  async function pollSyncStatus(leagueId: string): Promise<void> {
+    let pollCount = 0;
+    const maxPolls = 40; // 40 polls * 3s = 2 minutes max
+
+    return new Promise((resolve) => {
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+
+        try {
+          const statusRes = await fetch(`/api/league/${leagueId}/sync`);
+          const statusData = await statusRes.json();
+
+          console.log(`[Sync Poll ${pollCount}] Status:`, statusData.status);
+
+          // Update progress based on status
+          if (statusData.status === 'syncing') {
+            // Gradually increase progress while syncing
+            const baseProgress = 20;
+            const progressIncrement = Math.min(70, pollCount * 5);
+            setSyncPercent(baseProgress + progressIncrement);
+            setSyncMessage('Syncing league data...');
+          } else if (statusData.status === 'completed') {
+            clearInterval(pollInterval);
+            setSyncPercent(100);
+            setSyncMessage('Sync complete!');
+            setTimeout(() => {
+              setShowSyncProgress(false);
+              resolve();
+            }, 1000);
+          } else if (statusData.status === 'failed') {
+            clearInterval(pollInterval);
+            setShowSyncProgress(false);
+            setError('Sync failed. Data may be incomplete.');
+            resolve();
+          } else if (statusData.status === 'pending') {
+            // Still waiting to start
+            setSyncPercent(5);
+            setSyncMessage('Waiting to start...');
+          }
+
+          // Timeout after max polls
+          if (pollCount >= maxPolls) {
+            clearInterval(pollInterval);
+            setShowSyncProgress(false);
+            console.log('[Sync] Timeout - continuing anyway');
+            resolve();
+          }
+        } catch (error) {
+          console.error('[Sync Poll] Error:', error);
+        }
+      }, 3000); // Poll every 3 seconds
+    });
   }
 
   async function fetchAndNavigate(id: string) {
@@ -77,6 +135,21 @@ export default function LeagueInput() {
         } else {
           throw new Error('⚠️ Unable to load league. Please verify this is an H2H league ID.');
         }
+      }
+
+      const leagueData = await response.json();
+
+      // Check if sync was triggered for first-time league load
+      if (leagueData.syncTriggered) {
+        console.log(`[League ${id}] First-time sync triggered, showing progress...`);
+        clearTimeout(timeoutId);
+        setIsLoading(false);
+        setShowSyncProgress(true);
+        setSyncPercent(10);
+        setSyncMessage('Initializing league data sync...');
+
+        // Poll sync status
+        await pollSyncStatus(id);
       }
 
       const statsResponse = await fetch(`/api/league/${id}/stats`);
@@ -203,6 +276,11 @@ export default function LeagueInput() {
           </div>
         )}
       </div>
+
+      {/* Sync Progress Modal */}
+      {showSyncProgress && (
+        <SyncProgress percent={syncPercent} message={syncMessage} />
+      )}
     </div>
   );
 }

@@ -111,6 +111,98 @@
   font-weight: 700;
 }
 
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.lastSynced {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.hint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+}
+
+.successMessage {
+  color: #00ff87;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.errorMessage {
+  color: #ff4444;
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.quickSyncButton {
+  background: linear-gradient(135deg, rgba(255, 200, 0, 0.2), rgba(255, 200, 0, 0.1));
+  border: 1px solid rgba(255, 200, 0, 0.3);
+  color: #ffc800;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.quickSyncButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 200, 0, 0.3), rgba(255, 200, 0, 0.15));
+  border-color: rgba(255, 200, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.quickSyncButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buttonHint {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 1rem 0;
+}
+
+.resultMessage {
+  text-align: center;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 200, 0, 0.2);
+  border-top-color: #ffc800;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 .about {
   font-size: 0.875rem;
   line-height: 1.6;
