@@ -97,7 +97,7 @@ export async function syncMissingGWs(
                 league_id, entry_id, event, points, total_points,
                 rank, rank_sort, overall_rank, event_transfers, event_transfers_cost,
                 value, bank, points_on_bench
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
               ON CONFLICT (entry_id, event) DO UPDATE SET
                 points = EXCLUDED.points,
                 total_points = EXCLUDED.total_points,
