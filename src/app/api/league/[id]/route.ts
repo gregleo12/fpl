@@ -15,18 +15,18 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
     }
 
-    // Check if league needs syncing (non-blocking)
-    shouldSyncLeague(leagueId).then(needsSync => {
-      if (needsSync) {
-        console.log(`[League ${leagueId}] Triggering background sync...`);
-        // Sync in background - don't await
-        syncLeagueData(leagueId).catch(err => {
-          console.error(`[League ${leagueId}] Background sync failed:`, err);
-        });
-      }
-    }).catch(err => {
-      console.error(`[League ${leagueId}] Sync check failed:`, err);
-    });
+    // Check if league needs syncing (blocking for first-time sync)
+    const needsSync = await shouldSyncLeague(leagueId);
+    let syncTriggered = false;
+
+    if (needsSync) {
+      console.log(`[League ${leagueId}] League needs sync - triggering background sync...`);
+      // Trigger sync in background - don't await to avoid blocking
+      syncLeagueData(leagueId).catch(err => {
+        console.error(`[League ${leagueId}] Background sync failed:`, err);
+      });
+      syncTriggered = true;
+    }
 
     // Try to fetch H2H league data
     console.log(`[League ${leagueId}] Starting fetch...`);
@@ -226,7 +226,8 @@ export async function GET(
         id: league.league.id,
         name: league.league.name
       },
-      standings: league.standings.results
+      standings: league.standings.results,
+      syncTriggered // Indicates if background sync was started
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);

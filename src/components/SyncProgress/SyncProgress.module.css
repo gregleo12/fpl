@@ -1,0 +1,60 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: linear-gradient(135deg, #37003c 0%, #2d0033 100%);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.title {
+  color: #00ff87;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.message {
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.progressBar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff87, #00cc6a);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.percent {
+  color: #00ff87;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+}
