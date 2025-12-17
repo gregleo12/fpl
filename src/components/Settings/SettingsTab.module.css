@@ -239,19 +239,21 @@
 .footerLinks {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   align-items: center;
 }
 
 .footerLink {
-  font-size: 0.8125rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9375rem;
+  color: #00ff87;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .footerLink:hover {
-  color: rgba(0, 255, 135, 0.8);
+  opacity: 0.8;
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {

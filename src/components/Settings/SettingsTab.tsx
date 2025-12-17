@@ -318,22 +318,28 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>About</h3>
         <p className={styles.about}>
-          FPL H2H Analytics - Track your Fantasy Premier League Head-to-Head league performance,
-          fixtures, awards, and detailed statistics.
+          RivalFPL - Your Head-to-Head league companion. Track performance,
+          fixtures, and detailed statistics for your FPL H2H leagues.
         </p>
       </div>
 
       <div className={styles.footer}>
         <h4 className={styles.footerTitle}>Contact</h4>
-        <p className={styles.footerText}>Found a bug? Have feedback?</p>
+        <p className={styles.footerText}>Found a bug? Have feedback? Feature request?</p>
         <div className={styles.footerLinks}>
           <a
-            href="https://reddit.com/u/gregleo"
+            href="mailto:greg@rivalfpl.com"
+            className={styles.footerLink}
+          >
+            📧 greg@rivalfpl.com
+          </a>
+          <a
+            href="https://reddit.com/r/RivalFPL"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.footerLink}
           >
-            Reddit: u/gregleo
+            💬 r/RivalFPL
           </a>
           <a
             href="https://x.com/greglienart"
@@ -341,7 +347,7 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             rel="noopener noreferrer"
             className={styles.footerLink}
           >
-            X: @greglienart
+            🐦 @greglienart
           </a>
         </div>
       </div>
