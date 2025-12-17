@@ -22,6 +22,8 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [lastSynced, setLastSynced] = useState<string | null>(null);
+  const [isQuickSyncing, setIsQuickSyncing] = useState(false);
+  const [quickSyncResult, setQuickSyncResult] = useState<string | null>(null);
 
   // Fetch last synced time on mount
   useEffect(() => {
@@ -43,6 +45,38 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
 
     fetchSyncStatus();
   }, [state]);
+
+  const handleQuickSync = async () => {
+    if (!state || isQuickSyncing) return;
+
+    setIsQuickSyncing(true);
+    setQuickSyncResult(null);
+
+    try {
+      const response = await fetch(`/api/league/${state.leagueId}/quick-sync`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        if (result.synced.length === 0) {
+          setQuickSyncResult('✅ Already up to date!');
+        } else {
+          setQuickSyncResult(`✅ Synced GW ${result.synced.join(', ')}`);
+          // Reload after short delay to show fresh data
+          setTimeout(() => window.location.reload(), 1500);
+        }
+      } else {
+        setQuickSyncResult('❌ Sync failed');
+      }
+    } catch (error) {
+      console.error('[Quick Sync] Error:', error);
+      setQuickSyncResult('❌ Sync failed');
+    } finally {
+      setIsQuickSyncing(false);
+    }
+  };
 
   const handleRefreshData = async () => {
     if (!state || isSyncing) return;
@@ -185,9 +219,36 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             Last synced: {lastSynced}
           </p>
         )}
+
+        {/* Quick Sync - Fast */}
+        <button
+          onClick={handleQuickSync}
+          disabled={isQuickSyncing || isSyncing}
+          className={styles.quickSyncButton}
+        >
+          {isQuickSyncing ? (
+            <>
+              <span className={styles.spinner} />
+              Checking...
+            </>
+          ) : (
+            <>⚡ Quick Sync</>
+          )}
+        </button>
+        <p className={styles.buttonHint}>
+          Syncs any missing gameweeks (fast, 1-5 seconds)
+        </p>
+
+        {quickSyncResult && (
+          <p className={styles.resultMessage}>{quickSyncResult}</p>
+        )}
+
+        <div className={styles.divider} />
+
+        {/* Full Re-sync - Slow */}
         <button
           onClick={handleRefreshData}
-          disabled={isSyncing}
+          disabled={isSyncing || isQuickSyncing}
           className={styles.actionButton}
         >
           <RefreshCw
@@ -196,9 +257,12 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             className={`${styles.buttonIcon} ${isSyncing ? styles.spinning : ''}`}
           />
           <span className={styles.buttonText}>
-            {isSyncing ? 'Syncing...' : 'Refresh League Data'}
+            {isSyncing ? 'Syncing...' : 'Full Re-sync'}
           </span>
         </button>
+        <p className={styles.buttonHint}>
+          Re-syncs all historical data (slower, 30-60 seconds)
+        </p>
         {syncStatus === 'success' && (
           <p className={styles.successMessage}>
             Sync complete! Reloading...
@@ -209,9 +273,6 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             Sync failed. Please try again.
           </p>
         )}
-        <p className={styles.hint}>
-          Re-syncs all historical data for this league. Use if something looks wrong or data is missing.
-        </p>
       </div>
 
       <div className={styles.section}>
