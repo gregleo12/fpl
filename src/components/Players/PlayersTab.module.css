@@ -7,16 +7,106 @@
   margin-bottom: 1rem;
 }
 
+.headerTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
 .title {
   font-size: 1.5rem;
   font-weight: 700;
   color: #00ff87;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 135, 0.1);
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  border-radius: 8px;
+  color: #00ff87;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filterButton:hover {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: rgba(0, 255, 135, 0.5);
+  transform: translateY(-2px);
+}
+
+.filterButton:active {
+  transform: translateY(0);
 }
 
 .subtitle {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+/* Search Container */
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ff87;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clearSearch:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* View Toggle */
@@ -146,6 +236,35 @@
   letter-spacing: 0.05em;
   white-space: nowrap;
   min-width: 70px;
+  position: relative;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.sortable:hover {
+  color: #00ff87;
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.activeSort {
+  color: #00ff87;
+  border-bottom-color: #00ff87;
+}
+
+.headerContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.sortIndicator {
+  font-size: 0.75rem;
+  margin-left: 2px;
 }
 
 /* Row */

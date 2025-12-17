@@ -2,7 +2,7 @@
 
 import { PlayerRow } from './PlayerRow';
 import { COMPACT_COLUMNS, ALL_COLUMNS } from './columns';
-import { ViewMode } from './PlayersTab';
+import { ViewMode, SortState } from './PlayersTab';
 import styles from './PlayersTab.module.css';
 
 interface Player {
@@ -49,9 +49,11 @@ interface Props {
   players: Player[];
   teams: Team[];
   viewMode: ViewMode;
+  sort: SortState;
+  onSort: (column: string) => void;
 }
 
-export function PlayersTable({ players, teams, viewMode }: Props) {
+export function PlayersTable({ players, teams, viewMode, sort, onSort }: Props) {
   // Create team lookup map
   const teamMap = teams.reduce((acc, team) => {
     acc[team.id] = team;
@@ -66,16 +68,27 @@ export function PlayersTable({ players, teams, viewMode }: Props) {
         <thead>
           <tr className={styles.headerRow}>
             <th className={styles.playerHeader}>Player</th>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={styles.statHeader}
-                style={{ width: col.width, textAlign: col.align || 'center' }}
-                title={col.tooltip}
-              >
-                {col.label}
-              </th>
-            ))}
+            {columns.map((col) => {
+              const isActive = sort.column === col.key;
+              return (
+                <th
+                  key={col.key}
+                  className={`${styles.statHeader} ${styles.sortable} ${isActive ? styles.activeSort : ''}`}
+                  style={{ width: col.width, textAlign: col.align || 'center' }}
+                  title={col.tooltip}
+                  onClick={() => onSort(col.key)}
+                >
+                  <span className={styles.headerContent}>
+                    {col.label}
+                    {isActive && (
+                      <span className={styles.sortIndicator}>
+                        {sort.direction === 'desc' ? '↓' : '↑'}
+                      </span>
+                    )}
+                  </span>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
