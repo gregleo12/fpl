@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'total_points';
     const order = searchParams.get('order') || 'desc';
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100);
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 1000);
     const search = searchParams.get('search');
 
     // Validate sort field (whitelist to prevent SQL injection)

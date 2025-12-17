@@ -27,12 +27,12 @@ export async function GET(
         mt.player_out_cost as element_out_cost,
         pin.id as pin_id,
         pin.web_name as pin_web_name,
-        pin.team as pin_team,
+        pin.team_id as pin_team,
         pin.team_code as pin_team_code,
         pin.element_type as pin_element_type,
         pout.id as pout_id,
         pout.web_name as pout_web_name,
-        pout.team as pout_team,
+        pout.team_id as pout_team,
         pout.team_code as pout_team_code,
         pout.element_type as pout_element_type
       FROM manager_transfers mt

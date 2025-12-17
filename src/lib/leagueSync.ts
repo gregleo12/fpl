@@ -66,6 +66,45 @@ export async function syncMissingGWs(
     const bootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     const bootstrap = await bootstrapRes.json();
 
+    // Sync transfers for all managers (once per manager, covers all GWs)
+    console.log(`[Sync] Syncing transfers for ${managers.length} managers...`);
+    for (const manager of managers) {
+      try {
+        const transfersRes = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/transfers/`
+        );
+        if (transfersRes.ok) {
+          const transfers = await transfersRes.json();
+          const currentSeasonTransfers = (transfers || []).filter((t: any) =>
+            t.event >= 1 && missingGWs.includes(t.event)
+          );
+
+          for (const transfer of currentSeasonTransfers) {
+            await db.query(`
+              INSERT INTO manager_transfers (
+                league_id, entry_id, event, player_in, player_out,
+                player_in_cost, player_out_cost, transfer_time
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              ON CONFLICT (entry_id, event, player_in, player_out) DO NOTHING
+            `, [
+              leagueId,
+              manager.entry_id,
+              transfer.event,
+              transfer.element_in,
+              transfer.element_out,
+              transfer.element_in_cost,
+              transfer.element_out_cost,
+              transfer.time
+            ]);
+          }
+        }
+        // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } catch (err) {
+        console.error(`[Sync] Transfer sync failed for manager ${manager.entry_id}:`, err);
+      }
+    }
+
     // Sync each missing GW
     for (const gw of missingGWs) {
       console.log(`[Sync] Syncing GW${gw} for league ${leagueId}...`);
@@ -224,6 +263,13 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
         [leagueId]
       );
       console.log(`[Sync] Deleted ${chipsResult.rowCount} rows from manager_chips`);
+
+      // Clear manager_transfers
+      const transfersResult = await db.query(
+        'DELETE FROM manager_transfers WHERE league_id = $1',
+        [leagueId]
+      );
+      console.log(`[Sync] Deleted ${transfersResult.rowCount} rows from manager_transfers`);
     }
 
     // Get all managers in this league
@@ -294,7 +340,42 @@ async function syncManagerData(
       }
     }
 
-    // 3. Sync GW history
+    // 3. Sync transfers
+    try {
+      const transfersRes = await fetch(
+        `https://fantasy.premierleague.com/api/entry/${entryId}/transfers/`
+      );
+      if (transfersRes.ok) {
+        const transfers = await transfersRes.json();
+        const currentSeasonTransfers = (transfers || []).filter((t: any) => t.event >= 1);
+
+        for (const transfer of currentSeasonTransfers) {
+          if (gameweeks.includes(transfer.event)) {
+            await db.query(`
+              INSERT INTO manager_transfers (
+                league_id, entry_id, event, player_in, player_out,
+                player_in_cost, player_out_cost, transfer_time
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              ON CONFLICT (entry_id, event, player_in, player_out) DO NOTHING
+            `, [
+              leagueId,
+              entryId,
+              transfer.event,
+              transfer.element_in,
+              transfer.element_out,
+              transfer.element_in_cost,
+              transfer.element_out_cost,
+              transfer.time
+            ]);
+          }
+        }
+        console.log(`[Sync] Manager ${entryId}: Synced ${currentSeasonTransfers.length} transfers`);
+      }
+    } catch (err) {
+      console.log(`[Sync] Manager ${entryId}: Transfer sync failed:`, err);
+    }
+
+    // 4. Sync GW history
     const gwHistory = history.current || [];
     console.log(`[Sync] Manager ${entryId}: Found ${gwHistory.length} GW history entries`);
 
@@ -326,7 +407,7 @@ async function syncManagerData(
       }
     }
 
-    // 4. Sync picks and captains for each GW
+    // 5. Sync picks and captains for each GW
     for (const gwNum of gameweeks) {
       try {
         const picksRes = await fetch(
