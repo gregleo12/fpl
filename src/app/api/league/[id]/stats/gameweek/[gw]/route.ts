@@ -417,14 +417,8 @@ async function fetchLiveData(gw: number) {
   }
 }
 
-// Fetch picks data from FPL API for all managers (only for top performers calculation)
+// Fetch picks data from FPL API for all managers (for top performers calculation)
 async function fetchAllPicks(managers: any[], gw: number, status: string) {
-  // Only fetch picks for in-progress/upcoming GWs (for top performers)
-  if (status !== 'in_progress' && status !== 'upcoming') {
-    console.log(`GW${gw} is completed - skipping picks fetch (not needed for top performers)`);
-    return [];
-  }
-
   if (process.env.NODE_ENV === 'development') {
     console.log(`Fetching picks for ${managers.length} managers in GW${gw}...`);
   }
