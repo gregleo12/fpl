@@ -204,6 +204,227 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
     }
   };
 
+  // Stat configuration types
+  interface StatConfig {
+    key: string;
+    label: string;
+    per90?: boolean;
+    decimal?: boolean;
+    format?: 'number';
+  }
+
+  interface StatGroupConfig {
+    title: string;
+    stats: StatConfig[];
+    columns?: number;
+  }
+
+  // Position-specific stat groups
+  const getStatGroups = (): StatGroupConfig[] => {
+    const position = player.position;
+
+    // Position-specific groups
+    const positionGroups: Record<string, StatGroupConfig[]> = {
+      'GKP': [
+        {
+          title: 'GOALKEEPING',
+          stats: [
+            { key: 'saves', label: 'Saves', per90: true },
+            { key: 'penalties_saved', label: 'Pen Saved' },
+            { key: 'clean_sheets', label: 'Clean Sheets' },
+          ]
+        },
+        {
+          title: 'CONCEDED',
+          stats: [
+            { key: 'goals_conceded', label: 'Goals' },
+          ],
+          columns: 2
+        }
+      ],
+      'DEF': [
+        {
+          title: 'DEFENSIVE',
+          stats: [
+            { key: 'clean_sheets', label: 'Clean Sheets' },
+            { key: 'goals_conceded', label: 'Conceded' },
+          ],
+          columns: 2
+        },
+        {
+          title: 'ATTACKING',
+          stats: [
+            { key: 'goals_scored', label: 'Goals', per90: true },
+            { key: 'assists', label: 'Assists', per90: true },
+            { key: 'expected_goal_involvements', label: 'xGI', decimal: true, per90: true },
+          ]
+        }
+      ],
+      'MID': [
+        {
+          title: 'ATTACKING',
+          stats: [
+            { key: 'goals_scored', label: 'Goals', per90: true },
+            { key: 'assists', label: 'Assists', per90: true },
+            { key: 'expected_goal_involvements', label: 'xGI', decimal: true, per90: true },
+          ]
+        },
+        {
+          title: 'EXPECTED',
+          stats: [
+            { key: 'expected_goals', label: 'xG', decimal: true },
+            { key: 'expected_assists', label: 'xA', decimal: true },
+          ],
+          columns: 2
+        },
+        {
+          title: 'DEFENSIVE',
+          stats: [
+            { key: 'clean_sheets', label: 'Clean Sheets' },
+          ],
+          columns: 2
+        }
+      ],
+      'FWD': [
+        {
+          title: 'ATTACKING',
+          stats: [
+            { key: 'goals_scored', label: 'Goals', per90: true },
+            { key: 'assists', label: 'Assists', per90: true },
+            { key: 'expected_goal_involvements', label: 'xGI', decimal: true, per90: true },
+          ]
+        },
+        {
+          title: 'EXPECTED',
+          stats: [
+            { key: 'expected_goals', label: 'xG', decimal: true },
+            { key: 'expected_assists', label: 'xA', decimal: true },
+          ],
+          columns: 2
+        }
+      ]
+    };
+
+    // Common groups for all positions
+    const commonGroups: StatGroupConfig[] = [
+      {
+        title: 'APPEARANCES',
+        stats: [
+          { key: 'starts', label: 'Starts' },
+          { key: 'minutes', label: 'Minutes', format: 'number' },
+          { key: 'points_per_game', label: 'Pts/Game', decimal: true },
+        ]
+      },
+      {
+        title: 'BONUS',
+        stats: [
+          { key: 'bonus', label: 'Bonus' },
+          { key: 'bps', label: 'BPS' },
+        ],
+        columns: 2
+      },
+      {
+        title: 'DISCIPLINE',
+        stats: [
+          { key: 'yellow_cards', label: 'YC' },
+          { key: 'red_cards', label: 'RC' },
+          { key: 'own_goals', label: 'OG' },
+        ]
+      }
+    ];
+
+    return [...(positionGroups[position] || []), ...commonGroups];
+  };
+
+  // StatBox component
+  const StatBox = ({
+    value,
+    label,
+    per90Value,
+    decimal = false,
+    format
+  }: {
+    value: number | string;
+    label: string;
+    per90Value?: number;
+    decimal?: boolean;
+    format?: 'number';
+  }) => {
+    let displayValue: string;
+
+    if (value === null || value === undefined || value === '') {
+      displayValue = '-';
+    } else {
+      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+      if (isNaN(numValue)) {
+        displayValue = '-';
+      } else if (decimal) {
+        displayValue = numValue.toFixed(2);
+      } else if (format === 'number') {
+        displayValue = numValue.toLocaleString();
+      } else {
+        displayValue = numValue.toString();
+      }
+    }
+
+    return (
+      <div className={styles.statBox}>
+        <span className={styles.statValue}>{displayValue}</span>
+        <span className={styles.statLabel}>{label}</span>
+        {per90Value !== undefined && !isNaN(per90Value) && (
+          <span className={styles.per90}>{per90Value.toFixed(2)}/90</span>
+        )}
+      </div>
+    );
+  };
+
+  // StatGroup component
+  const StatGroup = ({ title, stats, columns = 3 }: {
+    title: string;
+    stats: StatConfig[];
+    columns?: number;
+  }) => {
+    const minutes = player.minutes || 1;
+
+    return (
+      <div className={styles.statGroup}>
+        <h4 className={styles.groupTitle}>{title}</h4>
+        <div className={`${styles.statGrid} ${columns === 2 ? styles.twoCol : ''}`}>
+          {stats.map(stat => {
+            const value = (player as any)[stat.key];
+            const numValue = typeof value === 'string' ? parseFloat(value) : value;
+            const per90 = stat.per90 && !isNaN(numValue) ? (numValue / minutes) * 90 : undefined;
+
+            return (
+              <StatBox
+                key={stat.key}
+                value={value}
+                label={stat.label}
+                per90Value={per90}
+                decimal={stat.decimal}
+                format={stat.format}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Render stats groups
+  const renderStatsGroups = () => {
+    const groups = getStatGroups();
+
+    return groups.map((group, index) => (
+      <StatGroup
+        key={index}
+        title={group.title}
+        stats={group.stats}
+        columns={group.columns}
+      />
+    ));
+  };
+
   if (!isOpen) return null;
 
   const isGK = player.position === 'GKP' || player.element_type === 1;
@@ -462,85 +683,7 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
 
               {activeTab === 'stats' && (
                 <div className={styles.statsTab}>
-                  <h3>Season Stats</h3>
-                  <div className={styles.statsList}>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Starts</span>
-                      <span className={styles.statValue}>{player.starts}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Minutes Played</span>
-                      <span className={styles.statValue}>{player.minutes}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Goals</span>
-                      <span className={styles.statValue}>{player.goals_scored}</span>
-                      <span className={styles.per90Label}>Per 90'</span>
-                      <span className={styles.per90Value}>{calcPer90(player.goals_scored, player.minutes)}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Assists</span>
-                      <span className={styles.statValue}>{player.assists}</span>
-                      <span className={styles.per90Label}>Per 90'</span>
-                      <span className={styles.per90Value}>{calcPer90(player.assists, player.minutes)}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Expected Goals (xG)</span>
-                      <span className={styles.statValue}>{player.expected_goals}</span>
-                      <span className={styles.per90Label}>Per 90'</span>
-                      <span className={styles.per90Value}>{calcPer90(player.expected_goals, player.minutes)}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Expected Assists (xA)</span>
-                      <span className={styles.statValue}>{player.expected_assists}</span>
-                      <span className={styles.per90Label}>Per 90'</span>
-                      <span className={styles.per90Value}>{calcPer90(player.expected_assists, player.minutes)}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Expected GI (xGI)</span>
-                      <span className={styles.statValue}>{player.expected_goal_involvements}</span>
-                      <span className={styles.per90Label}>Per 90'</span>
-                      <span className={styles.per90Value}>
-                        {calcPer90(player.expected_goal_involvements, player.minutes)}
-                      </span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Clean Sheets</span>
-                      <span className={styles.statValue}>{player.clean_sheets}</span>
-                    </div>
-                    {player.saves !== undefined && (
-                      <div className={styles.statRow}>
-                        <span className={styles.statLabel}>Saves</span>
-                        <span className={styles.statValue}>{player.saves}</span>
-                        <span className={styles.per90Label}>Per 90'</span>
-                        <span className={styles.per90Value}>{calcPer90(player.saves, player.minutes)}</span>
-                      </div>
-                    )}
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Yellow Cards</span>
-                      <span className={styles.statValue}>{player.yellow_cards}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Red Cards</span>
-                      <span className={styles.statValue}>{player.red_cards}</span>
-                    </div>
-                  </div>
-
-                  <h3>FPL Stats</h3>
-                  <div className={styles.statsList}>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Total Points</span>
-                      <span className={styles.statValue}>{player.total_points}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>Bonus</span>
-                      <span className={styles.statValue}>{player.bonus}</span>
-                    </div>
-                    <div className={styles.statRow}>
-                      <span className={styles.statLabel}>BPS</span>
-                      <span className={styles.statValue}>{player.bps}</span>
-                    </div>
-                  </div>
+                  {renderStatsGroups()}
                 </div>
               )}
 
