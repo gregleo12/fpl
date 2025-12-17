@@ -91,23 +91,19 @@ async function fetchCaptainPicks(
 ) {
   // For completed gameweeks, use database
   if (status === 'completed') {
-    console.log(`GW${gw} is completed - fetching captain picks from manager_picks table`);
+    console.log(`GW${gw} is completed - fetching captain picks from entry_captains table`);
 
     const result = await db.query(`
       SELECT
-        mp.player_id,
-        p.web_name as player_name,
-        mp.multiplier,
-        COUNT(*) as count,
-        SUM(pgs.total_points * mp.multiplier) as total_points
-      FROM manager_picks mp
-      JOIN players p ON p.id = mp.player_id
-      LEFT JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = $2
-      WHERE mp.league_id = $1
-        AND mp.event = $2
-        AND mp.is_captain = TRUE
-      GROUP BY mp.player_id, p.web_name, mp.multiplier
-      ORDER BY count DESC
+        ec.captain_element_id as player_id,
+        ec.captain_name as player_name,
+        COUNT(*) as manager_count,
+        ROUND(AVG(ec.captain_points), 1) as avg_points
+      FROM entry_captains ec
+      INNER JOIN league_standings ls ON ls.entry_id = ec.entry_id
+      WHERE ls.league_id = $1 AND ec.event = $2
+      GROUP BY ec.captain_element_id, ec.captain_name
+      ORDER BY manager_count DESC
       LIMIT 10
     `, [leagueId, gw]);
 
@@ -117,9 +113,9 @@ async function fetchCaptainPicks(
       player_id: row.player_id,
       player_name: row.player_name,
       team_name: '', // Not needed
-      count: parseInt(row.count),
-      percentage: (parseInt(row.count) / managers.length) * 100,
-      avg_points: row.total_points ? row.total_points / parseInt(row.count) : 0,
+      count: parseInt(row.manager_count),
+      percentage: (parseInt(row.manager_count) / managers.length) * 100,
+      avg_points: parseFloat(row.avg_points) || 0,
     }));
   }
 
@@ -417,14 +413,8 @@ async function fetchLiveData(gw: number) {
   }
 }
 
-// Fetch picks data from FPL API for all managers (only for top performers calculation)
+// Fetch picks data from FPL API for all managers (for top performers calculation)
 async function fetchAllPicks(managers: any[], gw: number, status: string) {
-  // Only fetch picks for in-progress/upcoming GWs (for top performers)
-  if (status !== 'in_progress' && status !== 'upcoming') {
-    console.log(`GW${gw} is completed - skipping picks fetch (not needed for top performers)`);
-    return [];
-  }
-
   if (process.env.NODE_ENV === 'development') {
     console.log(`Fetching picks for ${managers.length} managers in GW${gw}...`);
   }

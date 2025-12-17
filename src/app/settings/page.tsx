@@ -13,6 +13,8 @@ export default function SettingsPage() {
   const [recentLeagues, setRecentLeagues] = useState(getRecentLeagues());
   const { updateAvailable, newVersion, currentVersion, applyUpdate } = useVersionCheck();
   const [isCheckingUpdate, setIsCheckingUpdate] = useState(false);
+  const [isRefreshingData, setIsRefreshingData] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (!state) {
@@ -69,6 +71,96 @@ export default function SettingsPage() {
     }
   }
 
+  async function handleRefreshData() {
+    if (!state) return;
+
+    // Ask if user wants to force clear old data
+    const forceMessage = 'Refresh all league data from FPL? This will take 30-60 seconds.\n\n' +
+      'For best results with corrupted data, choose "OK" to force clear old data first.';
+
+    if (!confirm(forceMessage)) {
+      return;
+    }
+
+    // For league 7381, always use force clear to fix corrupted data
+    const shouldForce = state.leagueId === '7381' ||
+                        confirm('Force clear all existing data before syncing? (Recommended if data looks incorrect)');
+
+    console.log('[Settings] Starting manual sync for league:', state.leagueId, 'force:', shouldForce);
+    setIsRefreshingData(true);
+    setSyncStatus(shouldForce ? 'Force clearing old data...' : 'Starting sync...');
+
+    try {
+      const endpoint = `/api/league/${state.leagueId}/sync${shouldForce ? '?force=true' : ''}`;
+      console.log('[Settings] Calling POST', endpoint);
+      const response = await fetch(endpoint, {
+        method: 'POST'
+      });
+
+      console.log('[Settings] POST response status:', response.status);
+      const data = await response.json();
+      console.log('[Settings] POST response data:', data);
+
+      if (response.ok) {
+        setSyncStatus(data.message || 'Sync started...');
+        console.log('[Settings] Sync started, polling for status...');
+
+        let pollCount = 0;
+        // Poll for completion
+        const checkInterval = setInterval(async () => {
+          pollCount++;
+          console.log(`[Settings] Poll #${pollCount}: Checking sync status...`);
+
+          try {
+            const statusResponse = await fetch(`/api/league/${state.leagueId}/sync`);
+            const statusData = await statusResponse.json();
+            console.log(`[Settings] Poll #${pollCount} status:`, statusData);
+
+            if (statusData.status === 'completed') {
+              clearInterval(checkInterval);
+              console.log('[Settings] Sync completed!');
+              setSyncStatus('Sync completed! Refreshing page...');
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
+            } else if (statusData.status === 'failed') {
+              clearInterval(checkInterval);
+              console.log('[Settings] Sync failed');
+              setSyncStatus('Sync failed. Please try again.');
+              setIsRefreshingData(false);
+            } else {
+              const statusText = `Syncing... (${statusData.status})`;
+              console.log(`[Settings] Poll #${pollCount}: ${statusText}`);
+              setSyncStatus(statusText);
+            }
+          } catch (pollError) {
+            console.error(`[Settings] Poll #${pollCount} error:`, pollError);
+          }
+        }, 3000);
+
+        // Timeout after 2 minutes
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (isRefreshingData) {
+            console.log('[Settings] Sync timeout - taking longer than expected');
+            setSyncStatus('Sync taking longer than expected. Check back later.');
+            setIsRefreshingData(false);
+          }
+        }, 120000);
+
+      } else {
+        console.error('[Settings] POST failed:', data);
+        setSyncStatus(data.error || 'Failed to start sync');
+        setIsRefreshingData(false);
+      }
+
+    } catch (error) {
+      console.error('[Settings] Refresh failed:', error);
+      setSyncStatus('Failed to refresh data. Please try again.');
+      setIsRefreshingData(false);
+    }
+  }
+
   if (!state) {
     return null;
   }
@@ -115,7 +207,34 @@ export default function SettingsPage() {
             <div className={styles.infoValue}>
               {new Date(state.lastFetched).toLocaleString()}
             </div>
+            {syncStatus && (
+              <>
+                <div className={styles.infoLabel}>Sync Status</div>
+                <div className={styles.infoValue}>{syncStatus}</div>
+              </>
+            )}
           </div>
+          <button
+            onClick={handleRefreshData}
+            className={styles.actionButton}
+            disabled={isRefreshingData}
+          >
+            {isRefreshingData ? (syncStatus || 'Refreshing...') : 'Refresh Data'}
+          </button>
+          {syncStatus && (
+            <div style={{
+              marginTop: '12px',
+              padding: '12px',
+              backgroundColor: isRefreshingData ? '#fef3c7' : '#dcfce7',
+              border: `1px solid ${isRefreshingData ? '#fbbf24' : '#10b981'}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              color: '#1f2937'
+            }}>
+              {syncStatus}
+            </div>
+          )}
         </section>
 
         {recentLeagues.length > 0 && (

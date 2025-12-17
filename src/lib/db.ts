@@ -50,6 +50,17 @@ async function initializeDatabase() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Add sync tracking columns if they don't exist
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='leagues' AND column_name='last_synced') THEN
+        ALTER TABLE leagues ADD COLUMN last_synced TIMESTAMP;
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='leagues' AND column_name='sync_status') THEN
+        ALTER TABLE leagues ADD COLUMN sync_status VARCHAR(20) DEFAULT 'pending';
+      END IF;
+    END $$;
+
     CREATE TABLE IF NOT EXISTS managers (
       id SERIAL PRIMARY KEY,
       entry_id BIGINT UNIQUE NOT NULL,
