@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
-import { Filter, Search, X } from 'lucide-react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { Filter, Search, X, AlertCircle, RefreshCw } from 'lucide-react';
 import { PlayersTable } from './PlayersTable';
 import { FilterModal, FilterState } from './FilterModal';
+import { useDebounce } from '@/hooks/useDebounce';
 import styles from './PlayersTab.module.css';
 
 interface Player {
@@ -64,6 +65,21 @@ const POSITION_MAP: Record<string, number> = {
   'FWD': 4
 };
 
+// Skeleton loading row component
+const SkeletonRow = memo(function SkeletonRow() {
+  return (
+    <div className={styles.skeletonRow}>
+      <div className={styles.skeletonJersey} />
+      <div className={styles.skeletonText} style={{ width: '120px' }} />
+      <div className={styles.skeletonStats}>
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className={styles.skeletonStat} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
 export function PlayersTab() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
@@ -83,6 +99,9 @@ export function PlayersTab() {
     teams: [],
     availability: 'all'
   });
+
+  // Debounce search for better performance
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
     fetchPlayers();
@@ -177,11 +196,11 @@ export function PlayersTab() {
     return sorted;
   }, [filteredPlayers, sort]);
 
-  // Apply search filter
+  // Apply search filter with debounced value
   const searchFilteredPlayers = useMemo(() => {
-    if (!searchQuery.trim()) return sortedPlayers;
+    if (!debouncedSearch.trim()) return sortedPlayers;
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = debouncedSearch.toLowerCase().trim();
 
     return sortedPlayers.filter(player => {
       // Search by web_name (display name)
@@ -196,23 +215,43 @@ export function PlayersTab() {
 
       return false;
     });
-  }, [sortedPlayers, searchQuery]);
+  }, [sortedPlayers, debouncedSearch]);
 
-  const handleApplyFilters = (newFilters: FilterState) => {
+  // Memoized callbacks
+  const handleApplyFilters = useCallback((newFilters: FilterState) => {
     setFilters(newFilters);
-  };
+  }, []);
 
-  const handleSort = (column: string) => {
+  const handleSort = useCallback((column: string) => {
     setSort(prev => ({
       column,
       direction: prev.column === column && prev.direction === 'desc' ? 'asc' : 'desc'
     }));
-  };
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setFilters({
+      priceMin: 3.8,
+      priceMax: 15.0,
+      positions: [1, 2, 3, 4],
+      teams: teams.map(t => t.id),
+      availability: 'all'
+    });
+    setSearchQuery('');
+  }, [teams]);
 
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>Loading players...</div>
+        <div className={styles.loadingContainer}>
+          <div className={styles.spinner} />
+          <p>Loading players...</p>
+        </div>
+        <div className={styles.skeletonContainer}>
+          {Array(12).fill(0).map((_, i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -220,13 +259,16 @@ export function PlayersTab() {
   if (error) {
     return (
       <div className={styles.container}>
-        <div className={styles.error}>
-          <p>{error}</p>
+        <div className={styles.errorState}>
+          <AlertCircle size={48} className={styles.errorIcon} />
+          <p className={styles.errorTitle}>Failed to load players</p>
+          <p className={styles.errorMessage}>{error}</p>
           <button
             onClick={fetchPlayers}
             className={styles.retryButton}
           >
-            Retry
+            <RefreshCw size={16} />
+            Try Again
           </button>
         </div>
       </div>
@@ -288,13 +330,29 @@ export function PlayersTab() {
         </button>
       </div>
 
-      <PlayersTable
-        players={searchFilteredPlayers}
-        teams={teams}
-        viewMode={viewMode}
-        sort={sort}
-        onSort={handleSort}
-      />
+      {searchFilteredPlayers.length === 0 ? (
+        <div className={styles.emptyState}>
+          <Search size={48} className={styles.emptyIcon} />
+          <p className={styles.emptyTitle}>No players found</p>
+          <p className={styles.emptyHint}>
+            Try adjusting your filters or search term
+          </p>
+          <button
+            className={styles.resetButton}
+            onClick={resetFilters}
+          >
+            Reset Filters
+          </button>
+        </div>
+      ) : (
+        <PlayersTable
+          players={searchFilteredPlayers}
+          teams={teams}
+          viewMode={viewMode}
+          sort={sort}
+          onSort={handleSort}
+        />
+      )}
 
       <FilterModal
         isOpen={showFilterModal}
