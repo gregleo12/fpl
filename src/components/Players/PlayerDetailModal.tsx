@@ -348,7 +348,8 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
 
                   {matchesView === 'results' ? (
                     <div className={styles.resultsList}>
-                      {playerDetails.history.slice().reverse().map((match) => {
+                      {playerDetails.history && playerDetails.history.length > 0 ? (
+                        playerDetails.history.slice().reverse().map((match) => {
                         const opponentTeam = getTeamById(match.opponent_team);
                         const isExpanded = expandedMatch === match.fixture;
 
@@ -419,11 +420,17 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
                             )}
                           </div>
                         );
-                      })}
+                      })
+                      ) : (
+                        <div className={styles.noHistory}>
+                          <p>No matches played yet this season</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className={styles.fixturesList}>
-                      {playerDetails.fixtures.map((fixture) => {
+                      {playerDetails.fixtures && playerDetails.fixtures.length > 0 ? (
+                        playerDetails.fixtures.map((fixture) => {
                         const opponentTeam = getTeamById(fixture.is_home ? fixture.team_a : fixture.team_h);
                         return (
                           <div key={fixture.id} className={styles.fixtureRow}>
@@ -442,7 +449,12 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
                             </span>
                           </div>
                         );
-                      })}
+                      })
+                      ) : (
+                        <div className={styles.noHistory}>
+                          <p>No upcoming fixtures</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -534,7 +546,7 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
 
               {activeTab === 'history' && playerDetails && (
                 <div className={styles.historyTab}>
-                  {playerDetails.history_past.length > 0 ? (
+                  {playerDetails.history_past && playerDetails.history_past.length > 0 ? (
                     <>
                       <h3>Previous Seasons</h3>
                       <div className={styles.historyTable}>
