@@ -76,15 +76,44 @@ export async function GET(
       bps: parseFloat((player.bps / per90Divisor).toFixed(1))
     } : null;
 
+    // Fetch past seasons, fixtures, and full history from FPL API (server-side to avoid CORS)
+    let pastSeasons = [];
+    let fixtures = [];
+    let fplHistory = [];
+    try {
+      const fplResponse = await fetch(
+        `https://fantasy.premierleague.com/api/element-summary/${playerId}/`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          }
+        }
+      );
+      if (fplResponse.ok) {
+        const fplData = await fplResponse.json();
+        pastSeasons = fplData.history_past || [];
+        fixtures = fplData.fixtures || [];
+        fplHistory = fplData.history || [];
+      }
+    } catch (error) {
+      console.error('[Player Detail] Error fetching FPL data:', error);
+      // Continue without FPL data
+    }
+
     return NextResponse.json({
       player: {
         ...player,
         price: `£${(player.now_cost / 10).toFixed(1)}m`
       },
-      history: history.map((h: any) => ({
+      history: fplHistory.length > 0 ? fplHistory.map((h: any) => ({
+        ...h,
+        gameweek: h.round  // Map round to gameweek for consistency
+      })) : history.map((h: any) => ({
         ...h,
         result: getResult(h)
       })),
+      pastSeasons,
+      fixtures,
       totals: {
         points: player.total_points,
         minutes: player.minutes,

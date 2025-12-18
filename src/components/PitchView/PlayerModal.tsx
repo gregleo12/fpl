@@ -112,6 +112,7 @@ function calculateStatPoints(stat: string, value: number, position: number): num
 export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'history'>('overview');
 
   useEffect(() => {
     async function fetchDetailedData() {
@@ -191,25 +192,52 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           </div>
         </div>
 
+        {/* Tab Navigation */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            Overview
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'matches' ? styles.active : ''}`}
+            onClick={() => setActiveTab('matches')}
+          >
+            Matches
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            History
+          </button>
+        </div>
+
         {loading ? (
           <div className={styles.loadingContainer}>
             <p>Loading stats...</p>
           </div>
-        ) : showFixture ? (
-          /* Upcoming Match View - Show when player hasn't played yet */
-          <div className={styles.upcomingMatch}>
-            <h3 className={styles.upcomingTitle}>Upcoming Match</h3>
-            <p className={styles.opponent}>
-              vs {player.opponent_name} ({player.was_home ? 'H' : 'A'})
-            </p>
-            {player.kickoff_time && formatKickoffTime(player.kickoff_time) && (
-              <p className={styles.kickoff}>
-                {formatKickoffTime(player.kickoff_time)}
-              </p>
-            )}
-          </div>
         ) : (
           <>
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <>
+                {showFixture ? (
+                  /* Upcoming Match View - Show when player hasn't played yet */
+                  <div className={styles.upcomingMatch}>
+                    <h3 className={styles.upcomingTitle}>Upcoming Match</h3>
+                    <p className={styles.opponent}>
+                      vs {player.opponent_name} ({player.was_home ? 'H' : 'A'})
+                    </p>
+                    {player.kickoff_time && formatKickoffTime(player.kickoff_time) && (
+                      <p className={styles.kickoff}>
+                        {formatKickoffTime(player.kickoff_time)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <>
             {/* Stats Grid - Only show non-zero stats */}
             <div className={styles.stats}>
               {stats.map(({ key, label, gkOnly, defMidOnly, isBonus }) => {
@@ -255,16 +283,105 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
               )}
             </div>
 
-            {/* Total Points */}
-            <div className={styles.total}>
-              <span className={styles.totalLabel}>TOTAL POINTS</span>
-              <span className={styles.totalValue}>
-                {player.event_points}
-                {pick.multiplier > 1 && (
-                  <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                    {/* Total Points */}
+                    <div className={styles.total}>
+                      <span className={styles.totalLabel}>TOTAL POINTS</span>
+                      <span className={styles.totalValue}>
+                        {player.event_points}
+                        {pick.multiplier > 1 && (
+                          <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                        )}
+                      </span>
+                    </div>
+                  </>
                 )}
-              </span>
-            </div>
+              </>
+            )}
+
+            {/* Matches Tab */}
+            {activeTab === 'matches' && (
+              <div className={styles.matchesTab}>
+                {!data?.history || data.history.length === 0 ? (
+                  <div className={styles.emptyState}>No matches this season</div>
+                ) : (
+                  <div className={styles.matchesTableContainer}>
+                    <table className={styles.matchesTable}>
+                      <thead>
+                        <tr>
+                          <th>GW</th>
+                          <th>PTS</th>
+                          <th>MIN</th>
+                          <th>G</th>
+                          <th>A</th>
+                          <th>CS</th>
+                          <th>BPS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.history.map((gw: any) => (
+                          <tr key={gw.gameweek} className={gw.gameweek === gameweek ? styles.currentGW : ''}>
+                            <td className={styles.gwCell}>{gw.gameweek}</td>
+                            <td className={styles.pointsCell}>{gw.total_points}</td>
+                            <td>{gw.minutes}</td>
+                            <td>{gw.goals_scored || '-'}</td>
+                            <td>{gw.assists || '-'}</td>
+                            <td>{gw.clean_sheets ? '✓' : '-'}</td>
+                            <td>{gw.bps}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* History Tab */}
+            {activeTab === 'history' && (
+              <div className={styles.historyTab}>
+                <div className={styles.historyList}>
+                  {/* Current Season */}
+                  {data?.totals && (
+                    <div className={styles.seasonCard}>
+                      <div className={styles.seasonHeader}>
+                        <span className={styles.seasonName}>2024/25 (Current)</span>
+                        <span className={styles.seasonPts}>{data.totals.points} pts</span>
+                      </div>
+                      <div className={styles.seasonStats}>
+                        <span>{data.totals.goals_scored}G</span>
+                        <span>{data.totals.assists}A</span>
+                        <span>{data.totals.minutes} mins</span>
+                        <span>£{(data.player.now_cost / 10).toFixed(1)}m</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Past Seasons (reversed) */}
+                  {data?.pastSeasons && data.pastSeasons.length > 0 && (
+                    <>
+                      {[...data.pastSeasons].reverse().map((season: any) => (
+                        <div key={season.season_name} className={styles.seasonCard}>
+                          <div className={styles.seasonHeader}>
+                            <span className={styles.seasonName}>{season.season_name}</span>
+                            <span className={styles.seasonPts}>{season.total_points} pts</span>
+                          </div>
+                          <div className={styles.seasonStats}>
+                            <span>{season.goals_scored}G</span>
+                            <span>{season.assists}A</span>
+                            <span>{season.minutes} mins</span>
+                            <span>£{(season.end_cost / 10).toFixed(1)}m</span>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {!data?.totals && (!data?.pastSeasons || data.pastSeasons.length === 0) && (
+                    <div className={styles.emptyState}>No season data available</div>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

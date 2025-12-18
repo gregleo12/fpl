@@ -58,7 +58,7 @@ export async function GET(
     const bootstrapData = await bootstrapResponse.json();
     const totalPlayers = bootstrapData.total_players || 0;
 
-    // Get current GW from bootstrap data or use provided GW
+    // Get selected GW for display (could be historical)
     const currentGW = gwParam ? parseInt(gwParam) : (entryData.current_event || 1);
 
     // Get FPL-wide stats for current GW from events array
@@ -80,7 +80,7 @@ export async function GET(
     const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, status);
     const gwPoints = scoreResult.score;
 
-    // Fetch picks for GW rank and transfers (these aren't live)
+    // Fetch picks for selected GW (for rank/transfers display)
     const picksResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
       {

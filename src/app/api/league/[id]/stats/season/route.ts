@@ -77,19 +77,38 @@ export async function GET(
     `, [leagueId]);
     const managers = managersResult.rows;
 
+    // Get last finished GW for value rankings (to fetch actual squad picks)
+    let lastFinishedGW = maxStartedGW;
+    try {
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const events = bootstrapData?.events || [];
+        // Find the last finished gameweek (not current_event which points to upcoming GW)
+        const lastFinished = [...events].reverse().find((e: any) => e.finished);
+        if (lastFinished) {
+          lastFinishedGW = lastFinished.id;
+        }
+      }
+    } catch (error) {
+      console.log('Could not fetch last finished GW for value rankings, using maxStartedGW');
+    }
+
     // Calculate season statistics
     const [
       captainLeaderboard,
       chipPerformance,
       streaksData,
       bestWorstGameweeks,
-      trendsData
+      trendsData,
+      valueRankings
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
       calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
+      getValueRankings(managers, lastFinishedGW),
     ]);
 
     return NextResponse.json({
@@ -105,6 +124,7 @@ export async function GET(
         worstGameweeks: bestWorstGameweeks.worst,
       },
       trends: trendsData,
+      valueRankings,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -925,4 +945,52 @@ async function calculateTrendsData(
   return {
     chips,
   };
+}
+
+// Calculate team value rankings from FPL API (fresh data, not cached)
+async function getValueRankings(managers: any[], lastFinishedGW: number) {
+  try {
+    const valueData = await Promise.all(managers.map(async (manager) => {
+      try {
+        const picksRes = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${lastFinishedGW}/picks/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        if (!picksRes.ok) {
+          console.log(`[Value Rankings] Failed to fetch picks for ${manager.entry_id}`);
+          return null;
+        }
+
+        const picksData = await picksRes.json();
+
+        // Team value from entry_history
+        const teamValue = (picksData.entry_history?.value || 1000) / 10;
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          team_value: teamValue,
+          value_gain: teamValue - 100.0, // Gain from starting £100m
+        };
+      } catch (error) {
+        console.error(`[Value Rankings] Error for ${manager.entry_id}:`, error);
+        return null;
+      }
+    }));
+
+    // Filter out nulls and sort by team value
+    const validData = valueData.filter(d => d !== null);
+    const sorted = [...validData].sort((a, b) => b.team_value - a.team_value);
+
+    return sorted;
+  } catch (error) {
+    console.error('Error calculating value rankings:', error);
+    return [];
+  }
 }

@@ -1,6 +1,6 @@
 # RivalFPL - Database Reference
 
-**Last Updated:** December 16, 2025
+**Last Updated:** December 18, 2025
 **Database:** PostgreSQL on Railway
 
 ---
@@ -234,6 +234,27 @@ CREATE TABLE pl_fixtures (
 ---
 
 ## 🚨 Common Issues
+
+### Database Column Names Don't Match FPL API (v3.0.5 Bug)
+**Problem:** Query fails silently or returns no results.
+
+**Root Cause:** Database uses different column names than FPL API fields.
+
+**Common Mismatches:**
+| Database Column | FPL API Field | Table |
+|----------------|---------------|-------|
+| `gameweek` | `event` | `player_gameweek_stats` |
+| `player_id` | `element_id` | `player_gameweek_stats` |
+
+**Fix:** Always use database column names in SQL queries, not FPL API field names.
+
+```sql
+-- ❌ WRONG - Using FPL API field names
+SELECT * FROM player_gameweek_stats WHERE event = 17 AND element_id = 123
+
+-- ✅ CORRECT - Using database column names
+SELECT * FROM player_gameweek_stats WHERE gameweek = 17 AND player_id = 123
+```
 
 ### "Column does not exist" Error
 The table exists but is missing columns. Run the appropriate migration or add column manually.

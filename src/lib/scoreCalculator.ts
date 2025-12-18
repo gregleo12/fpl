@@ -127,9 +127,193 @@ async function fetchManagerPicks(entryId: number, gameweek: number, status: 'upc
 }
 
 /**
+ * Fetch player stats from database for completed GWs
+ * OPTIMIZED: Only fetches stats for specified players (15) instead of all 760
+ */
+async function fetchPlayerStatsFromDB(gameweek: number, playerIds: number[]): Promise<any> {
+  try {
+    console.time(`[Perf] DB fetch player stats (${playerIds.length} players)`);
+    const db = await getDatabase();
+    const result = await db.query(`
+      SELECT
+        player_id as id,
+        total_points,
+        minutes,
+        goals_scored,
+        assists,
+        clean_sheets,
+        goals_conceded,
+        own_goals,
+        penalties_saved,
+        penalties_missed,
+        yellow_cards,
+        red_cards,
+        saves,
+        bonus,
+        bps,
+        influence,
+        creativity,
+        threat,
+        ict_index,
+        starts,
+        expected_goals,
+        expected_assists,
+        expected_goal_involvements,
+        expected_goals_conceded
+      FROM player_gameweek_stats
+      WHERE gameweek = $1 AND player_id = ANY($2)
+    `, [gameweek, playerIds]);
+    console.timeEnd(`[Perf] DB fetch player stats (${playerIds.length} players)`);
+
+    if (result.rows.length === 0) {
+      return null; // No data found, will fall back to API
+    }
+
+    // Transform to match FPL API format
+    const elements = result.rows.map(row => ({
+      id: row.id,
+      stats: {
+        total_points: row.total_points || 0,
+        minutes: row.minutes || 0,
+        goals_scored: row.goals_scored || 0,
+        assists: row.assists || 0,
+        clean_sheets: row.clean_sheets || 0,
+        goals_conceded: row.goals_conceded || 0,
+        own_goals: row.own_goals || 0,
+        penalties_saved: row.penalties_saved || 0,
+        penalties_missed: row.penalties_missed || 0,
+        yellow_cards: row.yellow_cards || 0,
+        red_cards: row.red_cards || 0,
+        saves: row.saves || 0,
+        bonus: row.bonus || 0,
+        bps: row.bps || 0,
+        influence: row.influence || '0.0',
+        creativity: row.creativity || '0.0',
+        threat: row.threat || '0.0',
+        ict_index: row.ict_index || '0.0',
+        starts: row.starts || 0,
+        expected_goals: row.expected_goals || '0.0',
+        expected_assists: row.expected_assists || '0.0',
+        expected_goal_involvements: row.expected_goal_involvements || '0.0',
+        expected_goals_conceded: row.expected_goals_conceded || '0.0'
+      },
+      explain: [] // Not needed for completed GWs
+    }));
+
+    console.log(`[Perf] Fetched ${result.rows.length} player stats from DB`);
+    return { elements };
+  } catch (error) {
+    console.error(`Error fetching player stats from database for GW${gameweek}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Fetch fixtures from database for completed GWs
+ */
+async function fetchFixturesFromDB(gameweek: number): Promise<any[] | null> {
+  try {
+    console.time(`[Perf] DB fetch fixtures`);
+    const db = await getDatabase();
+    const result = await db.query(`
+      SELECT
+        id,
+        event,
+        team_h,
+        team_a,
+        team_h_score,
+        team_a_score,
+        team_h_difficulty,
+        team_a_difficulty,
+        kickoff_time,
+        started,
+        finished,
+        finished_provisional,
+        minutes,
+        pulse_id
+      FROM pl_fixtures
+      WHERE event = $1 AND finished = true
+      ORDER BY id
+    `, [gameweek]);
+    console.timeEnd(`[Perf] DB fetch fixtures`);
+
+    if (result.rows.length === 0) {
+      return null; // No data found, will fall back to API
+    }
+
+    console.log(`[Perf] Fetched ${result.rows.length} fixtures from DB`);
+    // Transform to match FPL API format
+    return result.rows.map(row => ({
+      id: row.id,
+      event: row.event,
+      team_h: row.team_h,
+      team_a: row.team_a,
+      team_h_score: row.team_h_score,
+      team_a_score: row.team_a_score,
+      team_h_difficulty: row.team_h_difficulty,
+      team_a_difficulty: row.team_a_difficulty,
+      kickoff_time: row.kickoff_time,
+      started: row.started,
+      finished: row.finished,
+      finished_provisional: row.finished_provisional,
+      minutes: row.minutes,
+      pulse_id: row.pulse_id
+    }));
+  } catch (error) {
+    console.error(`Error fetching fixtures from database for GW${gameweek}:`, error);
+    return null;
+  }
+}
+
+/**
  * Fetch all data needed for score calculation
  */
 async function fetchScoreData(entryId: number, gameweek: number, status: 'upcoming' | 'in_progress' | 'completed') {
+  // For completed GWs, try database first for player stats and fixtures
+  if (status === 'completed') {
+    console.time('[Perf] Total completed GW fetch');
+
+    // Step 1: Fetch picks first to get player IDs
+    console.time('[Perf] DB: manager picks');
+    const picksData = await fetchManagerPicks(entryId, gameweek, status);
+    console.timeEnd('[Perf] DB: manager picks');
+
+    // Extract player IDs from picks (15 players)
+    const playerIds = picksData.picks?.map((p: any) => p.element) || [];
+    console.log(`[Perf] Extracted ${playerIds.length} player IDs from picks`);
+
+    // Step 2: Fetch player stats, fixtures, and bootstrap in parallel
+    // OPTIMIZED: Only fetch stats for the 15 players in squad, not all 760
+    const [dbLiveData, dbFixtures, bootstrapResponse] = await Promise.all([
+      fetchPlayerStatsFromDB(gameweek, playerIds),
+      fetchFixturesFromDB(gameweek),
+      (async () => {
+        console.time('[Perf] API: bootstrap');
+        const res = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+        console.timeEnd('[Perf] API: bootstrap');
+        return res;
+      })()
+    ]);
+
+    console.time('[Perf] Parse bootstrap JSON');
+    const bootstrapData = await bootstrapResponse.json();
+    console.timeEnd('[Perf] Parse bootstrap JSON');
+
+    console.timeEnd('[Perf] Total completed GW fetch');
+
+    // If we have complete DB data, use it
+    if (dbLiveData && dbFixtures && playerIds.length === 15) {
+      console.log(`[ScoreCalculator] ✓ Using database for GW${gameweek} (completed)`);
+      const fixturesData = processFixturesData(dbFixtures, dbLiveData);
+      return { picksData, liveData: dbLiveData, bootstrapData, fixturesData };
+    }
+
+    // Otherwise fall back to API
+    console.log(`[ScoreCalculator] ✗ DB data incomplete for GW${gameweek}, falling back to API`);
+  }
+
+  // For live/upcoming GWs or if DB fetch failed, use FPL API
+  console.time('[Perf] Total API fetch');
   const [picksData, liveResponse, bootstrapResponse, fixturesResponse] = await Promise.all([
     fetchManagerPicks(entryId, gameweek, status),
     fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`),
@@ -142,6 +326,7 @@ async function fetchScoreData(entryId: number, gameweek: number, status: 'upcomi
     bootstrapResponse.json(),
     fixturesResponse.json(),
   ]);
+  console.timeEnd('[Perf] Total API fetch');
 
   const fixturesData = processFixturesData(fixturesRaw, liveData);
 

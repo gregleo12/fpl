@@ -6,6 +6,7 @@ import { CaptainLeaderboard } from './season/CaptainLeaderboard';
 import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerformance';
 import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
+import { ValueLeaderboard } from './season/ValueLeaderboard';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -22,6 +23,7 @@ export interface SeasonStats {
   trends: {
     chips: ChipTrendData[];
   };
+  valueRankings?: ValueData[];
 }
 
 export interface CaptainLeaderboardData {
@@ -48,6 +50,14 @@ export interface ChipTrendData {
   '3xc': number;
   freehit: number;
   wildcard: number;
+}
+
+export interface ValueData {
+  entry_id: number;
+  player_name: string;
+  team_name: string;
+  team_value: number;
+  value_gain: number;
 }
 
 interface Props {
@@ -116,6 +126,9 @@ export function SeasonView({ leagueId }: Props) {
             bestData={data.leaderboards.bestGameweeks}
             worstData={data.leaderboards.worstGameweeks}
           />
+          {data.valueRankings && (
+            <ValueLeaderboard data={data.valueRankings} />
+          )}
         </div>
       </div>
     </div>

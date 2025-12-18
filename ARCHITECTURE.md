@@ -1,6 +1,6 @@
 # RivalFPL - Architecture Reference
 
-**Last Updated:** December 16, 2025
+**Last Updated:** December 18, 2025
 **Framework:** Next.js 14 (App Router)
 **Language:** TypeScript
 
@@ -287,6 +287,30 @@ if (status === 'completed') {
   return fetchFromFPLAPI(params);
 }
 ```
+
+### Database Performance Optimization Pattern (v3.0.4)
+
+**Always filter queries to minimum necessary data:**
+
+```typescript
+// ❌ WRONG - Fetching all 760 players
+const allPlayers = await db.query(
+  'SELECT * FROM player_gameweek_stats WHERE gameweek = $1',
+  [gw]
+);
+const squadStats = allPlayers.rows.filter(p => squadIds.includes(p.player_id));
+
+// ✅ CORRECT - Fetch only squad players (15 instead of 760)
+const picks = await db.query('SELECT player_id FROM manager_picks WHERE ...');
+const playerIds = picks.rows.map(p => p.player_id);
+
+const squadStats = await db.query(
+  'SELECT * FROM player_gameweek_stats WHERE gameweek = $1 AND player_id = ANY($2)',
+  [gw, playerIds]
+);
+```
+
+**Impact:** 98% reduction in rows fetched, 10-50ms vs 500ms+ query times.
 
 ---
 
