@@ -23,10 +23,7 @@ export interface SeasonStats {
   trends: {
     chips: ChipTrendData[];
   };
-  valueRankings?: {
-    teamValue: ValueData[];
-    effectiveValue: ValueData[];
-  };
+  valueRankings?: ValueData[];
 }
 
 export interface CaptainLeaderboardData {
@@ -60,8 +57,6 @@ export interface ValueData {
   player_name: string;
   team_name: string;
   team_value: number;
-  effective_value: number;
-  bank: number;
   value_gain: number;
 }
 
@@ -132,10 +127,7 @@ export function SeasonView({ leagueId }: Props) {
             worstData={data.leaderboards.worstGameweeks}
           />
           {data.valueRankings && (
-            <ValueLeaderboard
-              teamValue={data.valueRankings.teamValue}
-              effectiveValue={data.valueRankings.effectiveValue}
-            />
+            <ValueLeaderboard data={data.valueRankings} />
           )}
         </div>
       </div>

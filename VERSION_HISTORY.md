@@ -1,8 +1,52 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 256+ versions
-**Current Version:** v3.0.16 (December 18, 2025)
+**Total Releases:** 257+ versions
+**Current Version:** v3.0.17 (December 18, 2025)
+
+---
+
+## v3.0.17 - Remove Effective Value (Not Available in FPL API) (Dec 18, 2025)
+
+**BREAKING CHANGE:** Remove Effective Value feature - FPL API doesn't expose individual player selling prices.
+
+### Why Removed
+After investigating the FPL API, discovered that **selling prices are NOT available** via the public API:
+- `/entry/{id}/event/{gw}/picks/` returns only: `element`, `position`, `multiplier`, `is_captain`, `element_type`
+- **NO `selling_price` or `purchase_price` fields** exist in picks data
+- Entry endpoint only provides `last_deadline_value` (total team value) and `last_deadline_bank`
+- **Effective Value (sell prices + bank) is IMPOSSIBLE to calculate**
+
+### Changes Made
+
+**My Team:**
+- Removed "Eff Value" box
+- Now shows only: Team Value | In Bank
+- Removed all Effective Value calculation logic
+
+**Season Stats - Value Rankings:**
+- Removed toggle between "Team" and "Eff"
+- Now shows "Team Value" only
+- Simplified leaderboard (no switching needed)
+
+**API Changes:**
+- `/api/team/[teamId]/info`: Removed `effectiveValue` field from response
+- `/api/league/[id]/stats/season`: Changed `valueRankings` from object to array
+  - Before: `{ teamValue: [], effectiveValue: [] }`
+  - After: `ValueData[]` (just team value rankings)
+
+### What's Still Available
+- ✅ **Team Value** - Total squad value (buy prices)
+- ✅ **Bank** - Money in bank
+- ✅ **Value Rankings** - Leaderboard by team value
+- ✅ **Value Gain** - Profit from starting £100m
+
+### Files Changed
+- `/src/app/api/team/[teamId]/info/route.ts`
+- `/src/components/Dashboard/MyTeamTab.tsx`
+- `/src/app/api/league/[id]/stats/season/route.ts`
+- `/src/components/Stats/season/ValueLeaderboard.tsx`
+- `/src/components/Stats/SeasonView.tsx`
 
 ---
 

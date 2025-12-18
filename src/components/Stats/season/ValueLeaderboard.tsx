@@ -9,21 +9,15 @@ interface ValueData {
   player_name: string;
   team_name: string;
   team_value: number;
-  effective_value: number;
   value_gain: number;
 }
 
 interface Props {
-  teamValue: ValueData[];
-  effectiveValue: ValueData[];
+  data: ValueData[];
 }
 
-export function ValueLeaderboard({ teamValue, effectiveValue }: Props) {
-  const [view, setView] = useState<'team' | 'effective'>('team');
+export function ValueLeaderboard({ data }: Props) {
   const [showModal, setShowModal] = useState(false);
-
-  const currentData = view === 'team' ? teamValue : effectiveValue;
-  const title = view === 'team' ? 'Team Value' : 'Effective Value';
 
   const renderItem = (item: ValueData, index: number) => (
     <div key={item.entry_id} className={styles.listItem}>
@@ -34,7 +28,7 @@ export function ValueLeaderboard({ teamValue, effectiveValue }: Props) {
       </div>
       <div className={styles.stats}>
         <div className={styles.statValue}>
-          £{(view === 'team' ? item.team_value : item.effective_value).toFixed(1)}m
+          £{item.team_value.toFixed(1)}m
         </div>
         <div className={styles.statLabel}>
           +£{item.value_gain.toFixed(1)}m
@@ -43,10 +37,10 @@ export function ValueLeaderboard({ teamValue, effectiveValue }: Props) {
     </div>
   );
 
-  if (!teamValue || teamValue.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className={styles.card}>
-        <h4 className={styles.cardTitle}>📈 Value Rankings</h4>
+        <h4 className={styles.cardTitle}>📈 Team Value</h4>
         <div className={styles.noData}>No data available</div>
       </div>
     );
@@ -58,26 +52,10 @@ export function ValueLeaderboard({ teamValue, effectiveValue }: Props) {
         className={`${styles.card} ${styles.clickable}`}
         onClick={() => setShowModal(true)}
       >
-        <div className={styles.cardHeader}>
-          <h4 className={styles.cardTitle}>📈 {title}</h4>
-          <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
-            <button
-              className={`${styles.toggleButton} ${view === 'team' ? styles.active : ''}`}
-              onClick={() => setView('team')}
-            >
-              Team
-            </button>
-            <button
-              className={`${styles.toggleButton} ${view === 'effective' ? styles.active : ''}`}
-              onClick={() => setView('effective')}
-            >
-              Eff
-            </button>
-          </div>
-        </div>
+        <h4 className={styles.cardTitle}>📈 Team Value</h4>
 
         <div className={styles.list}>
-          {currentData.slice(0, 5).map((item, index) => renderItem(item, index))}
+          {data.slice(0, 5).map((item, index) => renderItem(item, index))}
         </div>
 
         <div className={styles.clickHint}>Click to view full rankings</div>
@@ -86,9 +64,9 @@ export function ValueLeaderboard({ teamValue, effectiveValue }: Props) {
       <FullRankingModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={`${title} - Full Rankings`}
+        title="Team Value - Full Rankings"
         icon="📈"
-        data={currentData}
+        data={data}
         renderItem={renderItem}
       />
     </>

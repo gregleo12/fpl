@@ -947,7 +947,7 @@ async function calculateTrendsData(
   };
 }
 
-// Calculate value rankings from FPL API (fresh data, not cached)
+// Calculate team value rankings from FPL API (fresh data, not cached)
 async function getValueRankings(managers: any[], lastFinishedGW: number) {
   try {
     const valueData = await Promise.all(managers.map(async (manager) => {
@@ -970,35 +970,12 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
 
         // Team value from entry_history
         const teamValue = (picksData.entry_history?.value || 1000) / 10;
-        const bank = (picksData.entry_history?.bank || 0) / 10;
-
-        // Effective value = sum of selling prices + bank
-        // IMPORTANT: Reuse K-36 calculation logic for consistency
-        const picks = picksData.picks || [];
-        let effectiveValue = bank;
-
-        if (picks.length > 0 && picks[0].selling_price !== undefined) {
-          const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.selling_price || 0), 0);
-          // sellTotal and bank are both in tenths, divide the sum by 10
-          effectiveValue = (sellTotal + bank) / 10;
-        } else if (picks.length > 0 && picks[0].purchase_price !== undefined) {
-          // Fallback to purchase_price if selling_price not available
-          const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.purchase_price || 0), 0);
-          effectiveValue = (sellTotal + bank) / 10;
-          console.log(`[Value Rankings] Using purchase_price for ${manager.entry_id}`);
-        } else {
-          // Ultimate fallback: use team value
-          effectiveValue = teamValue;
-          console.log(`[Value Rankings] No selling_price or purchase_price for ${manager.entry_id}, using team value`);
-        }
 
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
           team_value: teamValue,
-          effective_value: effectiveValue,
-          bank: bank,
           value_gain: teamValue - 100.0, // Gain from starting £100m
         };
       } catch (error) {
@@ -1007,18 +984,13 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
       }
     }));
 
-    // Filter out nulls and sort
+    // Filter out nulls and sort by team value
     const validData = valueData.filter(d => d !== null);
+    const sorted = [...validData].sort((a, b) => b.team_value - a.team_value);
 
-    return {
-      teamValue: [...validData].sort((a, b) => b.team_value - a.team_value),
-      effectiveValue: [...validData].sort((a, b) => b.effective_value - a.effective_value),
-    };
+    return sorted;
   } catch (error) {
     console.error('Error calculating value rankings:', error);
-    return {
-      teamValue: [],
-      effectiveValue: [],
-    };
+    return [];
   }
 }
