@@ -92,9 +92,10 @@ export async function GET(
 
     let gwRank = 0;
     let gwTransfers = { count: 0, cost: 0 };
+    let picksData: any = null;
 
     if (picksResponse.ok) {
-      const picksData = await picksResponse.json();
+      picksData = await picksResponse.json();
       gwRank = picksData.entry_history?.rank || 0;
       gwTransfers = {
         count: picksData.entry_history?.event_transfers || 0,
@@ -114,11 +115,23 @@ export async function GET(
     const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
     const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
 
+    // Calculate effective value (sell value)
+    // Sum of all selling_price + bank
+    let effectiveValue = 0;
+    if (picksData && picksData.picks) {
+      const picks = picksData.picks || [];
+      const sellTotal = picks.reduce((sum: number, pick: any) => {
+        return sum + (pick.selling_price || pick.purchase_price || 0);
+      }, 0);
+      effectiveValue = sellTotal + bank;
+    }
+
     return NextResponse.json({
       overallPoints: overallPoints,
       overallRank: overallRank,
       teamValue: teamValue,
       bank: bank,
+      effectiveValue: effectiveValue,
       totalPlayers: totalPlayers,
       gwPoints: gwPoints,
       gwRank: gwRank,

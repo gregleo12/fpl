@@ -36,6 +36,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
   const [bank, setBank] = useState<number>(0);
+  const [effectiveValue, setEffectiveValue] = useState<number>(0);
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         setOverallRank(data.overallRank || 0);
         setTeamValue(data.teamValue || 0);
         setBank(data.bank || 0);
+        setEffectiveValue(data.effectiveValue || 0);
       } catch (err: any) {
         console.error('Error fetching stats:', err);
       }
@@ -174,6 +176,12 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               £{(teamValue / 10).toFixed(1)}m
             </div>
             <div className={styles.teamValueBoxLabel}>Team Value</div>
+          </div>
+          <div className={styles.teamValueBox}>
+            <div className={styles.teamValueBoxValue}>
+              £{(effectiveValue / 10).toFixed(1)}m
+            </div>
+            <div className={styles.teamValueBoxLabel}>Eff Value</div>
           </div>
           <div className={styles.teamValueBox}>
             <div className={styles.teamValueBoxValue}>

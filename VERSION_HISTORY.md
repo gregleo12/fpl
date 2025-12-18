@@ -2,7 +2,32 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.5 (December 18, 2025)
+**Current Version:** v3.0.6 (December 18, 2025)
+
+---
+
+## v3.0.6 - Add Effective Value Stat (Dec 18, 2025)
+
+**PATCH RELEASE:** Add Effective Value (sell value) stat to My Team.
+
+### New Features
+- **Effective Value Stat:** New stat box showing your actual liquidation value
+  - Displays between Team Value and In Bank
+  - Shows the cash you'd have if you sold all players
+  - Accounts for 50% profit rule: `Sell Price = Purchase Price + floor((Current Price - Purchase Price) / 2)`
+  - Uses FPL API `selling_price` field (no database changes needed)
+
+### Technical Changes
+- Updated `/api/team/[teamId]/info` to calculate and return `effectiveValue`
+- Added `effectiveValue` state and display in `MyTeamTab.tsx`
+- Calculation: Sum of all player selling prices + bank
+- Graceful fallback: If picks data unavailable, effective value = 0
+
+### UI Changes
+- Team Value boxes now show 3 stats instead of 2:
+  1. Team Value (total player current prices)
+  2. Eff Value (what you'd get if sold all)
+  3. In Bank (cash available)
 
 ---
 
