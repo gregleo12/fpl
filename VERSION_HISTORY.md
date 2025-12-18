@@ -1,8 +1,52 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 260+ versions
-**Current Version:** v3.1.1 (December 18, 2025)
+**Total Releases:** 261+ versions
+**Current Version:** v3.1.2 (December 18, 2025)
+
+---
+
+## v3.1.2 - HOTFIX: My Team Player Cards Showing Stale Points (Dec 18, 2025)
+
+**BUG FIX:** Player cards on My Team pitch showing stale/incorrect points from database cache.
+
+### Problem
+- Player cards on pitch showed wrong points (e.g., Bruno Fernandes: 4 pts instead of 13 pts)
+- v3.1.1 fixed the modal but not the pitch view
+- Database has stale/incorrect data:
+  - **DB**: Bruno GW16 = 4 pts, 45 mins, 0 goals, 1 assist, 0 bonus
+  - **FPL API**: Bruno GW16 = 13 pts, 90 mins, 1 goal, 1 assist, 3 bonus
+
+### Root Cause
+- `scoreCalculator.ts` used database cache (K-27) for completed gameweeks
+- Database `player_gameweek_stats` table had outdated data
+- No sync script to refresh player stats
+- Once DB had data (even if wrong), it never fell back to FPL API
+
+### Solution
+- **Disabled database fetch for player stats** in scoreCalculator
+- Now always fetches fresh data from FPL API for player stats
+- Still uses DB for manager picks, GW history, and chips (accurate)
+- Still uses DB for fixtures (less critical if slightly stale)
+- Ensures player points/stats are always accurate
+
+### Files Changed
+- `/src/lib/scoreCalculator.ts`
+  - Set `dbLiveData = null` to force FPL API usage
+  - Added comment explaining why DB fetch is disabled
+  - Kept DB fetch code for potential future re-enabling if sync fixed
+
+### Impact
+- All player cards now show accurate points from FPL API
+- Slight performance trade-off (API call vs DB query) for accuracy
+- Ensures consistency with player modal (which uses FPL API)
+- Fixes all players with stale database data, not just Bruno
+
+### Why Not Fix DB Sync?
+- No existing player stats sync script in package.json
+- Database might continue to drift without regular syncing
+- FPL API is source of truth - better to fetch fresh data
+- K-27 cache useful for manager data but risky for player stats
 
 ---
 

@@ -284,8 +284,9 @@ async function fetchScoreData(entryId: number, gameweek: number, status: 'upcomi
 
     // Step 2: Fetch player stats, fixtures, and bootstrap in parallel
     // OPTIMIZED: Only fetch stats for the 15 players in squad, not all 760
+    // NOTE: Disabled DB fetch for player stats to ensure fresh data (K-27 cache can be stale)
     const [dbLiveData, dbFixtures, bootstrapResponse] = await Promise.all([
-      fetchPlayerStatsFromDB(gameweek, playerIds),
+      null, // fetchPlayerStatsFromDB(gameweek, playerIds), // Disabled - use FPL API for accuracy
       fetchFixturesFromDB(gameweek),
       (async () => {
         console.time('[Perf] API: bootstrap');

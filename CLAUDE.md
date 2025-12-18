@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.1.1
+**Current Version:** v3.1.2
 **Last Updated:** December 18, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -111,6 +111,13 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.1.2 - Player Cards Showing Stale Points (Dec 18, 2025)
+- **Problem:** Player cards on My Team pitch showed wrong points (Bruno GW16: 4 pts vs actual 13 pts)
+- **Root Cause:** scoreCalculator used database K-27 cache for player stats, but DB had stale/incorrect data
+- **DB Data:** Bruno = 4 pts, 45 mins, 0 goals; **FPL API:** Bruno = 13 pts, 90 mins, 1 goal
+- **Fix:** Disabled DB fetch for player stats in scoreCalculator, always use FPL API for accuracy
+- **Never Do:** Trust database cache for critical display data without verifying freshness - FPL API is source of truth
 
 ### v3.1.1 - Player Modal Wrong Total Points (Dec 18, 2025)
 - **Problem:** Player modal showed incorrect total points (e.g., Bruno Fernandes GW16: 4 pts instead of 13 pts)
