@@ -30,9 +30,6 @@ export function ValueLeaderboard({ data }: Props) {
         <div className={styles.statValue}>
           £{item.team_value.toFixed(1)}m
         </div>
-        <div className={styles.statLabel}>
-          +£{item.value_gain.toFixed(1)}m
-        </div>
       </div>
     </div>
   );

@@ -1,8 +1,31 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 257+ versions
-**Current Version:** v3.0.17 (December 18, 2025)
+**Total Releases:** 258+ versions
+**Current Version:** v3.0.18 (December 18, 2025)
+
+---
+
+## v3.0.18 - Simplify Value Rankings Display (Dec 18, 2025)
+
+**UI IMPROVEMENT:** Remove redundant value gain from Value Rankings.
+
+### Change
+- Removed "+£X.Xm" gain display from Value Rankings leaderboard
+- Now shows only the team value (£105.0m format)
+- Value gain is easy to calculate mentally (£105.0m - £100.0m = £5.0m)
+- Cleaner, simpler display
+
+### Before
+```
+£105.0m
++£5.0M
+```
+
+### After
+```
+£105.0m
+```
 
 ---
 
