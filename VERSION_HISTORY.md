@@ -2,7 +2,23 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.0 (December 18, 2025)
+**Current Version:** v3.0.1 (December 18, 2025)
+
+---
+
+## v3.0.1 - Empty State Fix (Dec 18, 2025)
+
+**PATCH RELEASE:** UX improvement for GW Transfers display.
+
+### Bug Fixes
+- Added "No transfers made" empty state message for GW Transfers
+- GW Transfers container now displays for all GWs (previously hidden when empty)
+- Improved styling for empty state (centered, italic, subtle color)
+
+### Investigation Results
+- Verified transfers data is working correctly (39,960 transfers synced across all leagues)
+- Confirmed 0 transfers is legitimate data (5-50% of managers make no transfers per GW)
+- Root cause: Empty state appeared broken, needed UX improvement
 
 ---
 
