@@ -2,7 +2,34 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.1 (December 18, 2025)
+**Current Version:** v3.0.2 (December 18, 2025)
+
+---
+
+## v3.0.2 - Sync Pipeline Enhancement (Dec 18, 2025)
+
+**PATCH RELEASE:** Add manager_picks and pl_fixtures to automatic sync pipeline.
+
+### New Features
+- **Manager Picks Syncing:** Full squad selections (15 players) now synced automatically per GW
+  - Includes starting 11 + 4 bench players
+  - Synced in both full sync and incremental sync
+  - Enables My Team to use database for completed GWs instead of API calls
+- **PL Fixtures Syncing:** Premier League fixtures now synced automatically
+  - Only completed fixtures synced (finished = true)
+  - League-independent (synced once per sync run)
+  - Enables fixture-based features to use database
+
+### Technical
+- Added `syncPLFixtures()` function in `/src/lib/leagueSync.ts`
+- Added manager_picks sync to `syncManagerData()` function
+- Added manager_picks sync to `syncMissingGWs()` function
+- Added manager_picks to force clear cleanup section
+- Both tables use ON CONFLICT upsert pattern for idempotency
+
+### Performance Impact
+- Reduces API calls for My Team when viewing completed GWs
+- Enables offline/cached access to historical squad data
 
 ---
 

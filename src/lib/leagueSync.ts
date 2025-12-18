@@ -3,6 +3,63 @@ import { getDatabase } from '@/lib/db';
 const SYNC_INTERVAL_HOURS = 24; // Re-sync if older than 24 hours
 
 /**
+ * Sync PL fixtures (completed only)
+ * This is league-independent and only needs to run once per sync
+ */
+export async function syncPLFixtures(db: any): Promise<void> {
+  console.log('[Sync] Syncing PL fixtures...');
+
+  try {
+    const res = await fetch('https://fantasy.premierleague.com/api/fixtures/');
+    if (!res.ok) {
+      console.error(`[Sync] Failed to fetch fixtures: ${res.status}`);
+      return;
+    }
+
+    const fixtures = await res.json();
+
+    // Only sync COMPLETED fixtures (finished = true)
+    const completedFixtures = fixtures.filter((f: any) => f.finished);
+
+    for (const fixture of completedFixtures) {
+      await db.query(`
+        INSERT INTO pl_fixtures (
+          id, event, team_h, team_a, team_h_score, team_a_score,
+          team_h_difficulty, team_a_difficulty, kickoff_time,
+          started, finished, finished_provisional, minutes, pulse_id, updated_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
+        ON CONFLICT (id) DO UPDATE SET
+          team_h_score = EXCLUDED.team_h_score,
+          team_a_score = EXCLUDED.team_a_score,
+          finished = EXCLUDED.finished,
+          finished_provisional = EXCLUDED.finished_provisional,
+          minutes = EXCLUDED.minutes,
+          updated_at = NOW()
+      `, [
+        fixture.id,
+        fixture.event,
+        fixture.team_h,
+        fixture.team_a,
+        fixture.team_h_score,
+        fixture.team_a_score,
+        fixture.team_h_difficulty,
+        fixture.team_a_difficulty,
+        fixture.kickoff_time,
+        fixture.started,
+        fixture.finished,
+        fixture.finished_provisional,
+        fixture.minutes,
+        fixture.pulse_id
+      ]);
+    }
+
+    console.log(`[Sync] Synced ${completedFixtures.length} completed PL fixtures`);
+  } catch (err) {
+    console.error('[Sync] PL fixtures sync failed:', err);
+  }
+}
+
+/**
  * Check for missing completed gameweeks that aren't in the database yet
  */
 export async function checkForMissingGWs(leagueId: number): Promise<number[]> {
@@ -177,6 +234,31 @@ export async function syncMissingGWs(
             `, [leagueId, manager.entry_id, chip, gw]);
           }
 
+          // Sync full squad picks (15 players)
+          const picks = picksData.picks || [];
+          for (const pick of picks) {
+            await db.query(`
+              INSERT INTO manager_picks (
+                league_id, entry_id, event, player_id, position,
+                multiplier, is_captain, is_vice_captain
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              ON CONFLICT (league_id, entry_id, event, player_id) DO UPDATE SET
+                position = EXCLUDED.position,
+                multiplier = EXCLUDED.multiplier,
+                is_captain = EXCLUDED.is_captain,
+                is_vice_captain = EXCLUDED.is_vice_captain
+            `, [
+              leagueId,
+              manager.entry_id,
+              gw,
+              pick.element,
+              pick.position,
+              pick.multiplier,
+              pick.is_captain,
+              pick.is_vice_captain
+            ]);
+          }
+
           // Small delay to avoid rate limiting
           await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -237,6 +319,9 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
 
     console.log(`[Sync] Starting sync for league ${leagueId}${forceClear ? ' (force clear mode)' : ''}`);
 
+    // Sync PL fixtures first (league-independent, only completed fixtures)
+    await syncPLFixtures(db);
+
     // If force clear, delete all existing data for this league
     if (forceClear) {
       console.log(`[Sync] Force clearing existing data for league ${leagueId}...`);
@@ -270,6 +355,13 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
         [leagueId]
       );
       console.log(`[Sync] Deleted ${transfersResult.rowCount} rows from manager_transfers`);
+
+      // Clear manager_picks
+      const picksResult = await db.query(
+        'DELETE FROM manager_picks WHERE league_id = $1',
+        [leagueId]
+      );
+      console.log(`[Sync] Deleted ${picksResult.rowCount} rows from manager_picks`);
     }
 
     // Get all managers in this league
@@ -442,6 +534,31 @@ async function syncManagerData(
             `, [entryId, gwNum, captain.element, captainName, captainPoints]);
           }
         }
+
+        // Sync full squad picks (15 players)
+        for (const pick of picks) {
+          await db.query(`
+            INSERT INTO manager_picks (
+              league_id, entry_id, event, player_id, position,
+              multiplier, is_captain, is_vice_captain
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            ON CONFLICT (league_id, entry_id, event, player_id) DO UPDATE SET
+              position = EXCLUDED.position,
+              multiplier = EXCLUDED.multiplier,
+              is_captain = EXCLUDED.is_captain,
+              is_vice_captain = EXCLUDED.is_vice_captain
+          `, [
+            leagueId,
+            entryId,
+            gwNum,
+            pick.element,
+            pick.position,
+            pick.multiplier,
+            pick.is_captain,
+            pick.is_vice_captain
+          ]);
+        }
+        console.log(`[Sync] Manager ${entryId} GW${gwNum}: Synced ${picks.length} picks`);
 
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 50));
