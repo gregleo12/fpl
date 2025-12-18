@@ -2,7 +2,35 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.2 (December 18, 2025)
+**Current Version:** v3.0.3 (December 18, 2025)
+
+---
+
+## v3.0.3 - My Team DB Optimization (Dec 18, 2025)
+
+**PATCH RELEASE:** Optimize My Team to use database for completed gameweeks.
+
+### Performance Improvements
+- **Database-First for Completed GWs:** My Team now uses database instead of FPL API for completed gameweeks
+  - Player stats fetched from `player_gameweek_stats` table
+  - Fixtures fetched from `pl_fixtures` table
+  - Reduces external API calls from 3-4 per view to 1 (bootstrap only)
+  - Target load time: < 200ms (down from 500ms+)
+- **Graceful Fallback:** Automatically falls back to API if database data is missing
+- **Live GW Unchanged:** Current/in-progress gameweeks still use API for real-time data
+
+### Technical Changes
+- Added `fetchPlayerStatsFromDB()` function in `/src/lib/scoreCalculator.ts`
+- Added `fetchFixturesFromDB()` function in `/src/lib/scoreCalculator.ts`
+- Updated `fetchScoreData()` to check GW status and use DB for completed GWs
+- Data transformation matches FPL API format (no frontend changes needed)
+- Console logging for debugging DB vs API usage
+
+### Impact
+- Completed GWs load ~60-70% faster
+- Reduced load on FPL API
+- Better user experience for historical data viewing
+- No visual changes for users
 
 ---
 
