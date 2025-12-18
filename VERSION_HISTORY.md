@@ -2,7 +2,38 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.6 (December 18, 2025)
+**Current Version:** v3.0.7 (December 18, 2025)
+
+---
+
+## v3.0.7 - Player Modal Tabs (Dec 18, 2025)
+
+**PATCH RELEASE:** Add tabs to Player Modal for better organization and data access.
+
+### New Features
+- **Player Modal Tabs (K-34):** Three-tab navigation in Player Modal
+  - **Overview Tab:** Current GW stats breakdown (reorganized existing content)
+  - **Matches Tab:** GW-by-GW performance table with scrollable view
+  - **History Tab:** Past seasons summary with lazy loading
+- **Lazy Loading:** Past seasons data only fetched when History tab is clicked
+- **Current GW Highlighting:** Active gameweek highlighted in Matches table
+- **Empty States:** User-friendly messages when no data available
+- **Sticky Table Headers:** Matches table header stays visible when scrolling
+
+### Technical Changes
+- Added tab state management to `PlayerModal.tsx`
+- Created three inline tab components (Overview, Matches, History)
+- Added `pastSeasons` state and lazy fetch logic
+- Reused existing `/api/players/[id]` endpoint (no new API needed)
+- History tab fetches from FPL API `element-summary` endpoint
+- Matches table uses existing `history` data from player API
+
+### UI Changes
+- Tab navigation bar with active state highlighting
+- Scrollable table for Matches tab (max-height: 400px)
+- Season cards for History tab with hover effects
+- Mobile responsive design for all tabs
+- Comprehensive styling in `PlayerModal.module.css`
 
 ---
 

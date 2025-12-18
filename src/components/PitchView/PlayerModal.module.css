@@ -235,6 +235,165 @@
   margin-left: 0.5rem;
 }
 
+/* Tab Navigation */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.tab {
+  flex: 1;
+  padding: 0.875rem 0.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tab:hover {
+  color: rgba(0, 255, 135, 0.7);
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.tab.active {
+  color: #00ff87;
+  border-bottom-color: #00ff87;
+  background: rgba(0, 255, 135, 0.08);
+}
+
+/* Matches Tab */
+.matchesTab {
+  padding: 0;
+  min-height: 200px;
+}
+
+.matchesTableContainer {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.matchesTable {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.matchesTable thead {
+  position: sticky;
+  top: 0;
+  background: rgba(26, 26, 46, 0.98);
+  z-index: 1;
+}
+
+.matchesTable th {
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.matchesTable td {
+  text-align: center;
+  padding: 0.625rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.matchesTable tbody tr:hover {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.matchesTable tbody tr.currentGW {
+  background: rgba(0, 255, 135, 0.1);
+}
+
+.gwCell {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+}
+
+.pointsCell {
+  color: #00ff87;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* History Tab */
+.historyTab {
+  padding: 1rem 1.5rem;
+  min-height: 200px;
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.seasonCard {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.seasonCard:hover {
+  background: rgba(0, 255, 135, 0.05);
+  border-color: rgba(0, 255, 135, 0.2);
+}
+
+.seasonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.seasonName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+}
+
+.seasonPts {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.seasonStats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.seasonStats span {
+  display: inline-block;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.95rem;
+}
+
 /* Mobile Responsive */
 @media (max-width: 480px) {
   .modal {
@@ -283,5 +442,44 @@
 
   .kickoff {
     font-size: 0.85rem;
+  }
+
+  .tab {
+    padding: 0.75rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .matchesTab {
+    padding: 0;
+  }
+
+  .matchesTable {
+    font-size: 0.8rem;
+  }
+
+  .matchesTable th {
+    padding: 0.625rem 0.375rem;
+    font-size: 0.7rem;
+  }
+
+  .matchesTable td {
+    padding: 0.5rem 0.375rem;
+  }
+
+  .historyTab {
+    padding: 1rem;
+  }
+
+  .seasonCard {
+    padding: 0.875rem;
+  }
+
+  .seasonStats {
+    gap: 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .emptyState {
+    padding: 2.5rem 1rem;
   }
 }

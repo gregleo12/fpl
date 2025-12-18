@@ -112,6 +112,9 @@ function calculateStatPoints(stat: string, value: number, position: number): num
 export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'history'>('overview');
+  const [pastSeasons, setPastSeasons] = useState<any[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDetailedData() {
@@ -129,6 +132,23 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
     fetchDetailedData();
   }, [player.id]);
+
+  // Fetch past seasons when History tab is activated
+  useEffect(() => {
+    if (activeTab === 'history' && pastSeasons.length === 0) {
+      setHistoryLoading(true);
+      fetch(`https://fantasy.premierleague.com/api/element-summary/${player.id}/`)
+        .then(res => res.json())
+        .then(jsonData => {
+          setPastSeasons(jsonData.history_past || []);
+          setHistoryLoading(false);
+        })
+        .catch(error => {
+          console.error('[PlayerModal] Error fetching past seasons:', error);
+          setHistoryLoading(false);
+        });
+    }
+  }, [activeTab, player.id, pastSeasons.length]);
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
@@ -191,25 +211,52 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
           </div>
         </div>
 
+        {/* Tab Navigation */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'overview' ? styles.active : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            Overview
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'matches' ? styles.active : ''}`}
+            onClick={() => setActiveTab('matches')}
+          >
+            Matches
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            History
+          </button>
+        </div>
+
         {loading ? (
           <div className={styles.loadingContainer}>
             <p>Loading stats...</p>
           </div>
-        ) : showFixture ? (
-          /* Upcoming Match View - Show when player hasn't played yet */
-          <div className={styles.upcomingMatch}>
-            <h3 className={styles.upcomingTitle}>Upcoming Match</h3>
-            <p className={styles.opponent}>
-              vs {player.opponent_name} ({player.was_home ? 'H' : 'A'})
-            </p>
-            {player.kickoff_time && formatKickoffTime(player.kickoff_time) && (
-              <p className={styles.kickoff}>
-                {formatKickoffTime(player.kickoff_time)}
-              </p>
-            )}
-          </div>
         ) : (
           <>
+            {/* Overview Tab */}
+            {activeTab === 'overview' && (
+              <>
+                {showFixture ? (
+                  /* Upcoming Match View - Show when player hasn't played yet */
+                  <div className={styles.upcomingMatch}>
+                    <h3 className={styles.upcomingTitle}>Upcoming Match</h3>
+                    <p className={styles.opponent}>
+                      vs {player.opponent_name} ({player.was_home ? 'H' : 'A'})
+                    </p>
+                    {player.kickoff_time && formatKickoffTime(player.kickoff_time) && (
+                      <p className={styles.kickoff}>
+                        {formatKickoffTime(player.kickoff_time)}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <>
             {/* Stats Grid - Only show non-zero stats */}
             <div className={styles.stats}>
               {stats.map(({ key, label, gkOnly, defMidOnly, isBonus }) => {
@@ -255,16 +302,88 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
               )}
             </div>
 
-            {/* Total Points */}
-            <div className={styles.total}>
-              <span className={styles.totalLabel}>TOTAL POINTS</span>
-              <span className={styles.totalValue}>
-                {player.event_points}
-                {pick.multiplier > 1 && (
-                  <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                    {/* Total Points */}
+                    <div className={styles.total}>
+                      <span className={styles.totalLabel}>TOTAL POINTS</span>
+                      <span className={styles.totalValue}>
+                        {player.event_points}
+                        {pick.multiplier > 1 && (
+                          <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                        )}
+                      </span>
+                    </div>
+                  </>
                 )}
-              </span>
-            </div>
+              </>
+            )}
+
+            {/* Matches Tab */}
+            {activeTab === 'matches' && (
+              <div className={styles.matchesTab}>
+                {!data?.history || data.history.length === 0 ? (
+                  <div className={styles.emptyState}>No matches this season</div>
+                ) : (
+                  <div className={styles.matchesTableContainer}>
+                    <table className={styles.matchesTable}>
+                      <thead>
+                        <tr>
+                          <th>GW</th>
+                          <th>PTS</th>
+                          <th>MIN</th>
+                          <th>G</th>
+                          <th>A</th>
+                          <th>CS</th>
+                          <th>BPS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.history.map((gw: any) => (
+                          <tr key={gw.gameweek} className={gw.gameweek === gameweek ? styles.currentGW : ''}>
+                            <td className={styles.gwCell}>{gw.gameweek}</td>
+                            <td className={styles.pointsCell}>{gw.total_points}</td>
+                            <td>{gw.minutes}</td>
+                            <td>{gw.goals_scored || '-'}</td>
+                            <td>{gw.assists || '-'}</td>
+                            <td>{gw.clean_sheets ? '✓' : '-'}</td>
+                            <td>{gw.bps}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* History Tab */}
+            {activeTab === 'history' && (
+              <div className={styles.historyTab}>
+                {historyLoading ? (
+                  <div className={styles.loadingContainer}>
+                    <p>Loading history...</p>
+                  </div>
+                ) : !pastSeasons || pastSeasons.length === 0 ? (
+                  <div className={styles.emptyState}>No previous seasons</div>
+                ) : (
+                  <div className={styles.historyList}>
+                    {pastSeasons.map((season: any) => (
+                      <div key={season.season_name} className={styles.seasonCard}>
+                        <div className={styles.seasonHeader}>
+                          <span className={styles.seasonName}>{season.season_name}</span>
+                          <span className={styles.seasonPts}>{season.total_points} pts</span>
+                        </div>
+                        <div className={styles.seasonStats}>
+                          <span>{season.goals_scored}G</span>
+                          <span>{season.assists}A</span>
+                          <span>{season.minutes} mins</span>
+                          <span>£{(season.end_cost / 10).toFixed(1)}m</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
