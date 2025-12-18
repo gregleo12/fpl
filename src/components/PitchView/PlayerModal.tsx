@@ -113,8 +113,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'history'>('overview');
-  const [pastSeasons, setPastSeasons] = useState<any[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     async function fetchDetailedData() {
@@ -132,23 +130,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
 
     fetchDetailedData();
   }, [player.id]);
-
-  // Fetch past seasons when History tab is activated
-  useEffect(() => {
-    if (activeTab === 'history' && pastSeasons.length === 0) {
-      setHistoryLoading(true);
-      fetch(`https://fantasy.premierleague.com/api/element-summary/${player.id}/`)
-        .then(res => res.json())
-        .then(jsonData => {
-          setPastSeasons(jsonData.history_past || []);
-          setHistoryLoading(false);
-        })
-        .catch(error => {
-          console.error('[PlayerModal] Error fetching past seasons:', error);
-          setHistoryLoading(false);
-        });
-    }
-  }, [activeTab, player.id, pastSeasons.length]);
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
@@ -358,15 +339,11 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
             {/* History Tab */}
             {activeTab === 'history' && (
               <div className={styles.historyTab}>
-                {historyLoading ? (
-                  <div className={styles.loadingContainer}>
-                    <p>Loading history...</p>
-                  </div>
-                ) : !pastSeasons || pastSeasons.length === 0 ? (
+                {!data?.pastSeasons || data.pastSeasons.length === 0 ? (
                   <div className={styles.emptyState}>No previous seasons</div>
                 ) : (
                   <div className={styles.historyList}>
-                    {pastSeasons.map((season: any) => (
+                    {data.pastSeasons.map((season: any) => (
                       <div key={season.season_name} className={styles.seasonCard}>
                         <div className={styles.seasonHeader}>
                           <span className={styles.seasonName}>{season.season_name}</span>

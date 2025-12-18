@@ -1,6 +1,6 @@
 # RivalFPL - API Endpoints Reference
 
-**Last Updated:** December 16, 2025
+**Last Updated:** December 18, 2025
 **Base URL (Prod):** https://rivalfpl.com
 **Base URL (Staging):** https://fpl-staging-production.up.railway.app
 
@@ -229,6 +229,46 @@ Returns team picks and formation for a gameweek.
 **Data Source Logic:**
 - Completed GW → Database (`manager_picks`, `manager_gw_history`, `manager_chips`)
 - Live/Upcoming GW → FPL API
+
+---
+
+### GET /api/team/[teamId]/info
+
+Returns team overview statistics for a specific gameweek (added v3.0.6: effectiveValue).
+
+**Parameters:**
+- `teamId` (path) - Entry ID
+- `gw` (query, optional) - Gameweek number (defaults to current GW)
+
+**Response:**
+```json
+{
+  "overallPoints": 1245,
+  "overallRank": 123456,
+  "teamValue": 1025,
+  "bank": 5,
+  "effectiveValue": 1015,
+  "totalPlayers": 9000000,
+  "gwPoints": 65,
+  "gwRank": 234567,
+  "gwTransfers": {
+    "count": 1,
+    "cost": 0
+  },
+  "averagePoints": 52,
+  "highestPoints": 102
+}
+```
+
+**Fields:**
+- `effectiveValue` - Actual liquidation value (sum of all player selling prices + bank)
+- `teamValue` - Total current value of all players
+- `bank` - Cash in bank
+- Live GW points calculated using `calculateManagerLiveScore()`
+
+**Data Source:**
+- FPL API for team info, history, and picks
+- Uses live score calculator for accurate GW points
 
 ---
 

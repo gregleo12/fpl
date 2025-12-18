@@ -1,7 +1,7 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v2.7.1
-**Last Updated:** December 16, 2025
+**Current Version:** v3.0.8
+**Last Updated:** December 18, 2025
 **Project:** FPL H2H Analytics Web App
 
 ---
@@ -65,6 +65,18 @@ export const dynamic = 'force-dynamic';
 
 Never return picks without also fetching GW history (caused v2.7.1 bug).
 
+### Database Performance Rules
+**ALWAYS filter database queries to minimum necessary data:**
+- ✅ Get player IDs from picks first, then query only those players
+- ❌ DON'T fetch all 760 players when you only need 15
+- ✅ Use `WHERE player_id = ANY($1)` with specific IDs array
+- ❌ DON'T fetch all rows and filter in JavaScript
+
+**Database Column Names:**
+- ⚠️ Database schema uses different names than FPL API
+- `player_gameweek_stats` uses `gameweek` (NOT `event`) and `player_id` (NOT `element_id`)
+- Always verify actual column names in DATABASE.md before writing queries
+
 ### Deployment Rules
 - ✅ Push to `staging` freely - no approval needed
 - ❌ NEVER push to `main` without Greg's approval
@@ -99,6 +111,27 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.0.8 - Player Modal CORS Error (Dec 18, 2025)
+- **Problem:** Player Modal showed "TypeError: Failed to fetch", tabs didn't work
+- **Root Cause:** PlayerModal made client-side fetch to FPL API for past seasons, causing CORS error
+- **Fix:** Moved past seasons fetch to server-side in `/api/players/[id]` route, added to response
+- **Never Do:** Make client-side fetch calls directly to FPL API - always fetch server-side in API routes
+
+### v3.0.5 - Wrong Column Names in DB Query (Dec 18, 2025)
+- **Problem:** `player_gameweek_stats` query failed silently
+- **Root Cause:** Used FPL API column names instead of database column names
+  - Used `event` instead of `gameweek`
+  - Used `element_id` instead of `player_id`
+- **Fix:** Updated query to use correct database schema column names
+- **Never Do:** Assume database column names match FPL API field names - always check actual schema
+
+### v3.0.4 - Performance Issue: Fetching All Players (Dec 18, 2025)
+- **Problem:** My Team loaded slowly for completed GWs (500ms+ queries)
+- **Root Cause:** Fetched all 760 players from `player_gameweek_stats` instead of just the 15 in squad
+- **Fix:** Fetch manager picks first, extract player IDs, then query only those 15 players
+- **Impact:** 98% reduction in rows fetched (760 → 15), query time dropped to 10-50ms
+- **Never Do:** Fetch all players when you only need specific ones - always filter by player IDs
 
 ### v2.7.1 - H2H Fixtures Showing 0-0 (Dec 16, 2025)
 - **Problem:** All H2H fixtures showed 0-0 for completed GWs

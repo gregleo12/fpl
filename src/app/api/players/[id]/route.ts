@@ -76,6 +76,26 @@ export async function GET(
       bps: parseFloat((player.bps / per90Divisor).toFixed(1))
     } : null;
 
+    // Fetch past seasons from FPL API (server-side to avoid CORS)
+    let pastSeasons = [];
+    try {
+      const fplResponse = await fetch(
+        `https://fantasy.premierleague.com/api/element-summary/${playerId}/`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+          }
+        }
+      );
+      if (fplResponse.ok) {
+        const fplData = await fplResponse.json();
+        pastSeasons = fplData.history_past || [];
+      }
+    } catch (error) {
+      console.error('[Player Detail] Error fetching past seasons:', error);
+      // Continue without past seasons
+    }
+
     return NextResponse.json({
       player: {
         ...player,
@@ -85,6 +105,7 @@ export async function GET(
         ...h,
         result: getResult(h)
       })),
+      pastSeasons,
       totals: {
         points: player.total_points,
         minutes: player.minutes,

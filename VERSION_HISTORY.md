@@ -2,7 +2,29 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.7 (December 18, 2025)
+**Current Version:** v3.0.8 (December 18, 2025)
+
+---
+
+## v3.0.8 - HOTFIX: Fix Player Modal CORS Error (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Fix CORS error preventing Player Modal from loading.
+
+### Bug Fixes
+- **CRITICAL:** Fixed "TypeError: Failed to fetch" in Player Modal
+  - **Root Cause:** PlayerModal was making client-side fetch to FPL API for past seasons, causing CORS error
+  - **Fix:** Moved past seasons fetch to server-side in `/api/players/[id]` route
+  - **Impact:** Player Modal now loads correctly, all three tabs work
+
+### Technical Changes
+- Updated `/api/players/[id]/route.ts` to fetch `pastSeasons` from FPL API server-side
+- Added `pastSeasons` to API response
+- Removed client-side FPL API fetch from `PlayerModal.tsx`
+- PlayerModal now uses `data.pastSeasons` from API response
+
+### Never Do
+- ❌ DON'T make client-side fetch calls to FPL API (causes CORS errors)
+- ✅ DO fetch FPL API server-side in API routes
 
 ---
 
