@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.3 (December 18, 2025)
+**Current Version:** v3.0.4 (December 18, 2025)
+
+---
+
+## v3.0.4 - Performance Investigation & Fix (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Critical performance optimization for My Team DB queries.
+
+### Performance Fixes
+- **MAJOR:** Fetch only 15 player stats instead of all 760 players
+  - Before: Fetched ALL 760 players from `player_gameweek_stats`
+  - After: Fetch only the 15 players in manager's squad
+  - Impact: ~98% reduction in rows fetched (760 → 15)
+- **Optimized query flow:** Fetch picks first, then use player IDs to filter stats query
+- **Added comprehensive timing logs** for debugging bottlenecks
+  - `[Perf] DB: manager picks` - Manager picks fetch time
+  - `[Perf] DB fetch player stats (15 players)` - Player stats fetch time
+  - `[Perf] DB fetch fixtures` - Fixtures fetch time
+  - `[Perf] API: bootstrap` - Bootstrap API time
+  - `[Perf] Total completed GW fetch` - Total time
+- **Created index migration script** (`add-performance-indexes.ts`)
+
+### Technical Changes
+- Updated `fetchPlayerStatsFromDB()` to accept `playerIds` parameter
+- Modified `fetchScoreData()` to extract player IDs from picks first
+- Changed query: `WHERE event = $1 AND element_id = ANY($2)`
+- Added timing instrumentation throughout data fetching pipeline
+
+### Next Steps (Post-Deploy)
+- Add database indexes for optimal performance:
+  - `idx_player_gw_stats_event_element` on `player_gameweek_stats(event, element_id)`
+  - `idx_pl_fixtures_event_finished` on `pl_fixtures(event, finished)`
+  - `idx_manager_picks_entry_event` on `manager_picks(entry_id, event)`
+- Run index script: `DATABASE_URL=... npx tsx src/scripts/add-performance-indexes.ts`
+
+### Expected Performance
+- DB queries: 10-50ms (down from 200-500ms with 760 rows)
+- Total completed GW load: ~150-200ms (bootstrap still dominates at ~300-400ms)
 
 ---
 
