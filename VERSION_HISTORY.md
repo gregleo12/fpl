@@ -2,7 +2,33 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.8 (December 18, 2025)
+**Current Version:** v3.0.9 (December 18, 2025)
+
+---
+
+## v3.0.9 - HOTFIX: Fix Players Tab Modal CORS Error (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Fix CORS error in Players Tab PlayerDetailModal.
+
+### Bug Fixes
+- **CRITICAL:** Fixed "TypeError: Failed to fetch" in Players Tab modal
+  - **Root Cause:** PlayerDetailModal (K-26) was making client-side fetch to FPL API, causing CORS error
+  - **Fix:** Updated to use `/api/players/[id]` endpoint server-side
+  - **Impact:** Players Tab modal now loads correctly, all tabs work (Matches, Stats, History)
+
+### Technical Changes
+- Updated `/api/players/[id]/route.ts` to fetch full FPL history (with opponent/match details)
+- Added `fixtures` to API response for upcoming matches
+- Added FPL `history` array (not just DB history) to include opponent/score details
+- Updated `PlayerDetailModal.tsx` to use `/api/players/[id]` instead of FPL API
+- Modal now uses server-side API with no CORS issues
+
+### API Response Changes
+- `/api/players/[id]` now returns:
+  - `history`: Full FPL history array (opponent, scores, match details)
+  - `fixtures`: Upcoming fixtures with FDR
+  - `pastSeasons`: Past season stats
+  - Falls back to DB history if FPL API unavailable
 
 ---
 

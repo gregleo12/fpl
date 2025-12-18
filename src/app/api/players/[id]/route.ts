@@ -76,8 +76,10 @@ export async function GET(
       bps: parseFloat((player.bps / per90Divisor).toFixed(1))
     } : null;
 
-    // Fetch past seasons from FPL API (server-side to avoid CORS)
+    // Fetch past seasons, fixtures, and full history from FPL API (server-side to avoid CORS)
     let pastSeasons = [];
+    let fixtures = [];
+    let fplHistory = [];
     try {
       const fplResponse = await fetch(
         `https://fantasy.premierleague.com/api/element-summary/${playerId}/`,
@@ -90,10 +92,12 @@ export async function GET(
       if (fplResponse.ok) {
         const fplData = await fplResponse.json();
         pastSeasons = fplData.history_past || [];
+        fixtures = fplData.fixtures || [];
+        fplHistory = fplData.history || [];
       }
     } catch (error) {
-      console.error('[Player Detail] Error fetching past seasons:', error);
-      // Continue without past seasons
+      console.error('[Player Detail] Error fetching FPL data:', error);
+      // Continue without FPL data
     }
 
     return NextResponse.json({
@@ -101,11 +105,12 @@ export async function GET(
         ...player,
         price: `£${(player.now_cost / 10).toFixed(1)}m`
       },
-      history: history.map((h: any) => ({
+      history: fplHistory.length > 0 ? fplHistory : history.map((h: any) => ({
         ...h,
         result: getResult(h)
       })),
       pastSeasons,
+      fixtures,
       totals: {
         points: player.total_points,
         minutes: player.minutes,

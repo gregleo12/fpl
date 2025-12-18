@@ -194,9 +194,14 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
   const fetchPlayerDetails = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`https://fantasy.premierleague.com/api/element-summary/${player.id}/`);
+      const response = await fetch(`/api/players/${player.id}`);
       const data = await response.json();
-      setPlayerDetails(data);
+      // Map API response to expected format
+      setPlayerDetails({
+        history: data.history || [],
+        fixtures: data.fixtures || [],
+        history_past: data.pastSeasons || []
+      });
     } catch (error) {
       console.error('Error fetching player details:', error);
     } finally {
