@@ -1,8 +1,45 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 255+ versions
-**Current Version:** v3.0.15 (December 18, 2025)
+**Total Releases:** 256+ versions
+**Current Version:** v3.0.16 (December 18, 2025)
+
+---
+
+## v3.0.16 - HOTFIX: Use Last Finished GW for Effective Value (Dec 18, 2025)
+
+**CRITICAL HOTFIX:** v3.0.15 used `current_event` which points to the NEXT upcoming gameweek, causing picks fetch to fail.
+
+### Root Cause (Real Issue)
+- Between gameweeks, `current_event` = 17 (next upcoming GW)
+- GW17 hasn't started, so `/entry/{id}/event/17/picks/` returns no data
+- Result: Effective Value calculation falls back to bank only (£0.1m)
+
+### Fix
+- Changed to use **last finished gameweek** instead of `current_event`
+- Finds last GW where `finished = true` from bootstrap events
+- Now fetches picks from GW16 (last completed) which has actual data
+
+### Technical Changes
+
+**K-36: `/api/team/[teamId]/info/route.ts`**
+```typescript
+// Before (WRONG):
+const actualCurrentGW = entryData.current_event;  // Points to GW17 (upcoming)
+
+// After (CORRECT):
+const events = bootstrapData.events || [];
+const lastFinishedGW = [...events].reverse().find(e => e.finished)?.id;  // GW16
+```
+
+**K-37: `/api/league/[id]/stats/season/route.ts`**
+- Same fix applied to Value Rankings
+- Changed from `e.is_current` to finding last `e.finished = true`
+
+### Expected Results
+- Effective Value: ~£102.4m (15 players + bank)
+- Debug logs show `Last finished GW: 16` (not 17)
+- `selling_price` values now present (50-70 range typical)
 
 ---
 

@@ -77,19 +77,21 @@ export async function GET(
     `, [leagueId]);
     const managers = managersResult.rows;
 
-    // Get current GW for value rankings
-    let currentGW = maxStartedGW;
+    // Get last finished GW for value rankings (to fetch actual squad picks)
+    let lastFinishedGW = maxStartedGW;
     try {
       const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
       if (bootstrapResponse.ok) {
         const bootstrapData = await bootstrapResponse.json();
-        const currentEvent = bootstrapData?.events?.find((e: any) => e.is_current);
-        if (currentEvent) {
-          currentGW = currentEvent.id;
+        const events = bootstrapData?.events || [];
+        // Find the last finished gameweek (not current_event which points to upcoming GW)
+        const lastFinished = [...events].reverse().find((e: any) => e.finished);
+        if (lastFinished) {
+          lastFinishedGW = lastFinished.id;
         }
       }
     } catch (error) {
-      console.log('Could not fetch current GW for value rankings, using maxStartedGW');
+      console.log('Could not fetch last finished GW for value rankings, using maxStartedGW');
     }
 
     // Calculate season statistics
@@ -106,7 +108,7 @@ export async function GET(
       calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
-      getValueRankings(managers, currentGW),
+      getValueRankings(managers, lastFinishedGW),
     ]);
 
     return NextResponse.json({
@@ -946,12 +948,12 @@ async function calculateTrendsData(
 }
 
 // Calculate value rankings from FPL API (fresh data, not cached)
-async function getValueRankings(managers: any[], currentGW: number) {
+async function getValueRankings(managers: any[], lastFinishedGW: number) {
   try {
     const valueData = await Promise.all(managers.map(async (manager) => {
       try {
         const picksRes = await fetch(
-          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${currentGW}/picks/`,
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${lastFinishedGW}/picks/`,
           {
             headers: {
               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'

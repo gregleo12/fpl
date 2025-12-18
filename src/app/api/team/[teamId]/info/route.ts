@@ -58,14 +58,16 @@ export async function GET(
     const bootstrapData = await bootstrapResponse.json();
     const totalPlayers = bootstrapData.total_players || 0;
 
-    // Get ACTUAL current GW for fetching latest squad prices
-    const actualCurrentGW = entryData.current_event || 1;
+    // Get the last COMPLETED gameweek for fetching current squad prices
+    // current_event points to the NEXT upcoming GW, not the last completed one
+    const events = bootstrapData.events || [];
+    const lastFinishedGW = [...events].reverse().find((e: any) => e.finished)?.id || entryData.current_event || 1;
 
     // Get selected GW for display (could be historical)
-    const currentGW = gwParam ? parseInt(gwParam) : actualCurrentGW;
+    const currentGW = gwParam ? parseInt(gwParam) : (entryData.current_event || 1);
 
     console.log('[Effective Value Debug] Team ID:', teamId);
-    console.log('[Effective Value Debug] Actual current GW:', actualCurrentGW);
+    console.log('[Effective Value Debug] Last finished GW (for current squad prices):', lastFinishedGW);
     console.log('[Effective Value Debug] Selected GW for display:', currentGW);
 
     // Get FPL-wide stats for current GW from events array
@@ -97,9 +99,9 @@ export async function GET(
       }
     );
 
-    // Fetch CURRENT squad picks (for selling prices - Effective Value)
+    // Fetch CURRENT squad picks from last finished GW (for selling prices - Effective Value)
     const currentSquadResponse = await fetch(
-      `https://fantasy.premierleague.com/api/entry/${teamId}/event/${actualCurrentGW}/picks/`,
+      `https://fantasy.premierleague.com/api/entry/${teamId}/event/${lastFinishedGW}/picks/`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -123,12 +125,12 @@ export async function GET(
 
     if (currentSquadResponse.ok) {
       currentSquadData = await currentSquadResponse.json();
-      console.log('[Effective Value Debug] Current squad response received successfully');
+      console.log('[Effective Value Debug] Current squad response received successfully from GW', lastFinishedGW);
     } else {
       console.error('[Effective Value Debug] Failed to fetch current squad:', {
         status: currentSquadResponse.status,
         statusText: currentSquadResponse.statusText,
-        url: `https://fantasy.premierleague.com/api/entry/${teamId}/event/${actualCurrentGW}/picks/`
+        url: `https://fantasy.premierleague.com/api/entry/${teamId}/event/${lastFinishedGW}/picks/`
       });
     }
 
