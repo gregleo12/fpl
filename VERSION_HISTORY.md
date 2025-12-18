@@ -2,7 +2,32 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.10 (December 18, 2025)
+**Current Version:** v3.0.11 (December 18, 2025)
+
+---
+
+## v3.0.11 - HOTFIX: Fix Overview Tab Regression + Brand Styling (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Fix regression in My Team Player Modal Overview tab and align Players Tab modal styling with brand.
+
+### Bug Fixes (Issue 1 - Regression)
+- **CRITICAL:** Fixed My Team Player Modal Overview tab showing only "Defensive contribution: 0" and "Total Points"
+  - **Root Cause:** FPL history uses `round` field, but modal looks for `gameweek` field
+  - **Introduced in:** v3.0.9 when switching to FPL history format
+  - **Fix:** Map `round` → `gameweek` in API response
+  - **Impact:** Overview tab now shows full stats breakdown (goals, assists, clean sheets, minutes, bonus, BPS, etc.)
+
+### UI Improvements (Issue 2 - Brand Consistency)
+- **Players Tab Modal Styling:** Updated to match My Team modal brand
+  - Changed from dark gray gradient to dark purple gradient
+  - Background: `rgba(26, 26, 46, 0.98) → rgba(55, 0, 60, 0.95)`
+  - Improved box-shadow for better depth
+  - Consistent brand identity across both player modals
+
+### Technical Changes
+- Updated `/api/players/[id]` to map FPL `round` field to `gameweek`
+- Updated `PlayerDetailModal.module.css` with brand purple gradient
+- Both modals now use same color scheme
 
 ---
 

@@ -105,7 +105,10 @@ export async function GET(
         ...player,
         price: `£${(player.now_cost / 10).toFixed(1)}m`
       },
-      history: fplHistory.length > 0 ? fplHistory : history.map((h: any) => ({
+      history: fplHistory.length > 0 ? fplHistory.map((h: any) => ({
+        ...h,
+        gameweek: h.round  // Map round to gameweek for consistency
+      })) : history.map((h: any) => ({
         ...h,
         result: getResult(h)
       })),

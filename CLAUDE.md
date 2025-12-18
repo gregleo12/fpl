@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.0.10
+**Current Version:** v3.0.11
 **Last Updated:** December 18, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -111,6 +111,13 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.0.11 - Overview Tab Regression (Dec 18, 2025)
+- **Problem:** My Team Player Modal Overview tab only showed "Defensive contribution: 0" and "Total Points"
+- **Root Cause:** FPL history uses `round` field, but modal searches for `gameweek` field
+- **Introduced:** v3.0.9 when switching to FPL history format for Players Tab modal compatibility
+- **Fix:** Map `round` to `gameweek` in API response: `fplHistory.map(h => ({...h, gameweek: h.round}))`
+- **Never Do:** Change data formats without checking all consumers of that data
 
 ### v3.0.8 - Player Modal CORS Error (Dec 18, 2025)
 - **Problem:** Player Modal showed "TypeError: Failed to fetch", tabs didn't work
