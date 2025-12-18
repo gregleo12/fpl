@@ -2,7 +2,37 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.11 (December 18, 2025)
+**Current Version:** v3.0.12 (December 18, 2025)
+
+---
+
+## v3.0.12 - Players Tab Modal UI Improvements (Dec 18, 2025)
+
+**PATCH RELEASE:** Improve readability and density in Players Tab modal.
+
+### UI Improvements
+
+**1. Results Badges - Better Contrast**
+- Changed score badge text from white to dark grey/black
+- Color: `#fff` → `rgba(0, 0, 0, 0.85)`
+- Applies to win (green) and loss (red) badges
+- Much better readability against colored backgrounds
+
+**2. Stats Tab - More Compact**
+- Reduced stat box padding: `0.75rem` → `0.5rem`
+- Reduced stat value font size: `1.5rem` → `1.25rem`
+- Reduced stat label font size: `0.75rem` → `0.7rem`
+- Reduced stat group padding: `1rem` → `0.75rem`
+- Reduced gap between groups: `1.25rem` → `0.875rem`
+- Reduced gap between stat boxes: `0.5rem` → `0.375rem`
+- **Result:** More stats fit on screen, especially on mobile
+- Matches the compact density of My Team modal
+
+### Impact
+- Better readability in Matches tab (results section)
+- More information density in Stats tab
+- Improved mobile experience
+- Consistent with My Team modal design
 
 ---
 
