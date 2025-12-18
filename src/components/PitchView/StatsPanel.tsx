@@ -92,12 +92,16 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
       )}
 
       {/* GW Transfers - Receipt-style layout */}
-      {currentGWTransfers.length > 0 && (
+      {currentGW > 0 && (
         <div className={styles.gwTransfersContainer}>
           <h3 className={styles.gwTransfersTitle}>GW{currentGW} TRANSFERS</h3>
 
-          {/* Transfer rows */}
-          {currentGWTransfers.map((transfer, index) => {
+          {currentGWTransfers.length === 0 ? (
+            <p className={styles.noTransfers}>No transfers made</p>
+          ) : (
+            <>
+              {/* Transfer rows */}
+              {currentGWTransfers.map((transfer, index) => {
             const netGain = transfer.netGain;
             const diffClass = netGain > 0 ? styles.positive : netGain < 0 ? styles.negative : styles.neutral;
 
@@ -147,6 +151,8 @@ export function StatsPanel({ leagueId, myTeamId, myTeamName, myManagerName, sele
               </div>
             );
           })()}
+            </>
+          )}
         </div>
       )}
     </div>
