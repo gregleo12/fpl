@@ -1,8 +1,36 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 252+ versions
-**Current Version:** v3.0.12 (December 18, 2025)
+**Total Releases:** 253+ versions
+**Current Version:** v3.0.13 (December 18, 2025)
+
+---
+
+## v3.0.13 - Debug Effective Value Calculation (Dec 18, 2025)
+
+**DEBUG RELEASE:** Add debug logging to investigate K-36 Effective Value bug.
+
+### Debug Additions
+- **Issue:** Effective Value showing £0.1m instead of ~£102.4m on Greg's account
+- **Root Cause:** Unknown - either `selling_price` field missing or calculation failing
+- **Debug Logging Added:**
+  - Team ID being processed
+  - Number of picks in picks array
+  - Sample of first pick structure
+  - Bank value
+  - Each pick's `selling_price` and `purchase_price` values
+  - Total sell value calculated
+  - Final effective value (sell + bank)
+
+### Technical Changes
+- Updated `/api/team/[teamId]/info/route.ts` with comprehensive console logging
+- Logs each pick's selling price to identify if field exists and has correct values
+- Will observe Railway logs when Greg loads My Team to diagnose issue
+
+### Expected Outcome
+- Log output will reveal if `selling_price` exists on picks
+- Will show if calculation is correct but display is wrong
+- Will identify if field is named differently in API response
 
 ---
 
