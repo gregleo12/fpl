@@ -1,0 +1,252 @@
+/* Shared styles for Rank and Points modals */
+
+.noData {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+/* Summary Row */
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.summaryItem {
+  background: rgba(0, 255, 135, 0.05);
+  border: 1px solid rgba(0, 255, 135, 0.15);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.summaryItem:hover {
+  background: rgba(0, 255, 135, 0.08);
+  border-color: rgba(0, 255, 135, 0.25);
+}
+
+.summaryValue {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+.summaryValue.best {
+  color: #00ff87;
+}
+
+.summaryValue.worst {
+  color: #ff4444;
+}
+
+.summaryLabel {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Chart Container */
+.chartContainer {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 255, 135, 0.1);
+  border-radius: 12px;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+}
+
+.chartTooltip {
+  background: rgba(26, 26, 46, 0.95);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.tooltipLabel {
+  color: #00ff87;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+
+.tooltipValue {
+  color: #fff;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.tooltipValue:last-child {
+  margin-bottom: 0;
+}
+
+/* Table */
+.tableContainer {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 24px;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 80px;
+  padding: 12px 16px;
+  background: rgba(0, 255, 135, 0.05);
+  border-radius: 8px 8px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 80px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.tableRow:hover {
+  background: rgba(0, 255, 135, 0.03);
+}
+
+.colGW {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+.colRank {
+  color: #fff;
+}
+
+.colChange {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.colChange.up {
+  color: #00ff87;
+}
+
+.colChange.down {
+  color: #ff4444;
+}
+
+.colPts {
+  color: #fff;
+  text-align: right;
+}
+
+/* Milestones Section */
+.milestonesSection {
+  margin: 32px 0 24px;
+}
+
+.sectionTitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.milestonesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.milestone.reached {
+  background: rgba(0, 255, 135, 0.05);
+  border-color: rgba(0, 255, 135, 0.2);
+}
+
+.milestone:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.milestone.reached:hover {
+  background: rgba(0, 255, 135, 0.08);
+}
+
+.milestoneIcon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.milestone.reached .milestoneIcon {
+  color: #00ff87;
+}
+
+.milestoneTarget {
+  font-weight: 600;
+  color: #fff;
+  flex: 0 0 80px;
+}
+
+.milestoneStatus {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  flex: 1;
+}
+
+.milestone.reached .milestoneStatus {
+  color: rgba(0, 255, 135, 0.8);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .summaryRow {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summaryValue {
+    font-size: 1.5rem;
+  }
+
+  .chartContainer {
+    padding: 16px 8px;
+  }
+
+  .tableHeader, .tableRow {
+    grid-template-columns: 50px 1fr 90px 60px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+  .tableHeader {
+    font-size: 0.7rem;
+  }
+
+  .milestone {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+  }
+}

@@ -5,6 +5,9 @@ import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { GWSelector } from '@/components/PitchView/GWSelector';
+import { RankProgressModal } from './RankProgressModal';
+import { PointsAnalysisModal } from './PointsAnalysisModal';
+import { TransferHistoryModal } from './TransferHistoryModal';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
@@ -36,6 +39,14 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [overallRank, setOverallRank] = useState<number>(0);
   const [teamValue, setTeamValue] = useState<number>(0);
   const [bank, setBank] = useState<number>(0);
+
+  // Modal states
+  const [showRankModal, setShowRankModal] = useState(false);
+  const [showPointsModal, setShowPointsModal] = useState(false);
+  const [showTransfersModal, setShowTransfersModal] = useState(false);
+
+  // History data for modals
+  const [historyData, setHistoryData] = useState<any>(null);
 
   // Fetch current GW and max GW
   useEffect(() => {
@@ -80,6 +91,22 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
       fetchStats();
     }
   }, [myTeamId, selectedGW]);
+
+  // Fetch history data for modals
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const response = await fetch(`/api/team/${myTeamId}/history?leagueId=${leagueId}`);
+        if (!response.ok) throw new Error('Failed to fetch history');
+        const data = await response.json();
+        setHistoryData(data);
+      } catch (err: any) {
+        console.error('Error fetching history:', err);
+      }
+    }
+
+    fetchHistory();
+  }, [myTeamId, leagueId]);
 
   return (
     <div className={styles.myTeamTab}>
@@ -134,7 +161,11 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
               <div className={styles.statBoxLabel}>GW RANK</div>
             </div>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowTransfersModal(true)}
+              title="Click to view transfer history"
+            >
               <div className={styles.statBoxValue}>
                 {gwTransfers.count}
                 {gwTransfers.cost > 0 && (
@@ -147,11 +178,19 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
           {/* Row 2: Season Totals */}
           <div className={styles.statBoxRow}>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowPointsModal(true)}
+              title="Click to view points analysis"
+            >
               <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
               <div className={styles.statBoxLabel}>TOTAL PTS</div>
             </div>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowRankModal(true)}
+              title="Click to view rank progress"
+            >
               <div className={styles.statBoxValue}>{formatRank(overallRank)}</div>
               <div className={styles.statBoxLabel}>OVERALL RANK</div>
             </div>
@@ -192,6 +231,28 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           mode="collapsible-only"
         />
       </div>
+
+      {/* Modals */}
+      {historyData && (
+        <>
+          <RankProgressModal
+            isOpen={showRankModal}
+            onClose={() => setShowRankModal(false)}
+            data={historyData.history}
+          />
+          <PointsAnalysisModal
+            isOpen={showPointsModal}
+            onClose={() => setShowPointsModal(false)}
+            data={historyData.history}
+          />
+          <TransferHistoryModal
+            isOpen={showTransfersModal}
+            onClose={() => setShowTransfersModal(false)}
+            transfers={historyData.transfers}
+            gwHistory={historyData.history}
+          />
+        </>
+      )}
     </div>
   );
 }

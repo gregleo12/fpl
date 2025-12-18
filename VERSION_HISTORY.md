@@ -1,8 +1,65 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 261+ versions
-**Current Version:** v3.1.2 (December 18, 2025)
+**Total Releases:** 262+ versions
+**Current Version:** v3.2.0 (December 18, 2025)
+
+---
+
+## v3.2.0 - NEW FEATURE: My Team Tile Modals (K-38/39/40) (Dec 18, 2025)
+
+**NEW FEATURE:** Added interactive modals for My Team stat tiles.
+
+### What's New
+
+Three stat tiles in My Team are now clickable, opening detailed analysis modals:
+
+1. **Overall Rank Modal (K-38)** - 📊
+   - Current, best, and worst rank summary
+   - Rank progression chart (lower = better)
+   - GW-by-GW breakdown with rank changes
+   - Shows which GWs had biggest improvements/drops
+
+2. **Total Points Modal (K-39)** - ⭐
+   - Total points, average per GW, best GW summary
+   - Cumulative points progression chart
+   - Milestone tracking (500, 750, 1000, 1250, etc.)
+   - Shows reached milestones and progress to next
+
+3. **Transfer History Modal (K-40)** - 🔄
+   - Total transfers, hit points, net spend summary
+   - Transfers grouped by gameweek
+   - IN/OUT player names with prices
+   - Hit cost indicator per GW (Free vs -4 pts)
+
+### Implementation
+
+**New Components:**
+- `StatTileModal.tsx` - Base modal component
+- `RankProgressModal.tsx` - Overall rank analysis
+- `PointsAnalysisModal.tsx` - Points progression & milestones
+- `TransferHistoryModal.tsx` - Complete transfer history
+
+**New API Endpoint:**
+- `/api/team/[teamId]/history` - Fetches GW history and transfers from database
+
+**UI Enhancements:**
+- Stat tiles show pointer cursor on hover
+- Smooth hover effects with green accent
+- Escape key and click-outside to close
+- Mobile responsive design
+- Brand-consistent purple/green theme
+
+### Data Sources
+- Uses existing `manager_gw_history` table (K-27 cache)
+- Uses existing `manager_transfers` table (K-27 cache)
+- Fetches player names from FPL API bootstrap
+
+### User Experience
+- Click "TOTAL PTS" → Points analysis with milestones
+- Click "OVERALL RANK" → Rank progression chart
+- Click "TRANSFERS" → Complete transfer history
+- All modals feature charts using recharts library
 
 ---
 
