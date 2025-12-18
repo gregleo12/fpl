@@ -1,8 +1,30 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 258+ versions
-**Current Version:** v3.0.18 (December 18, 2025)
+**Total Releases:** 259+ versions
+**Current Version:** v3.1.0 (December 18, 2025)
+
+---
+
+## v3.1.0 - Production Release: Value Rankings (Dec 18, 2025)
+
+**PRODUCTION DEPLOYMENT:** Deploying v3.0.14-v3.0.18 to production.
+
+### Features Included
+- **K-37:** Value Rankings leaderboard in Season Stats
+  - Shows Team Value rankings for all league managers
+  - Top 5 in card view, full 20 in modal
+  - Clean display with team value only (no redundant gain calculation)
+- **K-36 Fix:** Removed Effective Value (not available in FPL API)
+  - Simplified My Team to show: Team Value | In Bank
+  - Investigated FPL API and confirmed selling prices aren't exposed
+
+### Version Journey (v3.0.14 → v3.1.0)
+- v3.0.14: Initial Value Rankings implementation
+- v3.0.15: Effective Value debugging attempt
+- v3.0.16: Changed to use last finished GW
+- v3.0.17: Removed Effective Value entirely
+- v3.0.18: Simplified display (removed gain text)
 
 ---
 
