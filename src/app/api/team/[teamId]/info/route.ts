@@ -120,10 +120,24 @@ export async function GET(
     let effectiveValue = 0;
     if (picksData && picksData.picks) {
       const picks = picksData.picks || [];
+
+      // Debug logging for effective value calculation
+      console.log('[Effective Value Debug] Team ID:', teamId);
+      console.log('[Effective Value Debug] Number of picks:', picks.length);
+      console.log('[Effective Value Debug] First pick sample:', picks[0]);
+      console.log('[Effective Value Debug] Bank:', bank);
+
       const sellTotal = picks.reduce((sum: number, pick: any) => {
-        return sum + (pick.selling_price || pick.purchase_price || 0);
+        const sellPrice = pick.selling_price || pick.purchase_price || 0;
+        console.log(`[Effective Value Debug] Pick element ${pick.element}: selling_price=${pick.selling_price}, purchase_price=${pick.purchase_price}, using=${sellPrice}`);
+        return sum + sellPrice;
       }, 0);
+
+      console.log('[Effective Value Debug] Total sell value:', sellTotal);
       effectiveValue = sellTotal + bank;
+      console.log('[Effective Value Debug] Effective value (sell + bank):', effectiveValue);
+    } else {
+      console.log('[Effective Value Debug] No picks data available');
     }
 
     return NextResponse.json({
