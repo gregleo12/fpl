@@ -977,11 +977,12 @@ async function getValueRankings(managers: any[], currentGW: number) {
 
         if (picks.length > 0 && picks[0].selling_price !== undefined) {
           const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.selling_price || 0), 0);
-          effectiveValue = (sellTotal / 10) + bank;
+          // sellTotal and bank are both in tenths, divide the sum by 10
+          effectiveValue = (sellTotal + bank) / 10;
         } else if (picks.length > 0 && picks[0].purchase_price !== undefined) {
           // Fallback to purchase_price if selling_price not available
           const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.purchase_price || 0), 0);
-          effectiveValue = (sellTotal / 10) + bank;
+          effectiveValue = (sellTotal + bank) / 10;
           console.log(`[Value Rankings] Using purchase_price for ${manager.entry_id}`);
         } else {
           // Ultimate fallback: use team value

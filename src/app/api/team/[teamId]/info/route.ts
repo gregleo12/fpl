@@ -58,8 +58,11 @@ export async function GET(
     const bootstrapData = await bootstrapResponse.json();
     const totalPlayers = bootstrapData.total_players || 0;
 
-    // Get current GW from bootstrap data or use provided GW
-    const currentGW = gwParam ? parseInt(gwParam) : (entryData.current_event || 1);
+    // Get ACTUAL current GW for fetching latest squad prices
+    const actualCurrentGW = entryData.current_event || 1;
+
+    // Get selected GW for display (could be historical)
+    const currentGW = gwParam ? parseInt(gwParam) : actualCurrentGW;
 
     // Get FPL-wide stats for current GW from events array
     const currentEvent = bootstrapData.events?.[currentGW - 1];
@@ -80,9 +83,19 @@ export async function GET(
     const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, status);
     const gwPoints = scoreResult.score;
 
-    // Fetch picks for GW rank and transfers (these aren't live)
+    // Fetch picks for selected GW (for rank/transfers display)
     const picksResponse = await fetch(
       `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
+      }
+    );
+
+    // Fetch CURRENT squad picks (for selling prices - Effective Value)
+    const currentSquadResponse = await fetch(
+      `https://fantasy.premierleague.com/api/entry/${teamId}/event/${actualCurrentGW}/picks/`,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -93,6 +106,7 @@ export async function GET(
     let gwRank = 0;
     let gwTransfers = { count: 0, cost: 0 };
     let picksData: any = null;
+    let currentSquadData: any = null;
 
     if (picksResponse.ok) {
       picksData = await picksResponse.json();
@@ -101,6 +115,10 @@ export async function GET(
         count: picksData.entry_history?.event_transfers || 0,
         cost: picksData.entry_history?.event_transfers_cost || 0
       };
+    }
+
+    if (currentSquadResponse.ok) {
+      currentSquadData = await currentSquadResponse.json();
     }
 
     // Find the selected GW's history entry
@@ -115,29 +133,36 @@ export async function GET(
     const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
     const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
 
-    // Calculate effective value (sell value)
-    // Sum of all selling_price + bank
+    // Calculate effective value (current squad's sell value + bank)
+    // CRITICAL: Use currentSquadData (actual current GW) not picksData (selected GW)
     let effectiveValue = 0;
-    if (picksData && picksData.picks) {
-      const picks = picksData.picks || [];
+    if (currentSquadData && currentSquadData.picks) {
+      const picks = currentSquadData.picks || [];
+      const currentBank = currentSquadData.entry_history?.bank || 0;
 
       // Debug logging for effective value calculation
       console.log('[Effective Value Debug] Team ID:', teamId);
+      console.log('[Effective Value Debug] Current GW:', actualCurrentGW);
       console.log('[Effective Value Debug] Number of picks:', picks.length);
-      console.log('[Effective Value Debug] First pick sample:', picks[0]);
-      console.log('[Effective Value Debug] Bank:', bank);
+      console.log('[Effective Value Debug] First pick sample:', JSON.stringify(picks[0], null, 2));
+      console.log('[Effective Value Debug] Current bank:', currentBank);
 
       const sellTotal = picks.reduce((sum: number, pick: any) => {
         const sellPrice = pick.selling_price || pick.purchase_price || 0;
-        console.log(`[Effective Value Debug] Pick element ${pick.element}: selling_price=${pick.selling_price}, purchase_price=${pick.purchase_price}, using=${sellPrice}`);
+        if (sum === 0) {
+          // Log first pick in detail
+          console.log(`[Effective Value Debug] First pick - element ${pick.element}: selling_price=${pick.selling_price}, purchase_price=${pick.purchase_price}, using=${sellPrice}`);
+        }
         return sum + sellPrice;
       }, 0);
 
-      console.log('[Effective Value Debug] Total sell value:', sellTotal);
-      effectiveValue = sellTotal + bank;
-      console.log('[Effective Value Debug] Effective value (sell + bank):', effectiveValue);
+      console.log('[Effective Value Debug] Total sell value (in tenths):', sellTotal);
+      effectiveValue = sellTotal + currentBank;
+      console.log('[Effective Value Debug] Effective value (sell + bank in tenths):', effectiveValue);
     } else {
-      console.log('[Effective Value Debug] No picks data available');
+      console.log('[Effective Value Debug] No current squad data available');
+      // Fallback: use bank only
+      effectiveValue = bank;
     }
 
     return NextResponse.json({

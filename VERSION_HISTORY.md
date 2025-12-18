@@ -1,8 +1,50 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 254+ versions
-**Current Version:** v3.0.14 (December 18, 2025)
+**Total Releases:** 255+ versions
+**Current Version:** v3.0.15 (December 18, 2025)
+
+---
+
+## v3.0.15 - HOTFIX: Fix Effective Value Calculation (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Fix critical bugs in Effective Value calculation (K-36 & K-37).
+
+### Bugs Fixed
+
+**Issue 1: selling_price Undefined**
+- **Problem:** Effective Value showed £0.1m (bank only) instead of ~£102.4m
+- **Root Cause:** When viewing historical gameweeks in My Team, code fetched picks for that old GW, which doesn't include current `selling_price` field
+- **Fix:** Always fetch current squad picks (actualCurrentGW) for Effective Value, separate from selected GW picks (for rank/transfers)
+- **Impact:** Effective Value now shows correct selling prices for all 15 players + bank
+
+**Issue 2: Unit Conversion Error in K-37**
+- **Problem:** Value Rankings calculated `(sellTotal / 10) + bank` which mixed units (pounds + tenths)
+- **Root Cause:** Division by 10 applied only to sellTotal, not bank
+- **Fix:** Changed to `(sellTotal + bank) / 10` to convert the total from tenths to millions
+- **Impact:** Value Rankings now show correct effective values
+
+### Technical Changes
+
+**K-36: `/api/team/[teamId]/info/route.ts`**
+- Split gameweek variables:
+  - `actualCurrentGW`: Real current GW (from entry data)
+  - `currentGW`: Selected GW for display (could be historical)
+- Added second fetch for current squad:
+  - `picksResponse`: Selected GW picks (for rank/transfers)
+  - `currentSquadResponse`: Current GW picks (for selling prices)
+- Updated Effective Value calculation to use `currentSquadData` with current bank
+- Enhanced debug logging with JSON.stringify for full pick structure
+
+**K-37: `/api/league/[id]/stats/season/route.ts`**
+- Fixed unit conversion: `(sellTotal + bank) / 10` instead of `(sellTotal / 10) + bank`
+- Both values now properly converted from tenths to millions
+
+### Expected Results
+- My Team Effective Value: ~£102.4m (not £0.1m)
+- Value Rankings: Correct effective values for all managers
+- Effective Value ≤ Team Value (always)
+- Debug logs show `selling_price` values (not undefined)
 
 ---
 
