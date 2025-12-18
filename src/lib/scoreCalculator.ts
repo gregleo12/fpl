@@ -136,7 +136,7 @@ async function fetchPlayerStatsFromDB(gameweek: number, playerIds: number[]): Pr
     const db = await getDatabase();
     const result = await db.query(`
       SELECT
-        element_id as id,
+        player_id as id,
         total_points,
         minutes,
         goals_scored,
@@ -161,7 +161,7 @@ async function fetchPlayerStatsFromDB(gameweek: number, playerIds: number[]): Pr
         expected_goal_involvements,
         expected_goals_conceded
       FROM player_gameweek_stats
-      WHERE event = $1 AND element_id = ANY($2)
+      WHERE gameweek = $1 AND player_id = ANY($2)
     `, [gameweek, playerIds]);
     console.timeEnd(`[Perf] DB fetch player stats (${playerIds.length} players)`);
 

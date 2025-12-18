@@ -2,7 +2,32 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.4 (December 18, 2025)
+**Current Version:** v3.0.5 (December 18, 2025)
+
+---
+
+## v3.0.5 - Column Name Fix (Dec 18, 2025)
+
+**HOTFIX RELEASE:** Fix database query to use correct column names.
+
+### Bug Fixes
+- **CRITICAL:** Fixed `player_gameweek_stats` query to use correct column names
+  - Changed `event` → `gameweek`
+  - Changed `element_id` → `player_id`
+  - These are the actual column names in the database schema
+- Query now works correctly with existing indexes:
+  - `idx_pgw_player_gw` on `(player_id, gameweek)` ✓
+  - `idx_pl_fixtures_event_finished` on `(event, finished)` ✓
+  - `idx_manager_picks_entry_event` on `(entry_id, event)` ✓
+
+### Investigation Results
+- Used `check-and-add-indexes.ts` script to inspect actual schema
+- Confirmed all necessary indexes already exist in database
+- No new indexes needed - just code fix
+
+### Impact
+- DB optimization now works correctly for completed GWs
+- Will use existing indexes for fast query performance (< 50ms)
 
 ---
 
