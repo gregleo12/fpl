@@ -175,6 +175,24 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
     { key: 'bonus', label: 'Bonus', isBonus: true },
   ];
 
+  // Calculate total points from gwStats breakdown (if available)
+  let calculatedTotal = 0;
+  if (gwStats) {
+    stats.forEach(({ key, gkOnly, defMidOnly }) => {
+      // Skip GK-only stats for non-goalkeepers
+      if (gkOnly && player.element_type !== 1) return;
+
+      // Skip DEF/MID-only stats for GKP and FWD
+      if (defMidOnly && player.element_type !== 2 && player.element_type !== 3) return;
+
+      const value = gwStats[key] || 0;
+      calculatedTotal += calculateStatPoints(key, value, player.element_type);
+    });
+  }
+
+  // Use calculated total if available, otherwise fall back to player.event_points
+  const actualTotalPoints = gwStats ? calculatedTotal : player.event_points;
+
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -287,9 +305,9 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
                     <div className={styles.total}>
                       <span className={styles.totalLabel}>TOTAL POINTS</span>
                       <span className={styles.totalValue}>
-                        {player.event_points}
+                        {actualTotalPoints}
                         {pick.multiplier > 1 && (
-                          <span className={styles.multiplier}> ×{pick.multiplier} = {totalPoints}</span>
+                          <span className={styles.multiplier}> ×{pick.multiplier} = {actualTotalPoints * pick.multiplier}</span>
                         )}
                       </span>
                     </div>

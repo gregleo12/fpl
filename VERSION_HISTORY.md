@@ -1,8 +1,38 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 259+ versions
-**Current Version:** v3.1.0 (December 18, 2025)
+**Total Releases:** 260+ versions
+**Current Version:** v3.1.1 (December 18, 2025)
+
+---
+
+## v3.1.1 - HOTFIX: Player Modal Total Points Calculation (Dec 18, 2025)
+
+**BUG FIX:** Player modal showing incorrect total points.
+
+### Problem
+- Player modal displayed wrong total points (e.g., Bruno Fernandes GW16 showed 4 pts instead of 13 pts)
+- Modal showed correct stat breakdown but wrong total
+- Caused by mismatch between two data sources:
+  - Initial `player.event_points` from scoreCalculator (uses database cache)
+  - Stats breakdown from fresh FPL API data
+
+### Solution
+- Modal now **calculates total from displayed stats breakdown**
+- Uses `calculateStatPoints()` function to sum all individual stat points
+- Falls back to `player.event_points` only if stats unavailable
+- Ensures total always matches the breakdown shown
+
+### Files Changed
+- `/src/components/PitchView/PlayerModal.tsx`
+  - Added `calculatedTotal` logic to sum stats
+  - Replaced hardcoded `player.event_points` with `actualTotalPoints`
+  - Fixed captain multiplier calculation
+
+### Impact
+- All player modals now show accurate totals
+- Fixes discrepancies for any players with stale database data
+- Total now always matches visible breakdown
 
 ---
 

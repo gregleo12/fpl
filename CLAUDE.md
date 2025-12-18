@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.0.18
+**Current Version:** v3.1.1
 **Last Updated:** December 18, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -111,6 +111,12 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.1.1 - Player Modal Wrong Total Points (Dec 18, 2025)
+- **Problem:** Player modal showed incorrect total points (e.g., Bruno Fernandes GW16: 4 pts instead of 13 pts)
+- **Root Cause:** Modal displayed `player.event_points` from scoreCalculator (uses stale database cache) but showed fresh FPL API stats in breakdown
+- **Fix:** Calculate total from displayed stat breakdown using `calculateStatPoints()` instead of relying on prop
+- **Never Do:** Display totals from one data source when breakdown comes from a different source - always calculate from shown data
 
 ### v3.0.11 - Overview Tab Regression (Dec 18, 2025)
 - **Problem:** My Team Player Modal Overview tab only showed "Defensive contribution: 0" and "Total Points"
