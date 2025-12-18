@@ -339,26 +339,47 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
             {/* History Tab */}
             {activeTab === 'history' && (
               <div className={styles.historyTab}>
-                {!data?.pastSeasons || data.pastSeasons.length === 0 ? (
-                  <div className={styles.emptyState}>No previous seasons</div>
-                ) : (
-                  <div className={styles.historyList}>
-                    {data.pastSeasons.map((season: any) => (
-                      <div key={season.season_name} className={styles.seasonCard}>
-                        <div className={styles.seasonHeader}>
-                          <span className={styles.seasonName}>{season.season_name}</span>
-                          <span className={styles.seasonPts}>{season.total_points} pts</span>
-                        </div>
-                        <div className={styles.seasonStats}>
-                          <span>{season.goals_scored}G</span>
-                          <span>{season.assists}A</span>
-                          <span>{season.minutes} mins</span>
-                          <span>£{(season.end_cost / 10).toFixed(1)}m</span>
-                        </div>
+                <div className={styles.historyList}>
+                  {/* Current Season */}
+                  {data?.totals && (
+                    <div className={styles.seasonCard}>
+                      <div className={styles.seasonHeader}>
+                        <span className={styles.seasonName}>2024/25 (Current)</span>
+                        <span className={styles.seasonPts}>{data.totals.points} pts</span>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div className={styles.seasonStats}>
+                        <span>{data.totals.goals_scored}G</span>
+                        <span>{data.totals.assists}A</span>
+                        <span>{data.totals.minutes} mins</span>
+                        <span>£{(data.player.now_cost / 10).toFixed(1)}m</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Past Seasons (reversed) */}
+                  {data?.pastSeasons && data.pastSeasons.length > 0 && (
+                    <>
+                      {[...data.pastSeasons].reverse().map((season: any) => (
+                        <div key={season.season_name} className={styles.seasonCard}>
+                          <div className={styles.seasonHeader}>
+                            <span className={styles.seasonName}>{season.season_name}</span>
+                            <span className={styles.seasonPts}>{season.total_points} pts</span>
+                          </div>
+                          <div className={styles.seasonStats}>
+                            <span>{season.goals_scored}G</span>
+                            <span>{season.assists}A</span>
+                            <span>{season.minutes} mins</span>
+                            <span>£{(season.end_cost / 10).toFixed(1)}m</span>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {!data?.totals && (!data?.pastSeasons || data.pastSeasons.length === 0) && (
+                    <div className={styles.emptyState}>No season data available</div>
+                  )}
+                </div>
               </div>
             )}
           </>

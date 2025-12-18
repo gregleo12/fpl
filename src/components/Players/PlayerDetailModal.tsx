@@ -694,20 +694,33 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
 
               {activeTab === 'history' && playerDetails && (
                 <div className={styles.historyTab}>
-                  {playerDetails.history_past && playerDetails.history_past.length > 0 ? (
-                    <>
-                      <h3>Previous Seasons</h3>
-                      <div className={styles.historyTable}>
-                        <div className={styles.historyHeader}>
-                          <span>Season</span>
-                          <span>Pts</span>
-                          <span>St</span>
-                          <span>MP</span>
-                          <span>GS</span>
-                          <span>A</span>
-                          <span>xG</span>
-                        </div>
-                        {playerDetails.history_past.map((season) => (
+                  <h3>Season History</h3>
+                  <div className={styles.historyTable}>
+                    <div className={styles.historyHeader}>
+                      <span>Season</span>
+                      <span>Pts</span>
+                      <span>St</span>
+                      <span>MP</span>
+                      <span>GS</span>
+                      <span>A</span>
+                      <span>xG</span>
+                    </div>
+
+                    {/* Current Season */}
+                    <div className={styles.historyRow}>
+                      <span>2024/25 (Current)</span>
+                      <span>{player.total_points}</span>
+                      <span>{player.starts}</span>
+                      <span>{player.minutes}</span>
+                      <span>{player.goals_scored}</span>
+                      <span>{player.assists}</span>
+                      <span>{typeof player.expected_goals === 'string' ? parseFloat(player.expected_goals).toFixed(1) : player.expected_goals.toFixed(1)}</span>
+                    </div>
+
+                    {/* Past Seasons (reversed) */}
+                    {playerDetails.history_past && playerDetails.history_past.length > 0 && (
+                      <>
+                        {[...playerDetails.history_past].reverse().map((season) => (
                           <div key={season.season_name} className={styles.historyRow}>
                             <span>{season.season_name}</span>
                             <span>{season.total_points}</span>
@@ -718,13 +731,9 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
                             <span>{season.expected_goals || '-'}</span>
                           </div>
                         ))}
-                      </div>
-                    </>
-                  ) : (
-                    <div className={styles.noHistory}>
-                      <p>No previous season data available</p>
-                    </div>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </>

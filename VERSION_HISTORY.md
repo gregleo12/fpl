@@ -2,7 +2,27 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 252+ versions
-**Current Version:** v3.0.9 (December 18, 2025)
+**Current Version:** v3.0.10 (December 18, 2025)
+
+---
+
+## v3.0.10 - Improve History Tab UX (Dec 18, 2025)
+
+**PATCH RELEASE:** Improve History tab ordering and add current season in both player modals.
+
+### UI Improvements
+- **Reverse Season Order:** Most recent season now shown first (was oldest first)
+- **Add Current Season:** 2024/25 season now displayed at top with "(Current)" label
+  - Shows current season stats from `data.totals` or `player` data
+  - Includes: points, goals, assists, minutes, current price
+- **Applied to Both Modals:**
+  - My Team PlayerModal: Card-based layout
+  - Players Tab PlayerDetailModal: Table-based layout
+
+### Technical Changes
+- Reversed `pastSeasons` array using `[...data.pastSeasons].reverse()`
+- Added current season as first item in history list
+- Current season pulls from existing data (no new API calls)
 
 ---
 
