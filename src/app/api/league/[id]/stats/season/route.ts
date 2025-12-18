@@ -77,19 +77,36 @@ export async function GET(
     `, [leagueId]);
     const managers = managersResult.rows;
 
+    // Get current GW for value rankings
+    let currentGW = maxStartedGW;
+    try {
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const currentEvent = bootstrapData?.events?.find((e: any) => e.is_current);
+        if (currentEvent) {
+          currentGW = currentEvent.id;
+        }
+      }
+    } catch (error) {
+      console.log('Could not fetch current GW for value rankings, using maxStartedGW');
+    }
+
     // Calculate season statistics
     const [
       captainLeaderboard,
       chipPerformance,
       streaksData,
       bestWorstGameweeks,
-      trendsData
+      trendsData,
+      valueRankings
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
       calculateStreaks(db, leagueId, completedGameweeks, managers),
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
+      getValueRankings(managers, currentGW),
     ]);
 
     return NextResponse.json({
@@ -105,6 +122,7 @@ export async function GET(
         worstGameweeks: bestWorstGameweeks.worst,
       },
       trends: trendsData,
+      valueRankings,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -925,4 +943,79 @@ async function calculateTrendsData(
   return {
     chips,
   };
+}
+
+// Calculate value rankings from FPL API (fresh data, not cached)
+async function getValueRankings(managers: any[], currentGW: number) {
+  try {
+    const valueData = await Promise.all(managers.map(async (manager) => {
+      try {
+        const picksRes = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${currentGW}/picks/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        if (!picksRes.ok) {
+          console.log(`[Value Rankings] Failed to fetch picks for ${manager.entry_id}`);
+          return null;
+        }
+
+        const picksData = await picksRes.json();
+
+        // Team value from entry_history
+        const teamValue = (picksData.entry_history?.value || 1000) / 10;
+        const bank = (picksData.entry_history?.bank || 0) / 10;
+
+        // Effective value = sum of selling prices + bank
+        // IMPORTANT: Reuse K-36 calculation logic for consistency
+        const picks = picksData.picks || [];
+        let effectiveValue = bank;
+
+        if (picks.length > 0 && picks[0].selling_price !== undefined) {
+          const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.selling_price || 0), 0);
+          effectiveValue = (sellTotal / 10) + bank;
+        } else if (picks.length > 0 && picks[0].purchase_price !== undefined) {
+          // Fallback to purchase_price if selling_price not available
+          const sellTotal = picks.reduce((sum: number, p: any) => sum + (p.purchase_price || 0), 0);
+          effectiveValue = (sellTotal / 10) + bank;
+          console.log(`[Value Rankings] Using purchase_price for ${manager.entry_id}`);
+        } else {
+          // Ultimate fallback: use team value
+          effectiveValue = teamValue;
+          console.log(`[Value Rankings] No selling_price or purchase_price for ${manager.entry_id}, using team value`);
+        }
+
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          team_value: teamValue,
+          effective_value: effectiveValue,
+          bank: bank,
+          value_gain: teamValue - 100.0, // Gain from starting £100m
+        };
+      } catch (error) {
+        console.error(`[Value Rankings] Error for ${manager.entry_id}:`, error);
+        return null;
+      }
+    }));
+
+    // Filter out nulls and sort
+    const validData = valueData.filter(d => d !== null);
+
+    return {
+      teamValue: [...validData].sort((a, b) => b.team_value - a.team_value),
+      effectiveValue: [...validData].sort((a, b) => b.effective_value - a.effective_value),
+    };
+  } catch (error) {
+    console.error('Error calculating value rankings:', error);
+    return {
+      teamValue: [],
+      effectiveValue: [],
+    };
+  }
 }

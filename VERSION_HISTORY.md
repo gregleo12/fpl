@@ -1,8 +1,46 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 253+ versions
-**Current Version:** v3.0.13 (December 18, 2025)
+**Total Releases:** 254+ versions
+**Current Version:** v3.0.14 (December 18, 2025)
+
+---
+
+## v3.0.14 - Add Value Rankings to Season Stats (Dec 18, 2025)
+
+**FEATURE RELEASE:** Add Team Value and Effective Value leaderboards to Season Stats (K-37).
+
+### New Features
+- **Value Rankings Leaderboard:** Shows two new rankings in Season Stats
+  - **Team Value:** Total squad value (buy price)
+  - **Effective Value:** Spendable value (sell price + bank)
+  - Toggle between Team and Effective views
+  - Top 5 in card, full 20 managers in modal
+  - Shows gain from starting £100.0m
+
+### Technical Implementation
+- Added `getValueRankings()` function to `/api/league/[id]/stats/season/route.ts`
+- Fetches fresh data from FPL API (value changes daily, not cached)
+- Reuses K-36 Effective Value calculation logic for consistency:
+  - Team value: `entry_history.value / 10`
+  - Bank: `entry_history.bank / 10`
+  - Effective value: `(sum of selling_price / 10) + bank`
+  - Fallback to purchase_price if selling_price unavailable
+- Created `ValueLeaderboard.tsx` component with Team/Eff toggle
+- Integrated into SeasonView.tsx Season Stats section
+
+### Data Source
+- Always fetches from FPL API (not database)
+- Uses `/api/entry/{entry_id}/event/{current_gw}/picks/` endpoint
+- Current gameweek determined from bootstrap-static
+
+### UI/UX
+- Matches existing leaderboard styling (dark purple gradient)
+- 📈 emoji icon for value rankings
+- Toggle buttons: "Team" | "Eff"
+- Shows value in £X.Xm format
+- Shows gain from starting value (+£X.Xm)
+- Click to view full rankings in modal
 
 ---
 
