@@ -7,6 +7,8 @@ import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
 import { GameweekWinners } from './sections/GameweekWinners';
 import { TopPerformers } from './sections/TopPerformers';
+import { GWPointsLeaders, type GWRanking } from './sections/GWPointsLeaders';
+import { GWRankingsModal } from './GWRankingsModal';
 import { SeasonView } from './SeasonView';
 import { MyTeamView } from './MyTeamView';
 import { PlayersTab } from '@/components/Players/PlayersTab';
@@ -85,6 +87,8 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
   const [stats, setStats] = useState<GameweekStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [gwRankings, setGwRankings] = useState<GWRanking[]>([]);
+  const [showRankingsModal, setShowRankingsModal] = useState(false);
 
   useEffect(() => {
     if (view === 'gameweek') {
@@ -97,14 +101,26 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
     setError('');
 
     try {
-      const response = await fetch(`/api/league/${leagueId}/stats/gameweek/${gw}`);
+      // Fetch both stats and rankings in parallel
+      const [statsResponse, rankingsResponse] = await Promise.all([
+        fetch(`/api/league/${leagueId}/stats/gameweek/${gw}`),
+        fetch(`/api/league/${leagueId}/stats/gameweek/${gw}/rankings`)
+      ]);
 
-      if (!response.ok) {
+      if (!statsResponse.ok) {
         throw new Error('Failed to fetch gameweek stats');
       }
 
-      const data = await response.json();
-      setStats(data);
+      const statsData = await statsResponse.json();
+      setStats(statsData);
+
+      // Rankings might fail for upcoming GWs, handle gracefully
+      if (rankingsResponse.ok) {
+        const rankingsData = await rankingsResponse.json();
+        setGwRankings(rankingsData.rankings || []);
+      } else {
+        setGwRankings([]);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load stats');
     } finally {
@@ -190,6 +206,10 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
           {/* Stats Sections */}
           {!isLoading && !error && stats && (
             <div className={styles.sections}>
+              <GWPointsLeaders
+                data={gwRankings}
+                onViewFullRankings={() => setShowRankingsModal(true)}
+              />
               <CaptainPicks data={stats.captainPicks} totalManagers={stats.totalManagers} />
               <ChipsPlayed data={stats.chipsPlayed} />
               <HitsTaken data={stats.hitsTaken} />
@@ -219,6 +239,15 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
       {view === 'players' && (
         <PlayersTab />
       )}
+
+      {/* GW Rankings Modal */}
+      <GWRankingsModal
+        isOpen={showRankingsModal}
+        onClose={() => setShowRankingsModal(false)}
+        gameweek={selectedGW}
+        rankings={gwRankings}
+        myTeamId={myTeamId}
+      />
     </div>
   );
 }

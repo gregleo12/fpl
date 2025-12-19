@@ -2,7 +2,84 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.1 (December 19, 2025)
+**Current Version:** v3.3.2 (December 19, 2025)
+
+---
+
+## v3.3.2 - K-52: Add Gameweek Points Rankings Feature (Dec 19, 2025)
+
+**NEW FEATURE:** Added GW points rankings to see who scored the most points in each gameweek, regardless of H2H results.
+
+### Why This Feature?
+- **Bragging rights:** See who "won" the gameweek with highest points
+- **Performance context:** Understand your GW performance relative to league
+- **Pure scoring:** Rankings based on points, not H2H matchup luck
+
+### What's New
+
+**1. Stats Tab → GW Points Leaders Card**
+- Shows top 3 highest scorers for selected gameweek
+- Medal icons (🥇🥈🥉) for top 3
+- "View Full Rankings" button opens complete rankings modal
+- Appears first in gameweek stats sections
+
+**2. My Team → GW Points Tile (Now Clickable)**
+- Click "GW PTS" tile to open detailed breakdown
+- Shows:
+  - Big points number with "Xth / 20" rank badge
+  - GW winner name and points
+  - Your rank in league
+  - Gap to 1st place (if not 1st)
+  - Link to view full GW rankings
+
+**3. GW Rankings Modal (Full List)**
+- All managers ranked by GW points
+- Handles ties correctly (same points = same rank)
+- Highlights your row with green background
+- Medal emojis for top 3
+- Scrollable list for all league members
+
+### Technical Implementation
+
+**New API Endpoint:**
+- `/api/league/[id]/stats/gameweek/[gw]/rankings`
+- Returns managers sorted by points DESC
+- Calculates proper ranking with tie handling
+
+**New Components:**
+- `GWPointsLeaders.tsx` - Top 3 card for Stats tab
+- `GWRankingsModal.tsx` - Full rankings modal (reusable)
+- `GWPointsModal.tsx` - GW points breakdown for My Team
+
+**Modified Components:**
+- `StatsHub.tsx` - Integrated GW Points Leaders card
+- `MyTeamTab.tsx` - Made GW PTS tile clickable
+
+### Data Source
+- Uses `manager_gw_history` table with `points` column
+- Sorts by points DESC, then player name ASC
+- Proper tie handling: multiple managers can share same rank
+
+### Files Created
+- `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts`
+- `/src/components/Stats/sections/GWPointsLeaders.tsx`
+- `/src/components/Stats/GWRankingsModal.tsx`
+- `/src/components/Stats/GWRankingsModal.module.css`
+- `/src/components/Dashboard/GWPointsModal.tsx`
+- `/src/components/Dashboard/GWPointsModal.module.css`
+
+### Files Modified
+- `/src/components/Stats/StatsHub.tsx`
+- `/src/components/Dashboard/MyTeamTab.tsx`
+
+### Result
+- Stats tab shows top 3 GW scorers ✅
+- Click opens full rankings modal ✅
+- My Team GW PTS tile now clickable ✅
+- Modal shows rank, winner, gap to 1st ✅
+- Works for all gameweeks (GW1-GW38) ✅
+- Handles ties correctly ✅
+- User's row highlighted in rankings ✅
 
 ---
 

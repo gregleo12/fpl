@@ -7,6 +7,7 @@ import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { GWSelector } from '@/components/PitchView/GWSelector';
 import { RankProgressModal } from './RankProgressModal';
 import { PointsAnalysisModal } from './PointsAnalysisModal';
+import { GWPointsModal } from './GWPointsModal';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
@@ -42,6 +43,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   // Modal states
   const [showRankModal, setShowRankModal] = useState(false);
   const [showPointsModal, setShowPointsModal] = useState(false);
+  const [showGWPointsModal, setShowGWPointsModal] = useState(false);
 
   // History data for modals
   const [historyData, setHistoryData] = useState<any>(null);
@@ -153,7 +155,11 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         <div className={styles.statBoxesContainer}>
           {/* Row 1: This Gameweek */}
           <div className={styles.statBoxRow}>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowGWPointsModal(true)}
+              title="Click to view GW points breakdown"
+            >
               <div className={styles.statBoxValue}>{gwPoints}</div>
               <div className={styles.statBoxLabel}>GW PTS</div>
             </div>
@@ -243,6 +249,16 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           />
         </>
       )}
+
+      {/* GW Points Modal */}
+      <GWPointsModal
+        isOpen={showGWPointsModal}
+        onClose={() => setShowGWPointsModal(false)}
+        gameweek={selectedGW}
+        points={gwPoints}
+        leagueId={leagueId}
+        myTeamId={myTeamId}
+      />
     </div>
   );
 }
