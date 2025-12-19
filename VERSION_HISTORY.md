@@ -1,8 +1,32 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 274+ versions
-**Current Version:** v3.2.19 (December 19, 2025)
+**Total Releases:** 275+ versions
+**Current Version:** v3.2.20 (December 19, 2025)
+
+---
+
+## v3.2.20 - Rename 'Rankings' Tab to 'Rank' in Bottom Navigation (Dec 19, 2025)
+
+**UI CHANGE:** Shortened bottom navigation tab from "Rankings" to "Rank" for cleaner, more compact design.
+
+### Change
+- Bottom navigation: "Rankings" → "Rank"
+- Icon remains: BarChart3 (unchanged)
+- Functionality: No change (still shows league standings)
+
+### Rationale
+- **Shorter label:** Saves space on mobile navigation
+- **Cleaner design:** More compact, less cluttered
+- **Consistent with "Rivals":** Both tabs now use concise, punchy names
+
+### Files Modified
+- `/src/app/dashboard/page.tsx` (line 223)
+
+### Result
+- More compact tab label ✅
+- Cleaner bottom navigation ✅
+- Better mobile space utilization ✅
 
 ---
 

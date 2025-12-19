@@ -220,7 +220,7 @@ export default function DashboardPage() {
               color={activeTab === 'league' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
               className={styles.tabIcon}
             />
-            <span className={styles.tabLabel}>Rankings</span>
+            <span className={styles.tabLabel}>Rank</span>
           </button>
           <button
             className={`${styles.tab} ${activeTab === 'fixtures' ? styles.active : ''}`}
