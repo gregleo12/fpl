@@ -2,7 +2,65 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.0 (December 19, 2025)
+**Current Version:** v3.3.1 (December 19, 2025)
+
+---
+
+## v3.3.1 - K-51: Fix Chip Badge Icon Alignment (Dec 19, 2025)
+
+**UI FIX:** Fixed vertical alignment of chip badge icons (BB, TC, WC, FH) with text.
+
+### Problem
+Chip badge icons appeared slightly higher than text:
+- ◎ BB - icon offset above "BB" text
+- ☆ TC - icon offset above "TC" text
+- ♻ WC - icon offset above "WC" text
+- ⚡ FH - icon offset above "FH" text
+
+### Investigation
+
+**Component Location:**
+- `/src/components/Stats/sections/ChipsPlayed.tsx` (lines 47-50)
+- Uses Lucide icons: Target (BB), Star (TC), RefreshCw (WC), Zap (FH)
+
+**Current CSS Found:**
+```css
+.chipBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1;  /* ← ROOT CAUSE */
+}
+```
+
+**Root Cause:**
+`line-height: 1` created tight vertical spacing where:
+1. Text baseline didn't align with icon's vertical center
+2. Font metrics (ascenders/descenders) pushed text slightly off-center
+3. Lucide icons centered in flex container, but text used baseline alignment
+
+### Fix Applied
+
+Changed `line-height: 1` → `line-height: 1.2` to give text proper vertical breathing room.
+
+```css
+.chipBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1.2; /* Improved from 1 for better icon-text alignment */
+}
+```
+
+### Files Modified
+- `/src/components/Stats/sections/Section.module.css` (line 264)
+
+### Result
+- BB icon vertically centered with "BB" text ✅
+- TC icon vertically centered with "TC" text ✅
+- WC icon vertically centered with "WC" text ✅
+- FH icon vertically centered with "FH" text ✅
+- Consistent alignment across all chip badges ✅
 
 ---
 

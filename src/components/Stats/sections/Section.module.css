@@ -261,7 +261,7 @@
   background: rgba(0, 255, 135, 0.1);
   border-radius: 4px;
   white-space: nowrap;
-  line-height: 1;
+  line-height: 1.2; /* Improved from 1 for better icon-text alignment */
 }
 
 .chipIcon {
