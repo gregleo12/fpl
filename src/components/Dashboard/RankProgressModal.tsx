@@ -30,6 +30,16 @@ export function RankProgressModal({ isOpen, onClose, data }: Props) {
   const worst = data.reduce((max, d) => d.overall_rank > max.overall_rank ? d : max, data[0]);
   const current = data[data.length - 1];
 
+  // Calculate Top % (total FPL players ~12.66M)
+  const TOTAL_PLAYERS = 12660000;
+  const getTopPercent = (rank: number): string => {
+    const percent = (rank / TOTAL_PLAYERS) * 100;
+    if (percent < 0.01) return '0.01';
+    if (percent < 0.1) return percent.toFixed(2);
+    if (percent < 1) return percent.toFixed(1);
+    return percent.toFixed(0);
+  };
+
   // Custom tooltip for chart
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -51,14 +61,17 @@ export function RankProgressModal({ isOpen, onClose, data }: Props) {
       <div className={styles.summaryRow}>
         <div className={styles.summaryItem}>
           <span className={styles.summaryValue}>{current.overall_rank.toLocaleString()}</span>
+          <span className={styles.topPercent}>TOP {getTopPercent(current.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Current</span>
         </div>
         <div className={styles.summaryItem}>
           <span className={`${styles.summaryValue} ${styles.best}`}>{best.overall_rank.toLocaleString()}</span>
+          <span className={styles.topPercent}>TOP {getTopPercent(best.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Best (GW{best.event})</span>
         </div>
         <div className={styles.summaryItem}>
           <span className={`${styles.summaryValue} ${styles.worst}`}>{worst.overall_rank.toLocaleString()}</span>
+          <span className={styles.topPercent}>TOP {getTopPercent(worst.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Worst (GW{worst.event})</span>
         </div>
       </div>

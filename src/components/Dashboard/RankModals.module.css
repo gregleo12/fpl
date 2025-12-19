@@ -62,6 +62,15 @@
   font-weight: 600;
 }
 
+.topPercent {
+  display: block;
+  font-size: 0.8rem;
+  color: #00ff87;
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
 /* Chart Container */
 .chartContainer {
   background: rgba(0, 0, 0, 0.3);

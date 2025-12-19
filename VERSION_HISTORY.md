@@ -1,8 +1,63 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 267+ versions
-**Current Version:** v3.2.12 (December 19, 2025)
+**Total Releases:** 268+ versions
+**Current Version:** v3.2.13 (December 19, 2025)
+
+---
+
+## v3.2.13 - K-47: Add Top % to Overall Rank Modal (Dec 19, 2025)
+
+**ENHANCEMENT:** Added Top % context to rank numbers in Overall Rank Progress modal.
+
+### Problem
+Rank numbers (e.g., 194,426) lacked context without knowing what percentile they represent out of ~12.66M total FPL players.
+
+### Solution
+Added "Top %" display to all three summary boxes showing rank as a percentage of total players.
+
+**Display:**
+```
+┌───────────────┐   ┌───────────────┐   ┌───────────────┐
+│    194,426    │   │    194,426    │   │  3,379,511    │
+│   TOP 1.5%    │   │   TOP 1.5%    │   │   TOP 27%     │
+│    CURRENT    │   │  BEST (GW16)  │   │  WORST (GW1)  │
+└───────────────┘   └───────────────┘   └───────────────┘
+```
+
+### Calculation Logic
+```typescript
+const TOTAL_PLAYERS = 12660000; // ~12.66M FPL players
+
+const getTopPercent = (rank: number): string => {
+  const percent = (rank / TOTAL_PLAYERS) * 100;
+  if (percent < 0.01) return '0.01';      // Elite (rank 1-1,265)
+  if (percent < 0.1) return percent.toFixed(2);   // e.g., "0.05%"
+  if (percent < 1) return percent.toFixed(1);     // e.g., "0.5%"
+  return percent.toFixed(0);                      // e.g., "27%"
+};
+```
+
+**Examples:**
+- Rank 194,426 / 12,660,000 = 1.54% → "TOP 1.5%"
+- Rank 3,379,511 / 12,660,000 = 26.7% → "TOP 27%"
+- Rank 1,266 / 12,660,000 = 0.01% → "TOP 0.01%"
+
+### UI Details
+- **Color**: Green accent (`#00ff87`) matching brand
+- **Placement**: Between rank value and label
+- **Font Size**: 0.8rem (slightly larger than label)
+- **Formatting**: Auto-adjusts decimals based on precision needed
+
+### Benefits
+- ✅ Provides meaningful context for rank numbers
+- ✅ Shows relative performance out of millions of players
+- ✅ Helps users understand achievement level (Top 1% vs Top 20%)
+- ✅ Consistent display across Current, Best, and Worst ranks
+
+### Files Modified
+- `/src/components/Dashboard/RankProgressModal.tsx` - Add Top % calculation and display
+- `/src/components/Dashboard/RankModals.module.css` - Add `.topPercent` styling
 
 ---
 
