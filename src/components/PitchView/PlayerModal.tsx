@@ -95,13 +95,9 @@ function calculateStatPoints(stat: string, value: number, position: number): num
       return value; // Bonus points are 1:1
 
     case 'defensive_contribution':
-      // DEF: +2 per 10 DC, MID: +2 per 12 DC
-      if (position === 2) {
-        return Math.floor(value / 10) * 2;
-      }
-      if (position === 3) {
-        return Math.floor(value / 12) * 2;
-      }
+      // DEF: +2 if DC >= 10 (one-time bonus), MID: +2 if DC >= 12
+      if (position === 2) return value >= 10 ? 2 : 0;
+      if (position === 3) return value >= 12 ? 2 : 0;
       return 0; // GKP and FWD don't get DC points
 
     default:

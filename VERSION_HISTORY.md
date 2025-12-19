@@ -1,8 +1,63 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 269+ versions
-**Current Version:** v3.2.14 (December 19, 2025)
+**Total Releases:** 270+ versions
+**Current Version:** v3.2.15 (December 19, 2025)
+
+---
+
+## v3.2.15 - K-48: Fix DC Points Calculation (Cap at +2) (Dec 19, 2025)
+
+**BUG FIX:** Fixed Defensive Contribution points being calculated as cumulative instead of one-time bonus.
+
+### Problem
+DC points were calculated as cumulative, awarding multiple +2 bonuses for exceeding threshold:
+- Senesi (DEF) with 21 DC incorrectly showed **+4 pts** (21 ÷ 10 = 2.1 → floor(2.1) × 2 = +4)
+- Should only award **+2 pts** (one-time bonus when threshold reached)
+
+### Root Cause
+```typescript
+// WRONG - cumulative calculation
+if (position === 2) {
+  return Math.floor(value / 10) * 2;  // 21 DC → floor(2.1) * 2 = +4 pts
+}
+if (position === 3) {
+  return Math.floor(value / 12) * 2;  // 24 DC → floor(2) * 2 = +4 pts
+}
+```
+
+### Solution
+Changed to one-time bonus when threshold reached:
+```typescript
+// CORRECT - one-time bonus
+if (position === 2) return value >= 10 ? 2 : 0;  // 21 DC → +2 pts
+if (position === 3) return value >= 12 ? 2 : 0;  // 24 DC → +2 pts
+```
+
+### FPL DC Rules (Correctly Implemented)
+| Position | Threshold | Bonus | Max per Match |
+|----------|-----------|-------|---------------|
+| **DEF** | 10 DC | +2 pts | +2 pts (once) |
+| **MID** | 12 DC | +2 pts | +2 pts (once) |
+
+**Key:** Reaching threshold = +2 pts. Going above threshold = still +2 pts (no extra).
+
+### Examples (After Fix)
+- Senesi (DEF): 21 DC → **+2 pts** (not +4) ✅
+- Collins (DEF): 9 DC → **0 pts** (below threshold)
+- Midfielder: 24 DC → **+2 pts** (not +4) ✅
+- Midfielder: 11 DC → **0 pts** (below threshold)
+
+### Files Modified
+- `/src/components/PitchView/PlayerModal.tsx` (lines 97-101)
+
+### Verification
+- [x] DEF with 10+ DC shows +2 pts (not more)
+- [x] DEF with 20+ DC still shows +2 pts
+- [x] MID with 12+ DC shows +2 pts
+- [x] MID with 24+ DC still shows +2 pts
+- [x] Modal total now matches pitch card total
+- [x] Players below threshold show 0 DC pts
 
 ---
 
