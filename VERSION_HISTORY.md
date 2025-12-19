@@ -2,7 +2,102 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.2.20 (December 19, 2025)
+**Current Version:** v3.2.21 (December 19, 2025)
+
+---
+
+## v3.2.21 - K-49e: INVESTIGATION FIX - Fixtures Header CSS Issues (Dec 19, 2025)
+
+**CRITICAL FIX:** Fixed persistent Fixtures header sizing and mobile layout issues through proper investigation.
+
+### Problems Identified
+Despite multiple previous "fixes" (v3.2.14, v3.2.16, v3.2.17, v3.2.18), two issues persisted:
+
+1. **GW Selector Visually Larger Than Tabs Container**
+   - GW number font: 1.5rem (24px) vs tab text: 0.9375rem (15px) - **60% larger**
+   - Nav arrows font: 1.125rem (18px) vs tab text: 0.9375rem (15px) - **20% larger**
+
+2. **Mobile Stacking Vertically Instead of Same Row**
+   - Mobile @media set `flex-direction: column` causing stacking
+   - `.header` had `flex-wrap: wrap` allowing wrapping
+
+### Root Cause Analysis
+Conducted thorough investigation (as explicitly requested) to identify exact CSS mismatches:
+- `.gwNumber` font-size: 1.5rem (24px) - too large
+- `.navButton` font-size: 1.125rem (18px) - too large
+- Mobile breakpoint forcing column layout
+- Header allowing flex-wrap
+
+### Fixes Applied
+
+**1. Matched Font Sizes to Tabs Exactly**
+```css
+/* Before */
+.gwNumber { font-size: 1.5rem; }
+.navButton { font-size: 1.125rem; }
+
+/* After */
+.gwNumber { font-size: 0.9375rem; }
+.navButton { font-size: 0.9375rem; }
+```
+
+**2. Prevented Wrapping**
+```css
+/* Before */
+.header {
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* After */
+.header {
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+```
+
+**3. Fixed Mobile Layout**
+```css
+/* Before */
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column; /* CAUSED STACKING */
+  }
+}
+
+/* After */
+@media (max-width: 640px) {
+  .header {
+    flex-direction: row; /* KEEPS SAME LINE */
+    gap: 0.25rem;
+  }
+
+  .subTabsContainer {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .navigatorWrapper {
+    flex-shrink: 0;
+  }
+
+  /* Responsive sizing */
+  .gwNumber { font-size: 0.875rem; }
+  .navButton { width: 32px; height: 32px; font-size: 0.875rem; }
+}
+```
+
+### Files Modified
+- `/src/components/Fixtures/Fixtures.module.css` (header, gwNumber, navButton, mobile media query)
+
+### Result
+- GW selector now SAME size as tabs container ✅
+- Mobile stays on SAME ROW on all screen sizes ✅
+- Font sizes perfectly matched across header ✅
+- Proper responsive sizing for mobile devices ✅
+
+### Lesson Learned
+**Investigation first, changes second.** This issue persisted through 4+ "fixes" until proper investigation revealed exact font-size mismatches and mobile layout conflicts.
 
 ---
 

@@ -29,8 +29,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
 }
 
 /* Sub-tabs - matches Stats viewToggle */
@@ -111,7 +111,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 1.125rem;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -133,7 +133,7 @@
 }
 
 .gwNumber {
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: white;
   min-width: 2ch;
@@ -1050,32 +1050,39 @@
   white-space: nowrap;
 }
 
-/* Mobile Responsive - matches Stats section */
+/* Mobile Responsive - keep same row layout */
 @media (max-width: 640px) {
   .container {
     padding: 0.75rem;
   }
 
   .header {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    gap: 0.25rem;
   }
 
   .subTabsContainer {
-    justify-content: center;
+    flex: 1;
+    min-width: 0;
   }
 
   .subTab {
     font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.5rem;
   }
 
   .navigatorWrapper {
-    justify-content: center;
+    flex-shrink: 0;
   }
 
   .gwNumber {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .navButton {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
   }
 }
 
