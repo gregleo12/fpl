@@ -195,9 +195,14 @@
 /* K-54c: Edge-to-edge containers for iPhone 12 Pro (390px width) */
 @media (max-width: 480px) {
   .container {
-    padding: 4px; /* Nearly edge-to-edge (was 0.75rem = 12px) */
-    background: transparent; /* Remove any background effect */
-    box-shadow: none; /* Ensure no shadow creates visual container */
+    /* Use negative margins to compensate for parent .content padding (1rem = 16px) */
+    margin-left: -1rem;
+    margin-right: -1rem;
+    /* Then add back the desired 4px padding */
+    padding: 4px;
+    /* Remove any background effect */
+    background: transparent;
+    box-shadow: none;
   }
 
   .sections {

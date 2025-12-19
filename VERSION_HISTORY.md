@@ -2,69 +2,53 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.9 (December 19, 2025)
+**Current Version:** v3.3.10 (December 19, 2025)
 
 ---
 
-## v3.3.9 - K-54c: Stats Tab - Edge-to-Edge Containers (Dec 19, 2025)
+## v3.3.10 - K-54c HOTFIX: Stats Tab - Edge-to-Edge Containers Fix (Dec 19, 2025)
 
-**UI IMPROVEMENT:** Reduced edge padding to nearly edge-to-edge and removed visible outer background container for a cleaner, more immersive mobile experience.
+**BUG FIX:** Fixed edge-to-edge implementation by using negative margins to compensate for parent container padding.
 
-### Changes Made
+### Problem
+v3.3.9 attempted to reduce edge padding to 4px, but the parent `.content` container (from dashboard page) has 1rem (16px) padding on mobile. The total gap was still 20px (16px parent + 4px container), not the desired 4px.
 
-**1. Reduced Edge Padding (Nearly Edge-to-Edge)**
-
-Reduced container padding from 12px to 4px on mobile devices:
-
-```css
-@media (max-width: 480px) {
-  .container {
-    padding: 4px; /* Was 0.75rem = 12px */
-  }
-}
-```
-
-**Impact:**
-- Content now nearly touches phone edges (~4-6px total gap)
-- More screen real estate for content
-- Cleaner, more modern mobile interface
-- Consistent with navigation bar edge-to-edge design
-
-**2. Removed Outer Background Container**
-
-Made container background transparent to remove the "squared" visual effect:
+### Solution
+Used negative margins on StatsHub container to pull content back to the edges:
 
 ```css
 @media (max-width: 480px) {
   .container {
-    background: transparent; /* Remove any background effect */
-    box-shadow: none; /* Ensure no shadow creates visual container */
+    /* Compensate for parent .content padding (1rem = 16px) */
+    margin-left: -1rem;
+    margin-right: -1rem;
+    /* Then add back the desired 4px padding */
+    padding: 4px;
+    background: transparent;
+    box-shadow: none;
   }
 }
 ```
 
-**Impact:**
-- No visible outer container background
-- Individual section cards float on app background
-- Cleaner visual hierarchy
-- Less visual noise
+**Math:**
+- Parent `.content` padding: 16px (pushes content in)
+- Container negative margin: -16px (pulls content back out)
+- Container padding: 4px (final desired gap)
+- **Result: 16px - 16px + 4px = 4px total gap ✓**
 
-**3. Reduced Section Gap**
-
-Slightly reduced spacing between sections for better vertical compactness:
-
-```css
-@media (max-width: 480px) {
-  .sections {
-    gap: 0.75rem; /* Was 1rem */
-  }
-}
-```
+### Impact
+- Content now truly nearly touches phone edges (4px gap)
+- Maximizes screen real estate on mobile
+- Cleaner, more immersive interface
 
 ### Technical Details
 
 **Files Modified:**
-- `/src/components/Stats/StatsHub.module.css` - Container padding and background changes
+- `/src/components/Stats/StatsHub.module.css` - Added negative margins
+
+**Root Cause:**
+- Dashboard page's `<main className={styles.content}>` wrapper has built-in padding for ALL tabs
+- Stats tab needed to override this padding without affecting other tabs
 
 **Applies To:**
 - Team tab (MyTeamView)
@@ -74,7 +58,11 @@ Slightly reduced spacing between sections for better vertical compactness:
 
 **Target Device:** iPhone 12 Pro (390px width) and similar mobile devices
 
-**Testing:** Verified on staging at https://fpl-staging-production.up.railway.app
+---
+
+## v3.3.9 - K-54c: Stats Tab - Edge-to-Edge Containers (Dec 19, 2025)
+
+**UI IMPROVEMENT (INCOMPLETE - SEE v3.3.10):** First attempt at reducing edge padding. Worked partially but didn't account for parent container padding.
 
 ---
 
