@@ -1,8 +1,61 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 264+ versions
-**Current Version:** v3.2.9 (December 19, 2025)
+**Total Releases:** 265+ versions
+**Current Version:** v3.2.10 (December 19, 2025)
+
+---
+
+## v3.2.10 - K-44: Add Defensive Stats to Players Tab (Dec 19, 2025)
+
+**FEATURE:** Added DC (Defensive Contribution) and DC/90 columns to Players Tab.
+
+### Problem
+Players Tab was missing defensive contribution stats, making it harder to evaluate defenders and goalkeepers effectively.
+
+### Solution
+Added two new columns to the "All Stats" view in the Defensive section:
+- **DC** - Defensive Contribution (Clean Sheets + Saves)
+- **DC/90** - Defensive Contribution per 90 minutes
+
+### Calculation Logic
+```typescript
+DC = clean_sheets + saves
+DC/90 = (DC / minutes) * 90
+```
+
+**Note:** FPL API doesn't provide individual defensive stats (blocks, interceptions, clearances), so DC is calculated using the available defensive metrics: clean_sheets and saves.
+
+### Column Placement
+Added after "Saves" column in the Defensive section:
+```
+... CS | GC | Saves | DC | DC/90 | Bonus | BPS ...
+```
+
+### Features
+- ✅ DC column shows total defensive contribution
+- ✅ DC/90 normalizes by minutes played (formatted to 2 decimals)
+- ✅ Both columns are sortable (click header to sort)
+- ✅ Tooltips explain what each column represents
+- ✅ Works in "All Stats" view (not shown in "Compact Stats")
+- ✅ Goalkeepers and defenders show higher values as expected
+
+### Implementation Details
+**PlayersTab.tsx:**
+- Added computed `dc` and `dc_per_90` properties to player objects on fetch
+- Calculated once when data loads for better performance
+
+**columns.ts:**
+- Added DC column definition (no format needed, direct value)
+- Added DC/90 column with 2-decimal formatting
+
+**Sorting:**
+- DC and DC/90 are now sortable since they're pre-calculated properties
+- Works seamlessly with existing sort infrastructure
+
+### Files Modified
+- `/src/components/Players/PlayersTab.tsx` - Add computed DC fields
+- `/src/components/Players/columns.ts` - Add DC and DC/90 column definitions
 
 ---
 

@@ -129,7 +129,16 @@ export function PlayersTab() {
         short_name: t.short
       }));
 
-      setPlayers(data.players);
+      // Add calculated defensive contribution fields
+      const playersWithDC = data.players.map((p: Player) => ({
+        ...p,
+        dc: (p.clean_sheets || 0) + (p.saves || 0),
+        dc_per_90: p.minutes > 0
+          ? parseFloat((((p.clean_sheets || 0) + (p.saves || 0)) / p.minutes * 90).toFixed(2))
+          : 0
+      }));
+
+      setPlayers(playersWithDC);
       setTeams(teamsList);
 
       // Initialize filters with all teams

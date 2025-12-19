@@ -157,6 +157,21 @@ export const ALL_COLUMNS: ColumnDef[] = [
     width: 70,
     align: 'center'
   },
+  {
+    key: 'dc',
+    label: 'DC',
+    tooltip: 'Defensive Contribution (Clean Sheets + Saves)',
+    width: 60,
+    align: 'center'
+  },
+  {
+    key: 'dc_per_90',
+    label: 'DC/90',
+    tooltip: 'Defensive Contribution per 90 minutes',
+    width: 70,
+    format: (v) => v ? parseFloat(v).toFixed(2) : '0.00',
+    align: 'center'
+  },
 
   // Bonus & Discipline
   {
