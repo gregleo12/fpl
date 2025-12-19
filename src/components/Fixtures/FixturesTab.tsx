@@ -10,6 +10,7 @@ import { LiveMatchModal } from './LiveMatchModal';
 import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
 import { TeamFixtures } from './TeamFixtures';
+import { Swords, Calendar } from 'lucide-react';
 
 // Helper function to format score - show negative scores in parentheses
 function formatScore(score: number): string {
@@ -482,19 +483,21 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     <div className={styles.container}>
       {/* Header - matches Stats section */}
       <div className={styles.header}>
-        {/* Sub-tabs: H2H Matches | Team Fixtures */}
+        {/* Sub-tabs: H2H Matches | Fixtures */}
         <div className={styles.subTabsContainer}>
           <button
             className={`${styles.subTab} ${activeTab === 'h2h' ? styles.subTabActive : ''}`}
             onClick={() => setActiveTab('h2h')}
           >
-            ⚔️ H2H Matches
+            <Swords size={16} />
+            H2H Matches
           </button>
           <button
             className={`${styles.subTab} ${activeTab === 'fixtures' ? styles.subTabActive : ''}`}
             onClick={() => setActiveTab('fixtures')}
           >
-            ⚽ Team Fixtures
+            <Calendar size={16} />
+            Fixtures
           </button>
         </div>
 

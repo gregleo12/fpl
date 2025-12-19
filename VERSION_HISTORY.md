@@ -1,8 +1,83 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 271+ versions
-**Current Version:** v3.2.16 (December 19, 2025)
+**Total Releases:** 272+ versions
+**Current Version:** v3.2.17 (December 19, 2025)
+
+---
+
+## v3.2.17 - K-49c: Fixtures Header Final Polish - Shorter Labels + Icons (Dec 19, 2025)
+
+**UI POLISH:** Shortened labels and replaced emojis with Lucide icons to keep header on same row on all mobile widths.
+
+### Problem
+On smallest mobile widths, tabs and GW selector stacked vertically instead of staying on same row.
+
+**Root cause:** "Team Fixtures" label too long + emojis take extra space.
+
+### Solution
+1. **Shortened Labels**
+   - "⚔️ H2H Matches" → "H2H Matches" (kept text)
+   - "⚽ Team Fixtures" → "Fixtures" (saved ~4 characters)
+
+2. **Replaced Emojis with Lucide Icons**
+   - H2H Matches: `<Swords size={16} />` icon
+   - Fixtures: `<Calendar size={16} />` icon
+   - More compact and consistent than emojis
+
+### Changes Made
+
+**1. Added Lucide Icons Import**
+```tsx
+import { Swords, Calendar } from 'lucide-react';
+```
+
+**2. Updated Button Labels**
+```tsx
+// Before
+⚔️ H2H Matches
+⚽ Team Fixtures
+
+// After
+<Swords size={16} /> H2H Matches
+<Calendar size={16} /> Fixtures
+```
+
+**3. Updated CSS for Icon Layout**
+```css
+.subTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subTab svg {
+  flex-shrink: 0;
+}
+```
+
+### Before vs After
+
+| Element | Before | After |
+|---------|--------|-------|
+| H2H Label | ⚔️ H2H Matches | 🗡 H2H Matches (Lucide icon) |
+| Fixtures Label | ⚽ Team Fixtures | 📅 Fixtures (Lucide icon) |
+| Layout (iPhone SE) | Stacks vertically ❌ | Same row ✅ |
+| Layout (iPhone 15 Pro Max) | Same row | Same row ✅ |
+| Icons | Emojis (inconsistent) | Lucide (consistent) ✅ |
+
+### Files Modified
+- `/src/components/Fixtures/FixturesTab.tsx` (imports + button labels)
+- `/src/components/Fixtures/Fixtures.module.css` (icon flexbox layout)
+
+### Result
+- Tabs and GW selector stay on same row on ALL mobile widths ✅
+- Cleaner, more professional icon design ✅
+- Shorter "Fixtures" label saves space ✅
+- Icons are consistent with app design ✅
+
+### Bundle Impact
+- Dashboard bundle: 58.7 kB → 58.8 kB (+0.1 kB from Lucide icons - negligible)
 
 ---
 
