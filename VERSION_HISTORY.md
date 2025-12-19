@@ -2,7 +2,58 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.6 (December 19, 2025)
+**Current Version:** v3.2.7 (December 19, 2025)
+
+---
+
+## v3.2.7 - K-38/K-39: UI Polish & Player Modal Styling Match (Dec 19, 2025)
+
+**UI FIX:** CSS improvements for K-38/K-39 modals to match Player Modal styling.
+
+### Fix #1: Points Gap Table Full Width
+**Problem:** Table not using full modal width, cramped appearance
+**Solution:**
+- Added `width: 100%` to `.gapTableSection` and `.gapTableContainer`
+- Changed grid from fixed widths `70px 70px 90px 90px` to `1fr 1fr 1fr 1fr`
+- Columns now spread evenly across full modal width
+
+### Fix #2: Table Headers Solid Background
+**Problem:** Content passed behind headers when scrolling (still semi-transparent)
+**Solution:**
+- Changed background from `#0e0a1f` to `rgba(26, 26, 46, 0.98)` (matches modal gradient)
+- Confirmed `position: sticky; top: 0; z-index: 10;` applied
+- Added `backdrop-filter: blur(10px)` for glass morphism effect
+- Changed border color to `rgba(255, 255, 255, 0.15)` for better definition
+- Applies to both `.tableHeader` and `.gapTableHeader`
+
+### Fix #3: Match Player Modal Styling
+**Referenced:** `/src/components/PitchView/PlayerModal.module.css`
+
+**StatTileModal.module.css Changes:**
+- Background: `linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.95) 100%)`
+- Border: Changed from green accent to subtle `rgba(255, 255, 255, 0.1)`
+- Box shadow: `0 20px 60px rgba(0, 0, 0, 0.8)` (deeper, more dramatic)
+- Added fade-in animation: `fadeIn 0.2s ease`
+- Added slide-up animation: `slideUp 0.3s ease`
+- Overlay: `rgba(0, 0, 0, 0.8)` (darker backdrop)
+- Header: Added `backdrop-filter: blur(10px)`
+
+**RankModals.module.css Changes:**
+- `.tableContainer`: Added full width, border, rounded corners
+- `.gapTableContainer`: Changed background to `rgba(0, 0, 0, 0.3)`
+- `.chartContainer`: Updated border to `rgba(255, 255, 255, 0.1)`
+- Consistent dark purple theme throughout
+
+### Impact
+- Professional, polished appearance matching Player Modal
+- Better readability with solid header backgrounds during scroll
+- Full-width tables maximize space usage
+- Consistent dark purple gradient theme across all modals
+- Smooth animations enhance user experience
+
+### Files Changed
+- `StatTileModal.module.css` - Player Modal styling match
+- `RankModals.module.css` - Full width tables, solid headers, dark purple theme
 
 ---
 
