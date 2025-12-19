@@ -215,7 +215,7 @@
   left: 0;
   z-index: 20;
   background: #0e0a1f; /* Solid background - prevent content showing through */
-  min-width: 128px; /* Reduced by 20% from 160px */
+  min-width: 102px; /* Reduced by another 20% from 128px */
   padding: 12px 8px;
   text-align: left;
   font-size: 0.8125rem;
@@ -303,7 +303,7 @@
   left: 0;
   z-index: 10;
   background: #1a1a2e;
-  min-width: 128px; /* Reduced by 20% from 160px */
+  min-width: 102px; /* Reduced by another 20% from 128px */
   padding: 12px 8px;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -424,7 +424,7 @@
   }
 
   .playerHeader {
-    min-width: 112px; /* Reduced by 20% from 140px */
+    min-width: 90px; /* Reduced by another 20% from 112px */
     padding: 10px 6px;
     font-size: 0.75rem;
   }
@@ -436,7 +436,7 @@
   }
 
   .playerCell {
-    min-width: 112px; /* Reduced by 20% from 140px */
+    min-width: 90px; /* Reduced by another 20% from 112px */
     padding: 10px 6px;
   }
 
@@ -473,12 +473,12 @@
   }
 
   .playerHeader {
-    min-width: 104px; /* Reduced by 20% from 130px */
+    min-width: 83px; /* Reduced by another 20% from 104px */
     padding: 8px 6px;
   }
 
   .playerCell {
-    min-width: 104px; /* Reduced by 20% from 130px */
+    min-width: 83px; /* Reduced by another 20% from 104px */
     padding: 8px 6px;
   }
 

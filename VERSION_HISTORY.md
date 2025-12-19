@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.16 (December 19, 2025)
+**Current Version:** v3.3.17 (December 19, 2025)
+
+---
+
+## v3.3.17 - Further Reduce Players Tab PLAYER Column Width (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Reduced PLAYER column width by another 20% for maximum horizontal space efficiency on mobile.
+
+### Changes Made
+
+Reduced sticky PLAYER column width by an additional 20% across all breakpoints:
+
+| Breakpoint | v3.3.16 | v3.3.17 | Total Reduction from Original |
+|------------|---------|---------|-------------------------------|
+| Desktop | 128px | 102px | -58px (36% reduction from 160px) |
+| Tablet (768px) | 112px | 90px | -50px (36% reduction from 140px) |
+| Mobile (480px) | 104px | 83px | -47px (36% reduction from 130px) |
+
+### Impact
+- Maximum horizontal space savings for stats columns
+- Player names truncate earlier with ellipsis
+- Significantly more room for data on mobile screens
+- Optimal balance between player identification and stats visibility
+
+**Example Mobile Display:**
+```
+PLAYER      £       %      PT    Form
+Haaland...  15.0m  73.3%  135   6.6
+Guéhi...    5.3m   40.1%   92   5.6
+```
+
+**Files Modified:**
+- `/src/components/Players/PlayersTab.module.css` - Reduced .playerHeader and .playerCell min-width by another 20%
+
+**Cumulative Changes:**
+- Original width: 160px (desktop), 140px (tablet), 130px (mobile)
+- After v3.3.16: 128px, 112px, 104px (-20%)
+- After v3.3.17: 102px, 90px, 83px (-36% total)
 
 ---
 
