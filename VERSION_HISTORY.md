@@ -2,7 +2,57 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.14 (December 19, 2025)
+**Current Version:** v3.3.15 (December 19, 2025)
+
+---
+
+## v3.3.15 - K-54c: Players Tab Column Formatting Updates (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Improved Players tab column labels and value formatting for better mobile display and clarity.
+
+### Changes Made
+
+**Compact Stats View:**
+
+| Column | Before | After |
+|--------|--------|-------|
+| Value header | £ | Value |
+| Value format | £15.0m | 15.0m |
+| TSB header | TSB | % |
+| TSB format | 73.30% | 73.3% (1 decimal) |
+| Points header | Pts | PT |
+| Form format | 6.60 | 6.6 (1 decimal) |
+
+**Example Compact Stats row:**
+```
+PLAYER              Value    %       PT    Form
+Haaland FWD·MCI     15.0m   73.3%   135   6.6
+```
+
+**All Stats View:**
+
+| Column | Before | After |
+|--------|--------|-------|
+| TSB header | TSB | % |
+| TSB format | 73.30% | 73.3% (1 decimal) |
+| Total Points header | Total | PT |
+| Points/Game header | Pts/G | PT/G |
+
+### Impact
+- More compact column headers (£ → Value, TSB → %, Pts → PT)
+- Cleaner value display without redundant symbols
+- Consistent 1-decimal precision for percentages and form
+- Better mobile fit - shorter headers and values save horizontal space
+- Clearer data visualization
+
+**Files Modified:**
+- `/src/components/Players/columns.ts` - Updated COMPACT_COLUMNS and ALL_COLUMNS definitions
+
+**Technical Details:**
+- Removed £ symbol from value format (now handled by "m" suffix)
+- Changed TSB format from `${v}%` to `${parseFloat(v).toFixed(1)}%`
+- Added form format to show 1 decimal: `parseFloat(v).toFixed(1)`
+- Standardized all "Pts" references to "PT" for consistency
 
 ---
 

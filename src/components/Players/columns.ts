@@ -10,22 +10,22 @@ export interface ColumnDef {
 export const COMPACT_COLUMNS: ColumnDef[] = [
   {
     key: 'now_cost',
-    label: '£',
+    label: 'Value',
     width: 70,
-    format: (v) => `£${(v / 10).toFixed(1)}m`,
+    format: (v) => `${(v / 10).toFixed(1)}m`,
     align: 'center'
   },
   {
     key: 'selected_by_percent',
-    label: 'TSB',
+    label: '%',
     tooltip: 'Team Selection %',
     width: 70,
-    format: (v) => `${v}%`,
+    format: (v) => `${parseFloat(v).toFixed(1)}%`,
     align: 'center'
   },
   {
     key: 'total_points',
-    label: 'Pts',
+    label: 'PT',
     tooltip: 'Total Points',
     width: 60,
     align: 'center'
@@ -34,6 +34,7 @@ export const COMPACT_COLUMNS: ColumnDef[] = [
     key: 'form',
     label: 'Form',
     width: 60,
+    format: (v) => parseFloat(v).toFixed(1),
     align: 'center'
   },
 ];
@@ -49,15 +50,15 @@ export const ALL_COLUMNS: ColumnDef[] = [
   },
   {
     key: 'selected_by_percent',
-    label: 'TSB',
+    label: '%',
     tooltip: 'Team Selection %',
     width: 70,
-    format: (v) => `${v}%`,
+    format: (v) => `${parseFloat(v).toFixed(1)}%`,
     align: 'center'
   },
   {
     key: 'total_points',
-    label: 'Total',
+    label: 'PT',
     tooltip: 'Total Points',
     width: 70,
     align: 'center'
@@ -77,7 +78,7 @@ export const ALL_COLUMNS: ColumnDef[] = [
   },
   {
     key: 'points_per_game',
-    label: 'Pts/G',
+    label: 'PT/G',
     tooltip: 'Points Per Game',
     width: 70,
     align: 'center'
