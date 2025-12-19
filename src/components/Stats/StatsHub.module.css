@@ -191,3 +191,16 @@
     gap: 1rem;
   }
 }
+
+/* K-54c: Edge-to-edge containers for iPhone 12 Pro (390px width) */
+@media (max-width: 480px) {
+  .container {
+    padding: 4px; /* Nearly edge-to-edge (was 0.75rem = 12px) */
+    background: transparent; /* Remove any background effect */
+    box-shadow: none; /* Ensure no shadow creates visual container */
+  }
+
+  .sections {
+    gap: 0.75rem; /* Slightly reduce gap between sections */
+  }
+}

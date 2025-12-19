@@ -2,7 +2,79 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.8 (December 19, 2025)
+**Current Version:** v3.3.9 (December 19, 2025)
+
+---
+
+## v3.3.9 - K-54c: Stats Tab - Edge-to-Edge Containers (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Reduced edge padding to nearly edge-to-edge and removed visible outer background container for a cleaner, more immersive mobile experience.
+
+### Changes Made
+
+**1. Reduced Edge Padding (Nearly Edge-to-Edge)**
+
+Reduced container padding from 12px to 4px on mobile devices:
+
+```css
+@media (max-width: 480px) {
+  .container {
+    padding: 4px; /* Was 0.75rem = 12px */
+  }
+}
+```
+
+**Impact:**
+- Content now nearly touches phone edges (~4-6px total gap)
+- More screen real estate for content
+- Cleaner, more modern mobile interface
+- Consistent with navigation bar edge-to-edge design
+
+**2. Removed Outer Background Container**
+
+Made container background transparent to remove the "squared" visual effect:
+
+```css
+@media (max-width: 480px) {
+  .container {
+    background: transparent; /* Remove any background effect */
+    box-shadow: none; /* Ensure no shadow creates visual container */
+  }
+}
+```
+
+**Impact:**
+- No visible outer container background
+- Individual section cards float on app background
+- Cleaner visual hierarchy
+- Less visual noise
+
+**3. Reduced Section Gap**
+
+Slightly reduced spacing between sections for better vertical compactness:
+
+```css
+@media (max-width: 480px) {
+  .sections {
+    gap: 0.75rem; /* Was 1rem */
+  }
+}
+```
+
+### Technical Details
+
+**Files Modified:**
+- `/src/components/Stats/StatsHub.module.css` - Container padding and background changes
+
+**Applies To:**
+- Team tab (MyTeamView)
+- GW tab (GameweekView)
+- Season tab (SeasonView)
+- Players tab (PlayersTab)
+
+**Target Device:** iPhone 12 Pro (390px width) and similar mobile devices
+
+**Testing:** Verified on staging at https://fpl-staging-production.up.railway.app
 
 ---
 
