@@ -2,7 +2,57 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.2.23 (December 19, 2025)
+**Current Version:** v3.3.0 (December 19, 2025)
+
+---
+
+## v3.3.0 - Mobile UI Polish: Responsive Headers & Labels (Dec 19, 2025)
+
+**MINOR RELEASE:** Comprehensive mobile UI improvements across Rivals and Stats tabs for better responsive design.
+
+### Summary
+This release includes multiple coordinated fixes to ensure all tab headers work perfectly on all mobile screen sizes (320px - 430px+) and desktop. No more truncated labels, overlapping elements, or broken layouts.
+
+### Features Included
+
+**1. K-49e: Fixtures Header Investigation Fix**
+- Fixed font size mismatches (GW number 60% too large, arrows 20% too large)
+- Matched all font sizes to tabs exactly (0.9375rem)
+- Fixed mobile stacking issue (changed flex-direction from column to row)
+- Prevented wrapping (nowrap instead of wrap)
+
+**2. K-49f: Rivals Header Final Fixes**
+- Shortened "H2H Matches" → "H2H" (saves 8 characters)
+- Removed dropdown arrow (▼) and made GW number clickable
+- Increased mobile gap from 0.25rem → 0.5rem (prevents mingling)
+- Added desktop responsive rules for proper scaling >769px
+
+**3. K-50: Stats Tab Responsive Labels**
+- Changed dynamic team name → "Team" (fixed 4-character width)
+- Shortened "Gameweek" → "GW" (saves 6 characters)
+- All 4 tabs now visible on iPhone SE (320px)
+- No truncation at any screen width
+
+### Why Minor Version (3.3.0)?
+Multiple coordinated UI improvements that significantly enhance mobile experience across multiple tabs:
+- 3 separate investigations/fixes
+- Affects 2 major tabs (Rivals, Stats)
+- Systematic approach to mobile responsiveness
+- Measurable improvement in UX on all devices
+
+### Files Modified
+- `/src/components/Fixtures/FixturesTab.tsx`
+- `/src/components/Fixtures/Fixtures.module.css`
+- `/src/components/Stats/StatsHub.tsx`
+
+### Overall Result
+- All tabs work on iPhone SE 320px ✅
+- All tabs work on iPhone standard 375px ✅
+- All tabs work on iPhone Pro Max 430px ✅
+- Desktop properly scales with nav width ✅
+- No truncation/ellipsis anywhere ✅
+- No overlapping/mingling elements ✅
+- Cleaner, more compact UI ✅
 
 ---
 
