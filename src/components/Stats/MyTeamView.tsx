@@ -182,7 +182,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
       {playerData.matchHistory && playerData.matchHistory.length > 0 && (
         <div className={styles.section}>
           <h3 className={styles.sectionTitle}>
-            Recent Form <span className={styles.subtitle}>(Last 5)</span>
+            Form <span className={styles.subtitle}>(Last 5)</span>
           </h3>
           <div className={styles.formGrid}>
             {playerData.matchHistory.slice().reverse().slice(0, 5).map((match: any) => (
@@ -289,7 +289,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
 
       {/* Chips Faced */}
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Chips Faced Against</h3>
+        <h3 className={styles.sectionTitle}>Chips Faced</h3>
         {playerData.chipsFaced.length > 0 ? (
           <>
             <div className={styles.chipsSummary}>
@@ -387,12 +387,12 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                       <div className={styles.chipsCell}>
                         {yourChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
-                            You: {getChipAbbreviation(yourChip.name)}
+                            {getChipAbbreviation(yourChip.name)}
                           </span>
                         )}
                         {oppChip && (
                           <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
-                            Opp: {getChipAbbreviation(oppChip.chipName)}
+                            {getChipAbbreviation(oppChip.chipName)}
                           </span>
                         )}
                         {!yourChip && !oppChip && (

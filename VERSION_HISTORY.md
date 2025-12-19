@@ -2,7 +2,138 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.7 (December 19, 2025)
+**Current Version:** v3.3.8 (December 19, 2025)
+
+---
+
+## v3.3.8 - K-54b: Stats Team Tab - Content & Bug Fixes (Dec 19, 2025)
+
+**BUG FIX + CONTENT:** Fixed horizontal overflow bug and improved content clarity in Stats Team tab following K-54a CSS changes.
+
+### Changes Made
+
+**1. Shortened Section Titles (No Wrapping on Mobile)**
+
+Reduced title lengths to prevent wrapping on narrow screens:
+
+| Before | After |
+|--------|-------|
+| League Position Over Time | Position History |
+| Chips Faced Against | Chips Faced |
+| Recent Form (Last 5) | Form (Last 5) |
+
+**Impact:** All section titles now fit on single line at 390px width (iPhone 12 Pro).
+
+**2. Simplified Chip Labels in Match History**
+
+Removed verbose prefixes from chip badges in Match History table:
+
+**Before:**
+```
+┌──────────┐  ┌──────────┐
+│ YOU: FH  │  │ OPP: WC  │
+└──────────┘  └──────────┘
+```
+
+**After:**
+```
+┌──────┐  ┌──────┐
+│  FH  │  │  WC  │
+└──────┘  └──────┘
+```
+
+Color coding distinguishes ownership:
+- Green badge with green border = Your chip
+- Pink badge with pink border = Opponent chip
+
+**Impact:**
+- Cleaner, more compact chip display
+- Color distinction remains clear
+- Saves horizontal space in table
+
+**3. Fixed Horizontal Overflow Bug**
+
+Added CSS rules to prevent content from being cut off or causing horizontal scrolling:
+
+**Container-level fixes:**
+```css
+.myTeamTab {
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  max-width: 100vw; /* Ensure container doesn't exceed viewport */
+}
+
+.section {
+  margin-left: 0; /* No negative margins */
+  margin-right: 0; /* No negative margins */
+}
+```
+
+**Table-level fixes:**
+```css
+.table {
+  width: 100%;
+  overflow-x: auto; /* Allow horizontal scroll for tables if needed */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.table th,
+.table td {
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden; /* Hide overflowing content */
+  text-overflow: ellipsis; /* Show ellipsis for cut-off text */
+}
+```
+
+**Impact:**
+- No content cut off on left side
+- Tables can scroll horizontally if needed (won't push other content)
+- Smooth touch scrolling on iOS devices
+- Long text truncated with ellipsis instead of causing overflow
+
+### Technical Details
+
+**Files Modified:**
+- `/src/components/Stats/MyTeamView.tsx` - Title and chip label changes
+- `/src/components/Dashboard/PositionHistory.tsx` - Title change
+- `/src/components/Dashboard/Dashboard.module.css` - Overflow fixes
+
+**Component Changes:**
+- Changed 3 section title strings
+- Removed "You: " and "Opp: " prefixes from chip labels (2 locations)
+
+**CSS Changes:**
+- Added overflow-x: hidden to .myTeamTab
+- Added max-width: 100vw to .myTeamTab
+- Set margins to 0 on .section
+- Added table overflow handling with touch scrolling
+- Added text-overflow: ellipsis for table cells
+
+### Before/After Summary
+
+**Section Titles:**
+- ❌ "League Position Over Time" (wraps on mobile)
+- ✅ "Position History" (single line)
+
+**Chip Labels:**
+- ❌ "YOU: FH" and "OPP: WC" (verbose)
+- ✅ "FH" (green) and "WC" (pink) - color-coded
+
+**Overflow Bug:**
+- ❌ Content cut off on left side
+- ✅ All content visible, proper scrolling
+
+### Files Modified
+- `/src/components/Stats/MyTeamView.tsx`
+- `/src/components/Dashboard/PositionHistory.tsx`
+- `/src/components/Dashboard/Dashboard.module.css`
+
+### Result
+- All section titles fit on single line ✅
+- No "YOU:" or "OPP:" prefixes in chip labels ✅
+- Color distinction (green vs pink) remains clear ✅
+- No horizontal overflow or content cut-off ✅
+- Tables scroll smoothly if needed ✅
+- Works on iPhone 12 Pro (390px) and similar devices ✅
 
 ---
 
