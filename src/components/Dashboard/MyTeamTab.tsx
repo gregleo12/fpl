@@ -7,7 +7,6 @@ import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { GWSelector } from '@/components/PitchView/GWSelector';
 import { RankProgressModal } from './RankProgressModal';
 import { PointsAnalysisModal } from './PointsAnalysisModal';
-import { TransferHistoryModal } from './TransferHistoryModal';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
@@ -43,7 +42,6 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   // Modal states
   const [showRankModal, setShowRankModal] = useState(false);
   const [showPointsModal, setShowPointsModal] = useState(false);
-  const [showTransfersModal, setShowTransfersModal] = useState(false);
 
   // History data for modals
   const [historyData, setHistoryData] = useState<any>(null);
@@ -163,11 +161,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
               <div className={styles.statBoxLabel}>GW RANK</div>
             </div>
-            <div
-              className={`${styles.statBox} ${styles.clickable}`}
-              onClick={() => setShowTransfersModal(true)}
-              title="Click to view transfer history"
-            >
+            <div className={styles.statBox}>
               <div className={styles.statBoxValue}>
                 {gwTransfers.count}
                 {gwTransfers.cost > 0 && (
@@ -246,12 +240,6 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
             isOpen={showPointsModal}
             onClose={() => setShowPointsModal(false)}
             data={historyData.history}
-          />
-          <TransferHistoryModal
-            isOpen={showTransfersModal}
-            onClose={() => setShowTransfersModal(false)}
-            transfers={historyData.transfers}
-            gwHistory={historyData.history}
           />
         </>
       )}

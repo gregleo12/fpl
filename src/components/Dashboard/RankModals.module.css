@@ -107,7 +107,8 @@
   display: grid;
   grid-template-columns: 60px 1fr 1fr 80px;
   padding: 12px 16px;
-  background: rgba(0, 255, 135, 0.05);
+  background: #0e0a1f;
+  border-bottom: 1px solid rgba(0, 255, 135, 0.2);
   border-radius: 8px 8px 0 0;
   font-size: 0.75rem;
   font-weight: 600;
@@ -116,7 +117,7 @@
   letter-spacing: 0.5px;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
 }
 
 .tableRow {
@@ -251,12 +252,16 @@
   display: grid;
   grid-template-columns: 80px 1fr 100px;
   padding: 12px 16px;
-  background: rgba(0, 255, 135, 0.05);
+  background: #0e0a1f;
+  border-bottom: 1px solid rgba(0, 255, 135, 0.2);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .gapTableRow {

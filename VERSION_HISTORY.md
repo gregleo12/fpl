@@ -2,7 +2,72 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.4 (December 19, 2025)
+**Current Version:** v3.2.5 (December 19, 2025)
+
+---
+
+## v3.2.5 - Fix K-38/K-39 Modals & Remove K-40 (Dec 19, 2025)
+
+**BUG FIXES & CLEANUP:** Three fixes for modal improvements.
+
+### Fix #1: K-39 Points Gap Section Empty
+**Problem:**
+- Points Gap to Ranks section showed header but no data rows
+- useEffect tried to fetch from FPL API (failed with CORS)
+- Even with estimates set, loading state caused conditional rendering issues
+
+**Solution:**
+- Removed async fetch logic and useEffect
+- Use static estimated rank thresholds (based on GW16 2024/25 typical distributions)
+- Removed loading state entirely
+- Data now renders immediately
+
+**Impact:**
+- Points Gap table now displays 10 ranks: 1, 100, 1K, 5K, 10K, 50K, 100K, 200K, 500K, 1M
+- Shows points at each rank and gap from user's points
+- Red (+X) = points needed to reach rank
+- Green (X) = points ahead of rank threshold
+
+### Fix #2: K-38 & K-39 Table Headers Not Sticky
+**Problem:**
+- Table headers had transparent background (`rgba(0, 255, 135, 0.05)`)
+- When scrolling, content passed through headers making them unreadable
+- Headers needed solid background and proper sticky positioning
+
+**Solution:**
+- Changed `.tableHeader` background to solid `#0e0a1f` (dark purple)
+- Changed `.gapTableHeader` background to solid `#0e0a1f`
+- Added border-bottom with accent color for visual separation
+- Confirmed `position: sticky; top: 0; z-index: 10;` applied to both
+
+**Impact:**
+- Headers stay fixed when scrolling (K-38 Rank Progress, K-39 Points Analysis)
+- Solid background prevents content showing through
+- Better readability during scroll
+
+### Fix #3: Remove K-40 Transfer History Modal Entirely
+**Problem:**
+- K-40 Transfer History modal not meeting requirements
+- Needs to be rebuilt as Transfer Comparison (revised K-40)
+
+**Solution:**
+- Deleted `TransferHistoryModal.tsx` component
+- Deleted `TransferHistoryModal.module.css` styles
+- Removed import from MyTeamTab.tsx
+- Removed `showTransfersModal` state
+- Removed click handler from Transfers tile
+- Removed modal render from JSX
+
+**Impact:**
+- Transfers tile now non-clickable (plain stat display)
+- Reduced bundle size: dashboard 59.3 kB → 58.1 kB
+- Clean slate for revised K-40 Transfer Comparison feature
+
+### Files Changed
+- `PointsAnalysisModal.tsx` - Removed useEffect, using static thresholds
+- `RankModals.module.css` - Solid backgrounds for sticky headers
+- `MyTeamTab.tsx` - Removed Transfer History integration
+- Deleted: `TransferHistoryModal.tsx`, `TransferHistoryModal.module.css`
 
 ---
 
