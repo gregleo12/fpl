@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.5 (December 19, 2025)
+**Current Version:** v3.3.6 (December 19, 2025)
+
+---
+
+## v3.3.6 - GW Points Leaders - Move PTS Inline (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Changed PTS label placement from below the number to inline with the number for cleaner layout.
+
+### Change Made
+
+**Before:**
+```
+111
+PTS
+```
+
+**After:**
+```
+111 PTS
+```
+
+### Technical Details
+- PTS now appears inline with the number using a `<span>` element
+- Maintains same styling: 0.625rem, uppercase, grey (50% opacity)
+- Matches layout pattern used in Season tab components
+
+### Font Size Reference
+For future reference:
+- **Manager name:** 0.9375rem (`.itemName`)
+- **Team name:** 0.8125rem (`.itemMeta`) - grey, smaller
+
+### Files Modified
+- `/src/components/Stats/sections/GWPointsLeaders.tsx`
+
+### Result
+- PTS now inline with number ✅
+- Cleaner, more compact layout ✅
+- Consistent with Season tab styling ✅
 
 ---
 
