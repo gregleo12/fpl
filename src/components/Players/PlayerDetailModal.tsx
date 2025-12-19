@@ -488,47 +488,33 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
           </div>
         </div>
 
-        {/* Form & Fixtures Row */}
+        {/* Compact Form & Fixtures */}
         {!isLoading && playerDetails && (
-          <div className={styles.formFixturesRow}>
-            <div className={styles.formSection}>
-              <h4>Form</h4>
-              <div className={styles.formBadges}>
-                {recentMatches.map((match) => {
+          <div className={styles.compactStats}>
+            <div className={styles.statRow}>
+              <span className={styles.statLabel}>FORM</span>
+              <div className={styles.badges}>
+                {recentMatches.slice(0, 3).map((match) => {
                   const opponentTeam = getTeamById(match.opponent_team);
                   return (
-                    <div key={match.fixture} className={styles.formBadge}>
-                      <span className={styles.formOpponent}>
-                        {opponentTeam?.short_name || 'N/A'} ({match.was_home ? 'H' : 'A'})
-                      </span>
-                      <span className={styles.formPoints}>{match.total_points} pts</span>
-                    </div>
+                    <span key={match.fixture} className={styles.badge}>
+                      {opponentTeam?.short_name || 'N/A'}({match.was_home ? 'H' : 'A'}) {match.total_points}
+                    </span>
                   );
                 })}
               </div>
             </div>
 
-            <div className={styles.fixturesSection}>
-              <h4>Fixtures</h4>
-              <div className={styles.fixtureBadges}>
-                {upcomingFixtures.map((fixture) => {
+            <div className={styles.statRow}>
+              <span className={styles.statLabel}>NEXT</span>
+              <div className={styles.badges}>
+                {upcomingFixtures.slice(0, 3).map((fixture) => {
                   const opponentTeam = getTeamById(fixture.is_home ? fixture.team_a : fixture.team_h);
+                  const fdrClass = fixture.difficulty <= 2 ? styles.fdrEasy : fixture.difficulty >= 4 ? styles.fdrHard : styles.fdrMedium;
                   return (
-                    <div
-                      key={fixture.id}
-                      className={styles.fixtureBadge}
-                      style={{ borderColor: FDR_COLORS[fixture.difficulty] || FDR_COLORS[3] }}
-                    >
-                      <span className={styles.fixtureOpponent}>
-                        {opponentTeam?.short_name || 'N/A'} ({fixture.is_home ? 'H' : 'A'})
-                      </span>
-                      <span
-                        className={styles.fdrBadge}
-                        style={{ backgroundColor: FDR_COLORS[fixture.difficulty] || FDR_COLORS[3] }}
-                      >
-                        {fixture.difficulty}
-                      </span>
-                    </div>
+                    <span key={fixture.id} className={`${styles.badge} ${fdrClass}`}>
+                      {opponentTeam?.short_name || 'N/A'}({fixture.is_home ? 'H' : 'A'}) {fixture.difficulty}
+                    </span>
                   );
                 })}
               </div>

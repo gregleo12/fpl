@@ -2,7 +2,72 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.7 (December 19, 2025)
+**Current Version:** v3.2.8 (December 19, 2025)
+
+---
+
+## v3.2.8 - K-42: Compact Form & Fixtures in Players Modal (Dec 19, 2025)
+
+**UI POLISH:** Horizontal inline layout for Form & Fixtures sections - saves ~90px vertical space.
+
+### Problem
+Form & Fixtures sections in Players Modal used vertical lists, wasting space above tabs.
+- Old layout: 6 rows (3 form + 3 fixtures) = ~150px vertical space
+- Information cramped, less room for tab content
+
+### Solution: Horizontal Inline Badges
+**New Layout:**
+```
+FORM  [BUR(A) 16] [CRY(H) 8] [MCI(H) 8]
+NEXT  [NFO(H) 2] [WHU(A) 2] [CRY(A) 3]
+```
+
+**Changes:**
+- Form: Shows last 3 matches horizontally with opponent, venue, points
+- Fixtures: Shows next 3 with opponent, venue, FDR difficulty
+- 2 rows total instead of 6 = ~60px vertical space (saves 90px+)
+
+### FDR Color Coding
+| FDR | Difficulty | Color |
+|-----|------------|-------|
+| 1-2 | Easy | Green (`rgba(0, 255, 135, 0.2)`) |
+| 3 | Medium | Gray/White |
+| 4-5 | Hard | Red (`rgba(255, 75, 75, 0.2)`) |
+
+### Implementation Details
+**PlayerDetailModal.tsx:**
+- Changed from vertical `.formBadges` and `.fixtureBadges` lists
+- New `.compactStats` container with `.statRow` for each line
+- `.badges` flex container for horizontal inline pills
+- `.slice(0, 3)` limits to 3 most recent/upcoming
+- FDR class applied: `fdrEasy`, `fdrMedium`, `fdrHard`
+
+**PlayerDetailModal.module.css:**
+- `.compactStats`: flex column with 0.5rem gap
+- `.statRow`: flex row with label + badges
+- `.statLabel`: 40px width, uppercase, muted color
+- `.badge`: inline pill with 4px border-radius
+- FDR styles with colored backgrounds and text
+- Mobile responsive: smaller fonts and padding
+
+### Before vs After
+| Metric | Before | After |
+|--------|--------|-------|
+| Vertical space | ~150px | ~60px |
+| Rows | 6 | 2 |
+| Info shown | Same | Same |
+| Space savings | - | 90px+ |
+
+### Impact
+- More vertical space for tab content (Matches, Stats, History)
+- Cleaner, more compact appearance
+- FDR colors provide quick visual difficulty assessment
+- Responsive wrapping on mobile devices
+- Better information density
+
+### Files Changed
+- `PlayerDetailModal.tsx` - Horizontal badge layout
+- `PlayerDetailModal.module.css` - Compact styles, FDR colors, mobile responsive
 
 ---
 
