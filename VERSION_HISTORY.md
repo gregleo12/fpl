@@ -1,8 +1,32 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 273+ versions
-**Current Version:** v3.2.18 (December 19, 2025)
+**Total Releases:** 274+ versions
+**Current Version:** v3.2.19 (December 19, 2025)
+
+---
+
+## v3.2.19 - Rename 'Fixtures' Tab to 'Rivals' in Bottom Navigation (Dec 19, 2025)
+
+**UI CHANGE:** Renamed bottom navigation tab from "Fixtures" to "Rivals" for better branding.
+
+### Change
+- Bottom navigation: "Fixtures" → "Rivals"
+- Icon remains: Target icon (unchanged)
+- Functionality: No change (still shows H2H matches and team fixtures)
+
+### Rationale
+"Rivals" better represents the competitive, head-to-head nature of the tab content:
+- H2H Matches: Direct rivalry between league members
+- Team Fixtures: Viewing rival team lineups and performance
+
+### Files Modified
+- `/src/app/dashboard/page.tsx` (line 234)
+
+### Result
+- Clearer tab label ✅
+- Better represents H2H competitive focus ✅
+- More engaging, competitive branding ✅
 
 ---
 
