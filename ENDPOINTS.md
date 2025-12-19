@@ -1,6 +1,6 @@
 # RivalFPL - API Endpoints Reference
 
-**Last Updated:** December 18, 2025
+**Last Updated:** December 19, 2025
 **Base URL (Prod):** https://rivalfpl.com
 **Base URL (Staging):** https://fpl-staging-production.up.railway.app
 
@@ -19,6 +19,7 @@
 | GET | `/api/league/[id]/matches/[matchId]` | Single match details | DB + FPL API |
 | GET | `/api/league/[id]/stats` | League stats overview | DB + FPL API |
 | GET | `/api/league/[id]/stats/gameweek/[gw]` | Detailed GW stats | DB (completed) / FPL (live) |
+| GET | `/api/league/[id]/stats/gameweek/[gw]/rankings` | GW points rankings | DB |
 | GET | `/api/league/[id]/stats/season` | Season-long statistics | DB |
 | GET | `/api/league/[id]/stats/position-history` | Position over time | DB |
 | GET | `/api/league/[id]/insights/[entryId]` | Opponent insights | DB |
@@ -148,6 +149,52 @@ Returns detailed statistics for a gameweek.
 **Data Source Logic:**
 - Completed GW → Database (K-27 tables)
 - Live GW → FPL API
+
+---
+
+### GET /api/league/[id]/stats/gameweek/[gw]/rankings
+
+Returns gameweek points rankings for all managers in the league, sorted by points scored.
+
+**Parameters:**
+- `id` (path) - League ID
+- `gw` (path) - Gameweek number (1-38)
+
+**Response:**
+```json
+{
+  "rankings": [
+    {
+      "rank": 1,
+      "entry_id": 123,
+      "player_name": "John Doe",
+      "team_name": "My Team",
+      "points": 111
+    },
+    {
+      "rank": 2,
+      "entry_id": 456,
+      "player_name": "Jane Smith",
+      "team_name": "Team Name",
+      "points": 104
+    }
+  ]
+}
+```
+
+**Features:**
+- Rankings based purely on GW points (not H2H results)
+- Handles ties correctly - managers with equal points get the same rank
+- Ordered by points DESC, then player_name ASC
+
+**Data Source:**
+- Uses `manager_gw_history` table
+- Only returns data for completed gameweeks
+
+**Used By:**
+- GW Points Leaders card (top 3)
+- GW Points Modal (user's rank and stats)
+- GW Rankings Modal (full league rankings)
 
 ---
 
@@ -429,7 +476,9 @@ src/app/api/
 │   ├── matches/[matchId]/route.ts
 │   ├── stats/
 │   │   ├── route.ts
-│   │   ├── gameweek/[gw]/route.ts
+│   │   ├── gameweek/[gw]/
+│   │   │   ├── route.ts
+│   │   │   └── rankings/route.ts
 │   │   ├── season/route.ts
 │   │   └── position-history/route.ts
 │   └── insights/[entryId]/route.ts
@@ -452,4 +501,4 @@ src/app/api/
 
 ---
 
-**Total Endpoints:** 27
+**Total Endpoints:** 28
