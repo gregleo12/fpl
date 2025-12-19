@@ -2,7 +2,81 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.2.22 (December 19, 2025)
+**Current Version:** v3.2.23 (December 19, 2025)
+
+---
+
+## v3.2.23 - K-50: Stats Tab Header - Responsive Labels (Dec 19, 2025)
+
+**UI FIX:** Fixed Stats tab header breaking on mobile due to long team names and labels.
+
+### Problem
+Stats tab header broke on mobile with:
+1. **Long team names** (e.g., "SalahMoLeykoum F.C.*") pushed other tabs off screen
+2. **"Gameweek" label** too long for smallest mobile devices (iPhone SE 320px)
+
+### Solution
+Shortened labels to fixed, predictable widths:
+
+| Before | After |
+|--------|-------|
+| FC Matos* / SalahMoLeykoum F.C.* | **Team** |
+| Gameweek | **GW** |
+| Season | Season |
+| Players | Players |
+
+### Why "Team" Works
+- **Fixed width:** Always 4 characters (predictable)
+- **No truncation:** Never needs ellipsis (...)
+- **Clear context:** Users know it's their team from the page context
+- **Consistent:** Same for all users regardless of team name length
+
+### Changes Made
+
+**Before:**
+```tsx
+<button>
+  {myTeamName}  {/* Could be 5-30+ characters */}
+</button>
+<button>
+  Gameweek  {/* 8 characters */}
+</button>
+```
+
+**After:**
+```tsx
+<button>
+  Team  {/* Always 4 characters */}
+</button>
+<button>
+  GW  {/* Always 2 characters */}
+</button>
+```
+
+### Visual Results
+
+**Before (breaks on mobile):**
+```
+[SalahMoLeykoum F.C.*] [Gameweek] [Season] [Play...
+                                            ↑ Cut off
+```
+
+**After (fits all screens):**
+```
+[Team] [GW] [Season] [Players]
+   ↑     ↑
+ Fixed  Fixed
+```
+
+### Files Modified
+- `/src/components/Stats/StatsHub.tsx` (line 125, line 131)
+
+### Result
+- All 4 tabs visible on iPhone SE (320px) ✅
+- All 4 tabs visible on all screen sizes ✅
+- No truncation/ellipsis at any width ✅
+- Fixed-width labels = predictable layout ✅
+- Tab functionality unchanged ✅
 
 ---
 

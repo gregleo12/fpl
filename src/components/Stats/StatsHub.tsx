@@ -122,13 +122,13 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
             className={`${styles.viewButton} ${view === 'myteam' ? styles.active : ''}`}
             onClick={() => setView('myteam')}
           >
-            {myTeamName}
+            Team
           </button>
           <button
             className={`${styles.viewButton} ${view === 'gameweek' ? styles.active : ''}`}
             onClick={() => setView('gameweek')}
           >
-            Gameweek
+            GW
           </button>
           <button
             className={`${styles.viewButton} ${view === 'season' ? styles.active : ''}`}
