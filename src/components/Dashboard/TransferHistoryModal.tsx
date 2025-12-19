@@ -68,6 +68,11 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
     return acc;
   }, {} as Record<number, Transfer[]>);
 
+  console.log('[TransferHistoryModal] Total transfers:', transfers.length);
+  console.log('[TransferHistoryModal] Transfers by GW:', transfersByGW);
+  console.log('[TransferHistoryModal] Players loaded:', players.length);
+  console.log('[TransferHistoryModal] Loading state:', loading);
+
   // Calculate totals
   const totalTransfers = transfers.length;
   const totalHits = gwHistory.reduce((sum, h) => sum + h.event_transfers_cost, 0);
@@ -119,7 +124,15 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
                     </span>
                   </div>
                   <div className={styles.gwTransfers}>
-                    {gwTransfers.map((t, i) => (
+                    {gwTransfers.map((t, i) => {
+                      console.log(`[TransferHistoryModal] GW${gw} Transfer ${i}:`, {
+                        player_in: t.player_in,
+                        player_out: t.player_out,
+                        player_in_name: getPlayerName(t.player_in),
+                        player_out_name: getPlayerName(t.player_out),
+                        costs: { in: t.player_in_cost, out: t.player_out_cost }
+                      });
+                      return (
                       <div key={i} className={styles.transferPair}>
                         <div className={styles.transferRow}>
                           <span className={styles.inLabel}>IN</span>
@@ -133,7 +146,8 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
                         </div>
                         {i < gwTransfers.length - 1 && <div className={styles.separator} />}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
