@@ -2,7 +2,38 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.3 (December 19, 2025)
+**Current Version:** v3.2.4 (December 19, 2025)
+
+---
+
+## v3.2.4 - HOTFIX: Fix Transfer History Player Names (Dec 19, 2025)
+
+**BUG FIX:** Transfer History modal showed GW sections but no player names due to CORS error fetching from FPL API.
+
+### Problem
+- Transfer History modal opened with correct summary stats
+- GW sections displayed (GW13, GW3, etc.)
+- Individual transfer rows not visible
+- Console error: `TypeError: Failed to fetch` when calling FPL API directly
+
+### Root Cause
+- Component fetched player names directly from `https://fantasy.premierleague.com/api/bootstrap-static/`
+- Browser blocked request with CORS error
+- Players array stayed empty
+- `getPlayerName()` returned 'Loading...' for all players
+- Transfer rows rendered but invisible/cut off
+
+### Solution
+- Changed to use `/api/fpl-proxy` instead of direct FPL API call
+- Our proxy runs server-side and avoids CORS issues
+- Added better error handling with empty array fallback
+- Added console logging for debugging
+
+### Impact
+- Transfer History modal now displays player names correctly
+- Shows: "IN: Player Name £X.Xm" and "OUT: Player Name £X.Xm"
+- No more CORS errors
+- Works reliably across all browsers
 
 ---
 

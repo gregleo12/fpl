@@ -34,15 +34,17 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch player names from bootstrap
+  // Fetch player names from our proxy API
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+        const res = await fetch('/api/fpl-proxy');
         const data = await res.json();
-        setPlayers(data.elements);
+        setPlayers(data.elements || []);
+        console.log('[TransferHistoryModal] Fetched players:', data.elements?.length || 0);
       } catch (error) {
-        console.error('Error fetching players:', error);
+        console.error('[TransferHistoryModal] Error fetching players:', error);
+        setPlayers([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
