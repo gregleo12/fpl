@@ -2,7 +2,61 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.4 (December 19, 2025)
+**Current Version:** v3.3.5 (December 19, 2025)
+
+---
+
+## v3.3.5 - K-52c: GW Points Leaders - Fix Team Name Styling (Dec 19, 2025)
+
+**BUG FIX:** Fixed team name styling in GW Points Leaders card to match Captain Points styling.
+
+### Problem
+Team names in GW Points Leaders were displaying with incorrect styling:
+- Same size as manager name (too large)
+- White color instead of grey
+- Didn't match Captain Points card styling
+
+### Root Cause
+Component was using `.itemDetail` CSS class which didn't exist in Section.module.css, causing team names to inherit default styling instead of the intended grey, smaller styling.
+
+### Fix
+Changed CSS class from `.itemDetail` → `.itemMeta` to match Captain Points styling:
+- **Font size:** 0.8125rem (smaller than manager name)
+- **Color:** rgba(255, 255, 255, 0.5) (grey)
+- **Margin top:** 0.25rem (proper spacing)
+
+### Before/After
+
+**Before:**
+```
+🥇  Guillaume de Posson
+    FC SCORPIO              ← Same size, white
+```
+
+**After:**
+```
+🥇  Guillaume de Posson
+    FC SCORPIO              ← Smaller, grey
+```
+
+### Technical Change
+**GWPointsLeaders.tsx (line 53):**
+```tsx
+// Before
+<div className={styles.itemDetail}>{manager.team_name}</div>
+
+// After
+<div className={styles.itemMeta}>{manager.team_name}</div>
+```
+
+### Files Modified
+- `/src/components/Stats/sections/GWPointsLeaders.tsx`
+
+### Result
+- Team names now match Captain Points styling ✅
+- Smaller font size (0.8125rem) ✅
+- Grey color (50% opacity white) ✅
+- Consistent styling across Stats tab cards ✅
 
 ---
 

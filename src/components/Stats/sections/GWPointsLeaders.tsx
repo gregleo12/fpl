@@ -50,7 +50,7 @@ export function GWPointsLeaders({ data, onViewFullRankings }: Props) {
                 <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{MEDAL_ICONS[index]}</span>
                 <div>
                   <div className={styles.itemName}>{manager.player_name}</div>
-                  <div className={styles.itemDetail}>{manager.team_name}</div>
+                  <div className={styles.itemMeta}>{manager.team_name}</div>
                 </div>
               </div>
             </div>
