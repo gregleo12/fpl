@@ -54,6 +54,34 @@ export function FilterModal({ isOpen, onClose, filters, onApplyFilters, teams }:
     }));
   };
 
+  const selectAllPositions = () => {
+    setLocalFilters(prev => ({
+      ...prev,
+      positions: [1, 2, 3, 4]
+    }));
+  };
+
+  const unselectAllPositions = () => {
+    setLocalFilters(prev => ({
+      ...prev,
+      positions: []
+    }));
+  };
+
+  const selectAllTeams = () => {
+    setLocalFilters(prev => ({
+      ...prev,
+      teams: teams.map(t => t.id)
+    }));
+  };
+
+  const unselectAllTeams = () => {
+    setLocalFilters(prev => ({
+      ...prev,
+      teams: []
+    }));
+  };
+
   const handleReset = () => {
     const resetFilters: FilterState = {
       priceMin: 3.8,
@@ -155,6 +183,14 @@ export function FilterModal({ isOpen, onClose, filters, onApplyFilters, teams }:
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <h3>Positions</h3>
+              <div className={styles.bulkActions}>
+                <button onClick={selectAllPositions} className={styles.bulkButton}>
+                  All
+                </button>
+                <button onClick={unselectAllPositions} className={styles.bulkButton}>
+                  None
+                </button>
+              </div>
               <span className={styles.count}>{localFilters.positions.length}/4</span>
             </div>
             <div className={styles.positionsGrid}>
@@ -183,6 +219,14 @@ export function FilterModal({ isOpen, onClose, filters, onApplyFilters, teams }:
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
               <h3>Teams</h3>
+              <div className={styles.bulkActions}>
+                <button onClick={selectAllTeams} className={styles.bulkButton}>
+                  All
+                </button>
+                <button onClick={unselectAllTeams} className={styles.bulkButton}>
+                  None
+                </button>
+              </div>
               <span className={styles.count}>{localFilters.teams.length}/20</span>
             </div>
             <div className={styles.teamsGrid}>

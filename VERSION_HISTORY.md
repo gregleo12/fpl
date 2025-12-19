@@ -1,8 +1,86 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 265+ versions
-**Current Version:** v3.2.10 (December 19, 2025)
+**Total Releases:** 266+ versions
+**Current Version:** v3.2.11 (December 19, 2025)
+
+---
+
+## v3.2.11 - K-45: Filter Modal UI Fixes + Bulk Select Buttons (Dec 19, 2025)
+
+**UI POLISH:** Updated Filter Players modal to match RivalFPL brand and added bulk select/unselect buttons.
+
+### Problems Fixed
+1. **Inconsistent Branding** - Filter modal styling didn't match other modals (Player Modal, Stat Modals)
+2. **No Bulk Actions** - Users had to manually toggle 20 teams one-by-one to unselect all
+
+### Solution 1: Match RivalFPL Brand
+Updated modal styling to match the dark purple theme used throughout the app:
+- **Background**: Dark purple gradient `linear-gradient(135deg, rgba(26, 26, 46, 0.98) 0%, rgba(55, 0, 60, 0.95) 100%)`
+- **Overlay**: Darker backdrop `rgba(0, 0, 0, 0.8)` with blur
+- **Shadow**: Deeper shadow `0 20px 60px rgba(0, 0, 0, 0.8)`
+- **Accent**: Consistent green `#00ff87` for active states
+
+**Reference**: Matched styling from `/src/components/Players/PlayerDetailModal.module.css`
+
+### Solution 2: Bulk Select Buttons
+Added "All" and "None" buttons for quick selection:
+
+**Positions Section:**
+```
+POSITIONS        [All] [None]        1/4
+```
+
+**Teams Section:**
+```
+TEAMS            [All] [None]        20/20
+```
+
+**Button Behavior:**
+- **All** - Selects all items (4 positions or 20 teams)
+- **None** - Clears all selections
+- Hover effect with green accent color
+- Counter updates in real-time
+
+### UI Details
+**Bulk Action Buttons:**
+- Small, compact design (uppercase text)
+- Subtle background with border
+- Green hover state matching brand
+- Positioned between section title and counter
+
+**Layout:**
+```
+┌──────────────────────────────────────────┐
+│ POSITIONS    [ALL] [NONE]           1/4  │
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐          │
+│ │ GKP │ │ DEF │ │ MID │ │ FWD │          │
+│ └─────┘ └─────┘ └─────┘ └─────┘          │
+└──────────────────────────────────────────┘
+```
+
+### Implementation Details
+**FilterModal.tsx:**
+- Added `selectAllPositions()` and `unselectAllPositions()` functions
+- Added `selectAllTeams()` and `unselectAllTeams()` functions
+- Added bulk action buttons to section headers
+
+**FilterModal.module.css:**
+- Updated modal background to dark purple gradient
+- Updated overlay opacity to 0.8
+- Updated box shadow for depth
+- Added `.bulkActions` flex container
+- Added `.bulkButton` styles with green hover state
+
+### Files Modified
+- `/src/components/Players/FilterModal.tsx` - Add bulk select functions and buttons
+- `/src/components/Players/FilterModal.module.css` - Match brand styling, add button styles
+
+### Benefits
+- ✅ Consistent visual identity across all modals
+- ✅ Faster workflow for filtering teams/positions
+- ✅ Better UX - one click vs 20 clicks to clear all teams
+- ✅ Cleaner, more professional appearance
 
 ---
 
