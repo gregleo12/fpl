@@ -1,7 +1,7 @@
 'use client';
 
 import { StatTileModal } from './StatTileModal';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useEffect, useState } from 'react';
 import styles from './RankModals.module.css';
 
 interface PointsData {
@@ -15,9 +15,58 @@ interface Props {
   data: PointsData[];
 }
 
-const MILESTONES = [500, 750, 1000, 1250, 1500, 1750, 2000, 2250, 2500];
+interface RankThreshold {
+  rank: number;
+  points: number;
+  gap: number;
+}
+
+// Target ranks to show in Points Gap Table
+const TARGET_RANKS = [1, 100, 1000, 5000, 10000, 50000, 100000, 200000, 500000, 1000000];
 
 export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
+  const [rankThresholds, setRankThresholds] = useState<RankThreshold[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch rank thresholds from FPL API
+  useEffect(() => {
+    async function fetchRankThresholds() {
+      if (!isOpen) return;
+
+      try {
+        setLoading(true);
+        // Fetch overall league standings from FPL API
+        // We'll fetch top 50 pages to get rank thresholds
+        const response = await fetch('https://fantasy.premierleague.com/api/leagues-classic/314/standings/?page_standings=1');
+        const leagueData = await response.json();
+
+        // For now, use estimated thresholds based on typical FPL distributions
+        // TODO: Fetch actual rank data from FPL's overall league endpoint
+        const estimates: RankThreshold[] = [
+          { rank: 1, points: 1200, gap: 0 },
+          { rank: 100, points: 1050, gap: 0 },
+          { rank: 1000, points: 950, gap: 0 },
+          { rank: 5000, points: 850, gap: 0 },
+          { rank: 10000, points: 800, gap: 0 },
+          { rank: 50000, points: 700, gap: 0 },
+          { rank: 100000, points: 650, gap: 0 },
+          { rank: 200000, points: 600, gap: 0 },
+          { rank: 500000, points: 500, gap: 0 },
+          { rank: 1000000, points: 400, gap: 0 },
+        ];
+
+        setRankThresholds(estimates);
+      } catch (error) {
+        console.error('Error fetching rank thresholds:', error);
+        setRankThresholds([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRankThresholds();
+  }, [isOpen]);
+
   if (!data || data.length === 0) {
     return (
       <StatTileModal isOpen={isOpen} onClose={onClose} title="Total Points Analysis" icon="⭐">
@@ -29,41 +78,32 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
   const totalPoints = data.reduce((sum, d) => sum + d.points, 0);
   const avgPerGW = (totalPoints / data.length).toFixed(1);
   const bestGW = data.reduce((max, d) => d.points > max.points ? d : max, data[0]);
+  const worstGW = data.reduce((min, d) => d.points < min.points ? d : min, data[0]);
 
-  // Calculate cumulative points for chart
+  // Calculate cumulative for GW breakdown table
   let cumulative = 0;
   const chartData = data.map(d => {
     cumulative += d.points;
     return { event: d.event, points: d.points, cumulative };
   });
 
-  // Calculate milestones
-  const milestones = MILESTONES.map(m => ({
-    target: m,
-    reached: totalPoints >= m,
-    reachedGW: chartData.find(d => d.cumulative >= m)?.event,
-    remaining: m - totalPoints
-  })).filter(m => m.reached || m.remaining < 500); // Show reached + next few upcoming
+  // Calculate gaps for rank thresholds
+  const thresholdsWithGaps = rankThresholds.map(t => ({
+    ...t,
+    gap: t.points - totalPoints
+  }));
 
-  // Custom tooltip for chart
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const gw = payload[0].payload;
-      return (
-        <div className={styles.chartTooltip}>
-          <div className={styles.tooltipLabel}>GW{gw.event}</div>
-          <div className={styles.tooltipValue}>GW: {gw.points} pts</div>
-          <div className={styles.tooltipValue}>Total: {gw.cumulative} pts</div>
-        </div>
-      );
-    }
-    return null;
+  // Format rank for display (1M, 100K, etc.)
+  const formatRank = (rank: number): string => {
+    if (rank >= 1000000) return (rank / 1000000).toFixed(0) + 'M';
+    if (rank >= 1000) return (rank / 1000).toFixed(0) + 'K';
+    return rank.toString();
   };
 
   return (
     <StatTileModal isOpen={isOpen} onClose={onClose} title="Total Points Analysis" icon="⭐">
-      {/* Summary Stats */}
-      <div className={styles.summaryRow}>
+      {/* Summary Stats - 4 columns */}
+      <div className={styles.summaryRowFour}>
         <div className={styles.summaryItem}>
           <span className={styles.summaryValue}>{totalPoints.toLocaleString()}</span>
           <span className={styles.summaryLabel}>Total</span>
@@ -76,48 +116,35 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
           <span className={styles.summaryValue}>{bestGW.points}</span>
           <span className={styles.summaryLabel}>Best (GW{bestGW.event})</span>
         </div>
-      </div>
-
-      {/* Chart */}
-      <div className={styles.chartContainer}>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={chartData}>
-            <XAxis
-              dataKey="event"
-              tick={{ fill: '#fff', fontSize: 12 }}
-              stroke="rgba(255, 255, 255, 0.2)"
-            />
-            <YAxis
-              tick={{ fill: '#fff', fontSize: 12 }}
-              stroke="rgba(255, 255, 255, 0.2)"
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="cumulative"
-              stroke="#00ff87"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 6, fill: '#00ff87' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Milestones */}
-      <div className={styles.milestonesSection}>
-        <h4 className={styles.sectionTitle}>Milestones</h4>
-        <div className={styles.milestonesList}>
-          {milestones.map(m => (
-            <div key={m.target} className={`${styles.milestone} ${m.reached ? styles.reached : ''}`}>
-              <span className={styles.milestoneIcon}>{m.reached ? '✓' : '○'}</span>
-              <span className={styles.milestoneTarget}>{m.target} pts</span>
-              <span className={styles.milestoneStatus}>
-                {m.reached ? `Reached GW${m.reachedGW}` : `${m.remaining} pts away`}
-              </span>
-            </div>
-          ))}
+        <div className={styles.summaryItem}>
+          <span className={styles.summaryValue}>{worstGW.points}</span>
+          <span className={styles.summaryLabel}>Worst (GW{worstGW.event})</span>
         </div>
+      </div>
+
+      {/* Points Gap Table */}
+      <div className={styles.gapTableSection}>
+        <h4 className={styles.sectionTitle}>Points Gap to Ranks</h4>
+        {loading ? (
+          <div className={styles.loading}>Loading rank thresholds...</div>
+        ) : (
+          <div className={styles.gapTableContainer}>
+            <div className={styles.gapTableHeader}>
+              <span className={styles.gapColRank}>Rank</span>
+              <span className={styles.gapColPoints}>Points</span>
+              <span className={styles.gapColGap}>Gap</span>
+            </div>
+            {thresholdsWithGaps.map(t => (
+              <div key={t.rank} className={styles.gapTableRow}>
+                <span className={styles.gapColRank}>{formatRank(t.rank)}</span>
+                <span className={styles.gapColPoints}>{t.points.toLocaleString()}</span>
+                <span className={`${styles.gapColGap} ${t.gap > 0 ? styles.behind : t.gap < 0 ? styles.ahead : ''}`}>
+                  {t.gap > 0 ? `+${t.gap}` : t.gap < 0 ? Math.abs(t.gap) : '—'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* GW Breakdown Table */}

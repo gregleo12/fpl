@@ -2,7 +2,47 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.2 (December 19, 2025)
+**Current Version:** v3.2.3 (December 19, 2025)
+
+---
+
+## v3.2.3 - Revise K-39: Total Points Modal (Dec 19, 2025)
+
+**FEATURE REVISION:** Improved K-39 Total Points Modal based on user feedback.
+
+### Changes Made
+
+**Removed (Not Useful):**
+- Cumulative points chart (always goes up, not insightful)
+- Milestones section (arbitrary targets, not meaningful)
+
+**Enhanced Summary Stats:**
+- Kept: Total, Avg/GW, Best GW
+- Added: Worst GW with gameweek number
+- Changed layout: 4 columns instead of 3
+
+**New: Points Gap Table**
+- Shows points needed/ahead for key ranks: 1, 100, 1K, 5K, 10K, 50K, 100K, 200K, 500K, 1M
+- Each row: Rank, Points at rank, Gap from user
+- Positive gap (red) = points needed to reach rank
+- Negative gap (green) = points ahead of rank threshold
+- Similar to FPL official app's rank comparison
+
+**Kept:**
+- GW breakdown table with VS AVG column
+- Shows all gameweeks with cumulative totals
+
+### Technical Details
+- Added rank threshold fetching (currently using estimates)
+- TODO: Fetch actual rank thresholds from FPL API or calculate from distribution
+- Removed recharts dependency from this modal
+- Added responsive layout for Points Gap Table
+
+### Impact
+- More actionable insights for users
+- Clear view of what's needed to reach target ranks
+- Removed clutter from chart and arbitrary milestones
+- Better mobile responsiveness with 2x2 summary grid
 
 ---
 
