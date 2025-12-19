@@ -2,11 +2,46 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.12 (December 19, 2025)
+**Current Version:** v3.3.13 (December 19, 2025)
+
+---
+
+## v3.3.13 - K-54c: Merge RESULT and MARGIN Columns in Match History (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Combined RESULT and MARGIN columns into a single compact RESULT column showing "W +11" or "L -2" format for better mobile display.
+
+### Changes Made
+
+**Table Column Reduction:**
+- **Before:** 6 columns (GW | Opponent | Score | Chips | Result | Margin)
+- **After:** 5 columns (GW | Opponent | Score | Chips | Result)
+
+**New RESULT Format:**
+- Win: `W +11` (green text)
+- Loss: `L -2` (red text)
+- Draw: `D 0` (grey text)
+
+**Impact:**
+- Reduced table width by 16% (6 columns → 5 columns)
+- Better mobile fit on 390px screens (iPhone 12 Pro)
+- Result and margin now displayed together logically
+- Maintains color coding for quick visual scanning
+- No horizontal scroll needed
+
+**Files Modified:**
+- `/src/components/Stats/MyTeamView.tsx` - Merged columns in Match History table
+
+**Technical Details:**
+- Removed separate `<th>Margin</th>` header
+- Combined result letter and margin value in single cell
+- Color applied to entire cell based on W/L/D result
+- Format: `{result} {margin > 0 ? '+' : ''}{margin}`
 
 ---
 
 ## v3.3.12 - Swap RESULT and MARGIN Columns in Match History (Dec 19, 2025)
+
+**UI IMPROVEMENT (SUPERSEDED BY v3.3.13):** Swapped the order of RESULT and MARGIN columns.
 
 **UI IMPROVEMENT:** Swapped the order of RESULT and MARGIN columns in Match History table for better visual flow.
 
