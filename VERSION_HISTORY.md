@@ -1,8 +1,69 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 266+ versions
-**Current Version:** v3.2.11 (December 19, 2025)
+**Total Releases:** 267+ versions
+**Current Version:** v3.2.12 (December 19, 2025)
+
+---
+
+## v3.2.12 - K-46: Fix Players Tab Mobile Width (Dec 19, 2025)
+
+**BUG FIX:** Players Tab now uses full screen width on mobile devices.
+
+### Problem
+Players Tab table on mobile didn't use full screen width:
+- Table had excessive horizontal padding (12px on tablet, 8px on phone)
+- Compact Stats view showed 4 columns but couldn't fit all 4 on screen without scrolling
+- Other sections (My Team, Rankings, etc.) used full nav bar width, but Players Tab didn't
+- Wasted horizontal space on both sides
+
+**Reported Device:** iPhone 15 Pro Max (affects all mobile devices)
+
+### Root Cause
+`.container` CSS had uniform padding applied to all sides:
+```css
+@media (max-width: 768px) {
+  .container { padding: 0.75rem; }  /* 12px all sides */
+}
+@media (max-width: 480px) {
+  .container { padding: 0.5rem; }   /* 8px all sides */
+}
+```
+
+This created unnecessary horizontal margins that prevented the table from using full width.
+
+### Solution
+Changed to separate vertical and horizontal padding:
+```css
+@media (max-width: 768px) {
+  .container { padding: 0.75rem 0.25rem; }  /* 12px vertical, 4px horizontal */
+}
+@media (max-width: 480px) {
+  .container { padding: 0.5rem 0.25rem; }   /* 8px vertical, 4px horizontal */
+}
+```
+
+**Changes:**
+- Reduced horizontal padding from **12px → 4px** on tablets (max-width: 768px)
+- Reduced horizontal padding from **8px → 4px** on phones (max-width: 480px)
+- Kept vertical padding unchanged for proper spacing between sections
+- Minimal 4px horizontal padding prevents content from touching screen edges
+
+### Benefits
+- ✅ Table now uses full screen width matching navigation bar
+- ✅ All 4 Compact Stats columns fit on screen without horizontal scroll
+- ✅ Better mobile UX - maximizes available space
+- ✅ Consistent with other tabs (My Team, Rankings, etc.)
+
+### Files Modified
+- `/src/components/Players/PlayersTab.module.css` - Reduced mobile horizontal padding
+
+### Scope
+**Only Players Tab affected** - other sections already render correctly:
+- My Team ✅ (already correct)
+- Rankings ✅ (already correct)
+- Fixtures ✅ (already correct)
+- Stats tabs ✅ (already correct)
 
 ---
 
