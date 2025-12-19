@@ -2,7 +2,50 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.13 (December 19, 2025)
+**Current Version:** v3.3.14 (December 19, 2025)
+
+---
+
+## v3.3.14 - K-54c: Fix Players Tab Sticky Column Transparency (Dec 19, 2025)
+
+**BUG FIX:** Fixed transparent background on sticky PLAYER column that caused scrolling content to show through.
+
+### Problem
+When horizontally scrolling the Players table, data columns scrolled behind the sticky PLAYER column and were partially visible through the transparent background. This caused values like "5.0m" to appear instead of "£15.0m" (with £1 hidden behind the column).
+
+### Solution
+Made all sticky column backgrounds fully opaque:
+
+**Before:**
+```css
+.playerHeader {
+  background: rgba(0, 0, 0, 0.3); /* 30% opaque - transparent */
+}
+
+.row:hover .playerCell {
+  background: rgba(26, 26, 46, 0.98); /* 98% opaque - slightly transparent */
+}
+```
+
+**After:**
+```css
+.playerHeader {
+  background: #0e0a1f; /* Fully opaque */
+}
+
+.row:hover .playerCell {
+  background: #1a1a2e; /* Fully opaque */
+}
+```
+
+### Impact
+- No more content showing through sticky column when scrolling
+- Clean separation between sticky PLAYER column and scrolling data columns
+- All price values and stats fully visible
+- Works in both Compact Stats and All Stats views
+
+**Files Modified:**
+- `/src/components/Players/PlayersTab.module.css` - Made sticky column backgrounds solid
 
 ---
 

@@ -214,7 +214,7 @@
   position: sticky;
   left: 0;
   z-index: 20;
-  background: rgba(0, 0, 0, 0.3);
+  background: #0e0a1f; /* Solid background - prevent content showing through */
   min-width: 160px;
   padding: 12px 8px;
   text-align: left;
@@ -321,9 +321,9 @@
   opacity: 1;
 }
 
-/* On hover, make shadow more visible */
+/* On hover, maintain solid background */
 .row:hover .playerCell {
-  background: rgba(26, 26, 46, 0.98);
+  background: #1a1a2e; /* Fully opaque - prevent content showing through */
 }
 
 /* Player Info Layout */
@@ -414,7 +414,7 @@
 }
 
 .row:hover .statsCell {
-  background: rgba(26, 26, 46, 0.98);
+  background: #1a1a2e; /* Fully opaque */
 }
 
 /* Mobile Responsive */
