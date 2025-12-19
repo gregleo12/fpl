@@ -10,7 +10,7 @@ export interface ColumnDef {
 export const COMPACT_COLUMNS: ColumnDef[] = [
   {
     key: 'now_cost',
-    label: 'Value',
+    label: '£',
     width: 70,
     format: (v) => `${(v / 10).toFixed(1)}m`,
     align: 'center'

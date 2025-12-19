@@ -2,7 +2,62 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.15 (December 19, 2025)
+**Current Version:** v3.3.16 (December 19, 2025)
+
+---
+
+## v3.3.16 - K-54c: Reduce Players Tab PLAYER Column Width (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Reduced PLAYER column width by 20% to save horizontal space on mobile and adjusted VALUE header to just "£" symbol.
+
+### Changes Made
+
+**1. PLAYER Column Width Reduction**
+
+Reduced sticky PLAYER column width by 20% across all breakpoints:
+
+| Breakpoint | Before | After | Reduction |
+|------------|--------|-------|-----------|
+| Desktop | 160px | 128px | -32px |
+| Tablet (768px) | 140px | 112px | -28px |
+| Mobile (480px) | 130px | 104px | -26px |
+
+**2. VALUE Header Update**
+
+Changed VALUE column header from "Value" to just "£" for more compact display:
+- **Before:** `Value` (5 characters)
+- **After:** `£` (1 character)
+
+### Impact
+- Saves 20-25% horizontal space in PLAYER column
+- Long player names truncate with ellipsis (`...`) - already implemented
+- More compact VALUE header saves additional space
+- Better mobile fit on 390px screens
+- More room for stats columns
+
+**Example Compact Stats headers:**
+```
+PLAYER          £       %      PT
+```
+
+**Example row with truncation:**
+```
+Haaland FWD·MCI   15.0m   73.3%   135
+Alexander-Ar...   7.5m    45.2%   89
+```
+
+**Files Modified:**
+- `/src/components/Players/columns.ts` - Changed "Value" label to "£"
+- `/src/components/Players/PlayersTab.module.css` - Reduced .playerHeader and .playerCell min-width by 20%
+
+**Note:** Player name truncation with ellipsis was already implemented via existing CSS:
+```css
+.playerName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+```
 
 ---
 
