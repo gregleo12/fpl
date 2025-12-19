@@ -2,7 +2,99 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.3 (December 19, 2025)
+**Current Version:** v3.3.4 (December 19, 2025)
+
+---
+
+## v3.3.4 - K-53: Season Tab UI Improvements (Dec 19, 2025)
+
+**UI POLISH:** Enhanced Season tab with explanatory subtitles, renamed cards, and improved layouts for better readability and consistency.
+
+### Changes Made
+
+**1. Added Explanatory Subtitles to All Cards**
+- **Captain Points:** "Total points from captain picks"
+- **Chip Performance:** "Chips played throughout the season"
+- **Streaks:** Already had "Longest winning streaks in H2H matches"
+- **GW Records:** "Best individual gameweek scores"
+- **Team Value:** "Current squad value"
+
+**Why This Helps:** Users immediately understand what each card shows without needing to guess.
+
+**2. Renamed Cards for Clarity**
+- **"Best Gameweeks" → "GW Records"** - Shorter, more concise
+- **"Best Streaks" → "Streaks"** - Cleaner title, toggle makes best/worst clear
+
+**3. Layout Improvements**
+
+**Captain Points - Pts After Number, % Below:**
+```
+Before:                After:
+274 (30.3%)           274 PTS
+    pts                   30.3%
+```
+- PTS now inline with number (uppercase, smaller, grey)
+- Percentage moved below (more readable, cleaner)
+
+**Streaks - GW Range Below Team Name:**
+```
+Before:                After:
+Guillaume GW1-GW5     Guillaume
+FC SCORPIO            FC SCORPIO
+                      GW1-GW5
+```
+- GW range moved from inline to below team name
+- Better vertical spacing, cleaner layout
+
+**GW Records - Pts Inline with Number:**
+```
+Before:                After:
+111                   111 PTS
+pts
+```
+- PTS now inline with number (matches Captain Points style)
+- Uppercase, smaller, grey text
+
+### Technical Changes
+
+**CaptainLeaderboard.tsx:**
+- Added subtitle after title
+- Changed layout: `{points} PTS` with `{percentage}%` below
+- Used inline styles for PTS (0.75rem, grey, uppercase)
+
+**ChipPerformance.tsx:**
+- Wrapped title + subtitle in `<div>` for layout
+- Added subtitle below title with proper spacing
+
+**Streaks.tsx:**
+- Changed "Best Streaks" → "Streaks"
+- Removed `.nameWithRange` wrapper and `.gwRangeInline` class
+- Moved GW range to new line below team name
+- Added inline styles for GW range (0.75rem, rgba(255,255,255,0.4))
+
+**BestWorstGW.tsx:**
+- Changed "Best Gameweeks" → "GW Records"
+- Added subtitle below title
+- Changed layout to show `{points} PTS` inline
+- Used inline styles for PTS (0.75rem, grey, uppercase)
+
+**ValueLeaderboard.tsx:**
+- Added subtitle after title in both data and no-data cases
+
+### Files Modified
+- `/src/components/Stats/season/CaptainLeaderboard.tsx`
+- `/src/components/Stats/season/ChipPerformance.tsx`
+- `/src/components/Stats/season/Streaks.tsx`
+- `/src/components/Stats/season/BestWorstGW.tsx`
+- `/src/components/Stats/season/ValueLeaderboard.tsx`
+
+### Result
+- All cards have explanatory subtitles ✅
+- Cards renamed for clarity ✅
+- Captain Points shows "274 PTS" with "30.3%" below ✅
+- Streaks shows GW range below team name ✅
+- GW Records shows "111 PTS" inline ✅
+- Consistent styling across all Season cards ✅
 
 ---
 

@@ -38,6 +38,9 @@ export function ValueLeaderboard({ data }: Props) {
     return (
       <div className={styles.card}>
         <h4 className={styles.cardTitle}>📈 Team Value</h4>
+        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+          Current squad value
+        </div>
         <div className={styles.noData}>No data available</div>
       </div>
     );
@@ -50,6 +53,9 @@ export function ValueLeaderboard({ data }: Props) {
         onClick={() => setShowModal(true)}
       >
         <h4 className={styles.cardTitle}>📈 Team Value</h4>
+        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+          Current squad value
+        </div>
 
         <div className={styles.list}>
           {data.slice(0, 5).map((item, index) => renderItem(item, index))}

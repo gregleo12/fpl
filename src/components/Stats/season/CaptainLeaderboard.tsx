@@ -23,10 +23,11 @@ export function CaptainLeaderboard({ data }: Props) {
       </div>
       <div className={styles.stats}>
         <div className={styles.statValue}>
-          {item.total_points}
-          <span className={styles.percentage}> ({item.percentage}%)</span>
+          {item.total_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
         </div>
-        <div className={styles.statLabel}>pts</div>
+        <div className={styles.statLabel} style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+          {item.percentage}%
+        </div>
       </div>
     </div>
   );
@@ -37,6 +38,9 @@ export function CaptainLeaderboard({ data }: Props) {
         <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Star size={18} color="#00ff87" /> Captain Points
         </h4>
+        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+          Total points from captain picks
+        </div>
         <div className={styles.noData}>No data available</div>
       </div>
     );
@@ -51,6 +55,9 @@ export function CaptainLeaderboard({ data }: Props) {
         <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Star size={18} color="#00ff87" /> Captain Points
         </h4>
+        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+          Total points from captain picks
+        </div>
         <div className={styles.list}>
           {data.slice(0, 5).map((item, index) => (
             <div key={item.entry_id}>

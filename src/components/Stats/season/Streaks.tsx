@@ -25,7 +25,7 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
   const isEmpty = !currentData || currentData.length === 0;
 
   const IconComponent = view === 'best' ? Flame : Skull;
-  const titleText = view === 'best' ? 'Best Streaks' : 'Worst Streaks';
+  const titleText = view === 'best' ? 'Streaks' : 'Worst Streaks';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <IconComponent size={18} color="#00ff87" /> {titleText}
@@ -37,11 +37,11 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
     <div className={styles.listItem}>
       <div className={styles.rank}>{index + 1}</div>
       <div className={styles.info}>
-        <div className={styles.nameWithRange}>
-          <span className={styles.name}>{manager.player_name}</span>
-          <span className={styles.gwRangeInline}>{manager.gw_range}</span>
-        </div>
+        <div className={styles.name}>{manager.player_name}</div>
         <div className={styles.meta}>{manager.team_name}</div>
+        <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+          {manager.gw_range}
+        </div>
       </div>
       <div className={styles.stats}>
         <div className={styles.statValue}>{manager.streak}</div>

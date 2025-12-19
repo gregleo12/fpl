@@ -17,7 +17,7 @@ export function BestWorstGW({ bestData, worstData }: Props) {
 
   const data = view === 'best' ? bestData : worstData;
   const IconComponent = view === 'best' ? Flame : Skull;
-  const titleText = view === 'best' ? 'Best Gameweeks' : 'Worst Gameweeks';
+  const titleText = view === 'best' ? 'GW Records' : 'Worst Gameweeks';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <IconComponent size={18} color="#00ff87" /> {titleText}
@@ -33,8 +33,9 @@ export function BestWorstGW({ bestData, worstData }: Props) {
         <div className={styles.meta}>GW{item.event}</div>
       </div>
       <div className={styles.stats}>
-        <div className={styles.statValue}>{item.points}</div>
-        <div className={styles.statLabel}>pts</div>
+        <div className={styles.statValue}>
+          {item.points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+        </div>
       </div>
     </div>
   );
@@ -52,7 +53,12 @@ export function BestWorstGW({ bestData, worstData }: Props) {
     <>
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
-          <h4 className={styles.cardTitle}>{title}</h4>
+          <div>
+            <h4 className={styles.cardTitle}>{title}</h4>
+            <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
+              Best individual gameweek scores
+            </div>
+          </div>
           <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
             <button
               className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}

@@ -94,9 +94,14 @@ export function ChipPerformance({ data }: Props) {
     <>
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
-          <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Gamepad2 size={18} color="#00ff87" /> Chip Performance
-          </h4>
+          <div>
+            <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Gamepad2 size={18} color="#00ff87" /> Chip Performance
+            </h4>
+            <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
+              Chips played throughout the season
+            </div>
+          </div>
           <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
             <button
               className={`${styles.toggleButton} ${view === 'played' ? styles.active : ''}`}
