@@ -38,14 +38,14 @@ export async function GET(
     const transfersResult = await db.query(`
       SELECT
         event,
-        element_in,
-        element_out,
-        element_in_cost,
-        element_out_cost,
-        time
+        player_in,
+        player_out,
+        player_in_cost,
+        player_out_cost,
+        transfer_time
       FROM manager_transfers
       WHERE entry_id = $1
-      ORDER BY event DESC, time DESC
+      ORDER BY event DESC, transfer_time DESC
     `, [teamId]);
 
     return NextResponse.json({

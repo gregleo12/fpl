@@ -6,11 +6,11 @@ import styles from './TransferHistoryModal.module.css';
 
 interface Transfer {
   event: number;
-  element_in: number;
-  element_out: number;
-  element_in_cost: number;
-  element_out_cost: number;
-  time: string;
+  player_in: number;
+  player_out: number;
+  player_in_cost: number;
+  player_out_cost: number;
+  transfer_time: string;
 }
 
 interface GWHistory {
@@ -71,8 +71,8 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
   // Calculate totals
   const totalTransfers = transfers.length;
   const totalHits = gwHistory.reduce((sum, h) => sum + h.event_transfers_cost, 0);
-  const totalSpent = transfers.reduce((sum, t) => sum + t.element_in_cost, 0);
-  const totalReceived = transfers.reduce((sum, t) => sum + t.element_out_cost, 0);
+  const totalSpent = transfers.reduce((sum, t) => sum + t.player_in_cost, 0);
+  const totalReceived = transfers.reduce((sum, t) => sum + t.player_out_cost, 0);
   const netValue = (totalSpent - totalReceived) / 10;
 
   // Get player name from bootstrap
@@ -123,13 +123,13 @@ export function TransferHistoryModal({ isOpen, onClose, transfers, gwHistory }: 
                       <div key={i} className={styles.transferPair}>
                         <div className={styles.transferRow}>
                           <span className={styles.inLabel}>IN</span>
-                          <span className={styles.playerName}>{getPlayerName(t.element_in)}</span>
-                          <span className={styles.price}>£{(t.element_in_cost / 10).toFixed(1)}m</span>
+                          <span className={styles.playerName}>{getPlayerName(t.player_in)}</span>
+                          <span className={styles.price}>£{(t.player_in_cost / 10).toFixed(1)}m</span>
                         </div>
                         <div className={styles.transferRow}>
                           <span className={styles.outLabel}>OUT</span>
-                          <span className={styles.playerName}>{getPlayerName(t.element_out)}</span>
-                          <span className={styles.price}>£{(t.element_out_cost / 10).toFixed(1)}m</span>
+                          <span className={styles.playerName}>{getPlayerName(t.player_out)}</span>
+                          <span className={styles.price}>£{(t.player_out_cost / 10).toFixed(1)}m</span>
                         </div>
                         {i < gwTransfers.length - 1 && <div className={styles.separator} />}
                       </div>

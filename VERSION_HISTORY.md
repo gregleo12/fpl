@@ -2,7 +2,43 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.1 (December 18, 2025)
+**Current Version:** v3.2.2 (December 19, 2025)
+
+---
+
+## v3.2.2 - HOTFIX: Fix Database Column Names in Transfer History (Dec 19, 2025)
+
+**BUG FIX:** Modals showed "No data available" due to incorrect database column names in API query.
+
+### Problem
+- K-38/39/40 modals opened but showed "No data available"
+- Database had 18,737 rows in `manager_gw_history`, 320 rows for league 804742
+- API query was failing silently with SQL error
+
+### Root Cause
+- API used FPL API column names: `element_in`, `element_out`, `element_in_cost`, `element_out_cost`, `time`
+- Database actual schema uses: `player_in`, `player_out`, `player_in_cost`, `player_out_cost`, `transfer_time`
+- SQL query failed with "column does not exist" error
+- Empty arrays returned, triggering "No data available" message
+
+### Solution
+**API Fix (src/app/api/team/[teamId]/history/route.ts):**
+- Updated query to use correct column names matching database schema
+- Changed `element_in` → `player_in`
+- Changed `element_out` → `player_out`
+- Changed `element_in_cost` → `player_in_cost`
+- Changed `element_out_cost` → `player_out_cost`
+- Changed `time` → `transfer_time`
+
+**Frontend Fix (TransferHistoryModal.tsx):**
+- Updated TypeScript interface to match database schema
+- Fixed all references in calculations and render code
+
+### Impact
+- Modals now correctly fetch and display data from database
+- Transfer history shows actual player transfers
+- Rank and points modals display historical data
+- No more "No data available" for teams with synced data
 
 ---
 
