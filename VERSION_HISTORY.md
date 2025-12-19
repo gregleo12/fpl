@@ -2,7 +2,89 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.2 (December 19, 2025)
+**Current Version:** v3.3.3 (December 19, 2025)
+
+---
+
+## v3.3.3 - K-52b: GW Points Ranking Improvements (Dec 19, 2025)
+
+**UI POLISH:** Enhanced GW Points Rankings with more stats and better styling to match existing design patterns.
+
+### Improvements Made
+
+**1. GW Points Modal - Added More Stats**
+
+**New Stats Added:**
+- **League Average:** Shows average GW points across all league members
+- **Gap to Last:** Shows how many points ahead of last place (green, positive)
+
+**Before:**
+- Your points
+- Your rank
+- GW Winner
+- Gap to 1st
+
+**After:**
+- Your points
+- Your rank (with medal for top 3)
+- GW Winner
+- Your Rank
+- Gap to 1st (red if negative)
+- Gap to Last (green if positive) ← NEW
+- League Avg (white text) ← NEW
+
+**Why This Helps:**
+- **Context:** See how your score compares to league average
+- **Perspective:** Know if you're safe from last place
+- **Motivation:** Positive reinforcement for beating the average
+
+**2. GW Points Leaders Card - Match Season Rankings Style**
+
+**Updated Styling:**
+- Points now white (was green) to match Captain Points style
+- PTS label smaller (0.625rem) and uppercase
+- Team name already styled grey via `itemDetail` class
+- Medal icons stay same size (1.25rem)
+
+**Before:**
+```
+🥇  Guillaume de Posson
+    FC SCORPIO
+```
+
+**After:**
+```
+🥇  Guillaume de Posson          111
+    FC SCORPIO                   PTS
+```
+
+### Technical Changes
+
+**GWPointsModal.tsx:**
+- Added `avgPoints` calculation (sum of all points / total managers)
+- Added `gapToLast` calculation (user points - last place points)
+- Added new info rows conditionally shown
+- Added `.positive` CSS class for green text
+
+**GWPointsModal.module.css:**
+- Added `.infoValue.positive { color: #00ff87; }`
+
+**GWPointsLeaders.tsx:**
+- Changed points color from `#00ff87` → `white`
+- Changed PTS label size from `0.75rem` → `0.625rem`
+- Added `textTransform: 'uppercase'` to PTS label
+
+### Files Modified
+- `/src/components/Dashboard/GWPointsModal.tsx`
+- `/src/components/Dashboard/GWPointsModal.module.css`
+- `/src/components/Stats/sections/GWPointsLeaders.tsx`
+
+### Result
+- Modal shows league average ✅
+- Modal shows gap to last (green, positive) ✅
+- GW Leaders card matches Captain Points styling ✅
+- Team name smaller and grey ✅
+- Points displayed on right in white ✅
 
 ---
 

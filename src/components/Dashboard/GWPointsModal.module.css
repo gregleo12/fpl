@@ -99,6 +99,10 @@
   color: #ff4444;
 }
 
+.infoValue.positive {
+  color: #00ff87;
+}
+
 /* View Rankings Button */
 .viewRankingsButton {
   width: 100%;

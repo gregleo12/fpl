@@ -49,7 +49,12 @@ export function GWPointsModal({ isOpen, onClose, gameweek, points, leagueId, myT
 
   const myRanking = rankings.find(r => r.entry_id.toString() === myTeamId);
   const winner = rankings.length > 0 ? rankings[0] : null;
+  const lastPlace = rankings.length > 0 ? rankings[rankings.length - 1] : null;
   const gapToFirst = winner && myRanking ? myRanking.points - winner.points : 0;
+  const gapToLast = lastPlace && myRanking ? myRanking.points - lastPlace.points : 0;
+  const avgPoints = rankings.length > 0
+    ? Math.round(rankings.reduce((sum, r) => sum + r.points, 0) / rankings.length)
+    : 0;
   const rank = myRanking?.rank || 0;
   const totalManagers = rankings.length;
 
@@ -106,8 +111,24 @@ export function GWPointsModal({ isOpen, onClose, gameweek, points, leagueId, myT
                       </div>
                     </div>
                   )}
+
+                  {rank < totalManagers && (
+                    <div className={styles.infoRow}>
+                      <div className={styles.infoLabel}>Gap to Last:</div>
+                      <div className={`${styles.infoValue} ${gapToLast > 0 ? styles.positive : ''}`}>
+                        {gapToLast > 0 ? '+' : ''}{gapToLast} pts
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
+
+              <div className={styles.infoRow}>
+                <div className={styles.infoLabel}>League Avg:</div>
+                <div className={styles.infoValue}>
+                  {avgPoints} pts
+                </div>
+              </div>
             </div>
 
             {/* View Full Rankings Button */}
