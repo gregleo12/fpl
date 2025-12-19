@@ -1,8 +1,43 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 263+ versions
-**Current Version:** v3.2.8 (December 19, 2025)
+**Total Releases:** 264+ versions
+**Current Version:** v3.2.9 (December 19, 2025)
+
+---
+
+## v3.2.9 - K-43: Fix Scrollable Tables in My Team Modals (Dec 19, 2025)
+
+**BUG FIX:** Fixed GW breakdown tables not scrolling in K-38 and K-39 modals.
+
+### Problem
+- Tables showed only recent GWs (GW9-16)
+- Users couldn't scroll to see earlier GWs (GW1-8)
+- Content was cut off despite `max-height: 400px` being set
+
+### Root Cause
+`RankModals.module.css` had conflicting overflow properties:
+```css
+.tableContainer {
+  overflow-y: auto;   /* Line 102 - enables vertical scroll */
+  overflow: hidden;   /* Line 108 - overrides above, prevents scroll */
+}
+```
+
+The `overflow: hidden` on line 108 was overriding `overflow-y: auto`, preventing scrolling.
+
+### Solution
+Changed `overflow: hidden;` to `overflow-x: hidden;` to:
+- ✅ Enable vertical scrolling (`overflow-y: auto` works)
+- ✅ Prevent horizontal overflow (preserves `border-radius` effect)
+- ✅ Keep sticky headers visible during scroll
+
+### Files Modified
+- `/src/components/Dashboard/RankModals.module.css` - Fixed overflow conflict
+
+### Affected Modals
+- **K-38 Overall Rank Progress** - GW breakdown table now scrollable
+- **K-39 Total Points Analysis** - GW breakdown table now scrollable
 
 ---
 
