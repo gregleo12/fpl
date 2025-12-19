@@ -1,8 +1,94 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 272+ versions
-**Current Version:** v3.2.17 (December 19, 2025)
+**Total Releases:** 273+ versions
+**Current Version:** v3.2.18 (December 19, 2025)
+
+---
+
+## v3.2.18 - K-49d: Match GW Selector Style to Tabs Container (Dec 19, 2025)
+
+**UI POLISH:** GW selector container now matches tabs container styling exactly for unified header appearance.
+
+### Problem
+GW selector container had different styling than tabs container:
+- Different gap: 0.75rem vs 0.5rem
+- Different padding: 0.5rem 1rem vs 0.25rem
+- Nav buttons 36px vs tabs ~40px height
+
+**Result:** Header looked inconsistent, not unified.
+
+### Solution
+Copied exact CSS from `.subTabsContainer` to `.navigatorWrapper` for perfect visual match.
+
+### Changes Made
+
+**1. Updated Container Styling**
+```css
+/* Before */
+.navigatorWrapper {
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+}
+
+/* After - matches tabs exactly */
+.navigatorWrapper {
+  gap: 0.5rem;
+  padding: 0.25rem;
+}
+```
+
+**2. Matched Button Heights**
+```css
+/* Before */
+.navButton {
+  width: 36px;
+  height: 36px;
+}
+
+/* After - matches tab height */
+.navButton {
+  width: 40px;
+  height: 40px;
+}
+```
+
+### Before vs After
+
+| Property | Tabs Container | GW Selector (Before) | GW Selector (After) |
+|----------|----------------|---------------------|---------------------|
+| gap | 0.5rem | 0.75rem ❌ | 0.5rem ✅ |
+| padding | 0.25rem | 0.5rem 1rem ❌ | 0.25rem ✅ |
+| background | rgba(0,0,0,0.3) | rgba(0,0,0,0.3) ✅ | rgba(0,0,0,0.3) ✅ |
+| border-radius | 12px | 12px ✅ | 12px ✅ |
+| border | 1px solid rgba(255,255,255,0.1) | 1px solid rgba(255,255,255,0.1) ✅ | 1px solid rgba(255,255,255,0.1) ✅ |
+| button height | ~40px | 36px ❌ | 40px ✅ |
+
+### Visual Result
+```
+Before:
+┌───────────────────────────┐    ┌─────────────────┐
+│ [H2H] [Fixtures]          │    │   ← GW 17 →     │
+│ (consistent style)        │    │ (different)     │
+└───────────────────────────┘    └─────────────────┘
+        ↑ Mismatched styles ↑
+
+After:
+┌───────────────────────────┐    ┌─────────────────┐
+│ [H2H] [Fixtures]          │    │   ← GW 17 →     │
+│ (same style)              │    │ (same style)    │
+└───────────────────────────┘    └─────────────────┘
+        ↑ Perfectly matched ↑
+```
+
+### Files Modified
+- `/src/components/Fixtures/Fixtures.module.css`
+
+### Result
+- Both containers have identical styling ✅
+- Unified header appearance ✅
+- Professional, consistent look ✅
+- Buttons are same height ✅
 
 ---
 
