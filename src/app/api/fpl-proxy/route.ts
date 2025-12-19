@@ -1,10 +1,26 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const response = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
+    const { searchParams } = new URL(request.url);
+    const endpoint = searchParams.get('endpoint') || 'bootstrap-static';
+
+    // Build query string from all other params
+    const queryParams = new URLSearchParams();
+    searchParams.forEach((value, key) => {
+      if (key !== 'endpoint') {
+        queryParams.append(key, value);
+      }
+    });
+
+    const queryString = queryParams.toString();
+    const url = `https://fantasy.premierleague.com/api/${endpoint}${queryString ? '?' + queryString : ''}`;
+
+    console.log('[FPL Proxy] Fetching:', url);
+
+    const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0'
       }
@@ -18,7 +34,7 @@ export async function GET() {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching from FPL API:', error);
+    console.error('[FPL Proxy] Error fetching from FPL API:', error);
     return NextResponse.json(
       { error: 'Failed to fetch from FPL API' },
       { status: 500 }

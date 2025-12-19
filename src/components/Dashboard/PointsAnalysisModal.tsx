@@ -1,6 +1,7 @@
 'use client';
 
 import { StatTileModal } from './StatTileModal';
+import { useEffect, useState } from 'react';
 import styles from './RankModals.module.css';
 
 interface PointsData {
@@ -18,26 +19,71 @@ interface RankThreshold {
   rank: number;
   points: number;
   gap: number;
+  topPercent: string;
 }
 
 // Target ranks to show in Points Gap Table
-const TARGET_RANKS = [1, 100, 1000, 5000, 10000, 50000, 100000, 200000, 500000, 1000000];
+const TARGET_RANKS = [1, 1000, 10000, 100000, 500000, 1000000, 5000000];
+const TOTAL_PLAYERS = 11000000; // Approximate total FPL players
 
 export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
-  // Use estimated thresholds based on typical FPL distributions (GW16 2024/25)
-  // TODO: Fetch actual rank data from FPL API or calculate from user's overall_rank
-  const rankThresholds: RankThreshold[] = [
-    { rank: 1, points: 1200, gap: 0 },
-    { rank: 100, points: 1050, gap: 0 },
-    { rank: 1000, points: 950, gap: 0 },
-    { rank: 5000, points: 850, gap: 0 },
-    { rank: 10000, points: 800, gap: 0 },
-    { rank: 50000, points: 700, gap: 0 },
-    { rank: 100000, points: 650, gap: 0 },
-    { rank: 200000, points: 600, gap: 0 },
-    { rank: 500000, points: 500, gap: 0 },
-    { rank: 1000000, points: 400, gap: 0 },
-  ];
+  const [rankThresholds, setRankThresholds] = useState<RankThreshold[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real rank thresholds from FPL API
+  useEffect(() => {
+    async function fetchRankThresholds() {
+      if (!isOpen) return;
+
+      try {
+        setLoading(true);
+
+        // Fetch bootstrap-static to get total players
+        const bootstrapRes = await fetch('/api/fpl-proxy');
+        const bootstrapData = await bootstrapRes.json();
+        const totalPlayers = bootstrapData.total_players || TOTAL_PLAYERS;
+
+        // Fetch rank thresholds from overall league standings
+        // Each page has 50 entries, so page = rank / 50
+        const thresholds: RankThreshold[] = [];
+
+        for (const targetRank of TARGET_RANKS) {
+          const page = Math.ceil(targetRank / 50);
+          const indexOnPage = (targetRank - 1) % 50;
+
+          try {
+            const leagueRes = await fetch(
+              `/api/fpl-proxy?endpoint=leagues-classic/314/standings&page_standings=${page}`
+            );
+            const leagueData = await leagueRes.json();
+
+            if (leagueData.standings?.results?.[indexOnPage]) {
+              const entry = leagueData.standings.results[indexOnPage];
+              const topPercent = ((targetRank / totalPlayers) * 100).toFixed(2);
+
+              thresholds.push({
+                rank: targetRank,
+                points: entry.total || 0,
+                gap: 0, // Will be calculated later
+                topPercent: topPercent + '%'
+              });
+            }
+          } catch (err) {
+            console.error(`Error fetching rank ${targetRank}:`, err);
+          }
+        }
+
+        setRankThresholds(thresholds);
+      } catch (error) {
+        console.error('Error fetching rank thresholds:', error);
+        setRankThresholds([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchRankThresholds();
+  }, [isOpen]);
 
   if (!data || data.length === 0) {
     return (
@@ -97,22 +143,30 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
       {/* Points Gap Table */}
       <div className={styles.gapTableSection}>
         <h4 className={styles.sectionTitle}>Points Gap to Ranks</h4>
-        <div className={styles.gapTableContainer}>
-          <div className={styles.gapTableHeader}>
-            <span className={styles.gapColRank}>Rank</span>
-            <span className={styles.gapColPoints}>Points</span>
-            <span className={styles.gapColGap}>Gap</span>
-          </div>
-          {thresholdsWithGaps.map(t => (
-            <div key={t.rank} className={styles.gapTableRow}>
-              <span className={styles.gapColRank}>{formatRank(t.rank)}</span>
-              <span className={styles.gapColPoints}>{t.points.toLocaleString()}</span>
-              <span className={`${styles.gapColGap} ${t.gap > 0 ? styles.behind : t.gap < 0 ? styles.ahead : ''}`}>
-                {t.gap > 0 ? `+${t.gap}` : t.gap < 0 ? Math.abs(t.gap) : '—'}
-              </span>
+        {loading ? (
+          <div className={styles.loading}>Loading rank thresholds...</div>
+        ) : thresholdsWithGaps.length === 0 ? (
+          <div className={styles.noData}>Failed to load rank data</div>
+        ) : (
+          <div className={styles.gapTableContainer}>
+            <div className={styles.gapTableHeader}>
+              <span className={styles.gapColRank}>Rank</span>
+              <span className={styles.gapColTop}>Top %</span>
+              <span className={styles.gapColPoints}>Points</span>
+              <span className={styles.gapColGap}>Gap</span>
             </div>
-          ))}
-        </div>
+            {thresholdsWithGaps.map(t => (
+              <div key={t.rank} className={styles.gapTableRow}>
+                <span className={styles.gapColRank}>{formatRank(t.rank)}</span>
+                <span className={styles.gapColTop}>{t.topPercent}</span>
+                <span className={styles.gapColPoints}>{t.points.toLocaleString()}</span>
+                <span className={`${styles.gapColGap} ${t.gap > 0 ? styles.behind : t.gap < 0 ? styles.ahead : ''}`}>
+                  {t.gap > 0 ? `+${t.gap}` : t.gap < 0 ? Math.abs(t.gap) : '—'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* GW Breakdown Table */}

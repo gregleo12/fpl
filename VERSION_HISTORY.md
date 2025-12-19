@@ -2,7 +2,83 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 263+ versions
-**Current Version:** v3.2.5 (December 19, 2025)
+**Current Version:** v3.2.6 (December 19, 2025)
+
+---
+
+## v3.2.6 - K-39: Real FPL Rank Data & Top % Column (Dec 19, 2025)
+
+**MAJOR FIX:** K-39 Points Gap table now uses real FPL rank threshold data instead of hardcoded estimates.
+
+### Problem
+- User with 985 pts at rank 194K saw rank 200K = 600 pts (completely wrong)
+- Hardcoded estimates didn't reflect actual FPL season data
+- No context on how exclusive each rank tier is
+
+### Solution #1: Fetch Real Rank Thresholds
+**FPL Proxy Enhanced:**
+- Updated `/api/fpl-proxy` to support dynamic endpoints and query params
+- Can now fetch: `bootstrap-static`, `leagues-classic/314/standings`, etc.
+- Server-side proxy avoids CORS issues
+
+**Rank Data Fetching:**
+- Fetches actual players at target ranks from FPL's overall league (league 314)
+- Each page has 50 entries: rank 1000 = page 20, rank 100000 = page 2000
+- Gets real total points for each rank threshold
+- Fetches total_players from bootstrap-static for accurate percentages
+
+### Solution #2: Updated Rank Tiers
+**Changed from:** 1, 100, 1K, 5K, 10K, 50K, 100K, 200K, 500K, 1M
+**Changed to:** 1, 1K, 10K, 100K, 500K, 1M, 5M
+
+**Rationale:**
+- More useful tiers for long-term tracking
+- Better spread across skill levels
+- 5M represents bottom ~45% of active players
+
+### Solution #3: Added Top % Column
+**New column shows rank as percentage of total players (~11M):**
+- Rank 1 = Top 0.00001%
+- Rank 1K = Top 0.01%
+- Rank 10K = Top 0.09%
+- Rank 100K = Top 0.91%
+- Rank 500K = Top 4.55%
+- Rank 1M = Top 9.09%
+- Rank 5M = Top 45.45%
+
+**Impact:** Users can see how exclusive their rank is relative to all FPL players
+
+### Gap Calculation
+**Logic confirmed correct:**
+- Positive (red, +X) = points needed to reach that rank (user below threshold)
+- Negative (green, X) = points ahead of rank threshold (user above)
+
+**Example:** User at 985 pts, rank 200K
+- Rank 100K at ~1005 pts: Gap = +20 (red, need 20 more points)
+- Rank 500K at ~965 pts: Gap = 20 (green, 20 points ahead)
+
+### Technical Details
+**API Changes:**
+- `/api/fpl-proxy?endpoint=leagues-classic/314/standings&page_standings=20`
+- Fetches multiple pages asynchronously for all rank tiers
+- Handles errors gracefully (continues if individual rank fetch fails)
+
+**UI Changes:**
+- 4-column table: Rank | Top % | Points | Gap
+- Loading state while fetching
+- Error state if fetch fails
+- Responsive grid: 70px 70px 90px 90px (desktop), 50px 60px 70px 70px (mobile)
+
+### Files Changed
+- `PointsAnalysisModal.tsx` - Real FPL data fetching, Top % calculation
+- `RankModals.module.css` - 4-column layout, Top % styling
+- `/api/fpl-proxy/route.ts` - Dynamic endpoint support
+
+### Impact
+- Accurate, real-time rank threshold data
+- Context on rank exclusivity (Top % column)
+- Better goal-setting for users (know exact points needed for targets)
+- Data updates with each modal open (reflects current season standings)
 
 ---
 
