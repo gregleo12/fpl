@@ -198,8 +198,8 @@
     /* Use negative margins to compensate for parent .content padding (1rem = 16px) */
     margin-left: -1rem;
     margin-right: -1rem;
-    /* Then add back the desired 4px padding */
-    padding: 4px;
+    /* Then add back the desired 6px padding (50% more than initial 4px) */
+    padding: 6px;
     /* Remove any background effect */
     background: transparent;
     box-shadow: none;

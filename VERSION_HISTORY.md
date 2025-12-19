@@ -2,7 +2,26 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.10 (December 19, 2025)
+**Current Version:** v3.3.11 (December 19, 2025)
+
+---
+
+## v3.3.11 - K-54c Tweak: Increase Edge Padding to 6px (Dec 19, 2025)
+
+**UI ADJUSTMENT:** Increased edge padding from 4px to 6px (50% more) for better visual breathing room on mobile.
+
+### Changes Made
+- Adjusted container padding from 4px to 6px
+- Provides slightly more comfortable edge spacing while maintaining the edge-to-edge feel
+- Total gap is now 6px on each side instead of 4px
+
+**Visual Impact:**
+- Before: 4px gap (very tight to edges)
+- After: 6px gap (comfortable edge-to-edge)
+- Still significantly more compact than original 16px gap
+
+**Files Modified:**
+- `/src/components/Stats/StatsHub.module.css` - Padding change from 4px to 6px
 
 ---
 
