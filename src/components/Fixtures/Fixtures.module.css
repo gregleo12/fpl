@@ -1,15 +1,13 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px; /* Reduced from 10px for tighter spacing */
-  margin: 0 -2rem; /* Compensate for parent's 2rem padding */
-  padding: 0 2rem; /* Add it back for content */
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Desktop: Add top padding to avoid overlap with fixed top nav */
+/* Desktop: Add top padding to match Stats section */
 @media (min-width: 769px) {
   .container {
-    padding-top: 2rem; /* Reduced from 2.5rem for tighter spacing */
+    padding-top: 2.5rem;
   }
 }
 
@@ -25,55 +23,48 @@
   color: #ff6b6b;
 }
 
-/* Sub-tabs - Now sticky */
-.subTabsContainer {
-  position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 60px); /* Mobile: Sticky below nav */
-  z-index: 90; /* Above navigator */
-  background: #0e0a1f; /* Solid background to prevent see-through */
+/* Header container - matches Stats section */
+.header {
   display: flex;
-  gap: 8px;
-  margin-bottom: 0; /* Remove margin, use padding instead */
-  padding: 4px;
-  padding-bottom: 8px; /* Add bottom padding for spacing */
-  border-radius: 12px 12px 0 0; /* Round top corners only */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: none; /* Remove bottom border for seamless stack */
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
-/* Desktop: Position below fixed nav */
-@media (min-width: 769px) {
-  .subTabsContainer {
-    top: 80px; /* Desktop nav height */
-  }
+/* Sub-tabs - matches Stats viewToggle */
+.subTabsContainer {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .subTab {
-  flex: 1;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
   background: transparent;
   border: none;
-  border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .subTab:hover {
+  color: rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
 }
 
 .subTabActive {
-  background: rgba(147, 51, 234, 0.2) !important;
-  color: #a78bfa !important;
-  border: 1px solid rgba(147, 51, 234, 0.3);
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
 }
 
 /* Placeholder message */
@@ -90,57 +81,37 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* Gameweek Navigator - Stacks below tab toggle */
+/* Gameweek Navigator - matches Stats gwSelector */
 .navigatorWrapper {
-  position: sticky;
-  top: calc(env(safe-area-inset-top, 0px) + 60px + 48px + 8px); /* Mobile: Nav + Tab + Gap */
-  background: #0e0a1f; /* Solid background to prevent see-through */
-  z-index: 80; /* Below tabs (90), above content */
-  padding: 0;
-  padding-bottom: 8px; /* Spacing below */
-  margin: 0;
-}
-
-/* Desktop: Position below fixed top nav + tab toggle */
-@media (min-width: 769px) {
-  .navigatorWrapper {
-    top: calc(80px + 48px + 8px); /* Desktop: Nav + Tab + Gap = 136px */
-  }
-}
-
-.navigator {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
   border-radius: 12px;
-  min-height: 50px;
-  max-height: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .navButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
   width: 36px;
   height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 255, 135, 0.1);
-  border: 1px solid rgba(0, 255, 135, 0.3);
-  border-radius: 50%;
-  color: #00ff87;
-  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
+  transition: all 0.2s ease;
+  font-size: 1.125rem;
+  font-weight: 600;
 }
 
 .navButton:hover:not(:disabled) {
   background: rgba(0, 255, 135, 0.2);
-  border-color: rgba(0, 255, 135, 0.5);
-  transform: scale(1.05);
+  border-color: #00ff87;
+  color: #00ff87;
 }
 
 .navButton:disabled {
@@ -151,16 +122,15 @@
 .gwInfo {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 0.5rem;
 }
 
 .gwNumber {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: white;
-  line-height: 1;
-  white-space: nowrap;
+  min-width: 2ch;
+  text-align: center;
 }
 
 .dropdownButton {
@@ -1073,42 +1043,38 @@
   white-space: nowrap;
 }
 
-/* Mobile Responsive - HORIZONTAL COMPACT LAYOUT */
-@media (max-width: 768px) {
-  .matchesContainer {
-    gap: 10px; /* Consistent 10px spacing on mobile */
+/* Mobile Responsive - matches Stats section */
+@media (max-width: 640px) {
+  .container {
+    padding: 0.75rem;
   }
 
-  .navigator {
-    padding: 10px 12px;
-    gap: 10px;
-    min-height: 48px;
-    max-height: 48px;
-  }
-
-  .navButton {
-    width: 32px;
-    height: 32px;
-    font-size: 0.75rem;
-  }
-
-  .gwNumber {
-    font-size: 1.125rem;
-  }
-
-  .liveBadge {
-    font-size: 0.625rem;
-    padding: 3px 8px;
-  }
-
-  .navigatorWrapper {
-    top: calc(env(safe-area-inset-top, 0px) + 60px + 56px + 8px); /* Safe area + Nav + Tab + Gap = 124px */
-    padding: 0;
-    padding-bottom: 8px;
+  .header {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .subTabsContainer {
-    top: calc(env(safe-area-inset-top, 0px) + 60px); /* Mobile: Sticky below nav */
+    justify-content: center;
+  }
+
+  .subTab {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .navigatorWrapper {
+    justify-content: center;
+  }
+
+  .gwNumber {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .matchesContainer {
+    gap: 10px;
   }
 
   .timeline {

@@ -480,25 +480,26 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   return (
     <div className={styles.container}>
-      {/* Sub-tabs: H2H Matches | Team Fixtures */}
-      <div className={styles.subTabsContainer}>
-        <button
-          className={`${styles.subTab} ${activeTab === 'h2h' ? styles.subTabActive : ''}`}
-          onClick={() => setActiveTab('h2h')}
-        >
-          ⚔️ H2H Matches
-        </button>
-        <button
-          className={`${styles.subTab} ${activeTab === 'fixtures' ? styles.subTabActive : ''}`}
-          onClick={() => setActiveTab('fixtures')}
-        >
-          ⚽ Team Fixtures
-        </button>
-      </div>
+      {/* Header - matches Stats section */}
+      <div className={styles.header}>
+        {/* Sub-tabs: H2H Matches | Team Fixtures */}
+        <div className={styles.subTabsContainer}>
+          <button
+            className={`${styles.subTab} ${activeTab === 'h2h' ? styles.subTabActive : ''}`}
+            onClick={() => setActiveTab('h2h')}
+          >
+            ⚔️ H2H Matches
+          </button>
+          <button
+            className={`${styles.subTab} ${activeTab === 'fixtures' ? styles.subTabActive : ''}`}
+            onClick={() => setActiveTab('fixtures')}
+          >
+            ⚽ Team Fixtures
+          </button>
+        </div>
 
-      {/* Gameweek Navigator - Compact Horizontal Layout */}
-      <div className={styles.navigatorWrapper}>
-        <div className={styles.navigator}>
+        {/* Gameweek Navigator */}
+        <div className={styles.navigatorWrapper}>
           {/* Previous button */}
           <button
             className={styles.navButton}

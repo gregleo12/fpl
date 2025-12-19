@@ -1,8 +1,127 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 270+ versions
-**Current Version:** v3.2.15 (December 19, 2025)
+**Total Releases:** 271+ versions
+**Current Version:** v3.2.16 (December 19, 2025)
+
+---
+
+## v3.2.16 - K-49: Fixtures Tab - Copy Stats Section UI EXACTLY (Dec 19, 2025)
+
+**REGRESSION FIX:** Previous sticky header implementation made things worse. Copied Stats section UI exactly for consistency.
+
+### Problem
+v3.2.14's sticky header implementation created issues:
+- Way too much vertical space on top (~60px padding)
+- Different UI style than Stats section
+- Content scrolled behind header poorly
+- Total header height ~240px (vs Stats ~100px)
+
+### Solution
+**Copied Stats section UI exactly** - don't reinvent, replicate what works.
+
+### Changes Made
+
+**1. Removed Sticky Positioning**
+- Changed from sticky header to simple static header
+- Matches Stats section's non-sticky design
+- Removed complex z-index stacking
+
+**2. Copied Container Styling**
+```css
+.container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 769px) {
+  .container {
+    padding-top: 2.5rem; /* Matches Stats */
+  }
+}
+```
+
+**3. Added Header Wrapper**
+```css
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+```
+
+**4. Updated Tab Styling** (matches Stats .viewToggle/.viewButton)
+```css
+.subTabsContainer {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.subTab {
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  /* ... matches Stats viewButton exactly */
+}
+
+.subTabActive {
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
+}
+```
+
+**5. Updated GW Selector** (matches Stats .gwSelector)
+```css
+.navigatorWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+```
+
+**6. Mobile Responsiveness** (matches Stats @media queries)
+```css
+@media (max-width: 640px) {
+  .container { padding: 0.75rem; }
+  .header { flex-direction: column; }
+  .subTabsContainer { justify-content: center; }
+  .navigatorWrapper { justify-content: center; }
+}
+```
+
+### Before vs After
+
+| Element | v3.2.14 (Bad) | v3.2.16 (Fixed) |
+|---------|---------------|-----------------|
+| Design | Sticky (complex) | Static (simple) |
+| Top padding | ~60px | 1rem (mobile), 2.5rem (desktop) |
+| Tab container | Sticky with solid background | Simple flex with transparent bg |
+| GW selector | Sticky, 50px height | Simple flex, compact |
+| Total header | ~240px | ~100px |
+| Matches Stats? | No | Yes ✅ |
+
+### Files Modified
+- `/src/components/Fixtures/Fixtures.module.css`
+- `/src/components/Fixtures/FixturesTab.tsx`
+
+### Result
+- Fixtures header now matches Stats section visually
+- Minimal vertical space wasted
+- Compact, clean design
+- No sticky complexity
+- Content scrolls normally
 
 ---
 
