@@ -97,11 +97,13 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     async function fetchHistory() {
       try {
         const response = await fetch(`/api/team/${myTeamId}/history?leagueId=${leagueId}`);
-        if (!response.ok) throw new Error('Failed to fetch history');
         const data = await response.json();
+        // Always set data, even if empty arrays
         setHistoryData(data);
       } catch (err: any) {
         console.error('Error fetching history:', err);
+        // Set empty data on error so modals still render
+        setHistoryData({ history: [], transfers: [] });
       }
     }
 

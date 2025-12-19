@@ -1,8 +1,42 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 262+ versions
-**Current Version:** v3.2.0 (December 18, 2025)
+**Total Releases:** 263+ versions
+**Current Version:** v3.2.1 (December 18, 2025)
+
+---
+
+## v3.2.1 - HOTFIX: Make Tile Modals Work with Empty Data (Dec 18, 2025)
+
+**BUG FIX:** Stat tiles weren't clickable when database had no history data.
+
+### Problem
+- Tiles not clickable on staging
+- API returned 500 error when `manager_gw_history` table empty
+- Modals only rendered if `historyData` existed, so clicks did nothing
+- Your team (5293769) has no data in `manager_gw_history` yet
+
+### Root Cause
+- API threw error when database query returned empty results
+- Frontend only rendered modals conditionally: `{historyData && <Modals />}`
+- If historyData was null, modals didn't exist in DOM
+- Clicking tiles set state but nothing happened
+
+### Solution
+**API Fix:**
+- Return empty arrays `{ history: [], transfers: [] }` instead of 500 error
+- Allows UI to function even with no data
+
+**Frontend Fix:**
+- Always set `historyData`, even on error (with empty arrays)
+- Modals now always render
+- Each modal handles empty data with "No data available" message
+
+### Impact
+- Tiles now clickable even with empty database
+- Modals open and show "No data available" messages
+- Will work normally once database is synced
+- Graceful degradation for missing data
 
 ---
 
