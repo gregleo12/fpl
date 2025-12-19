@@ -2,7 +2,76 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.2.21 (December 19, 2025)
+**Current Version:** v3.2.22 (December 19, 2025)
+
+---
+
+## v3.2.22 - K-49f: Rivals Header Final Fixes (Dec 19, 2025)
+
+**UI POLISH:** Final responsive fixes for Rivals header - shortened label, removed dropdown arrow, improved spacing.
+
+### Changes Made
+
+**1. Shortened "H2H Matches" → "H2H"**
+- Saves 8 characters of horizontal space
+- Makes room for GW selector on smallest mobile devices (iPhone SE 320px)
+- Cleaner, more compact design
+
+**2. Removed Dropdown Arrow (▼)**
+- Before: `← GW 17 ▼ →`
+- After: `← GW 17 →`
+- Made "GW 17" text clickable to open selector
+- Saves ~20px horizontal space
+- Simpler, cleaner interface
+
+**3. Improved Mobile Spacing**
+```css
+/* Mobile - increased gap to prevent mingling */
+.header {
+  gap: 0.5rem; /* Was 0.25rem */
+}
+```
+- Clear visible gap between tabs and GW selector
+- Elements no longer touch/overlap on any mobile width
+
+**4. Desktop Responsive Rules**
+```css
+@media (min-width: 769px) {
+  .subTabsContainer { flex: 1; min-width: 0; }
+  .navigatorWrapper { flex-shrink: 0; }
+}
+```
+- Containers now properly fill available width
+- Header scales properly with navigation bar width
+
+### Visual Results
+
+**Mobile (320px - 640px):**
+```
+┌─────────────────────────────────────┐
+│ [🗡 H2H] [📅 Fixtures] │ ← GW 17 → │
+└─────────────────────────────────────┘
+         ↑ Clear gap ↑    ↑ No ▼
+```
+
+**Desktop (>769px):**
+```
+┌──────────────────────────────────────────────┐
+│ [🗡 H2H] [📅 Fixtures]      │   ← GW 17 →   │
+└──────────────────────────────────────────────┘
+   ↑ Containers fill width, match nav bar ↑
+```
+
+### Files Modified
+- `/src/components/Fixtures/FixturesTab.tsx` (label shortened, GW number made clickable, dropdown removed)
+- `/src/components/Fixtures/Fixtures.module.css` (mobile gap, desktop responsive rules)
+
+### Result
+- Shorter label saves space on all devices ✅
+- No dropdown arrow = cleaner UI + more space ✅
+- Clear gap between elements on mobile ✅
+- No mingling/overlapping at any width ✅
+- Proper scaling on desktop (>769px) ✅
 
 ---
 

@@ -490,7 +490,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             onClick={() => setActiveTab('h2h')}
           >
             <Swords size={16} />
-            H2H Matches
+            H2H
           </button>
           <button
             className={`${styles.subTab} ${activeTab === 'fixtures' ? styles.subTabActive : ''}`}
@@ -513,22 +513,21 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             ◄
           </button>
 
-          {/* Gameweek display with inline status and dropdown */}
+          {/* Gameweek display with inline status - clickable */}
           <div className={styles.gwInfo}>
-            <span className={styles.gwNumber}>GW {currentGW}</span>
-
-            <button
-              className={styles.dropdownButton}
+            <span
+              className={styles.gwNumber}
               onClick={handleGWInfoPress}
               onMouseDown={handleGWInfoMouseDown}
               onMouseUp={handleGWInfoMouseUp}
               onMouseLeave={handleGWInfoMouseUp}
               onTouchStart={handleGWInfoMouseDown}
               onTouchEnd={handleGWInfoMouseUp}
+              style={{ cursor: 'pointer' }}
               aria-label="Select gameweek"
             >
-              ▼
-            </button>
+              GW {currentGW}
+            </span>
 
             {fixturesData.status === 'in_progress' && (
               <span className={styles.liveBadge}>LIVE</span>
