@@ -367,8 +367,8 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                 <th>Opponent</th>
                 <th>Score</th>
                 <th>Chips</th>
-                <th>Margin</th>
                 <th>Result</th>
+                <th>Margin</th>
               </tr>
             </thead>
             <tbody>
@@ -401,21 +401,21 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                       </div>
                     </td>
                     <td>
-                      <span className={
-                        match.margin > 0 ? styles.positive :
-                        match.margin < 0 ? styles.negative :
-                        ''
-                      }>
-                        {match.margin > 0 ? `+${match.margin}` : match.margin}
-                      </span>
-                    </td>
-                    <td>
                       <span className={`${styles.resultBadge} ${
                         match.result === 'W' ? styles.resultWin :
                         match.result === 'D' ? styles.resultDraw :
                         styles.resultLoss
                       }`}>
                         {match.result}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={
+                        match.margin > 0 ? styles.positive :
+                        match.margin < 0 ? styles.negative :
+                        ''
+                      }>
+                        {match.margin > 0 ? `+${match.margin}` : match.margin}
                       </span>
                     </td>
                   </tr>

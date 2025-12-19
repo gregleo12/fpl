@@ -2,7 +2,26 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.11 (December 19, 2025)
+**Current Version:** v3.3.12 (December 19, 2025)
+
+---
+
+## v3.3.12 - Swap RESULT and MARGIN Columns in Match History (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Swapped the order of RESULT and MARGIN columns in Match History table for better visual flow.
+
+### Changes Made
+- Match History table column order changed from:
+  - **Before:** GW | Opponent | Score | Chips | Margin | Result
+  - **After:** GW | Opponent | Score | Chips | Result | Margin
+
+**Impact:**
+- Result badge (W/D/L) now appears before margin value
+- More logical flow: see the result first, then the margin
+- Maintains all existing styling and functionality
+
+**Files Modified:**
+- `/src/components/Stats/MyTeamView.tsx` - Swapped table header and cell order
 
 ---
 
