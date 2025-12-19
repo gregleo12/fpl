@@ -8,6 +8,8 @@ import { GWSelector } from '@/components/PitchView/GWSelector';
 import { RankProgressModal } from './RankProgressModal';
 import { PointsAnalysisModal } from './PointsAnalysisModal';
 import { GWPointsModal } from './GWPointsModal';
+import { GWRankModal } from './GWRankModal';
+import { TransfersModal } from './TransfersModal';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
@@ -44,6 +46,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [showRankModal, setShowRankModal] = useState(false);
   const [showPointsModal, setShowPointsModal] = useState(false);
   const [showGWPointsModal, setShowGWPointsModal] = useState(false);
+  const [showGWRankModal, setShowGWRankModal] = useState(false);
+  const [showTransfersModal, setShowTransfersModal] = useState(false);
 
   // History data for modals
   const [historyData, setHistoryData] = useState<any>(null);
@@ -163,11 +167,19 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               <div className={styles.statBoxValue}>{gwPoints}</div>
               <div className={styles.statBoxLabel}>GW PTS</div>
             </div>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowGWRankModal(true)}
+              title="Click to view GW rank stats"
+            >
               <div className={styles.statBoxValue}>{formatRank(gwRank)}</div>
               <div className={styles.statBoxLabel}>GW RANK</div>
             </div>
-            <div className={styles.statBox}>
+            <div
+              className={`${styles.statBox} ${styles.clickable}`}
+              onClick={() => setShowTransfersModal(true)}
+              title="Click to view transfer stats"
+            >
               <div className={styles.statBoxValue}>
                 {gwTransfers.count}
                 {gwTransfers.cost > 0 && (
@@ -256,6 +268,23 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         onClose={() => setShowGWPointsModal(false)}
         gameweek={selectedGW}
         points={gwPoints}
+        leagueId={leagueId}
+        myTeamId={myTeamId}
+      />
+
+      {/* GW Rank Modal */}
+      <GWRankModal
+        isOpen={showGWRankModal}
+        onClose={() => setShowGWRankModal(false)}
+        gameweek={selectedGW}
+        leagueId={leagueId}
+        myTeamId={myTeamId}
+      />
+
+      {/* Transfers Modal */}
+      <TransfersModal
+        isOpen={showTransfersModal}
+        onClose={() => setShowTransfersModal(false)}
         leagueId={leagueId}
         myTeamId={myTeamId}
       />

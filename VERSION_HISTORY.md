@@ -1,8 +1,122 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 275+ versions
-**Current Version:** v3.3.17 (December 19, 2025)
+**Total Releases:** 276+ versions
+**Current Version:** v3.4.0 (December 19, 2025)
+
+---
+
+## v3.4.0 - K-55: Make All My Team Tiles Clickable with Modals (Dec 19, 2025)
+
+**NEW FEATURE:** Made GW RANK and TRANSFERS tiles clickable, completing all 5 My Team stat tiles with interactive modals.
+
+### Overview
+
+Previously only 3 of 5 My Team tiles were clickable (GW PTS, TOTAL PTS, OVERALL RANK). This update adds modals for the remaining 2 tiles:
+- **GW RANK** → GW Rank Modal (global rank statistics)
+- **TRANSFERS** → Transfers Modal (transfer summary stats)
+
+### Part 1: GW RANK Modal
+
+Shows global rank statistics across the entire season:
+
+| Stat | Description | Example |
+|------|-------------|---------|
+| Your GW Rank | Current GW global rank (large display) | 1,124,532nd |
+| Top % | Percentile ranking | Top 12.3% |
+| Best GW Rank | Lowest rank this season with GW | 245,123 (GW8) |
+| Worst GW Rank | Highest rank this season with GW | 3,456,789 (GW2) |
+| Average GW Rank | Mean of all GW ranks | 1.2M |
+| GWs in Top 1M | Count of GWs where rank < 1,000,000 | 7 / 16 |
+
+**Data Source:** FPL API `/entry/{id}/history/` endpoint
+
+### Part 2: TRANSFERS Modal
+
+Shows transfer and chip statistics (simple summary stats):
+
+**This Gameweek Section:**
+- Transfers made (count)
+- Hits taken (points cost)
+
+**Season Totals Section:**
+- Total Transfers
+- Total Hits Taken (points)
+- Free Transfers Available (for next GW)
+
+**Chips Used Section:**
+- Grid display of all chips used with GW numbers
+- Shows: WC, BB, TC, FH with respective gameweeks
+
+**Data Source:** FPL API `/entry/{id}/`, `/entry/{id}/history/`, `/entry/{id}/event/{gw}/picks/` endpoints
+
+### Files Created
+
+**Modal Components:**
+- `/src/components/Dashboard/GWRankModal.tsx` - GW Rank modal component
+- `/src/components/Dashboard/GWRankModal.module.css` - GW Rank modal styles
+- `/src/components/Dashboard/TransfersModal.tsx` - Transfers modal component
+- `/src/components/Dashboard/TransfersModal.module.css` - Transfers modal styles
+
+**API Endpoints:**
+- `/src/app/api/team/[teamId]/gw-rank-stats/route.ts` - GW rank statistics endpoint
+- `/src/app/api/team/[teamId]/transfer-stats/route.ts` - Transfer statistics endpoint
+
+### Files Modified
+
+- `/src/components/Dashboard/MyTeamTab.tsx` - Added imports, modal state, click handlers, and modal components
+
+### Changes Made
+
+**MyTeamTab.tsx:**
+```typescript
+// Added imports
+import { GWRankModal } from './GWRankModal';
+import { TransfersModal } from './TransfersModal';
+
+// Added modal states
+const [showGWRankModal, setShowGWRankModal] = useState(false);
+const [showTransfersModal, setShowTransfersModal] = useState(false);
+
+// Made GW RANK tile clickable
+<div
+  className={`${styles.statBox} ${styles.clickable}`}
+  onClick={() => setShowGWRankModal(true)}
+>
+
+// Made TRANSFERS tile clickable
+<div
+  className={`${styles.statBox} ${styles.clickable}`}
+  onClick={() => setShowTransfersModal(true)}
+>
+
+// Added modal components
+<GWRankModal ... />
+<TransfersModal ... />
+```
+
+### Impact
+
+- All 5 My Team stat tiles are now interactive
+- Users can explore detailed rank and transfer statistics
+- Consistent modal UX using StatTileModal pattern
+- No performance impact - data fetched only when modal opens
+- Follows K-27 caching rules (uses FPL API for all data)
+
+### Design Decisions
+
+1. **Simple Transfer Stats:** Learned from failed K-38 attempt - showing summary stats only, not full transfer history
+2. **Global Rank Focus:** GW Rank modal shows FPL-wide global rank stats, not H2H league rank
+3. **Modal Pattern:** Both modals follow existing StatTileModal wrapper pattern for consistency
+4. **On-Demand Loading:** Modal data fetched via useEffect when isOpen changes
+5. **FT Calculation:** Simplified free transfer logic (0 transfers = 2 FTs, else 1 FT)
+
+### Testing Notes
+
+- Build successful: `npm run build` ✓
+- API routes created with `force-dynamic` export ✓
+- Modal components follow existing patterns ✓
+- Deploy to staging only (NOT production without approval) ✓
 
 ---
 
