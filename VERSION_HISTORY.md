@@ -2,7 +2,127 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 275+ versions
-**Current Version:** v3.3.6 (December 19, 2025)
+**Current Version:** v3.3.7 (December 19, 2025)
+
+---
+
+## v3.3.7 - K-54a: Stats Team Tab - CSS Compact Layout for Mobile (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Compacted Stats Team tab layout for mobile devices (iPhone 12 Pro: 390px width) with CSS-only changes for better content density.
+
+### Problem
+Stats Team tab wasted excessive space on mobile:
+- Containers narrower than bottom nav bar
+- Too much internal padding
+- Oversized sections requiring excessive scrolling
+- Large stat boxes and form circles
+
+### Solution
+Applied aggressive CSS compaction targeting 390px-480px mobile devices:
+
+**1. Container Width Optimization**
+- Reduced side padding from default to 8px
+- Containers now visually match nav bar width (edge-to-edge feel)
+- Reduced gap between sections from 12px → 10px
+
+**2. Section Internal Padding Reduction (30-40%)**
+- Section padding: 24px → 10px 12px
+- Section margin-bottom: 12px → 10px
+- ~50% reduction in vertical spacing
+
+**3. Section Title Compaction**
+- Title font size: 1.125rem → 0.875rem
+- Subtitle font size: 0.75rem → 0.6875rem
+- Reduced margin below title to 8px
+
+**4. Performance Grid (~25% Smaller)**
+- Grid gap: 12px → 6px
+- Stat card padding: 14px 10px → 8px 6px
+- Stat card min-height: 70px → 60px
+- Stat value font: 1.5rem → 1.4rem
+- Stat label font: 0.625rem → 0.6rem
+- Vertical gap between grids: 12px → 8px
+
+**5. Recent Form Compaction**
+- Form circles: 48px → 36px (25% smaller)
+- Circle font size: 1.125rem → 0.8rem
+- GW label font: 0.6875rem → 0.6rem
+- Tighter spacing between label and circle
+
+**6. Team Header Compaction**
+- Manager name: 2rem → 1.5rem
+- Team name subtitle: 1.1rem → 0.9rem
+- Reduced margin between name and subtitle
+- Rank badge padding: 6px 10px → 8px 12px
+- Rank number: 1.25rem → 1.5rem
+
+**7. Season Stats Grid**
+- Uses same compaction as Performance grid
+- All stat boxes ~25% smaller
+- Labels remain readable at reduced sizes
+
+**8. Tables and Chips**
+- Table cell padding: 0.5rem 0.35rem → 0.4rem 0.3rem
+- Chips summary padding: 1rem → 0.75rem
+- Empty state padding: 3rem → 2rem
+
+### Technical Details
+
+**File Modified:**
+- `/src/components/Dashboard/Dashboard.module.css`
+
+**Media Query:**
+- `@media (max-width: 480px)` - targets iPhone 12 Pro (390px) and similar devices
+
+**CSS Approach:**
+- All changes via CSS only - no component changes
+- Same content, better density
+- Uses `!important` flags where needed to override existing breakpoint styles
+- Progressive enhancement approach (works on all devices, optimized for mobile)
+
+**Sizing Strategy:**
+- Reduced padding by 30-50%
+- Reduced font sizes by 10-25%
+- Reduced spacing/gaps by 30-40%
+- Maintained 4-column grid layout (proven optimal)
+- Preserved all functionality and readability
+
+### Impact
+
+**Before (Default Mobile):**
+- Section padding: 24px
+- Stat boxes: Large with 12px gaps
+- Form circles: 48px
+- Excessive scrolling required
+
+**After (Compact Layout):**
+- Section padding: 10-12px
+- Stat boxes: Compact with 6px gaps
+- Form circles: 36px
+- Reduced scrolling, more content visible
+- Containers match nav bar width
+
+### Testing Notes
+
+All sizing remains readable on:
+- iPhone 12 Pro (390px width)
+- iPhone SE (375px width)
+- Standard Android phones (360-400px)
+
+Desktop and tablet layouts unaffected - changes only apply to mobile breakpoint.
+
+### Files Modified
+- `/src/components/Dashboard/Dashboard.module.css`
+
+### Result
+- Containers match nav bar width ✅
+- Internal padding reduced by 30-50% ✅
+- Performance grid ~25% smaller ✅
+- Recent Form circles reduced from 48px → 36px ✅
+- Season Stats compact ✅
+- Section titles smaller, don't wrap ✅
+- All text still readable ✅
+- No desktop regressions ✅
 
 ---
 

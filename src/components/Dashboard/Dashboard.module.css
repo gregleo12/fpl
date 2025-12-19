@@ -747,10 +747,101 @@
   }
 }
 
-/* Small screen padding adjustments only - no layout changes */
+/* K-54a: Compact layout for Stats Team tab on mobile (iPhone 12 Pro: 390px) */
 @media (max-width: 480px) {
+  /* 1. Container width to match nav bar - reduce side padding */
+  .myTeamTab {
+    gap: 10px; /* Was 0.75rem = 12px */
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  /* 2. Internal padding reduction (30-40%) */
   .section {
-    padding: 1.5rem;
+    padding: 10px 12px; /* Was 1.5rem = 24px */
+    margin-bottom: 10px; /* Was gap: 0.75rem = 12px */
+  }
+
+  /* 3. Section title font size reduction */
+  .sectionTitle {
+    font-size: 0.875rem; /* Was 1.125rem */
+    margin-bottom: 8px; /* Reduce spacing below title */
+  }
+
+  .subtitle {
+    font-size: 0.6875rem; /* Reduce subtitle size too */
+  }
+
+  /* 4. Performance Grid - Compact (~25% smaller) */
+  .statsGrid {
+    gap: 6px !important; /* Was 12px */
+  }
+
+  .statsGrid + .statsGrid {
+    margin-top: 8px !important; /* Was 12px */
+  }
+
+  .statCard {
+    padding: 8px 6px !important; /* Was 14px 10px */
+    min-height: 60px !important; /* Was 70px */
+  }
+
+  .statValue {
+    font-size: 1.4rem !important; /* Was 1.5rem - ~7% reduction */
+  }
+
+  .statLabel {
+    font-size: 0.6rem !important; /* Was 0.625rem */
+  }
+
+  /* 5. Recent Form - Compact (smaller circles, tighter spacing) */
+  .formGrid {
+    gap: 8px !important; /* Was 8px, but ensure it's set */
+  }
+
+  .formCircle {
+    width: 36px !important; /* Was 48px - 25% smaller */
+    height: 36px !important; /* Was 48px */
+    font-size: 0.8rem !important; /* Was 1.125rem */
+  }
+
+  .gameweekLabel {
+    font-size: 0.6rem !important; /* Was 0.6875rem */
+    margin-top: 2px; /* Tighter spacing */
+  }
+
+  /* 6. Team Header - Compact */
+  .teamHeader .managerName {
+    font-size: 1.5rem !important; /* Was 2rem */
+  }
+
+  .teamNameSubtitle {
+    font-size: 0.9rem !important; /* Was 1.1rem */
+    margin-top: 0.25rem !important; /* Was 0.5rem */
+  }
+
+  .rankBadge {
+    padding: 8px 12px !important; /* Was 6px 10px at 978px */
+  }
+
+  .rankNumber {
+    font-size: 1.5rem !important; /* Was 1.25rem at 978px */
+  }
+
+  /* 7. Empty state padding reduction */
+  .emptyState {
+    padding: 2rem; /* Was 3rem */
+  }
+
+  /* 8. Table padding reduction */
+  .table th,
+  .table td {
+    padding: 0.4rem 0.3rem; /* Was 0.5rem 0.35rem */
+  }
+
+  .chipsSummary {
+    padding: 0.75rem; /* Was 1rem */
+    margin-bottom: 0.75rem; /* Was 1rem */
   }
 }
 
