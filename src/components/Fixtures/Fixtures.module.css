@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Consistent 10px spacing */
+  gap: 8px; /* Reduced from 10px for tighter spacing */
   margin: 0 -2rem; /* Compensate for parent's 2rem padding */
   padding: 0 2rem; /* Add it back for content */
 }
@@ -9,7 +9,7 @@
 /* Desktop: Add top padding to avoid overlap with fixed top nav */
 @media (min-width: 769px) {
   .container {
-    padding-top: 2.5rem; /* Match spacing below for balance */
+    padding-top: 2rem; /* Reduced from 2.5rem for tighter spacing */
   }
 }
 
@@ -25,16 +25,27 @@
   color: #ff6b6b;
 }
 
-/* Sub-tabs */
+/* Sub-tabs - Now sticky */
 .subTabsContainer {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 60px); /* Mobile: Sticky below nav */
+  z-index: 90; /* Above navigator */
+  background: #0e0a1f; /* Solid background to prevent see-through */
   display: flex;
   gap: 8px;
-  padding: 0;
-  margin-bottom: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0; /* Remove margin, use padding instead */
   padding: 4px;
+  padding-bottom: 8px; /* Add bottom padding for spacing */
+  border-radius: 12px 12px 0 0; /* Round top corners only */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none; /* Remove bottom border for seamless stack */
+}
+
+/* Desktop: Position below fixed nav */
+@media (min-width: 769px) {
+  .subTabsContainer {
+    top: 80px; /* Desktop nav height */
+  }
 }
 
 .subTab {
@@ -79,20 +90,21 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* Gameweek Navigator */
+/* Gameweek Navigator - Stacks below tab toggle */
 .navigatorWrapper {
   position: sticky;
-  top: 10px; /* Mobile: Small gap from top */
-  background: transparent;
+  top: calc(env(safe-area-inset-top, 0px) + 60px + 48px + 8px); /* Mobile: Nav + Tab + Gap */
+  background: #0e0a1f; /* Solid background to prevent see-through */
   z-index: 80; /* Below tabs (90), above content */
   padding: 0;
+  padding-bottom: 8px; /* Spacing below */
   margin: 0;
 }
 
-/* Desktop: Position below fixed top nav */
+/* Desktop: Position below fixed top nav + tab toggle */
 @media (min-width: 769px) {
   .navigatorWrapper {
-    top: 90px; /* Desktop nav height (~80px) + gap */
+    top: calc(80px + 48px + 8px); /* Desktop: Nav + Tab + Gap = 136px */
   }
 }
 
@@ -1090,8 +1102,13 @@
   }
 
   .navigatorWrapper {
-    top: calc(env(safe-area-inset-top, 0px) + 70px); /* Safe area + Nav (60px) + 10px gap */
-    padding: 0; /* No padding - gap handled by container */
+    top: calc(env(safe-area-inset-top, 0px) + 60px + 56px + 8px); /* Safe area + Nav + Tab + Gap = 124px */
+    padding: 0;
+    padding-bottom: 8px;
+  }
+
+  .subTabsContainer {
+    top: calc(env(safe-area-inset-top, 0px) + 60px); /* Mobile: Sticky below nav */
   }
 
   .timeline {

@@ -1,8 +1,75 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 268+ versions
-**Current Version:** v3.2.13 (December 19, 2025)
+**Total Releases:** 269+ versions
+**Current Version:** v3.2.14 (December 19, 2025)
+
+---
+
+## v3.2.14 - K-49: Fixtures Tab Sticky Header & Spacing Fix (Dec 19, 2025)
+
+**ENHANCEMENT:** Made Fixtures Tab headers sticky and reduced vertical spacing to match Stats section.
+
+### Problem
+1. Tab toggle (H2H Matches / Team Fixtures) scrolled away - should be sticky
+2. GW selector scrolled away - should be sticky
+3. Too much vertical spacing between elements (10px gaps)
+4. Content showed through headers when scrolling
+
+### Solution
+Made both tab toggle and GW selector sticky at the top with proper stacking:
+
+**Sticky Positioning:**
+```
+┌─────────────────────────────┐
+│  Nav Bar (60px mobile)      │ ← Fixed
+├─────────────────────────────┤
+│  [H2H] [Team Fixtures]      │ ← Sticky (z-index: 90)
+├─────────────────────────────┤
+│  [◄] GW16 [▼] [►]          │ ← Sticky (z-index: 80)
+├─────────────────────────────┤
+│  Scrollable Content         │
+│  (Matches / Fixtures)       │
+└─────────────────────────────┘
+```
+
+### Changes Made
+
+**1. Made Tab Toggle Sticky**
+```css
+.subTabsContainer {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 60px); /* Mobile */
+  top: 80px; /* Desktop */
+  z-index: 90;
+  background: #0e0a1f; /* Solid background */
+}
+```
+
+**2. Adjusted GW Selector Position**
+```css
+.navigatorWrapper {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 60px + 48px + 8px); /* Mobile */
+  top: calc(80px + 48px + 8px); /* Desktop = 136px */
+  z-index: 80;
+  background: #0e0a1f; /* Solid background */
+}
+```
+
+**3. Reduced Vertical Spacing**
+- Container gap: 10px → 8px
+- Desktop padding-top: 2.5rem → 2rem
+- Tab/Navigator spacing: 10px → 8px
+
+### Files Modified
+- `/src/components/Fixtures/Fixtures.module.css`
+
+### User Experience
+- Headers stay fixed at top when scrolling
+- Cleaner, tighter spacing matching Stats section
+- Solid backgrounds prevent see-through
+- Smooth stacking with proper z-index layering
 
 ---
 
