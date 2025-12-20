@@ -2,7 +2,122 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.6 (December 20, 2025)
+**Current Version:** v3.4.7 (December 20, 2025)
+
+---
+
+## v3.4.7 - K-61: Better Error Messages - Detect FPL Updates & Show Specific Errors (Dec 20, 2025)
+
+**UX IMPROVEMENT:** Users now see specific, helpful error messages instead of generic "Unable to load league" for all FPL API failures.
+
+### Problem
+
+**Before:** All FPL API failures showed the same message:
+> "⚠ Unable to load league. Please verify this is an H2H league ID."
+
+This was confusing and unhelpful when:
+- FPL was updating (gameweek transition)
+- Network errors occurred
+- Wrong league type entered
+- Rate limiting hit
+
+**Users didn't know:**
+- What went wrong
+- If they should retry
+- How to fix it
+
+### Solution
+
+**Created FPL Error Detection System:**
+
+```typescript
+// /src/lib/fpl-errors.ts
+export type FPLErrorType =
+  | 'fpl_updating'    // HTTP 503
+  | 'invalid_league'  // HTTP 404
+  | 'classic_league'  // Classic league detected
+  | 'rate_limited'    // HTTP 429
+  | 'network_error'   // Fetch failed
+  | 'sync_stuck'      // Sync > 10 minutes
+  | 'timeout'         // Request timeout
+  | 'unknown';        // Other errors
+
+export interface FPLError {
+  type: FPLErrorType;
+  message: string;    // User-friendly message
+  icon: string;       // Visual indicator (emoji)
+  retryable: boolean; // Show "Try Again" button?
+}
+```
+
+**API Routes Return Error Objects:**
+- `/api/league/[id]` - Detects FPL API status codes
+- `/api/league/[id]/sync` - Returns sync_stuck error when applicable
+
+**UI Displays Specific Errors:**
+- **Icon** - Visual indicator of error type (⏳, 🌐, ❌, etc.)
+- **Message** - Clear explanation of what went wrong
+- **Retry Button** - Shown only for retryable errors
+
+### Error Types & Messages
+
+| Error Type | Detection | Message | Retry? |
+|------------|-----------|---------|--------|
+| FPL Updating | HTTP 503 | "⏳ FPL is updating. Please try again in a few minutes." | Yes |
+| Invalid League | HTTP 404 | "❌ League not found. Please check the ID." | No |
+| Classic League | H2H 404 + Classic 200 | "⚠️ This is a Classic league. Only H2H leagues are supported." | No |
+| Rate Limited | HTTP 429 | "⏱️ Too many requests. Please wait a moment." | Yes |
+| Network Error | Fetch throws | "🌐 Network error. Please check your connection." | Yes |
+| Sync Stuck | Sync > 10 min | "🔄 Sync appears stuck. Try Force Reset in Settings." | No |
+| Timeout | Request > 30s | "⏰ Request timed out. FPL may be slow - try again." | Yes |
+| Unknown | Any other | "❌ Unable to load league. Please try again." | Yes |
+
+### What Changed
+
+**Files Created:**
+- `/src/lib/fpl-errors.ts` - Error types, messages, and detection utility
+
+**Files Modified:**
+- `/src/app/api/league/[id]/route.ts` - Returns FPLError objects
+- `/src/app/api/league/[id]/sync/route.ts` - Returns sync_stuck error
+- `/src/components/SetupFlow/LeagueInput.tsx` - Displays error icon + message + retry button
+- `/src/components/SetupFlow/SetupFlow.module.css` - Styles for error display
+
+### Example
+
+**Before:**
+```
+❌ Unable to load league. Please verify this is an H2H league ID.
+[Continue Button]
+```
+
+**After (FPL Updating):**
+```
+⏳ FPL is updating. Please try again in a few minutes.
+[Try Again Button]
+```
+
+**After (Classic League):**
+```
+⚠️ This is a Classic league. Only H2H leagues are supported.
+(No retry button - error is not retryable)
+```
+
+### Impact
+
+**User Experience:**
+- Clear communication about what went wrong
+- Actionable next steps (retry vs fix input)
+- Less confusion during FPL updates
+
+**Developer Experience:**
+- Centralized error handling logic
+- Consistent error messages across API routes
+- Easy to add new error types
+
+**Related:**
+- Complements K-58 (FPL API error investigation)
+- Uses error tracking from K-60 (sync_stuck detection)
 
 ---
 

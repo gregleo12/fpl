@@ -3,6 +3,7 @@ import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
 import { updateLeagueMetadata } from '@/lib/analytics';
 import { shouldSyncLeague, syncLeagueData, checkForMissingGWs, syncMissingGWs } from '@/lib/leagueSync';
+import { detectFPLError, FPL_ERRORS } from '@/lib/fpl-errors';
 
 export async function GET(
   request: NextRequest,
@@ -62,18 +63,22 @@ export async function GET(
         fullError: error
       });
 
-      // Check if this is a Classic league (404/not found in H2H endpoint)
+      // Detect specific error type
+      const fplError = detectFPLError(error, error.response?.status);
+
+      // Special case: Check if this is a Classic league (404 on H2H but valid Classic league)
       if (error.response?.status === 404 || error.message?.includes('404')) {
         return NextResponse.json(
-          {
-            error: 'classic_league',
-            message: 'This is a Classic league. Only H2H leagues are supported.'
-          },
+          { error: FPL_ERRORS.classic_league },
           { status: 400 }
         );
       }
-      // Other errors (network, etc)
-      throw error;
+
+      // Return specific error
+      return NextResponse.json(
+        { error: fplError },
+        { status: error.response?.status || 500 }
+      );
     }
 
     // Validate it's actually an H2H league with standings
@@ -98,7 +103,13 @@ export async function GET(
         message: error.message,
         code: error.code
       });
-      throw error;
+
+      // Detect specific error type
+      const fplError = detectFPLError(error, error.response?.status);
+      return NextResponse.json(
+        { error: fplError },
+        { status: error.response?.status || 500 }
+      );
     }
 
     const db = await getDatabase();
@@ -250,8 +261,11 @@ export async function GET(
     });
   } catch (error: any) {
     console.error('Error fetching league data:', error);
+
+    // Detect specific error type
+    const fplError = detectFPLError(error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch league data' },
+      { error: fplError },
       { status: 500 }
     );
   }

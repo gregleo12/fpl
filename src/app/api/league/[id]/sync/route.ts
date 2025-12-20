@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { syncLeagueData } from '@/lib/leagueSync';
 import { getDatabase } from '@/lib/db';
+import { detectFPLError, FPL_ERRORS } from '@/lib/fpl-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -68,10 +69,13 @@ export async function POST(
         : 'Sync started. This will take 30-60 seconds.'
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Sync endpoint error:', error);
+
+    // Detect specific error type
+    const fplError = detectFPLError(error);
     return NextResponse.json(
-      { error: 'Failed to start sync' },
+      { error: fplError },
       { status: 500 }
     );
   }
@@ -107,17 +111,25 @@ export async function GET(
 
     const { sync_status, last_synced, last_sync_error, minutes_since_sync } = result.rows[0];
 
+    // Check if sync is stuck (> 10 minutes)
+    const isStuck = sync_status === 'syncing' && minutes_since_sync && parseFloat(minutes_since_sync) > 10;
+
     return NextResponse.json({
       status: sync_status || 'pending',
       lastSynced: last_synced,
       lastSyncError: last_sync_error,
-      minutesSinceSync: minutes_since_sync ? parseFloat(minutes_since_sync).toFixed(1) : null
+      minutesSinceSync: minutes_since_sync ? parseFloat(minutes_since_sync).toFixed(1) : null,
+      isStuck: isStuck,
+      error: isStuck ? FPL_ERRORS.sync_stuck : null
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[API] Sync status check error:', error);
+
+    // Detect specific error type
+    const fplError = detectFPLError(error);
     return NextResponse.json(
-      { error: 'Failed to check sync status' },
+      { error: fplError },
       { status: 500 }
     );
   }

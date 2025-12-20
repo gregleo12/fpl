@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getRecentLeagues } from '@/lib/storage';
 import { SyncProgress } from '@/components/SyncProgress/SyncProgress';
+import { FPLError } from '@/lib/fpl-errors';
 import styles from './SetupFlow.module.css';
 
 export default function LeagueInput() {
   const [leagueId, setLeagueId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<FPLError | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showSyncProgress, setShowSyncProgress] = useState(false);
   const [syncPercent, setSyncPercent] = useState(0);
@@ -35,7 +36,12 @@ export default function LeagueInput() {
     e.preventDefault();
 
     if (!leagueId.trim()) {
-      setError('Please enter a league ID');
+      setError({
+        type: 'unknown',
+        message: 'Please enter a league ID',
+        icon: '❌',
+        retryable: false
+      });
       return;
     }
 
@@ -74,7 +80,17 @@ export default function LeagueInput() {
           } else if (statusData.status === 'failed') {
             clearInterval(pollInterval);
             setShowSyncProgress(false);
-            setError('Sync failed. Data may be incomplete.');
+            // Use error object from status response if available
+            if (statusData.error) {
+              setError(statusData.error);
+            } else {
+              setError({
+                type: 'unknown',
+                message: 'Sync failed. Data may be incomplete.',
+                icon: '❌',
+                retryable: true
+              });
+            }
             resolve();
           } else if (statusData.status === 'pending') {
             // Still waiting to start
@@ -98,7 +114,7 @@ export default function LeagueInput() {
 
   async function fetchAndNavigate(id: string) {
     setIsLoading(true);
-    setError('');
+    setError(null);
     setLoadingMessage('');
 
     // For large leagues, show helpful message after 3 seconds
@@ -118,23 +134,55 @@ export default function LeagueInput() {
         try {
           errorData = await response.json();
         } catch {
-          errorData = { error: 'unknown' };
+          errorData = {
+            error: {
+              type: 'unknown',
+              message: 'Unable to load league. Please try again.',
+              icon: '❌',
+              retryable: true
+            }
+          };
         }
 
         console.error('League fetch failed:', errorData);
 
-        // Handle specific error types with friendly messages
-        if (errorData.error === 'classic_league') {
-          throw new Error('⚠️ This is a Classic league. Only H2H leagues are supported currently.');
-        } else if (errorData.error === 'no_standings') {
-          throw new Error('⚠️ This league has no H2H matches yet. Please try again after GW1.');
-        } else if (response.status === 404) {
-          throw new Error('League not found. Please check the League ID and try again.');
-        } else if (response.status === 400) {
-          throw new Error(errorData.message || 'Invalid league ID. Please verify this is an H2H league.');
-        } else {
-          throw new Error('⚠️ Unable to load league. Please verify this is an H2H league ID.');
+        // If API returned an FPLError object, use it directly
+        if (errorData.error && typeof errorData.error === 'object' && errorData.error.type) {
+          setError(errorData.error);
+          setIsLoading(false);
+          clearTimeout(timeoutId);
+          return;
         }
+
+        // Legacy string error handling (for backwards compatibility)
+        let errorObj: FPLError;
+        if (errorData.error === 'classic_league') {
+          errorObj = {
+            type: 'classic_league',
+            message: 'This is a Classic league. Only H2H leagues are supported.',
+            icon: '⚠️',
+            retryable: false
+          };
+        } else if (errorData.error === 'no_standings') {
+          errorObj = {
+            type: 'unknown',
+            message: 'This league has no H2H matches yet. Please try again after GW1.',
+            icon: '⚠️',
+            retryable: false
+          };
+        } else {
+          errorObj = {
+            type: 'unknown',
+            message: errorData.message || 'Unable to load league. Please try again.',
+            icon: '❌',
+            retryable: true
+          };
+        }
+
+        setError(errorObj);
+        setIsLoading(false);
+        clearTimeout(timeoutId);
+        return;
       }
 
       const leagueData = await response.json();
@@ -178,20 +226,40 @@ export default function LeagueInput() {
       clearTimeout(timeoutId);
       console.error('League fetch error:', err);
 
-      let errorMessage = 'Could not load league. Please try again.';
+      // Build error object
+      let errorObj: FPLError;
 
-      // Specific error types
       if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        errorMessage = '⏱️ League took too long to load. Large leagues (30+ teams) may have issues. Please try again.';
+        errorObj = {
+          type: 'timeout',
+          message: 'Request timed out. FPL may be slow - try again.',
+          icon: '⏰',
+          retryable: true
+        };
       } else if (err.response?.status === 500) {
-        errorMessage = 'Server error. Please try again in a moment.';
-      } else if (err.message?.includes('Network Error')) {
-        errorMessage = '⚠️ Network error. Please check your connection.';
-      } else if (err.message) {
-        errorMessage = err.message;
+        errorObj = {
+          type: 'unknown',
+          message: 'Server error. Please try again in a moment.',
+          icon: '❌',
+          retryable: true
+        };
+      } else if (err.message?.includes('Network Error') || err.message?.includes('fetch')) {
+        errorObj = {
+          type: 'network_error',
+          message: 'Network error. Please check your connection.',
+          icon: '🌐',
+          retryable: true
+        };
+      } else {
+        errorObj = {
+          type: 'unknown',
+          message: err.message || 'Could not load league. Please try again.',
+          icon: '❌',
+          retryable: true
+        };
       }
 
-      setError(errorMessage);
+      setError(errorObj);
       setLoadingMessage('');
       setIsLoading(false);
     }
@@ -223,7 +291,24 @@ export default function LeagueInput() {
           />
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && (
+          <div className={styles.errorBox}>
+            <p className={styles.error}>
+              <span className={styles.errorIcon}>{error.icon}</span>
+              {error.message}
+            </p>
+            {error.retryable && (
+              <button
+                type="button"
+                onClick={() => fetchAndNavigate(leagueId)}
+                className={styles.retryButton}
+                disabled={isLoading}
+              >
+                Try Again
+              </button>
+            )}
+          </div>
+        )}
         {loadingMessage && <p className={styles.loadingMessage}>{loadingMessage}</p>}
 
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
