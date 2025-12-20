@@ -2,7 +2,134 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.5 (December 20, 2025)
+**Current Version:** v3.4.6 (December 20, 2025)
+
+---
+
+## v3.4.6 - K-60: Sync Robustness - Timeout & Stuck Status Handling (Dec 20, 2025)
+
+**BUG FIX:** Fixed sync processes getting stuck indefinitely in 'syncing' status when crashes occur.
+
+### Problem
+
+**Symptom:** League stuck in `sync_status = 'syncing'` for days, preventing new syncs from running.
+
+**Root Cause:**
+- Sync starts → sets status to 'syncing'
+- Process crashes or times out mid-sync
+- Status never updated to 'completed' or 'failed'
+- All future sync attempts blocked (thinks sync is still running)
+
+**Example:**
+- League 804742 stuck in 'syncing' since Dec 18 21:57:50 (48+ hours)
+- Sync likely started during FPL API downtime (GW16→GW17 transition)
+- Process crashed, status never cleared
+- Users can't trigger new syncs
+
+### Solution
+
+**A. Auto-Reset for Stuck Syncs (10-Minute Timeout)**
+
+Modified `/src/app/api/league/[id]/sync/route.ts`:
+```typescript
+// Auto-reset if stuck in 'syncing' > 10 minutes
+if (currentStatus === 'syncing' && minutesSinceSync > 10) {
+  await db.query(`
+    UPDATE leagues
+    SET sync_status = 'failed',
+        last_sync_error = 'Auto-reset: sync stuck for ${minutesSinceSync} minutes'
+    WHERE id = $1
+  `, [leagueId]);
+}
+```
+
+**B. Enhanced Error Handling with Message Storage**
+
+Modified `/src/lib/leagueSync.ts`:
+```typescript
+try {
+  // ... sync logic ...
+  await db.query(`
+    UPDATE leagues
+    SET sync_status = 'completed',
+        last_synced = NOW(),
+        last_sync_error = NULL  // Clear previous errors
+    WHERE id = $1
+  `);
+} catch (error: any) {
+  const errorMessage = error?.message || 'Unknown error';
+  await db.query(`
+    UPDATE leagues
+    SET sync_status = 'failed',
+        last_sync_error = $2
+    WHERE id = $1
+  `, [leagueId, errorMessage]);
+  throw error;
+}
+```
+
+**C. Database Migration**
+
+Added `last_sync_error` column to `leagues` table:
+```sql
+ALTER TABLE leagues ADD COLUMN IF NOT EXISTS last_sync_error TEXT;
+
+-- One-time fix: Reset any currently stuck leagues
+UPDATE leagues
+SET sync_status = 'failed',
+    last_sync_error = 'Auto-reset: sync stuck in syncing status for >10 minutes'
+WHERE sync_status = 'syncing'
+AND last_synced < NOW() - INTERVAL '10 minutes';
+```
+
+**D. Manual Reset Endpoint**
+
+Created `/src/app/api/league/[id]/reset-sync/route.ts`:
+- POST endpoint for users to manually reset stuck syncs
+- Validates sync is actually stuck (>5 minutes) before allowing reset
+- Returns error if sync is actively running
+
+**E. UI Enhancements**
+
+Modified `/src/components/Settings/SettingsTab.tsx`:
+- Added warning box when sync stuck >5 minutes
+- "Force Reset Sync" button for manual intervention
+- Display last sync error message if exists
+- Real-time sync status monitoring
+
+### What Changed
+
+**Files Modified:**
+- `/src/app/api/league/[id]/sync/route.ts` - Auto-reset logic, enhanced GET endpoint
+- `/src/lib/leagueSync.ts` - Better error handling with message storage
+- `/src/components/Settings/SettingsTab.tsx` - Warning UI and reset button
+- `/src/components/Settings/SettingsTab.module.css` - Styles for warning/error boxes
+
+**Files Created:**
+- `/src/db/migrations/add_last_sync_error.sql` - Database migration
+- `/src/scripts/run-sync-error-migration.ts` - Migration runner script
+- `/src/app/api/league/[id]/reset-sync/route.ts` - Manual reset endpoint
+
+**Database Changes:**
+- Added `last_sync_error TEXT` column to `leagues` table
+- Auto-reset 1 stuck league (League 804742) during migration
+
+### Impact
+
+**Before:**
+- Sync gets stuck → users can't sync → stale data forever
+- No visibility into why sync failed
+- No way to recover without database access
+
+**After:**
+- Auto-reset after 10 minutes → unblocks users automatically
+- Error messages tracked → easier debugging
+- Manual reset button → users can fix stuck syncs themselves
+- Warning UI → users know when sync is stuck
+
+**Related:**
+- Complements K-59 (live GW data from FPL API)
+- Fixes root cause of GW17 transfers bug (stuck sync prevented new data)
 
 ---
 

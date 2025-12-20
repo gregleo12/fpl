@@ -24,6 +24,9 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   const [lastSynced, setLastSynced] = useState<string | null>(null);
   const [isQuickSyncing, setIsQuickSyncing] = useState(false);
   const [quickSyncResult, setQuickSyncResult] = useState<string | null>(null);
+  const [currentSyncStatus, setCurrentSyncStatus] = useState<string | null>(null);
+  const [minutesSinceSync, setMinutesSinceSync] = useState<number | null>(null);
+  const [lastSyncError, setLastSyncError] = useState<string | null>(null);
 
   // Fetch last synced time on mount
   useEffect(() => {
@@ -38,6 +41,9 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
         if (data.lastSynced) {
           setLastSynced(new Date(data.lastSynced).toLocaleString());
         }
+        setCurrentSyncStatus(data.status);
+        setMinutesSinceSync(data.minutesSinceSync ? parseFloat(data.minutesSinceSync) : null);
+        setLastSyncError(data.lastSyncError);
       } catch (error) {
         console.error('Failed to fetch sync status:', error);
       }
@@ -45,6 +51,35 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
 
     fetchSyncStatus();
   }, [state]);
+
+  const handleForceReset = async () => {
+    if (!state) return;
+
+    const confirmed = confirm(
+      'This will reset the stuck sync status and allow you to start a new sync. Continue?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`/api/league/${state.leagueId}/reset-sync`, {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('✅ Sync status reset! You can now trigger a new sync.');
+        // Refresh sync status
+        window.location.reload();
+      } else {
+        alert(`❌ ${result.error || 'Failed to reset sync status'}`);
+      }
+    } catch (error) {
+      console.error('[Force Reset] Error:', error);
+      alert('❌ Failed to reset sync status');
+    }
+  };
 
   const handleQuickSync = async () => {
     if (!state || isQuickSyncing) return;
@@ -218,6 +253,30 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           <p className={styles.lastSynced}>
             Last synced: {lastSynced}
           </p>
+        )}
+
+        {/* Show stuck sync warning and reset button */}
+        {currentSyncStatus === 'syncing' && minutesSinceSync && minutesSinceSync > 5 && (
+          <div className={styles.warningBox}>
+            <p className={styles.warningText}>
+              ⚠️ Sync appears stuck (running for {minutesSinceSync.toFixed(0)} minutes)
+            </p>
+            <button
+              onClick={handleForceReset}
+              className={styles.resetButton}
+            >
+              🔄 Force Reset Sync
+            </button>
+          </div>
+        )}
+
+        {/* Show last sync error if exists */}
+        {lastSyncError && currentSyncStatus === 'failed' && (
+          <div className={styles.errorBox}>
+            <p className={styles.errorText}>
+              Last sync failed: {lastSyncError}
+            </p>
+          </div>
         )}
 
         {/* Quick Sync - Fast */}

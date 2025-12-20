@@ -194,6 +194,54 @@
   margin-top: 0.5rem;
 }
 
+.warningBox {
+  background: rgba(255, 200, 0, 0.1);
+  border: 2px solid rgba(255, 200, 0, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.warningText {
+  font-size: 0.875rem;
+  color: #ffc800;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.resetButton {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 200, 0, 0.2);
+  border: 2px solid rgba(255, 200, 0, 0.4);
+  border-radius: 8px;
+  color: #ffc800;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.resetButton:hover {
+  background: rgba(255, 200, 0, 0.3);
+  border-color: rgba(255, 200, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.errorBox {
+  background: rgba(255, 0, 102, 0.1);
+  border: 2px solid rgba(255, 0, 102, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.errorText {
+  font-size: 0.875rem;
+  color: #ff0066;
+  font-weight: 600;
+}
+
 .spinner {
   width: 16px;
   height: 16px;

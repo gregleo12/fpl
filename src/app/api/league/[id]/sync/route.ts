@@ -24,16 +24,35 @@ export async function POST(
     // Get current sync status
     const db = await getDatabase();
     const result = await db.query(`
-      SELECT sync_status FROM leagues WHERE id = $1
+      SELECT
+        sync_status,
+        last_synced,
+        EXTRACT(EPOCH FROM (NOW() - last_synced))/60 as minutes_since_sync
+      FROM leagues WHERE id = $1
     `, [leagueId]);
 
-    const currentStatus = result.rows[0]?.sync_status;
+    const league = result.rows[0];
+    const currentStatus = league?.sync_status;
+    const minutesSinceSync = league?.minutes_since_sync || 0;
 
-    // Don't start new sync if already syncing
-    if (currentStatus === 'syncing') {
+    // Auto-reset stuck syncs (> 10 minutes = likely crashed)
+    const SYNC_TIMEOUT_MINUTES = 10;
+
+    if (currentStatus === 'syncing' && minutesSinceSync > SYNC_TIMEOUT_MINUTES) {
+      console.log(`[API] League ${leagueId} was stuck in 'syncing' for ${minutesSinceSync.toFixed(1)} minutes. Auto-resetting.`);
+
+      await db.query(`
+        UPDATE leagues
+        SET sync_status = 'failed',
+            last_sync_error = $2
+        WHERE id = $1
+      `, [leagueId, `Auto-reset: sync stuck for ${minutesSinceSync.toFixed(1)} minutes`]);
+    } else if (currentStatus === 'syncing') {
+      // Sync is running and recent - don't interfere
       return NextResponse.json({
         status: 'syncing',
-        message: 'Sync already in progress'
+        message: 'Sync already in progress',
+        minutesSinceSync: minutesSinceSync.toFixed(1)
       });
     }
 
@@ -71,7 +90,12 @@ export async function GET(
 
     const db = await getDatabase();
     const result = await db.query(`
-      SELECT sync_status, last_synced FROM leagues WHERE id = $1
+      SELECT
+        sync_status,
+        last_synced,
+        last_sync_error,
+        EXTRACT(EPOCH FROM (NOW() - last_synced))/60 as minutes_since_sync
+      FROM leagues WHERE id = $1
     `, [leagueId]);
 
     if (result.rows.length === 0) {
@@ -81,11 +105,13 @@ export async function GET(
       });
     }
 
-    const { sync_status, last_synced } = result.rows[0];
+    const { sync_status, last_synced, last_sync_error, minutes_since_sync } = result.rows[0];
 
     return NextResponse.json({
       status: sync_status || 'pending',
-      lastSynced: last_synced
+      lastSynced: last_synced,
+      lastSyncError: last_sync_error,
+      minutesSinceSync: minutes_since_sync ? parseFloat(minutes_since_sync).toFixed(1) : null
     });
 
   } catch (error) {

@@ -386,18 +386,29 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
     // Mark as completed
     await db.query(`
       UPDATE leagues
-      SET sync_status = 'completed', last_synced = NOW()
+      SET sync_status = 'completed',
+          last_synced = NOW(),
+          last_sync_error = NULL
       WHERE id = $1
     `, [leagueId]);
 
     console.log(`[Sync] League ${leagueId} sync completed`);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[Sync] League ${leagueId} sync failed:`, error);
 
+    // Always update status to 'failed' with error message
+    const errorMessage = error?.message || error?.toString() || 'Unknown error';
+
     await db.query(`
-      UPDATE leagues SET sync_status = 'failed' WHERE id = $1
-    `, [leagueId]);
+      UPDATE leagues
+      SET sync_status = 'failed',
+          last_sync_error = $2
+      WHERE id = $1
+    `, [leagueId, errorMessage]);
+
+    // Re-throw to let caller know sync failed
+    throw error;
   }
 }
 
