@@ -53,6 +53,17 @@ export async function GET(
     const currentEvent = bootstrapData.events.find(e => e.is_current || e.is_next);
     const currentGW = currentEvent?.id || 1;
 
+    // Fetch fixtures data for current GW (K-63: needed to check if fixtures have started)
+    let currentGWFixtures: any[] = [];
+    try {
+      const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${currentGW}`);
+      if (fixturesResponse.ok) {
+        currentGWFixtures = await fixturesResponse.json();
+      }
+    } catch (error) {
+      console.error('Error fetching fixtures for current GW:', error);
+    }
+
     // Helper function to calculate remaining chips
     const calculateRemainingChips = (chipsUsed: any[], currentGW: number): string[] => {
       const remaining: string[] = [];
@@ -350,8 +361,23 @@ export async function GET(
             const eventLiveData = gwDataCache.get(gw);
             if (eventLiveData && eventLiveData.elements) {
               const playerLiveData = eventLiveData.elements.find((e: any) => e.id === playerId);
-              const points = playerLiveData?.stats?.total_points || 0;
-              const minutes = playerLiveData?.stats?.minutes || 0;
+              let points = playerLiveData?.stats?.total_points || 0;
+              let minutes = playerLiveData?.stats?.minutes || 0;
+
+              // K-63: For current GW, check if player's fixture has started
+              // If fixture hasn't started, set points and minutes to 0 to avoid showing stale/incorrect data
+              if (gw === currentGW && playerLiveData) {
+                const fixtureId = playerLiveData.explain?.[0]?.fixture;
+                if (fixtureId && currentGWFixtures.length > 0) {
+                  const fixture = currentGWFixtures.find((f: any) => f.id === fixtureId);
+                  if (fixture && !fixture.started) {
+                    // Fixture hasn't started yet, don't show any points
+                    points = 0;
+                    minutes = 0;
+                  }
+                }
+              }
+
               playerHistory.push(points);
               playerMinutes.push(minutes);
             } else {

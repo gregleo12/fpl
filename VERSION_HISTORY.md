@@ -2,7 +2,77 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.8 (December 20, 2025)
+**Current Version:** v3.4.9 (December 20, 2025)
+
+---
+
+## v3.4.9 - K-63: Fix BPS Showing Before Games Start (Dec 20, 2025)
+
+**BUG FIX:** Differential players were showing BPS points before their Premier League fixtures started.
+
+### Problem
+
+When viewing match details, the Differential Players section showed current gameweek points (including BPS) for players whose games hadn't kicked off yet.
+
+**Example:** Raya showed "3 pts" (underlined = BPS included) even though Arsenal's match hadn't started.
+
+**Impact:** Any player whose fixture hasn't started could show incorrect/stale points data.
+
+### Root Cause
+
+The match details endpoint (`/api/league/[id]/matches/[matchId]/route.ts`) fetched differential player stats without checking if fixtures had started:
+
+1. **Line 327:** Included current GW in the "last 5 GWs" data fetch
+2. **Lines 353-354:** Extracted `total_points` and `minutes` from FPL Live API without any fixture-started check
+3. **Lines 372-373:** Assigned these as `currentGwPoints` and `currentGwMinutes`
+4. **Component:** Displayed the points value even when minutes = 0 (only used minutes for styling)
+
+The FPL Live API returns stats for ALL players in a gameweek, regardless of whether their fixtures have started. Without a check, the app displayed these potentially stale/incorrect values.
+
+### Solution
+
+**Added fixture-started check to differential players endpoint:**
+
+Modified `/src/app/api/league/[id]/matches/[matchId]/route.ts`:
+
+```typescript
+// K-63: Fetch fixtures data for current GW
+let currentGWFixtures: any[] = [];
+try {
+  const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${currentGW}`);
+  if (fixturesResponse.ok) {
+    currentGWFixtures = await fixturesResponse.json();
+  }
+} catch (error) {
+  console.error('Error fetching fixtures for current GW:', error);
+}
+
+// In getPlayerDifferentialStats function:
+// K-63: For current GW, check if player's fixture has started
+if (gw === currentGW && playerLiveData) {
+  const fixtureId = playerLiveData.explain?.[0]?.fixture;
+  if (fixtureId && currentGWFixtures.length > 0) {
+    const fixture = currentGWFixtures.find((f: any) => f.id === fixtureId);
+    if (fixture && !fixture.started) {
+      // Fixture hasn't started yet, don't show any points
+      points = 0;
+      minutes = 0;
+    }
+  }
+}
+```
+
+**Pattern reference:** Similar check already existed in `/src/lib/fpl-calculations.ts:80-90` for other parts of the app.
+
+### Results
+
+- ✅ Players whose games haven't started show 0 points (not stale BPS data)
+- ✅ Players whose games are live/completed show accurate live points
+- ✅ No more misleading BPS display before kickoff
+- ✅ Consistent with fixture-started checks elsewhere in codebase
+
+### Files Modified
+- `/src/app/api/league/[id]/matches/[matchId]/route.ts` (lines 56-65, 367-379)
 
 ---
 
