@@ -1,6 +1,6 @@
 # RivalFPL - Architecture Reference
 
-**Last Updated:** December 19, 2025
+**Last Updated:** December 20, 2025
 **Framework:** Next.js 14 (App Router)
 **Language:** TypeScript
 
@@ -160,10 +160,11 @@ StatsHub
 ```
 MyTeamTab
 ├── GameweekSelector
-├── StatBoxes (rank, points, transfers)
-│   └── GW PTS (clickable)
-│       └── onClick → GWPointsModal
-│           └── onClick "View Full Rankings" → GWRankingsModal
+├── StatBoxes (all clickable v3.4.0)
+│   ├── GW PTS → GWPointsModal
+│   │   └── onClick "View Full Rankings" → GWRankingsModal
+│   ├── GW RANK → GWRankModal
+│   └── TRANSFERS → TransfersModal
 ├── PitchView
 │   ├── Formation rows (GK, DEF, MID, FWD)
 │   │   └── PlayerCard (×11)
@@ -193,6 +194,9 @@ MyTeamTab
 | `src/app/api/league/[id]/fixtures/[gw]/route.ts` | H2H fixtures |
 | `src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` | GW statistics |
 | `src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts` | GW points rankings |
+| `src/app/api/team/[teamId]/gw-rank-stats/route.ts` | GW rank statistics |
+| `src/app/api/team/[teamId]/transfer-stats/route.ts` | Transfer statistics |
+| `src/app/api/team/[teamId]/history/route.ts` | Manager GW history |
 | `src/app/api/players/route.ts` | All players |
 
 ### Key Components
@@ -203,6 +207,8 @@ MyTeamTab
 | `src/components/Fixtures/LiveMatchModal.tsx` | Match detail modal |
 | `src/components/MyTeam/MyTeamTab.tsx` | My Team main view |
 | `src/components/Dashboard/GWPointsModal.tsx` | GW points breakdown modal |
+| `src/components/Dashboard/GWRankModal.tsx` | GW rank statistics modal |
+| `src/components/Dashboard/TransfersModal.tsx` | Transfers statistics modal |
 | `src/components/Players/PlayersTab.tsx` | Players list |
 | `src/components/Stats/StatsHub.tsx` | Stats Hub container |
 | `src/components/Stats/sections/GWPointsLeaders.tsx` | Top 3 GW scorers card |

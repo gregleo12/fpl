@@ -1,6 +1,6 @@
 # RivalFPL - API Endpoints Reference
 
-**Last Updated:** December 19, 2025
+**Last Updated:** December 20, 2025
 **Base URL (Prod):** https://rivalfpl.com
 **Base URL (Staging):** https://fpl-staging-production.up.railway.app
 
@@ -31,6 +31,9 @@
 | GET | `/api/team/[teamId]/gameweek/[gw]` | Team picks for GW | DB (completed) / FPL (live) |
 | GET | `/api/team/[teamId]/info` | Team information | FPL API |
 | GET | `/api/team/[teamId]/transfers` | Transfer history | DB + FPL API |
+| GET | `/api/team/[teamId]/gw-rank-stats` | GW rank statistics | FPL API |
+| GET | `/api/team/[teamId]/transfer-stats` | Transfer statistics | FPL API |
+| GET | `/api/team/[teamId]/history` | Manager GW history | FPL API |
 
 ### Player Endpoints
 
@@ -342,6 +345,93 @@ Returns all transfers for a team.
 
 ---
 
+### GET /api/team/[teamId]/gw-rank-stats
+
+Returns gameweek rank statistics for a team.
+
+**Parameters:**
+- `teamId` (path) - Entry ID
+- `leagueId` (query, optional) - League ID for context
+
+**Response:**
+```json
+{
+  "currentRank": 123456,
+  "topPercent": 1.4,
+  "bestRank": 50000,
+  "worstRank": 500000,
+  "averageRank": 250000,
+  "topMillionCount": 12
+}
+```
+
+**Data Source:**
+- FPL API for manager history
+
+**Used By:**
+- GW Rank Modal (v3.4.0)
+
+---
+
+### GET /api/team/[teamId]/transfer-stats
+
+Returns transfer statistics for a team.
+
+**Parameters:**
+- `teamId` (path) - Entry ID
+- `leagueId` (query, optional) - League ID for context
+
+**Response:**
+```json
+{
+  "gwTransfers": 2,
+  "gwHits": 4,
+  "seasonTransfers": 25,
+  "seasonHits": 12,
+  "freeTransfersAvailable": 1,
+  "chipsUsed": ["bboost", "3xc"]
+}
+```
+
+**Data Source:**
+- FPL API for manager info, history, and picks
+
+**Used By:**
+- Transfers Modal (v3.4.0)
+
+---
+
+### GET /api/team/[teamId]/history
+
+Returns manager gameweek history.
+
+**Parameters:**
+- `teamId` (path) - Entry ID
+
+**Response:**
+```json
+{
+  "current": [
+    {
+      "event": 16,
+      "points": 65,
+      "overall_rank": 123456,
+      "rank": 234567,
+      "event_transfers": 1,
+      "event_transfers_cost": 0
+    }
+  ]
+}
+```
+
+**Data Source:**
+- FPL API
+
+**Used By:**
+- GW Points Modal (v3.3.0)
+
+---
+
 ### GET /api/fixtures/[gw]
 
 Returns all Premier League fixtures for a gameweek.
@@ -501,4 +591,4 @@ src/app/api/
 
 ---
 
-**Total Endpoints:** 28
+**Total Endpoints:** 31
