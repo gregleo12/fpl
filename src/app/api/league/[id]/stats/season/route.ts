@@ -877,7 +877,38 @@ async function calculateBestWorstGameweeks(
   gameweeks: number[],
   managers: any[]
 ) {
-  // Get all gameweek scores from manager_gw_history
+  // K-67: Filter to only COMPLETED gameweeks (exclude live/upcoming GWs with 0 points)
+  let completedGameweeks = gameweeks;
+  try {
+    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+    if (bootstrapResponse.ok) {
+      const bootstrapData = await bootstrapResponse.json();
+      const events = bootstrapData?.events || [];
+
+      // Only include finished gameweeks (not is_current, only finished=true)
+      const finishedGWs = events
+        .filter((e: any) => e.finished)
+        .map((e: any) => e.id);
+
+      // Filter gameweeks to only include finished ones
+      completedGameweeks = gameweeks.filter(gw => finishedGWs.includes(gw));
+
+      console.log(`[K-67] Filtered gameweeks: ${gameweeks.length} → ${completedGameweeks.length} (excluded live/upcoming)`);
+    }
+  } catch (error) {
+    console.error('[K-67] Error fetching bootstrap for GW filtering:', error);
+    // Fallback to all gameweeks if bootstrap fetch fails
+  }
+
+  // If no completed gameweeks, return empty
+  if (completedGameweeks.length === 0) {
+    return {
+      best: [],
+      worst: []
+    };
+  }
+
+  // Get all gameweek scores from manager_gw_history (only completed GWs)
   const scoresResult = await db.query(`
     SELECT
       mgh.entry_id,
@@ -890,7 +921,7 @@ async function calculateBestWorstGameweeks(
     WHERE mgh.league_id = $1
       AND mgh.event = ANY($2)
     ORDER BY mgh.points DESC
-  `, [leagueId, gameweeks]);
+  `, [leagueId, completedGameweeks]);
 
   const allScores = scoresResult.rows.map((row: any) => ({
     entry_id: row.entry_id,

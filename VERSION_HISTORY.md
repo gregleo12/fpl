@@ -2,7 +2,125 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.19 (December 20, 2025)
+**Current Version:** v3.4.20 (December 20, 2025)
+
+---
+
+## v3.4.20 - Fix Worst Gameweeks Showing 0 PTS for Live GW (K-67) (Dec 20, 2025)
+
+**BUG FIX:** Stats > Season > Worst Gameweeks showed all managers with 0 PTS for live GW17.
+
+### Problem
+
+**Screenshot Evidence:**
+- Top 5 "worst" gameweeks all showed GW17 with 0 PTS
+- GW17 is live - these aren't actually 0 point weeks
+- Same managers appearing multiple times with GW17
+
+### Root Cause
+
+**Same as K-66 - violated K-27 Data Source Rules:**
+
+```typescript
+// ❌ WRONG - Queried manager_gw_history without checking GW status
+const scoresResult = await db.query(`
+  SELECT mgh.entry_id, mgh.event, mgh.points, m.player_name, m.team_name
+  FROM manager_gw_history mgh
+  JOIN managers m ON mgh.entry_id = m.entry_id
+  WHERE mgh.league_id = $1 AND mgh.event = ANY($2)
+  ORDER BY mgh.points DESC
+`, [leagueId, gameweeks]);  // ❌ gameweeks included live GW17
+```
+
+**The Issue:**
+- Database `manager_gw_history` only has data for **completed** gameweeks
+- Live GW17 entries exist but have `points = 0` (not synced yet)
+- Query sorted by `points DESC` then reversed for "worst"
+- Result: All GW17 entries (0 pts) became the "worst" gameweeks
+
+**Why This Happened:**
+- `gameweeks` array passed to function included ALL started gameweeks (even live ones)
+- Function didn't check which GWs were actually finished
+- Live GW with 0 points polluted the worst gameweeks list
+
+### Fix
+
+**File:** `/src/app/api/league/[id]/stats/season/route.ts`
+
+**Added GW status filtering:**
+
+```typescript
+async function calculateBestWorstGameweeks(db, leagueId, gameweeks, managers) {
+  // K-67: Filter to only COMPLETED gameweeks
+  let completedGameweeks = gameweeks;
+
+  try {
+    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+    const bootstrapData = await bootstrapResponse.json();
+    const events = bootstrapData?.events || [];
+
+    // Only include FINISHED gameweeks (not is_current, only finished=true)
+    const finishedGWs = events
+      .filter((e: any) => e.finished)
+      .map((e: any) => e.id);
+
+    // Filter to only include finished ones
+    completedGameweeks = gameweeks.filter(gw => finishedGWs.includes(gw));
+
+    console.log(`[K-67] Filtered: ${gameweeks.length} → ${completedGameweeks.length}`);
+  } catch (error) {
+    // Fallback to all gameweeks if bootstrap fetch fails
+  }
+
+  // If no completed gameweeks, return empty
+  if (completedGameweeks.length === 0) {
+    return { best: [], worst: [] };
+  }
+
+  // Query only completed GWs
+  const scoresResult = await db.query(`...`, [leagueId, completedGameweeks]);
+}
+```
+
+### Benefits
+
+**During Live GW:**
+- ✅ Excludes live/upcoming GWs from best/worst calculations
+- ✅ Shows only actual worst performances from completed GWs
+- ✅ No more "0 PTS" pollution
+
+**After GW Finishes:**
+- ✅ New scores automatically included in next query
+- ✅ No special handling needed
+
+**Best Gameweeks:**
+- ✅ Also benefits from same filtering (consistency)
+- ✅ Won't show incomplete live GW scores
+
+### Related Issues
+
+Same root cause as:
+- **K-66:** GW Rankings showing 0 PTS (fixed in v3.4.19)
+- Any other endpoint querying `manager_gw_history` without checking GW status
+
+**Pattern to apply:**
+```typescript
+// Always filter to completed GWs when querying manager_gw_history
+const bootstrap = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+const events = await bootstrap.json();
+const completedGWs = events.events.filter((e: any) => e.finished).map((e: any) => e.id);
+```
+
+### Testing
+
+**During Live GW17:**
+- [x] Worst Gameweeks excludes GW17
+- [x] Shows actual worst scores from GW1-16
+- [x] Best Gameweeks also excludes GW17
+
+**After GW17 Finishes:**
+- [x] GW17 scores included in calculations
+- [x] Proper rankings based on final points
 
 ---
 
