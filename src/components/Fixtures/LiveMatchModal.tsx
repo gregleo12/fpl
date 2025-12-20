@@ -109,7 +109,9 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                 <div className={styles.playerRow}>
                   <span className={styles.playerName}>{matchData.player1.captain.name}</span>
                   <span className={`${styles.playerPoints} ${matchData.player1.captain.isPlaying ? styles.positive : ''}`}>
-                    {matchData.player1.captain.points} pts
+                    <span className={matchData.player1.captain.bonusPoints && matchData.player1.captain.bonusPoints > 0 ? styles.pointsWithBonus : ''}>
+                      {matchData.player1.captain.points}
+                    </span> pts
                   </span>
                 </div>
               </div>
@@ -120,7 +122,9 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                 <div className={styles.playerRow}>
                   <span className={styles.playerName}>{matchData.player2.captain.name}</span>
                   <span className={`${styles.playerPoints} ${matchData.player2.captain.isPlaying ? styles.positive : ''}`}>
-                    {matchData.player2.captain.points} pts
+                    <span className={matchData.player2.captain.bonusPoints && matchData.player2.captain.bonusPoints > 0 ? styles.pointsWithBonus : ''}>
+                      {matchData.player2.captain.points}
+                    </span> pts
                   </span>
                 </div>
               </div>
@@ -278,7 +282,9 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                         {player.player1Captain && <span className={styles.captainBadge}>(C)</span>}
                       </span>
                       <span className={`${styles.playerPoints} ${player.player1Points > 0 ? styles.positive : ''}`}>
-                        {player.player1Points} pts
+                        <span className={player.bonusPoints && player.bonusPoints > 0 ? styles.pointsWithBonus : ''}>
+                          {player.player1Points}
+                        </span> pts
                       </span>
                     </div>
                   ))}
@@ -295,7 +301,9 @@ export function LiveMatchModal({ isOpen, onClose, matchData, isMyMatch, isComple
                         {player.player2Captain && <span className={styles.captainBadge}>(C)</span>}
                       </span>
                       <span className={`${styles.playerPoints} ${player.player2Points > 0 ? styles.positive : ''}`}>
-                        {player.player2Points} pts
+                        <span className={player.bonusPoints && player.bonusPoints > 0 ? styles.pointsWithBonus : ''}>
+                          {player.player2Points}
+                        </span> pts
                       </span>
                     </div>
                   ))}

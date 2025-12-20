@@ -18,6 +18,7 @@ export interface CommonPlayer {
   player2Points: number; // Points for player 2 (with captain multiplier if applicable)
   player1Captain: boolean;
   player2Captain: boolean;
+  bonusPoints?: number; // K-63d: Bonus points (provisional or official)
 }
 
 export interface BenchPlayer {
@@ -40,6 +41,7 @@ export interface LiveMatchData {
       name: string;
       points: number;
       isPlaying: boolean;
+      bonusPoints?: number; // K-63d: Bonus points (provisional or official)
     };
     chipActive: string | null; // 'bboost', 'freehit', '3xc', 'wildcard'
     benchPoints: number;
@@ -59,6 +61,7 @@ export interface LiveMatchData {
       name: string;
       points: number;
       isPlaying: boolean;
+      bonusPoints?: number; // K-63d: Bonus points (provisional or official)
     };
     chipActive: string | null;
     benchPoints: number;

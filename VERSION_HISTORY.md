@@ -2,7 +2,39 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.12 (December 20, 2025)
+**Current Version:** v3.4.13 (December 20, 2025)
+
+---
+
+## v3.4.13 - K-63d: Add BPS to Captains & Common Players (Dec 20, 2025)
+
+**FEATURE PARITY:** Captains and Common Players sections in Live Match Modal now show BPS with underline styling, matching Differential Players behavior.
+
+### Problem
+
+Captains and Common Players sections didn't display BPS, creating inconsistent user experience.
+
+**Example:** Haaland with 3 BPS showed underline in Differentials but not in Captains/Common Players.
+
+### Solution
+
+1. **Extracted getBonusInfo as standalone helper** - Created reusable function for BPS calculation
+2. **Added bonusPoints to Captain data** - Captains now calculate and display BPS
+3. **Added bonusPoints to Common Players** - Common players now calculate and display BPS
+4. **Updated UI with underline styling** - Matches Differential Players pattern
+5. **Updated TypeScript types** - Added bonusPoints to captain & CommonPlayer interfaces
+
+### Results
+
+- ✅ Captains show BPS with underline (same as Differentials)
+- ✅ Common Players show BPS with underline (same as Differentials)
+- ✅ All three sections consistent
+- ✅ Underline only when bonusPoints > 0
+
+### Files Modified
+- `/src/lib/liveMatch.ts` - Extract getBonusInfo, add to captain & common players
+- `/src/components/Fixtures/LiveMatchModal.tsx` - Add underline styling
+- `/src/types/liveMatch.ts` - Add bonusPoints to interfaces
 
 ---
 

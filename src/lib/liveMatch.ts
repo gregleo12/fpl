@@ -10,6 +10,63 @@ import {
   getPointsBreakdown
 } from './fpl-calculations';
 
+// K-63d: Helper function to get bonus info for a player (extracted for reuse)
+function getBonusInfo(playerId: number, liveElement: any, officialBonus: number, fixturesData: any[]) {
+  // Calculate provisional bonus from fixtures data with BPS for all 22 players in each match
+
+  // Find which fixture this player played in
+  const playerExplain = liveElement?.explain || [];
+  if (playerExplain.length === 0) {
+    // Player didn't play, use official bonus (0)
+    return { bonusPoints: officialBonus };
+  }
+
+  // Get the first fixture (most players only play in one fixture per gameweek)
+  const fixtureId = playerExplain[0].fixture;
+  const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+
+  if (!fixture || !fixture.player_stats) {
+    // No fixture data, use official bonus
+    return { bonusPoints: officialBonus };
+  }
+
+  // If fixture is finished, use official bonus
+  if (fixture.finished) {
+    return { bonusPoints: officialBonus };
+  }
+
+  // Calculate provisional bonus from BPS ranking
+  const playerStats = fixture.player_stats;
+  const playerData = playerStats.find((p: any) => p.id === playerId);
+
+  if (!playerData) {
+    return { bonusPoints: officialBonus };
+  }
+
+  // Sort players by BPS (descending)
+  const sortedByBPS = [...playerStats].sort((a: any, b: any) => b.bps - a.bps);
+
+  // Assign provisional bonus: top 3 BPS get 3, 2, 1 bonus (ties handled)
+  const playerBPS = playerData.bps;
+  const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
+
+  let provisionalBonus = 0;
+  if (rank === 0) provisionalBonus = 3;
+  else if (rank === 1) provisionalBonus = 2;
+  else if (rank === 2) provisionalBonus = 1;
+
+  // Handle ties: if multiple players have same BPS as top 3, they share bonus
+  const bpsAtRank = sortedByBPS[rank]?.bps || 0;
+  const playersWithSameBPS = sortedByBPS.filter((p: any) => p.bps === bpsAtRank).length;
+
+  if (playersWithSameBPS > 1 && rank < 3) {
+    // Simplified tie handling - just use the rank-based bonus
+    // (Full tie logic would be more complex, but this is close enough)
+  }
+
+  return { bonusPoints: provisionalBonus };
+}
+
 export async function getLiveMatchData(
   entryId1: number,
   entryId2: number,
@@ -58,6 +115,7 @@ export async function getLiveMatchData(
       picks2Data,
       liveData,
       bootstrapData,
+      fixturesData,
       autoSubs1,
       autoSubs2
     );
@@ -204,6 +262,15 @@ function calculateLiveStats(
 
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
+  // K-63d: Calculate bonus info for captain
+  const captainOfficialBonus = captainLive?.stats?.bonus || 0;
+  const captainBonusInfo = getBonusInfo(
+    captainPick?.element || 0,
+    captainLive,
+    captainOfficialBonus,
+    fixturesData
+  );
+
   return {
     stats: {
       entryId,
@@ -217,6 +284,7 @@ function calculateLiveStats(
         name: captainElement?.web_name || 'Unknown',
         points: captainPoints,
         isPlaying: captainLive?.stats?.minutes > 0,
+        bonusPoints: captainBonusInfo.bonusPoints,
       },
       chipActive: picksData.active_chip,
       benchPoints,
@@ -265,63 +333,7 @@ function calculateDifferentials(
     return sub ? sub.playerIn.points : undefined;
   };
 
-  // Helper function to get bonus info for a player
-  const getBonusInfo = (playerId: number, liveElement: any, officialBonus: number) => {
-    // Now we have fixtures data with BPS for all 22 players in each match!
-    // Calculate provisional bonus from fixtures data
-
-    // Find which fixture this player played in
-    const playerExplain = liveElement?.explain || [];
-    if (playerExplain.length === 0) {
-      // Player didn't play, use official bonus (0)
-      return { bonusPoints: officialBonus };
-    }
-
-    // Get the first fixture (most players only play in one fixture per gameweek)
-    const fixtureId = playerExplain[0].fixture;
-    const fixture = fixturesData.find((f: any) => f.id === fixtureId);
-
-    if (!fixture || !fixture.player_stats) {
-      // No fixture data, use official bonus
-      return { bonusPoints: officialBonus };
-    }
-
-    // If fixture is finished, use official bonus
-    if (fixture.finished) {
-      return { bonusPoints: officialBonus };
-    }
-
-    // Calculate provisional bonus from BPS ranking
-    const playerStats = fixture.player_stats;
-    const playerData = playerStats.find((p: any) => p.id === playerId);
-
-    if (!playerData) {
-      return { bonusPoints: officialBonus };
-    }
-
-    // Sort players by BPS (descending)
-    const sortedByBPS = [...playerStats].sort((a: any, b: any) => b.bps - a.bps);
-
-    // Assign provisional bonus: top 3 BPS get 3, 2, 1 bonus (ties handled)
-    const playerBPS = playerData.bps;
-    const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
-
-    let provisionalBonus = 0;
-    if (rank === 0) provisionalBonus = 3;
-    else if (rank === 1) provisionalBonus = 2;
-    else if (rank === 2) provisionalBonus = 1;
-
-    // Handle ties: if multiple players have same BPS as top 3, they share bonus
-    const bpsAtRank = sortedByBPS[rank]?.bps || 0;
-    const playersWithSameBPS = sortedByBPS.filter((p: any) => p.bps === bpsAtRank).length;
-
-    if (playersWithSameBPS > 1 && rank < 3) {
-      // Simplified tie handling - just use the rank-based bonus
-      // (Full tie logic would be more complex, but this is close enough)
-    }
-
-    return { bonusPoints: provisionalBonus };
-  };
+  // K-63d: getBonusInfo is now a standalone function at the top of the file
 
   // Get element IDs for both teams
   const team1ElementIds = new Set(picks1.map((p: any) => p.element));
@@ -368,7 +380,7 @@ function calculateDifferentials(
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       // Get bonus info (provisional or official)
-      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus);
+      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus, fixturesData);
       const bonus = bonusInfo.bonusPoints;
 
       // Calculate base points (total_points already includes official bonus, so subtract it)
@@ -488,7 +500,7 @@ function calculateDifferentials(
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       // Get bonus info (provisional or official)
-      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus);
+      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus, fixturesData);
       const bonus = bonusInfo.bonusPoints;
 
       // Calculate base points (total_points already includes official bonus, so subtract it)
@@ -581,7 +593,7 @@ function calculateDifferentials(
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       // Get bonus info (provisional or official)
-      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus);
+      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus, fixturesData);
       const bonus = bonusInfo.bonusPoints;
 
       // Calculate base points (total_points already includes official bonus, so subtract it)
@@ -701,7 +713,7 @@ function calculateDifferentials(
       const fixtureFinished = liveElement?.explain?.some((exp: any) => exp.fixture_finished);
 
       // Get bonus info (provisional or official)
-      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus);
+      const bonusInfo = getBonusInfo(pick.element, liveElement, officialBonus, fixturesData);
       const bonus = bonusInfo.bonusPoints;
 
       // Calculate base points (total_points already includes official bonus, so subtract it)
@@ -809,6 +821,7 @@ function calculateCommonPlayers(
   picks2Data: any,
   liveData: any,
   bootstrapData: any,
+  fixturesData: any[],
   autoSubs1?: any,
   autoSubs2?: any
 ) {
@@ -882,6 +895,10 @@ function calculateCommonPlayers(
             player2Points = subBasePoints * multiplier;
           }
 
+          // K-63d: Calculate bonus info for substitute
+          const subOfficialBonus = subLiveElement?.stats?.bonus || 0;
+          const subBonusInfo = getBonusInfo(sub1.id, subLiveElement, subOfficialBonus, fixturesData);
+
           return {
             name: subElement?.web_name || 'Unknown',
             points: subBasePoints,
@@ -891,6 +908,7 @@ function calculateCommonPlayers(
             player2Captain,
             isAutoSub: true,
             originalName: element?.web_name || 'Unknown',
+            bonusPoints: subBonusInfo.bonusPoints,
           };
         } else {
           // DIFFERENT substitutes → Keep in common, show each team's substitute
@@ -916,6 +934,7 @@ function calculateCommonPlayers(
             player2Points = sub2Points * multiplier;
           }
 
+          // K-63d: Original player didn't play, so bonus is 0
           return {
             name: element?.web_name || 'Unknown',
             points: basePoints,  // Original player's points (0)
@@ -926,6 +945,7 @@ function calculateCommonPlayers(
             isAutoSub: true,
             player1SubName: sub1Element?.web_name || 'Unknown',
             player2SubName: sub2Element?.web_name || 'Unknown',
+            bonusPoints: 0,
           };
         }
       }
@@ -945,6 +965,10 @@ function calculateCommonPlayers(
         player2Points = basePoints * multiplier;
       }
 
+      // K-63d: Calculate bonus info for common player
+      const officialBonus = liveElement?.stats?.bonus || 0;
+      const bonusInfo = getBonusInfo(elementId, liveElement, officialBonus, fixturesData);
+
       return {
         name: element?.web_name || 'Unknown',
         points: basePoints,
@@ -952,6 +976,7 @@ function calculateCommonPlayers(
         player2Points,
         player1Captain,
         player2Captain,
+        bonusPoints: bonusInfo.bonusPoints,
       };
     })
     .filter((player): player is Exclude<typeof player, null> => player !== null);
