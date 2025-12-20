@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.4.10
+**Current Version:** v3.4.18
 **Last Updated:** December 20, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -74,8 +74,11 @@ Never return picks without also fetching GW history (caused v2.7.1 bug).
 
 **Database Column Names:**
 - ⚠️ Database schema uses different names than FPL API
+- `players` table uses `team_id` (NOT `team`) - caused v3.4.18 bug
 - `player_gameweek_stats` uses `gameweek` (NOT `event`) and `player_id` (NOT `element_id`)
-- Always verify actual column names in DATABASE.md before writing queries
+- FPL API bootstrap-static uses `element.team`, but database query `SELECT * FROM players` returns `team_id`
+- **ALWAYS verify actual column names in DATABASE.md before writing queries**
+- **NEVER assume database columns match FPL API property names**
 
 ### Deployment Rules
 - ✅ Push to `staging` freely - no approval needed
@@ -111,6 +114,15 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.4.18 - Modal Bonus Detection Broken (Dec 20, 2025 - K-63e)
+- **Problem:** My Team player modal showed no "Bonus (Live)" row during live games, logs showed `Team: undefined`
+- **Root Cause:** Code used `player.team` but database column is `player.team_id` (from `SELECT * FROM players` query)
+- **Why Hidden:** Pitch view worked because it uses `element.team` from FPL bootstrap-static API (different data source)
+- **Fix:** Changed `player.team` → `player.team_id` in `/api/players/[id]/route.ts` lines 177 & 181
+- **Never Do:** Assume column names match between database and FPL API - always verify in DATABASE.md
+- **Always Do:** Check actual database schema, especially when using `SELECT *` queries
+- **Debug Tip:** Railway logs showed `Team: undefined` which revealed the wrong property access
 
 ### v3.4.6 - Sync Getting Stuck in 'syncing' Status (Dec 20, 2025 - K-60)
 - **Problem:** League stuck in `sync_status = 'syncing'` for 48+ hours, preventing new syncs
