@@ -200,8 +200,8 @@
 .table {
   border-collapse: separate;
   border-spacing: 0;
-  width: max-content;
-  min-width: 100%;
+  table-layout: fixed;
+  width: 100%;
 }
 
 /* Header Row */
@@ -215,7 +215,9 @@
   left: 0;
   z-index: 20;
   background: #0e0a1f; /* Solid background - prevent content showing through */
-  min-width: 82px; /* Reduced by another 20% from 102px */
+  width: 140px;
+  max-width: 140px;
+  min-width: 140px;
   padding: 12px 8px;
   text-align: left;
   font-size: 0.8125rem;
@@ -303,7 +305,9 @@
   left: 0;
   z-index: 10;
   background: #1a1a2e;
-  min-width: 82px; /* Reduced by another 20% from 102px */
+  width: 140px;
+  max-width: 140px;
+  min-width: 140px;
   padding: 12px 8px;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -346,6 +350,8 @@
 }
 
 .playerName {
+  display: block;
+  max-width: 80px;
   font-size: 0.9375rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
@@ -424,7 +430,9 @@
   }
 
   .playerHeader {
-    min-width: 72px; /* Reduced by another 20% from 90px */
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
     padding: 10px 6px;
     font-size: 0.75rem;
   }
@@ -436,7 +444,9 @@
   }
 
   .playerCell {
-    min-width: 72px; /* Reduced by another 20% from 90px */
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
     padding: 10px 6px;
   }
 
@@ -451,6 +461,7 @@
   }
 
   .playerName {
+    max-width: 70px;
     font-size: 0.85rem;
   }
 
@@ -473,12 +484,16 @@
   }
 
   .playerHeader {
-    min-width: 66px; /* Reduced by another 20% from 83px */
+    width: 100px;
+    max-width: 100px;
+    min-width: 100px;
     padding: 8px 6px;
   }
 
   .playerCell {
-    min-width: 66px; /* Reduced by another 20% from 83px */
+    width: 100px;
+    max-width: 100px;
+    min-width: 100px;
     padding: 8px 6px;
   }
 
@@ -492,6 +507,7 @@
   }
 
   .playerName {
+    max-width: 60px;
     font-size: 0.8125rem;
   }
 

@@ -1,8 +1,113 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 278+ versions
-**Current Version:** v3.4.2 (December 19, 2025)
+**Total Releases:** 279+ versions
+**Current Version:** v3.4.3 (December 19, 2025)
+
+---
+
+## v3.4.3 - K-57: Force PLAYER Column Width Reduction (Dec 19, 2025)
+
+**UI FIX:** Used `table-layout: fixed` and explicit width constraints to force PLAYER column to respect width limits on mobile.
+
+### Problem
+
+Despite multiple `min-width` changes, the PLAYER column remained too wide on mobile (taking ~50% of screen width) because:
+- `min-width` only sets minimum - table cells auto-expand to fit content
+- No `table-layout: fixed` to enforce column widths
+- Player names weren't being constrained/truncated
+
+### Solution
+
+**1. Added `table-layout: fixed` to table**
+- Forces table to respect column widths instead of auto-sizing to content
+- Changed `.table` from `width: max-content; min-width: 100%` to `table-layout: fixed; width: 100%`
+
+**2. Set explicit widths on PLAYER column (not just min-width)**
+
+| Breakpoint | Width Setting | Old min-width | New Constraint |
+|------------|---------------|---------------|----------------|
+| Desktop | `width: 140px; max-width: 140px; min-width: 140px` | 82px | Fixed at 140px |
+| Tablet (768px) | `width: 120px; max-width: 120px; min-width: 120px` | 72px | Fixed at 120px |
+| Mobile (480px) | `width: 100px; max-width: 100px; min-width: 100px` | 66px | Fixed at 100px |
+
+**3. Forced player name truncation**
+
+Added `max-width` constraints to `.playerName`:
+
+| Breakpoint | max-width |
+|------------|-----------|
+| Desktop | 80px |
+| Tablet (768px) | 70px |
+| Mobile (480px) | 60px |
+
+Combined with existing `white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`
+
+### Impact
+
+✅ **PLAYER column now visually narrower on mobile**
+- Desktop: Fixed at 140px (~35% of typical desktop width)
+- Tablet: Fixed at 120px (~31% of 768px)
+- Mobile: Fixed at 100px (~26% of 390px iPhone 12 Pro)
+
+✅ **Long names truncate correctly**
+- "Dewsbury-Hall" → "Dewsbury-H..." (depending on breakpoint)
+- "B.Fernandes" → "B.Fernand..." or full (depending on breakpoint)
+- Short names like "Saka", "Rice", "Foden" display fully
+
+✅ **Stats columns have significantly more space**
+- £, %, PT columns more readable on mobile
+- Better horizontal balance
+
+### Files Modified
+
+- `/src/components/Players/PlayersTab.module.css`
+  - Line 200-204: Added `table-layout: fixed` to `.table`
+  - Line 213-228: Changed `.playerHeader` to explicit widths
+  - Line 303-312: Changed `.playerCell` to explicit widths
+  - Line 352-361: Added `max-width: 80px` to `.playerName`
+  - Line 430-448: Updated tablet breakpoint widths
+  - Line 463-466: Added `max-width: 70px` to tablet `.playerName`
+  - Line 483-495: Updated mobile breakpoint widths
+  - Line 509-512: Added `max-width: 60px` to mobile `.playerName`
+
+### Technical Details
+
+**Before:**
+```css
+.table {
+  width: max-content;
+  min-width: 100%;
+}
+.playerCell {
+  min-width: 82px;  /* Content could expand beyond this */
+}
+```
+
+**After:**
+```css
+.table {
+  table-layout: fixed;  /* Force column widths */
+  width: 100%;
+}
+.playerCell {
+  width: 140px;         /* Explicit width */
+  max-width: 140px;     /* Prevent expansion */
+  min-width: 140px;     /* Prevent shrinking */
+}
+.playerName {
+  max-width: 80px;      /* Force truncation */
+}
+```
+
+### Testing
+
+- [x] Build successful
+- [x] PLAYER column width respected on all breakpoints
+- [x] Long names truncate with ellipsis
+- [x] Short names display fully
+- [x] Sticky PLAYER column still works when scrolling
+- [x] Works on both Compact Stats and All Stats views
 
 ---
 
