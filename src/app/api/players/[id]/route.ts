@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { syncPlayerHistory } from '@/lib/sync/playerSync';
 
+// Force dynamic rendering for fresh player data (K-63b)
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Helper function to determine result from gameweek data
 function getResult(h: any): string {
   if (h.team_goals === null || h.opponent_goals === null) return '-';

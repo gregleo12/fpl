@@ -2,7 +2,100 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.9 (December 20, 2025)
+**Current Version:** v3.4.10 (December 20, 2025)
+
+---
+
+## v3.4.10 - K-63b: Fix BPS Not Live Updating in Player Modal (Dec 20, 2025)
+
+**BUG FIX:** Player modal BPS was not updating live during matches, showing stale data.
+
+### Problem
+
+When viewing a player's stats during a live match in My Team section, the BPS value remained static and did not update as the game progressed.
+
+**Example:** Haaland's modal showed BPS = 66 even though his live BPS may have changed during the match.
+
+**Impact:** All players showed stale BPS values during live games - users couldn't see accurate live bonus point performance.
+
+### Root Cause
+
+**Triple issue preventing live updates:**
+
+1. **Missing API caching directives** (`/api/players/[id]/route.ts`):
+   - No `export const dynamic = 'force-dynamic'`
+   - No `export const revalidate = 0`
+   - Next.js cached the API response, returning stale data
+
+2. **No cache busting** (PlayerModal.tsx):
+   - Fetch had no timestamp parameter
+   - No `cache: 'no-store'` option
+   - Browser/Next.js served cached responses
+
+3. **No auto-refresh logic** (PlayerModal.tsx):
+   - Modal fetched data ONCE on mount
+   - No polling during live games
+   - Even reopening modal could serve cached data
+
+**Comparison with Rivals section:**
+- Rivals has 30-second polling during live games
+- Rivals uses cache busting (`?t=${Date.now()}`)
+- Rivals uses `cache: 'no-store'`
+- Player modal had NONE of these
+
+### Solution
+
+**Fix #1: Added API caching directives**
+
+Modified `/src/app/api/players/[id]/route.ts`:
+```typescript
+// K-63b: Force dynamic rendering for fresh player data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+```
+
+**Fix #2: Added cache busting to modal fetch**
+
+Modified `/src/components/PitchView/PlayerModal.tsx`:
+```typescript
+// K-63b: Add cache busting for fresh BPS data during live games
+const cacheBuster = `?t=${Date.now()}`;
+const res = await fetch(`/api/players/${player.id}${cacheBuster}`, {
+  cache: 'no-store'
+});
+```
+
+**Fix #3: Added 30-second auto-refresh during live games**
+
+Added polling logic to PlayerModal.tsx:
+```typescript
+// K-63b: Auto-refresh during live games (every 30 seconds)
+useEffect(() => {
+  const gwStats = data.history?.find((h: any) => h.gameweek === gameweek || h.round === gameweek);
+  const isLive = player.fixture_started && (!gwStats || gwStats.minutes === 0 || gwStats.minutes < 90);
+
+  if (isLive) {
+    const interval = setInterval(() => {
+      fetchDetailedData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }
+}, [data, player.fixture_started, player.id, gameweek]);
+```
+
+**Pattern reference:** Implemented same pattern as FixturesTab.tsx:287-305 which already had working live refresh.
+
+### Results
+
+- ✅ Player modal now fetches fresh BPS data each time it opens (no more cached responses)
+- ✅ BPS auto-updates every 30 seconds during live games
+- ✅ Users can see live bonus point performance as matches progress
+- ✅ Consistent with Rivals section refresh behavior
+
+### Files Modified
+- `/src/app/api/players/[id]/route.ts` (lines 5-7)
+- `/src/components/PitchView/PlayerModal.tsx` (lines 113-162)
 
 ---
 

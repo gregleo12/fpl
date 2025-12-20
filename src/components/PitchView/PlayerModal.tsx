@@ -110,22 +110,56 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'matches' | 'history'>('overview');
 
-  useEffect(() => {
-    async function fetchDetailedData() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/players/${player.id}`);
-        const json = await res.json();
-        setData(json);
-      } catch (error) {
-        console.error('[PlayerModal] Error fetching player:', error);
-      } finally {
-        setLoading(false);
-      }
+  // Fetch player data (and make it reusable for polling)
+  const fetchDetailedData = async () => {
+    setLoading(true);
+    try {
+      // K-63b: Add cache busting for fresh BPS data during live games
+      const cacheBuster = `?t=${Date.now()}`;
+      const res = await fetch(`/api/players/${player.id}${cacheBuster}`, {
+        cache: 'no-store'
+      });
+      const json = await res.json();
+      setData(json);
+    } catch (error) {
+      console.error('[PlayerModal] Error fetching player:', error);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  // Initial fetch on mount
+  useEffect(() => {
     fetchDetailedData();
   }, [player.id]);
+
+  // K-63b: Auto-refresh during live games (every 30 seconds)
+  useEffect(() => {
+    // Check if fixture is live: started but not finished
+    // A game is live if fixture has started AND player hasn't finished playing yet
+    // We check if data exists and has current GW history
+    if (!data || !player.fixture_started) return;
+
+    const gwStats = data.history?.find((h: any) => h.gameweek === gameweek || h.round === gameweek);
+
+    // If no stats yet, or player is still playing (minutes < 90 for outfield, or game ongoing)
+    // We can't perfectly detect "game finished" but we can poll if fixture started
+    // and stop polling once we have final stats
+    const isLive = player.fixture_started && (!gwStats || gwStats.minutes === 0 || gwStats.minutes < 90);
+
+    if (isLive) {
+      console.log('[PlayerModal] Setting up auto-refresh for live game...');
+      const interval = setInterval(() => {
+        console.log('[PlayerModal] Refreshing live player stats...');
+        fetchDetailedData();
+      }, 30000); // 30 seconds
+
+      return () => {
+        console.log('[PlayerModal] Clearing auto-refresh interval');
+        clearInterval(interval);
+      };
+    }
+  }, [data, player.fixture_started, player.id, gameweek]);
 
   const kitUrl = `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${player.team_code}-110.webp`;
   const totalPoints = pick.multiplier > 1 ? player.event_points * pick.multiplier : player.event_points;
