@@ -1,8 +1,46 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 276+ versions
-**Current Version:** v3.4.0 (December 19, 2025)
+**Total Releases:** 277+ versions
+**Current Version:** v3.4.1 (December 19, 2025)
+
+---
+
+## v3.4.1 - Reduce Players Tab PLAYER Column Width by 20% (Dec 19, 2025)
+
+**UI IMPROVEMENT:** Reduced PLAYER column width by another 20% to maximize horizontal space for stats on mobile.
+
+### Changes Made
+
+Reduced sticky PLAYER column width by 20% across all breakpoints:
+
+| Breakpoint | v3.4.0 | v3.4.1 | Change | Total from Original (160px/140px/130px) |
+|------------|--------|--------|--------|----------------------------------------|
+| Desktop | 102px | 82px | -20px | -78px (-49%) |
+| Tablet (768px) | 90px | 72px | -18px | -68px (-49%) |
+| Mobile (480px) | 83px | 66px | -17px | -64px (-49%) |
+
+### Impact
+- Nearly 50% total reduction from original PLAYER column width
+- Player names truncate earlier with ellipsis (`...`) - already implemented
+- Maximum horizontal space for stats columns
+- Optimal mobile experience on 390px width screens
+
+**Example Mobile Display:**
+```
+PLAYER    £      %     PT
+Haalan... 15.0m  73.3% 135
+Guéhi...  5.3m   40.1% 92
+```
+
+### Files Modified
+- `/src/components/Players/PlayersTab.module.css` - Reduced .playerHeader and .playerCell min-width by 20% across all breakpoints
+
+### Progressive Reduction History
+1. **Original:** 160px (desktop), 140px (tablet), 130px (mobile)
+2. **v3.3.16:** 128px, 112px, 104px (-20%)
+3. **v3.3.17:** 102px, 90px, 83px (-36% total)
+4. **v3.4.1:** 82px, 72px, 66px (-49% total)
 
 ---
 
