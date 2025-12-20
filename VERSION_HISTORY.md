@@ -2,7 +2,102 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.10 (December 20, 2025)
+**Current Version:** v3.4.11 (December 20, 2025)
+
+---
+
+## v3.4.11 - K-63a CORRECTION: Fix BPS Showing Before Games Start in Live Match Modal (Dec 20, 2025)
+
+**BUG FIX:** Corrected K-63a fix to target the correct endpoint - Live Match Modal differential calculations were showing BPS points before Premier League fixtures started.
+
+### Problem
+
+When viewing a live gameweek match in the Fixtures tab, differential players showed BPS points even before their Premier League fixtures started.
+
+**Example:** Raya (Arsenal goalkeeper) showing "3 pts" (underlined = BPS) before Arsenal's match kicked off.
+
+**Impact:** All differential players showed misleading point values before their games began.
+
+### Initial Fix (v3.4.9) - WRONG ENDPOINT
+
+Initial K-63a fix was applied to `/api/league/[id]/matches/[matchId]/route.ts` (Match Details Modal), but this was NOT the source of the bug.
+
+**User feedback:** "K-63a fix didn't work - Raya still shows 3 pts before game started."
+
+### Root Cause Analysis
+
+There are TWO different modals in the app:
+
+1. **Match Details Modal** (upcoming/completed matches) - uses `/api/league/[id]/matches/[matchId]`
+2. **Live Match Modal** (live gameweek matches) - uses `/api/league/[id]/fixtures/[gw]/live` → `liveMatch.ts`
+
+The bug was in the **Live Match Modal's differential calculation logic** (`/src/lib/liveMatch.ts`).
+
+**Why it happened:**
+- `calculateDifferentials()` function extracted `totalPoints` and `officialBonus` from FPL Live API
+- FPL API returns stats for ALL players regardless of fixture status
+- No check for `fixture.started` before displaying points
+- Result: Players showed BPS points even though their games hadn't started
+
+### Solution
+
+Applied K-63 fixture.started check to **ALL 6 differential calculation locations** in `/src/lib/liveMatch.ts`:
+
+**Locations Fixed:**
+1. `player1PureDifferentials` (lines 349-368)
+2. `player1CaptainDifferentials` (lines 414-431)
+3. `player1PositionDifferentials` (lines 469-488)
+4. `player2PureDifferentials` (lines 562-581)
+5. `player2CaptainDifferentials` (lines 627-644)
+6. `player2PositionDifferentials` (lines 682-701)
+
+**Pattern applied to each:**
+```typescript
+// Changed const to let
+let totalPoints = liveElement?.stats?.total_points || 0;
+let officialBonus = liveElement?.stats?.bonus || 0;
+
+// K-63: Check if fixture has started before using points
+const fixtureId = liveElement?.explain?.[0]?.fixture;
+if (fixtureId && fixturesData.length > 0) {
+  const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+  if (fixture && !fixture.started) {
+    // Fixture hasn't started yet, don't show any points
+    totalPoints = 0;
+    officialBonus = 0;
+  }
+}
+```
+
+**For captain differentials:**
+```typescript
+let basePoints = liveElement?.stats?.total_points || 0;
+
+// K-63: Check if fixture has started
+const fixtureId = liveElement?.explain?.[0]?.fixture;
+if (fixtureId && fixturesData.length > 0) {
+  const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+  if (fixture && !fixture.started) {
+    basePoints = 0;
+  }
+}
+```
+
+### Results
+
+- ✅ Live Match Modal differential players now show 0 pts before their fixtures start
+- ✅ Points only appear once Premier League games actually begin
+- ✅ Fixes Raya and all other pre-game differential players
+- ✅ Consistent with K-63 pattern already applied to Match Details Modal (v3.4.9)
+
+### Files Modified
+- `/src/lib/liveMatch.ts` (6 locations: lines 349-368, 414-431, 469-488, 562-581, 627-644, 682-701)
+
+### Key Learnings
+
+- **Always verify which endpoint/modal is actually used** before applying fixes
+- **Live Match Modal** (Fixtures tab, live GW) ≠ **Match Details Modal** (H2H matches list)
+- FPL API returns data for all players - always validate fixture status before displaying points
 
 ---
 

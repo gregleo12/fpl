@@ -349,8 +349,19 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const totalPoints = liveElement?.stats?.total_points || 0;
-      const officialBonus = liveElement?.stats?.bonus || 0;
+      let totalPoints = liveElement?.stats?.total_points || 0;
+      let officialBonus = liveElement?.stats?.bonus || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          totalPoints = 0;
+          officialBonus = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -403,7 +414,17 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      let basePoints = liveElement?.stats?.total_points || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          basePoints = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -448,8 +469,19 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const totalPoints = liveElement?.stats?.total_points || 0;
-      const officialBonus = liveElement?.stats?.bonus || 0;
+      let totalPoints = liveElement?.stats?.total_points || 0;
+      let officialBonus = liveElement?.stats?.bonus || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          totalPoints = 0;
+          officialBonus = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -530,8 +562,19 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const totalPoints = liveElement?.stats?.total_points || 0;
-      const officialBonus = liveElement?.stats?.bonus || 0;
+      let totalPoints = liveElement?.stats?.total_points || 0;
+      let officialBonus = liveElement?.stats?.bonus || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          totalPoints = 0;
+          officialBonus = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -584,7 +627,17 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const basePoints = liveElement?.stats?.total_points || 0;
+      let basePoints = liveElement?.stats?.total_points || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          basePoints = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
@@ -629,8 +682,19 @@ function calculateDifferentials(
     .map((pick: any) => {
       const element = bootstrapData.elements.find((e: any) => e.id === pick.element);
       const liveElement = liveData.elements.find((e: any) => e.id === pick.element);
-      const totalPoints = liveElement?.stats?.total_points || 0;
-      const officialBonus = liveElement?.stats?.bonus || 0;
+      let totalPoints = liveElement?.stats?.total_points || 0;
+      let officialBonus = liveElement?.stats?.bonus || 0;
+
+      // K-63: Check if fixture has started before using points
+      const fixtureId = liveElement?.explain?.[0]?.fixture;
+      if (fixtureId && fixturesData.length > 0) {
+        const fixture = fixturesData.find((f: any) => f.id === fixtureId);
+        if (fixture && !fixture.started) {
+          // Fixture hasn't started yet, don't show any points
+          totalPoints = 0;
+          officialBonus = 0;
+        }
+      }
 
       // Check if player has played
       const hasPlayed = liveElement?.stats?.minutes > 0;
