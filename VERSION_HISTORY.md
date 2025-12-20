@@ -2,7 +2,99 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.11 (December 20, 2025)
+**Current Version:** v3.4.12 (December 20, 2025)
+
+---
+
+## v3.4.12 - K-63b FIX: Add Cache Busting to Internal FPL API Fetch (Dec 20, 2025)
+
+**BUG FIX:** K-63b fix (v3.4.10) didn't work - internal FPL API fetch was still being cached by Next.js.
+
+### Problem
+
+After K-63b implementation (v3.4.10), BPS still showed stale data in My Team player modal during live games.
+
+**Example:** Haaland's modal showing BPS = 66 even though live BPS had changed.
+
+**Impact:** K-63b fix only partially worked - route-level caching was fixed, but internal fetch() calls were still cached.
+
+### Root Cause
+
+**What K-63b Fixed (Not Enough):**
+```typescript
+// /src/app/api/players/[id]/route.ts
+export const dynamic = 'force-dynamic';  // ✅ Added
+export const revalidate = 0;             // ✅ Added
+```
+
+This prevented Next.js from caching the **route response**, but did NOT prevent caching of **internal fetch() calls**.
+
+**The Actual Bug:**
+
+Next.js 14 App Router has aggressive fetch caching:
+
+| Directive | What it controls |
+|-----------|------------------|
+| `export const dynamic = 'force-dynamic'` | Route-level rendering (SSR vs static) |
+| `export const revalidate = 0` | Route-level cache invalidation |
+| `fetch(..., { cache: 'no-store' })` | **Individual fetch() call caching** ⚠️ |
+
+The route directives don't affect internal fetch() calls - each fetch needs its own cache control.
+
+**Cached fetch (lines 88-94):**
+```typescript
+const fplResponse = await fetch(
+  `https://fantasy.premierleague.com/api/element-summary/${playerId}/`,
+  {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    }
+  }
+  // ⚠️ No cache control - Next.js caches by default!
+);
+```
+
+### Solution
+
+Added cache busting to internal FPL API fetch:
+
+```typescript
+// K-63b-fix: Add cache busting to internal fetch for live BPS updates
+const fplResponse = await fetch(
+  `https://fantasy.premierleague.com/api/element-summary/${playerId}/?t=${Date.now()}`,
+  {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+    },
+    cache: 'no-store'  // ✅ Prevent Next.js fetch caching
+  }
+);
+```
+
+**Two changes:**
+1. Added `?t=${Date.now()}` to URL (timestamp cache buster)
+2. Added `cache: 'no-store'` option (tells Next.js not to cache this fetch)
+
+### Results
+
+- ✅ Internal FPL API fetch now bypasses Next.js cache
+- ✅ BPS data updates live during matches (with 30s auto-refresh from K-63b)
+- ✅ Completes K-63b fix - all caching layers now addressed:
+  - Route-level caching: disabled (v3.4.10)
+  - Internal fetch caching: disabled (v3.4.12)
+  - Client-side caching: disabled (v3.4.10)
+
+### Files Modified
+- `/src/app/api/players/[id]/route.ts` (lines 88-96)
+
+### Key Learnings
+
+**Next.js 14 has THREE caching layers:**
+1. **Route-level:** Controlled by `export const dynamic` and `export const revalidate`
+2. **Fetch-level:** Controlled by `fetch(..., { cache })` option on each fetch()
+3. **Client-side:** Controlled by browser cache headers and cache-busting
+
+All three must be addressed to prevent stale data during live games.
 
 ---
 

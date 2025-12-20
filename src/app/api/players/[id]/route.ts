@@ -85,12 +85,14 @@ export async function GET(
     let fixtures = [];
     let fplHistory = [];
     try {
+      // K-63b-fix: Add cache busting to internal fetch for live BPS updates
       const fplResponse = await fetch(
-        `https://fantasy.premierleague.com/api/element-summary/${playerId}/`,
+        `https://fantasy.premierleague.com/api/element-summary/${playerId}/?t=${Date.now()}`,
         {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-          }
+          },
+          cache: 'no-store'
         }
       );
       if (fplResponse.ok) {
