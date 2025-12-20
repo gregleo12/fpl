@@ -102,6 +102,33 @@ export async function GET(
       };
     });
 
+    // K-63c: Helper function to calculate provisional bonus
+    const calculateProvisionalBonus = (playerId: number, fixtures: any[]): number => {
+      // Find the fixture this player is in
+      const element = elementLookup[playerId];
+      if (!element) return 0;
+
+      const playerTeam = element.team;
+      const fixture = fixtures.find((f: any) =>
+        (f.team_h === playerTeam || f.team_a === playerTeam) && f.started && !f.finished
+      );
+
+      if (!fixture || !fixture.player_stats) return 0;
+
+      // Find player in fixture stats
+      const playerData = fixture.player_stats.find((p: any) => p.id === playerId);
+      if (!playerData) return 0;
+
+      // Sort by BPS and calculate provisional bonus
+      const sortedByBPS = [...fixture.player_stats].sort((a: any, b: any) => b.bps - a.bps);
+      const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
+
+      if (rank === 0) return 3;
+      if (rank === 1) return 2;
+      if (rank === 2) return 1;
+      return 0;
+    };
+
     // Transform squad data to match frontend expectations
     const allPlayers = [...scoreResult.squad.starting11, ...scoreResult.squad.bench];
     const playerLookup: { [key: number]: any } = {};
@@ -112,13 +139,19 @@ export async function GET(
       const playerTeam = element?.team || 0;
       const fixtureInfo = teamFixtureLookup[playerTeam] || null;
 
+      // K-63c: Calculate provisional bonus for live games
+      const provisionalBonus = calculateProvisionalBonus(player.id, fixturesData);
+
+      // K-63c: Add provisional bonus to event_points for live games
+      const pointsWithBonus = player.points + provisionalBonus;
+
       playerLookup[player.id] = {
         id: player.id,
         web_name: player.name,
         team: playerTeam,
         team_code: element?.team_code || 0,
         element_type: positionMap[player.position] || 0,
-        event_points: player.points,
+        event_points: pointsWithBonus,  // K-63c: Includes provisional bonus for live games
         bps: player.bps || 0,
         bonus: player.bonus || 0,
         minutes: player.minutes || 0,

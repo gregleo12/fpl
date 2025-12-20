@@ -2,7 +2,63 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.14 (December 20, 2025)
+**Current Version:** v3.4.15 (December 20, 2025)
+
+---
+
+## v3.4.15 - K-63c FIX: Add Provisional Bonus to Pitch View (Dec 20, 2025)
+
+**BUG FIX:** v3.4.14 only added provisional bonus to player modal, but NOT to pitch view card numbers.
+
+### Problem
+
+After v3.4.14 implementation:
+- ✅ **Player Modal**: Shows "Bonus (Live): 3, +3 pts" correctly
+- ❌ **Pitch View Cards**: Still shows 39 pts instead of 48 pts (missing provisional bonus)
+
+**Example:** Haaland (live) with Triple Captain:
+- Base points: 13
+- Provisional bonus: 3
+- Total: 16 pts × 3 (TC) = **48 pts** expected
+- Actually showing: **39 pts** (13 × 3, no bonus)
+
+### Root Cause
+
+v3.4.14 added provisional bonus to:
+1. `/api/players/[id]` - returns `provisionalBonus` as separate field ✅
+2. PlayerModal - displays provisional bonus in modal UI ✅
+
+BUT missed:
+3. `/api/team/[teamId]/gameweek/[gw]` - pitch view data source ❌
+4. Player card badges use `event_points` directly from this API
+
+### Solution
+
+Added provisional bonus calculation to `/api/team/[teamId]/gameweek/[gw]` route:
+- Calculate provisional bonus for each player using fixtures data
+- Add to `event_points` before returning to pitch view
+- Only applies to live games (finished games already have official bonus)
+
+```typescript
+// K-63c: Calculate provisional bonus for live games
+const provisionalBonus = calculateProvisionalBonus(player.id, fixturesData);
+const pointsWithBonus = player.points + provisionalBonus;
+
+playerLookup[player.id] = {
+  ...
+  event_points: pointsWithBonus,  // Includes provisional bonus
+};
+```
+
+### Results
+
+- ✅ Pitch view cards now show correct totals with provisional bonus
+- ✅ Captain multipliers apply to total including bonus
+- ✅ Triple Captain now correctly shows 3× (base + provisional bonus)
+- ✅ Finished games unchanged (official bonus already included)
+
+### Files Modified
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - Add provisional bonus to pitch view data
 
 ---
 
