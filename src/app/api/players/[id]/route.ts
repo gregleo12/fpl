@@ -174,6 +174,8 @@ export async function GET(
     let isLive = false;
 
     if (currentGW > 0 && currentGWFixtures.length > 0) {
+      console.log(`[Player ${playerId}] Checking for live bonus. Team: ${player.team}, GW: ${currentGW}, Fixtures: ${currentGWFixtures.length}`);
+
       // K-63e Fix #3: Find player's fixture directly by team (don't rely on explain data)
       const playerFixture = currentGWFixtures.find((f: any) =>
         (f.team_h === player.team || f.team_a === player.team) &&
@@ -181,12 +183,16 @@ export async function GET(
         !f.finished
       );
 
+      console.log(`[Player ${playerId}] Fixture found:`, playerFixture ? `ID ${playerFixture.id}, Started: ${playerFixture.started}, Finished: ${playerFixture.finished}, player_stats count: ${playerFixture.player_stats?.length || 0}` : 'None');
+
       if (playerFixture && playerFixture.player_stats && playerFixture.player_stats.length > 0) {
         isLive = true;
 
         // Calculate provisional bonus from BPS ranking
         const playerStats = playerFixture.player_stats;
         const playerData = playerStats.find((p: any) => p.id === playerId);
+
+        console.log(`[Player ${playerId}] Player in stats:`, playerData ? `BPS: ${playerData.bps}` : 'Not found');
 
         if (playerData) {
           // Sort players by BPS (descending)
@@ -197,9 +203,13 @@ export async function GET(
           if (rank === 0) provisionalBonus = 3;
           else if (rank === 1) provisionalBonus = 2;
           else if (rank === 2) provisionalBonus = 1;
+
+          console.log(`[Player ${playerId}] Rank: ${rank}, Provisional Bonus: ${provisionalBonus}`);
         }
       }
     }
+
+    console.log(`[Player ${playerId}] Final: isLive=${isLive}, provisionalBonus=${provisionalBonus}`);
 
     return NextResponse.json({
       player: {
