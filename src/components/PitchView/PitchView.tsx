@@ -23,6 +23,7 @@ interface PlayerInfo {
   bps?: number;
   bonus?: number;
   minutes?: number;
+  isLive?: boolean;  // K-64: Live fixture indicator
 }
 
 interface Props {

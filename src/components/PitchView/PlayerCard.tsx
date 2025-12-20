@@ -20,6 +20,7 @@ interface PlayerInfo {
   was_home?: boolean | null;
   fixture_started?: boolean;
   fixture_finished?: boolean;
+  isLive?: boolean;  // K-64: Live fixture indicator
 }
 
 interface Props {
@@ -49,6 +50,11 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
       )}
       {pick.is_vice_captain && (
         <div className={styles.viceBadge}>V</div>
+      )}
+
+      {/* K-64: Live Fixture Indicator */}
+      {player.isLive && (
+        <div className={styles.liveIndicator} />
       )}
 
       {/* Kit Image - Cropped to show top 60-70% */}

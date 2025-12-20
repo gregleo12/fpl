@@ -179,6 +179,9 @@ export async function GET(
       // K-63c: Add provisional bonus to event_points for live games
       const pointsWithBonus = player.points + provisionalBonus;
 
+      // K-64: Determine if player's fixture is currently live
+      const isLive = fixtureInfo?.started && !fixtureInfo?.finished;
+
       playerLookup[player.id] = {
         id: player.id,
         web_name: player.name,
@@ -196,7 +199,8 @@ export async function GET(
         was_home: fixtureInfo?.was_home ?? null,
         kickoff_time: fixtureInfo?.kickoff_time || null,
         fixture_started: fixtureInfo?.started || false,
-        fixture_finished: fixtureInfo?.finished || false
+        fixture_finished: fixtureInfo?.finished || false,
+        isLive  // K-64: Visual indicator for live fixtures
       };
     });
 

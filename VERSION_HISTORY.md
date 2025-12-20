@@ -2,7 +2,137 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.21 (December 20, 2025)
+**Current Version:** v3.4.22 (December 20, 2025)
+
+---
+
+## v3.4.22 - Add Live Player Indicator on My Team Pitch (K-64) (Dec 20, 2025)
+
+**NEW FEATURE:** Visual indicator (pulsing red dot) on player cards when their Premier League match is currently live.
+
+### Feature
+
+Players in My Team pitch view now show a red pulsing dot when their fixture is **currently in progress** (started but not finished).
+
+### Implementation
+
+**1. API - Add `isLive` Flag**
+
+**File:** `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`
+
+Added live status calculation for each player:
+
+```typescript
+// K-64: Determine if player's fixture is currently live
+const isLive = fixtureInfo?.started && !fixtureInfo?.finished;
+
+playerLookup[player.id] = {
+  ...playerData,
+  isLive  // K-64: Visual indicator for live fixtures
+};
+```
+
+**Logic:**
+- `isLive = true` when fixture has `started: true` AND `finished: false`
+- `isLive = false` for upcoming fixtures (not started) or completed fixtures (finished)
+
+**2. Component - Display Indicator**
+
+**File:** `/src/components/PitchView/PlayerCard.tsx`
+
+Added conditional rendering of live indicator:
+
+```tsx
+{/* K-64: Live Fixture Indicator */}
+{player.isLive && (
+  <div className={styles.liveIndicator} />
+)}
+```
+
+**Position:** Top-right corner of player card (opposite of captain/vice badge)
+
+**3. Styling - Pulsing Red Dot**
+
+**File:** `/src/components/PitchView/PlayerCard.module.css`
+
+```css
+.liveIndicator {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background-color: #ff4444;
+  border-radius: 50%;
+  z-index: 3;
+  box-shadow: 0 0 4px rgba(255, 68, 68, 0.6);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+```
+
+**Responsive:** Smaller sizes on mobile (7px @ 768px, 6px @ 480px)
+
+### User Experience
+
+**Before Match Starts:**
+```
+┌─────────────┐
+│             │
+│   [Jersey]  │
+│   Haaland   │
+│  AVL (A)    │  ← Shows fixture
+└─────────────┘
+```
+
+**During Live Match:**
+```
+┌─────────────┐
+│ C        🔴 │  ← Red pulsing dot
+│   [Jersey]  │
+│   Haaland   │
+│     13      │  ← Shows live points
+└─────────────┘
+```
+
+**After Match Ends:**
+```
+┌─────────────┐
+│ C           │  ← No red dot
+│   [Jersey]  │
+│   Haaland   │
+│     39      │  ← Final points
+└─────────────┘
+```
+
+### Benefits
+
+**Quick Visual Scan:**
+- Instantly see which players are "active" right now
+- No need to check each fixture manually
+- Helps users track live gameweek progress
+
+**Works For:**
+- ✅ Starting XI players
+- ✅ Bench players
+- ✅ All gameweek views (past, current, future)
+
+**Doesn't Show For:**
+- ❌ Upcoming fixtures (not started yet)
+- ❌ Finished fixtures (match complete)
+- ❌ Players with no fixture data
+
+### Technical Notes
+
+- Indicator updates automatically when page refreshes
+- Uses existing fixture data from API (no extra calls)
+- Respects `started` and `finished` flags from FPL fixtures API
+- Animation is CSS-only (no JavaScript overhead)
 
 ---
 
