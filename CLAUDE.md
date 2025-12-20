@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.4.20
+**Current Version:** v3.4.21
 **Last Updated:** December 20, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -114,6 +114,15 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.4.21 - K-66 Fix Used Wrong Table Join (Dec 20, 2025 - K-66 HOTFIX)
+- **Problem:** v3.4.19 K-66 fix broke GW Points Leaders - showed "No data available" instead of rankings
+- **Root Cause:** Managers query used `WHERE league_id = $1` but `managers` table has NO `league_id` column
+- **Result:** Query returned 0 rows → no managers → no live scores calculated → empty rankings
+- **Fix:** Join through `league_standings` table: `JOIN league_standings ls ON ls.entry_id = m.entry_id WHERE ls.league_id = $1`
+- **Never Do:** Write queries without verifying table schema - builds succeed but queries return 0 rows
+- **Always Do:** Check DATABASE.md for exact table structure before writing JOIN queries
+- **Pattern:** To get managers for a league, ALWAYS join through `league_standings` (managers table has no league_id)
 
 ### v3.4.19 - GW Rankings Showing 0 Points for Live GW (Dec 20, 2025 - K-66)
 - **Problem:** GW Points Rankings modal showed 0 pts for all 20 managers during live GW17

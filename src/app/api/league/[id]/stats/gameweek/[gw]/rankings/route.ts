@@ -42,12 +42,13 @@ export async function GET(
     if (status === 'in_progress' || status === 'upcoming') {
       console.log(`[K-66] GW ${gw} is ${status}, calculating live scores for all managers`);
 
-      // Get all managers in the league
+      // Get all managers in the league (must join through league_standings - managers table has no league_id)
       const managersResult = await db.query(`
-        SELECT entry_id, player_name, team_name
-        FROM managers
-        WHERE league_id = $1
-        ORDER BY player_name ASC
+        SELECT m.entry_id, m.player_name, m.team_name
+        FROM managers m
+        JOIN league_standings ls ON ls.entry_id = m.entry_id
+        WHERE ls.league_id = $1
+        ORDER BY m.player_name ASC
       `, [leagueId]);
 
       // Calculate live score for each manager in parallel

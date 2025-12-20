@@ -2,7 +2,77 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.20 (December 20, 2025)
+**Current Version:** v3.4.21 (December 20, 2025)
+
+---
+
+## v3.4.21 - HOTFIX: K-66 Rankings Query Used Wrong Table Join (Dec 20, 2025)
+
+**CRITICAL HOTFIX:** v3.4.19 K-66 fix broke GW Points Leaders - showed "No data available".
+
+### Problem
+
+After deploying v3.4.19 K-66 fix:
+- GW Points Leaders section showed "No data available"
+- Rankings modal was empty
+- Live scores calculation wasn't running
+
+### Root Cause
+
+**Wrong managers query - tried to filter by non-existent column:**
+
+```typescript
+// ❌ WRONG (v3.4.19)
+const managersResult = await db.query(`
+  SELECT entry_id, player_name, team_name
+  FROM managers
+  WHERE league_id = $1  -- ❌ managers table has NO league_id column!
+`, [leagueId]);
+```
+
+**Result:** Query returned 0 rows → no managers → no rankings → "No data available"
+
+**Database Schema:**
+- `managers` table: `entry_id, player_name, team_name` (NO league_id)
+- `league_standings` table: `league_id, entry_id, rank, total`
+
+To get managers for a league, must JOIN through `league_standings`.
+
+### Fix
+
+**File:** `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts`
+
+```typescript
+// ✅ CORRECT (v3.4.21)
+const managersResult = await db.query(`
+  SELECT m.entry_id, m.player_name, m.team_name
+  FROM managers m
+  JOIN league_standings ls ON ls.entry_id = m.entry_id
+  WHERE ls.league_id = $1
+  ORDER BY m.player_name ASC
+`, [leagueId]);
+```
+
+### Why This Wasn't Caught
+
+- K-66 fix was written by following the pattern from other endpoints
+- **BUT** season stats route correctly uses the JOIN:
+  ```typescript
+  // In /api/league/[id]/stats/season/route.ts (CORRECT)
+  SELECT m.entry_id, m.player_name, m.team_name
+  FROM managers m
+  JOIN league_standings ls ON ls.entry_id = m.entry_id
+  WHERE ls.league_id = $1
+  ```
+- Should have verified managers table schema in DATABASE.md
+- Builds succeed because it's valid SQL, just returns 0 rows
+
+### Testing
+
+After fix:
+- [x] GW Points Leaders shows top 3 managers with live scores
+- [x] Rankings modal shows all 20 managers with correct live points
+- [x] Managers query returns expected number of rows
 
 ---
 
