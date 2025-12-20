@@ -2,7 +2,116 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.22 (December 20, 2025)
+**Current Version:** v3.4.23 (December 20, 2025)
+
+---
+
+## v3.4.23 - Fix TOTAL PTS to Include Live GW Points (K-65) (Dec 20, 2025)
+
+**BUG FIX:** Stats tiles in My Team tab now correctly display total points during live gameweeks.
+
+### Problem
+
+In My Team tab, the **TOTAL PTS** stat tile was not updating during live gameweeks:
+- Showed previous GW's total instead of including current GW live points
+- GW PTS tile worked correctly (calculated via `calculateManagerLiveScore`)
+- But TOTAL PTS didn't add the live GW points to the previous total
+
+### Root Cause
+
+**File:** `/src/app/api/team/[teamId]/info/route.ts` (Line 112-113)
+
+```typescript
+// ❌ WRONG - Only used gwHistory (empty for live) or summary_overall_points (stale)
+const overallPoints = gwHistory?.total_points || entryData.summary_overall_points || 0;
+const overallRank = gwHistory?.overall_rank || entryData.summary_overall_rank || 0;
+```
+
+**Issue:** For live gameweeks, `gwHistory` is empty (data only available after GW finishes), so it fell back to `summary_overall_points` which doesn't include the current GW's live points.
+
+### Fix
+
+Rewrote lines 112-147 to calculate correctly based on gameweek status:
+
+**1. TOTAL PTS Calculation (Lines 112-134):**
+
+```typescript
+// K-65: Calculate TOTAL PTS correctly for live GW
+let overallPoints = 0;
+if (status === 'completed' && gwHistory) {
+  // Completed GW: Use history data (includes this GW)
+  overallPoints = gwHistory.total_points;
+} else if (status === 'in_progress' || status === 'upcoming') {
+  // Live/Upcoming GW: Previous total + current GW live points
+  let previousTotal = 0;
+  if (historyData && historyData.current) {
+    const previousGWs = historyData.current.filter((h: any) => h.event < currentGW);
+    if (previousGWs.length > 0) {
+      const sortedPrevious = previousGWs.sort((a: any, b: any) => b.event - a.event);
+      previousTotal = sortedPrevious[0].total_points || 0;
+    }
+  }
+  // Add current GW live points
+  overallPoints = previousTotal + gwPoints;
+} else {
+  // Fallback
+  overallPoints = entryData.summary_overall_points || 0;
+}
+```
+
+**Logic:**
+- **Completed GW:** Use `gwHistory.total_points` (includes the completed GW)
+- **Live GW:** Get last completed GW's `total_points` + add current GW's live points from `calculateManagerLiveScore`
+- **Upcoming GW:** Same as live (adds 0 points from upcoming GW)
+
+**2. OVERALL RANK Calculation (Lines 136-144):**
+
+```typescript
+// K-65: Overall rank only available after GW finishes (FPL limitation)
+let overallRank = 0;
+if (status === 'completed' && gwHistory) {
+  // Completed GW: Use history data
+  overallRank = gwHistory.overall_rank;
+} else {
+  // Live/Upcoming GW: Show previous overall rank (can't calculate live)
+  overallRank = entryData.summary_overall_rank || 0;
+}
+```
+
+**FPL Limitation:** Overall rank can't be calculated live (FPL API doesn't provide it until GW finishes). Shows previous rank during live GWs.
+
+**3. GW RANK (Lines 93-104):**
+
+No change needed - already documented FPL limitation:
+```typescript
+// K-65: GW rank is only available after GW finishes (FPL limitation)
+gwRank = picksData.entry_history?.rank || 0;
+```
+
+### Result
+
+**Before (Live GW 18):**
+```
+TOTAL PTS: 1,234  ← Stale (from GW 17)
+GW PTS: 42        ← Correct (live)
+```
+
+**After (Live GW 18):**
+```
+TOTAL PTS: 1,276  ← Correct (1,234 + 42)
+GW PTS: 42        ← Correct (live)
+```
+
+### FPL API Limitations
+
+These stats **cannot** be calculated live (not code bugs):
+- **GW RANK:** FPL only provides after GW finishes (shows 0 during live)
+- **OVERALL RANK:** FPL only provides after GW finishes (shows previous rank during live)
+
+These are **official FPL website limitations** - even the FPL site doesn't show live ranks.
+
+### Files Changed
+- `/src/app/api/team/[teamId]/info/route.ts` (Lines 112-147)
 
 ---
 

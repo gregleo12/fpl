@@ -95,6 +95,7 @@ export async function GET(
 
     if (picksResponse.ok) {
       const picksData = await picksResponse.json();
+      // K-65: GW rank is only available after GW finishes (FPL limitation)
       gwRank = picksData.entry_history?.rank || 0;
       gwTransfers = {
         count: picksData.entry_history?.event_transfers || 0,
@@ -108,9 +109,40 @@ export async function GET(
       gwHistory = historyData.current.find((h: any) => h.event === currentGW);
     }
 
-    // Use history data if available for selected GW, otherwise fall back to current values
-    const overallPoints = gwHistory?.total_points || entryData.summary_overall_points || 0;
-    const overallRank = gwHistory?.overall_rank || entryData.summary_overall_rank || 0;
+    // K-65: Calculate TOTAL PTS correctly for live GW
+    let overallPoints = 0;
+    if (status === 'completed' && gwHistory) {
+      // Completed GW: Use history data (includes this GW)
+      overallPoints = gwHistory.total_points;
+    } else if (status === 'in_progress' || status === 'upcoming') {
+      // Live/Upcoming GW: Previous total + current GW live points
+      // Get previous GW's total points
+      let previousTotal = 0;
+      if (historyData && historyData.current) {
+        const previousGWs = historyData.current.filter((h: any) => h.event < currentGW);
+        if (previousGWs.length > 0) {
+          // Get the most recent previous GW's total_points
+          const sortedPrevious = previousGWs.sort((a: any, b: any) => b.event - a.event);
+          previousTotal = sortedPrevious[0].total_points || 0;
+        }
+      }
+      // Add current GW live points
+      overallPoints = previousTotal + gwPoints;
+    } else {
+      // Fallback
+      overallPoints = entryData.summary_overall_points || 0;
+    }
+
+    // K-65: Overall rank only available after GW finishes (FPL limitation)
+    let overallRank = 0;
+    if (status === 'completed' && gwHistory) {
+      // Completed GW: Use history data
+      overallRank = gwHistory.overall_rank;
+    } else {
+      // Live/Upcoming GW: Show previous overall rank (can't calculate live)
+      overallRank = entryData.summary_overall_rank || 0;
+    }
+
     const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
     const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
 
