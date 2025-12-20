@@ -80,6 +80,38 @@ export async function GET(
       bps: parseFloat((player.bps / per90Divisor).toFixed(1))
     } : null;
 
+    // K-63c: Fetch current gameweek from bootstrap-static
+    let currentGW = 0;
+    try {
+      const bootstrapResponse = await fetch(
+        'https://fantasy.premierleague.com/api/bootstrap-static/',
+        { cache: 'no-store' }
+      );
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const currentEvent = bootstrapData.events?.find((e: any) => e.is_current);
+        currentGW = currentEvent?.id || 0;
+      }
+    } catch (error) {
+      console.error('[Player Detail] Error fetching current GW:', error);
+    }
+
+    // K-63c: Fetch fixtures for current gameweek
+    let currentGWFixtures: any[] = [];
+    if (currentGW > 0) {
+      try {
+        const fixturesResponse = await fetch(
+          `https://fantasy.premierleague.com/api/fixtures/?event=${currentGW}`,
+          { cache: 'no-store' }
+        );
+        if (fixturesResponse.ok) {
+          currentGWFixtures = await fixturesResponse.json();
+        }
+      } catch (error) {
+        console.error('[Player Detail] Error fetching current GW fixtures:', error);
+      }
+    }
+
     // Fetch past seasons, fixtures, and full history from FPL API (server-side to avoid CORS)
     let pastSeasons = [];
     let fixtures = [];
@@ -104,6 +136,47 @@ export async function GET(
     } catch (error) {
       console.error('[Player Detail] Error fetching FPL data:', error);
       // Continue without FPL data
+    }
+
+    // K-63c: Calculate provisional bonus for current gameweek
+    let provisionalBonus = 0;
+    let isLive = false;
+
+    if (currentGW > 0 && currentGWFixtures.length > 0) {
+      // Find current gameweek stats from fplHistory
+      const currentGWStats = fplHistory.find((h: any) => h.round === currentGW);
+
+      if (currentGWStats) {
+        // Find which fixture this player played in
+        const playerExplain = currentGWStats.explain || [];
+
+        if (playerExplain.length > 0) {
+          const fixtureId = playerExplain[0].fixture;
+          const fixture = currentGWFixtures.find((f: any) => f.id === fixtureId);
+
+          if (fixture && fixture.started && !fixture.finished) {
+            // Game is live
+            isLive = true;
+
+            // Calculate provisional bonus from BPS ranking
+            if (fixture.player_stats && fixture.player_stats.length > 0) {
+              const playerStats = fixture.player_stats;
+              const playerData = playerStats.find((p: any) => p.id === playerId);
+
+              if (playerData) {
+                // Sort players by BPS (descending)
+                const sortedByBPS = [...playerStats].sort((a: any, b: any) => b.bps - a.bps);
+                const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
+
+                // Assign provisional bonus: top 3 get 3, 2, 1
+                if (rank === 0) provisionalBonus = 3;
+                else if (rank === 1) provisionalBonus = 2;
+                else if (rank === 2) provisionalBonus = 1;
+              }
+            }
+          }
+        }
+      }
     }
 
     return NextResponse.json({
@@ -133,7 +206,9 @@ export async function GET(
         bonus: player.bonus,
         bps: player.bps
       },
-      per90
+      per90,
+      provisionalBonus,  // K-63c: Provisional bonus for live games
+      isLive             // K-63c: Whether game is currently live
     });
 
   } catch (error) {

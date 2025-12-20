@@ -215,9 +215,17 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
       // Skip DEF/MID-only stats for GKP and FWD
       if (defMidOnly && player.element_type !== 2 && player.element_type !== 3) return;
 
+      // K-63c: Skip official bonus if we're showing provisional bonus instead
+      if (key === 'bonus' && data?.isLive && data?.provisionalBonus > 0) return;
+
       const value = gwStats[key] || 0;
       calculatedTotal += calculateStatPoints(key, value, player.element_type);
     });
+
+    // K-63c: Add provisional bonus to total for live games
+    if (data?.isLive && data?.provisionalBonus > 0) {
+      calculatedTotal += data.provisionalBonus;
+    }
   }
 
   // Use calculated total if available, otherwise fall back to player.event_points
@@ -295,6 +303,9 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
                 // Skip DEF/MID-only stats for GKP and FWD
                 if (defMidOnly && player.element_type !== 2 && player.element_type !== 3) return null;
 
+                // K-63c: Skip official bonus if we're showing provisional bonus instead
+                if (key === 'bonus' && data?.isLive && data?.provisionalBonus > 0) return null;
+
                 const value = gwStats?.[key] || 0;
 
                 // Always show minutes and defensive_contribution (for DEF/MID)
@@ -320,6 +331,17 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
                   </div>
                 );
               })}
+
+              {/* K-63c: Provisional Bonus (Live) - shown during live games */}
+              {data?.isLive && data?.provisionalBonus > 0 && (
+                <div className={styles.statRow}>
+                  <span className={styles.statLabel}>Bonus (Live)</span>
+                  <span className={styles.statValue}>{data.provisionalBonus}</span>
+                  <span className={styles.statPoints}>
+                    +{data.provisionalBonus} pts
+                  </span>
+                </div>
+              )}
 
               {/* BPS - shown for reference, doesn't contribute to points */}
               {gwStats?.bps > 0 && (

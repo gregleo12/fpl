@@ -2,7 +2,51 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.13 (December 20, 2025)
+**Current Version:** v3.4.14 (December 20, 2025)
+
+---
+
+## v3.4.14 - K-63c: Add Live Provisional Bonus to My Team (Dec 20, 2025)
+
+**NEW FEATURE:** My Team player modal now shows provisional bonus during live games, with bonus points included in total.
+
+### Problem
+
+My Team section showed BPS (raw stat) but not provisional bonus points during live games.
+
+**Example:**
+- Haaland (live game): Shows "BPS: 66 (info only)" but doesn't show "Bonus (Live): 3, +3 pts"
+- Bruno (finished game): Shows "Bonus: 3, +3 pts" correctly
+
+**Impact:** Users couldn't see how many provisional bonus points their players were earning during live games.
+
+### Solution
+
+1. **API Enhancement** - Added fixtures fetch and provisional bonus calculation to `/api/players/[id]` route:
+   - Fetch current gameweek from bootstrap-static
+   - Fetch fixtures for current gameweek
+   - Calculate provisional bonus using same logic as Rivals Live Match Modal (getBonusInfo)
+   - Return `provisionalBonus` and `isLive` flags
+
+2. **UI Update** - Updated PlayerModal to display provisional bonus:
+   - Show "Bonus (Live)" row during live games with provisional bonus
+   - Show "Bonus" row (no Live label) for finished games with official bonus
+   - Skip official bonus row when showing provisional (prevents duplication)
+   - Include provisional/official bonus in total points calculation
+
+3. **Total Points** - Provisional bonus now included in pitch view total for live games
+
+### Results
+
+- ✅ Live games show "Bonus (Live): 3, +3 pts" (provisional)
+- ✅ Finished games show "Bonus: 3, +3 pts" (official, no Live label)
+- ✅ BPS remains as "(info only)" reference stat
+- ✅ Total points includes provisional bonus during live games
+- ✅ Consistent with Rivals Live Match Modal behavior
+
+### Files Modified
+- `/src/app/api/players/[id]/route.ts` - Add fixtures fetch + provisional bonus calculation
+- `/src/components/PitchView/PlayerModal.tsx` - Add "Bonus (Live)" row + update total calculation
 
 ---
 
