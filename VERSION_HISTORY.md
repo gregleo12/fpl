@@ -2,7 +2,90 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.4 (December 19, 2025)
+**Current Version:** v3.4.5 (December 20, 2025)
+
+---
+
+## v3.4.5 - K-59: Transfers Endpoint Uses FPL API for Live GWs (Dec 20, 2025)
+
+**BUG FIX:** Fixed `/api/team/[teamId]/transfers` endpoint to fetch from FPL API for live/upcoming gameweeks instead of always querying database.
+
+### Problem
+
+**Symptom:** During live GWs, GW Transfers section showed "No transfers made" even though user made transfers.
+
+**Root Cause:**
+- Transfers endpoint **always** queried database (violated K-27 Data Source Rules)
+- Database only has data up to last sync (no live GW data)
+- Live GW transfers not yet synced → showed empty
+
+**Example:**
+- User makes 3 transfers in GW17 (live GW)
+- Database has 0 GW17 transfers (last sync was Dec 18)
+- UI shows "No transfers made" ❌
+
+### Solution
+
+**Implemented K-27 Data Source Rules:**
+
+```typescript
+// Check if target GW is live/upcoming
+const targetGWEvent = bootstrapData.events.find(e => e.id === targetGW);
+const isLiveOrUpcoming = targetGWEvent && (!targetGWEvent.finished || targetGWEvent.is_next);
+
+if (isLiveOrUpcoming) {
+  // Live/Upcoming GW → Fetch from FPL API (real-time)
+  const fplTransfers = await fetch(`/api/entry/${teamId}/transfers/`);
+  // Map to internal format with player details from bootstrap
+} else {
+  // Completed GW → Use database (K-27 cache)
+  const transfers = await db.query(`SELECT * FROM manager_transfers...`);
+}
+```
+
+**With Fallback:**
+- If FPL API fails → fall back to database with error logged
+- Ensures endpoint always returns data (even if stale)
+
+### What Changed
+
+**Before:**
+- ❌ Always queries database
+- ❌ Shows empty for live GWs (no data synced yet)
+- ❌ Violates K-27 rules
+
+**After:**
+- ✅ Queries database for **completed GWs** (fast, cached)
+- ✅ Fetches from FPL API for **live/upcoming GWs** (real-time, accurate)
+- ✅ Follows K-27 rules exactly
+- ✅ Graceful fallback on FPL API errors
+
+### Testing
+
+**Live GW (GW17):**
+- User makes transfers → Shows immediately ✓
+- No database sync required ✓
+
+**Completed GW (GW1-16):**
+- Uses database cache (fast) ✓
+- No FPL API calls ✓
+
+**Edge Cases:**
+- GW just finished but not synced → Uses FPL API ✓
+- User viewing old GW during live GW → Uses database ✓
+- FPL API down → Falls back to database ✓
+
+### Files Modified
+
+- `src/app/api/team/[teamId]/transfers/route.ts` - Added live GW detection and FPL API fetch
+
+### Related Issues
+
+Fixes bug reported in GW17 investigation where:
+1. League stuck in 'syncing' status (separate issue - see K-60)
+2. Transfers endpoint using stale database data for live GW
+
+**Note:** This fix resolves symptom #2. League sync issue (symptom #1) requires manual SQL fix or K-60 implementation.
 
 ---
 

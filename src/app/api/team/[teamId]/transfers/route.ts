@@ -16,35 +16,7 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const requestedGW = searchParams.get('gw');
 
-    // Fetch transfers from database
-    const transfersResult = await db.query(`
-      SELECT
-        mt.event,
-        mt.transfer_time as time,
-        mt.player_in as element_in,
-        mt.player_out as element_out,
-        mt.player_in_cost as element_in_cost,
-        mt.player_out_cost as element_out_cost,
-        pin.id as pin_id,
-        pin.web_name as pin_web_name,
-        pin.team_id as pin_team,
-        pin.team_code as pin_team_code,
-        pin.element_type as pin_element_type,
-        pout.id as pout_id,
-        pout.web_name as pout_web_name,
-        pout.team_id as pout_team,
-        pout.team_code as pout_team_code,
-        pout.element_type as pout_element_type
-      FROM manager_transfers mt
-      JOIN players pin ON pin.id = mt.player_in
-      JOIN players pout ON pout.id = mt.player_out
-      WHERE mt.entry_id = $1
-      ORDER BY mt.event DESC, mt.transfer_time DESC
-    `, [parseInt(teamId)]);
-
-    const transfers = transfersResult.rows;
-
-    // Fetch bootstrap data for current GW
+    // Fetch bootstrap data first to determine current GW and status
     const bootstrapResponse = await fetch(
       'https://fantasy.premierleague.com/api/bootstrap-static/',
       {
@@ -64,6 +36,116 @@ export async function GET(
     // Get current GW from bootstrap or use requested GW
     const currentGW = bootstrapData.events.find((e: any) => e.is_current)?.id || 1;
     const targetGW = requestedGW ? parseInt(requestedGW) : currentGW;
+
+    // Determine if target GW is live/upcoming (K-27 Data Source Rules)
+    const targetGWEvent = bootstrapData.events.find((e: any) => e.id === targetGW);
+    const isLiveOrUpcoming = targetGWEvent && (!targetGWEvent.finished || targetGWEvent.is_next);
+
+    let transfers: any[] = [];
+
+    if (isLiveOrUpcoming) {
+      // Live/Upcoming GW → Fetch from FPL API (real-time data)
+      console.log(`[Transfers] GW${targetGW} is live/upcoming - fetching from FPL API`);
+
+      try {
+        const fplTransfersResponse = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${teamId}/transfers/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        if (fplTransfersResponse.ok) {
+          const fplTransfers = await fplTransfersResponse.json();
+
+          // Map FPL API format to our internal format
+          // We'll need to fetch player details from bootstrap
+          transfers = fplTransfers.map((t: any) => {
+            const playerIn = bootstrapData.elements.find((p: any) => p.id === t.element_in);
+            const playerOut = bootstrapData.elements.find((p: any) => p.id === t.element_out);
+
+            return {
+              event: t.event,
+              time: t.time,
+              element_in: t.element_in,
+              element_out: t.element_out,
+              element_in_cost: t.element_in_cost,
+              element_out_cost: t.element_out_cost,
+              pin_id: playerIn?.id,
+              pin_web_name: playerIn?.web_name,
+              pin_team: playerIn?.team,
+              pin_team_code: playerIn?.team_code,
+              pin_element_type: playerIn?.element_type,
+              pout_id: playerOut?.id,
+              pout_web_name: playerOut?.web_name,
+              pout_team: playerOut?.team,
+              pout_team_code: playerOut?.team_code,
+              pout_element_type: playerOut?.element_type
+            };
+          });
+        }
+      } catch (err) {
+        console.error('[Transfers] FPL API fetch failed, falling back to database:', err);
+        // Fall back to database on error
+        const fallbackResult = await db.query(`
+          SELECT
+            mt.event,
+            mt.transfer_time as time,
+            mt.player_in as element_in,
+            mt.player_out as element_out,
+            mt.player_in_cost as element_in_cost,
+            mt.player_out_cost as element_out_cost,
+            pin.id as pin_id,
+            pin.web_name as pin_web_name,
+            pin.team_id as pin_team,
+            pin.team_code as pin_team_code,
+            pin.element_type as pin_element_type,
+            pout.id as pout_id,
+            pout.web_name as pout_web_name,
+            pout.team_id as pout_team,
+            pout.team_code as pout_team_code,
+            pout.element_type as pout_element_type
+          FROM manager_transfers mt
+          JOIN players pin ON pin.id = mt.player_in
+          JOIN players pout ON pout.id = mt.player_out
+          WHERE mt.entry_id = $1
+          ORDER BY mt.event DESC, mt.transfer_time DESC
+        `, [parseInt(teamId)]);
+        transfers = fallbackResult.rows;
+      }
+    } else {
+      // Completed GW → Use database (K-27 cache)
+      console.log(`[Transfers] GW${targetGW} is completed - fetching from database`);
+
+      const transfersResult = await db.query(`
+        SELECT
+          mt.event,
+          mt.transfer_time as time,
+          mt.player_in as element_in,
+          mt.player_out as element_out,
+          mt.player_in_cost as element_in_cost,
+          mt.player_out_cost as element_out_cost,
+          pin.id as pin_id,
+          pin.web_name as pin_web_name,
+          pin.team_id as pin_team,
+          pin.team_code as pin_team_code,
+          pin.element_type as pin_element_type,
+          pout.id as pout_id,
+          pout.web_name as pout_web_name,
+          pout.team_id as pout_team,
+          pout.team_code as pout_team_code,
+          pout.element_type as pout_element_type
+        FROM manager_transfers mt
+        JOIN players pin ON pin.id = mt.player_in
+        JOIN players pout ON pout.id = mt.player_out
+        WHERE mt.entry_id = $1
+        ORDER BY mt.event DESC, mt.transfer_time DESC
+      `, [parseInt(teamId)]);
+
+      transfers = transfersResult.rows;
+    }
 
     // Enrich transfers with player data (already joined from database)
     const enrichedTransfers = transfers.map((transfer: any) => ({
