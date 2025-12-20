@@ -484,16 +484,16 @@
   }
 
   .playerHeader {
-    width: 100px;
-    max-width: 100px;
-    min-width: 100px;
+    width: 130px;
+    max-width: 130px;
+    min-width: 130px;
     padding: 8px 6px;
   }
 
   .playerCell {
-    width: 100px;
-    max-width: 100px;
-    min-width: 100px;
+    width: 130px;
+    max-width: 130px;
+    min-width: 130px;
     padding: 8px 6px;
   }
 
@@ -507,13 +507,25 @@
   }
 
   .playerName {
-    max-width: 60px;
+    max-width: 90px;
     font-size: 0.8125rem;
   }
 
   .positionBadge {
     font-size: 0.625rem;
     padding: 1px 5px;
+  }
+
+  /* Compact data columns for mobile fit */
+  .statHeader {
+    padding: 8px 4px;
+    font-size: 0.6875rem;
+    min-width: 48px;
+  }
+
+  .statsCell {
+    padding: 8px 4px;
+    font-size: 0.75rem;
   }
 
   /* Prevent iOS zoom on input focus */

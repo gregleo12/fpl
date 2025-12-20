@@ -1,8 +1,116 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 279+ versions
-**Current Version:** v3.4.3 (December 19, 2025)
+**Total Releases:** 280+ versions
+**Current Version:** v3.4.4 (December 19, 2025)
+
+---
+
+## v3.4.4 - K-57b: Balance Players Tab Column Widths for iPhone 12 Pro (Dec 19, 2025)
+
+**UI BALANCE FIX:** Adjusted column widths to fit all 5 columns (PLAYER, £, %, PT, FORM) on iPhone 12 Pro (390px) without unnecessary truncation.
+
+### Problem
+
+v3.4.3 made PLAYER column too narrow (100px), causing short names to truncate unnecessarily:
+- "Chalobah" → "Chalo..." ❌
+- "Semenyo" → "Seme..." ❌
+- "Guéhi" → "Guéh..." ❌
+
+Meanwhile, data columns (£, %, PT, FORM) were taking too much space for their content.
+
+### Solution
+
+**Widened PLAYER Column on Mobile:**
+- 100px → **130px** (width, max-width, min-width)
+- Player name max-width: 60px → **90px**
+
+**Compacted Data Columns on Mobile:**
+- `.statHeader`:
+  - Padding: 10px 6px → **8px 4px**
+  - Font size: 0.75rem → **0.6875rem** (11px)
+  - Min-width: 60px → **48px**
+- `.statsCell`:
+  - Padding: 10px 6px → **8px 4px**
+  - Font size: 0.8125rem → **0.75rem** (12px)
+
+### Column Width Distribution (Mobile 390px)
+
+| Column | Width | Content Example | Before | After |
+|--------|-------|-----------------|--------|-------|
+| PLAYER | 130px | "Chalobah", "Semenyo" | "Chalo..." | "Chalobah" ✓ |
+| £ | ~48px | "15.0m" | Too wide | Compact ✓ |
+| % | ~48px | "73.3%" | Too wide | Compact ✓ |
+| PT | ~48px | "135" | Too wide | Compact ✓ |
+| FORM | ~48px | "11.4" | Too wide | Compact ✓ |
+
+**Total: ~330px + gaps ≈ fits in 390px** ✓
+
+### Names That Now Show Fully
+
+✅ Short names (≤8 chars) display without truncation:
+- Haaland
+- Guéhi
+- Chalobah (was "Chalo...")
+- Muñoz
+- Semenyo (was "Seme...")
+- Foden
+- Rice
+- Palmer
+- Salah
+- Saka
+
+✅ Long names truncate gracefully (as intended):
+- B.Fernandes → "B.Fernan..."
+- Dewsbury-Hall → "Dewsbury..."
+- Alexander-Arnold → "Alexander..."
+
+### Impact
+
+- All 5 columns fit on 390px screen without horizontal scroll (Compact Stats view)
+- Short player names display fully
+- Data columns compact but still readable
+- Better visual balance across all columns
+- Numbers properly aligned in data columns
+
+### Files Modified
+
+- `/src/components/Players/PlayersTab.module.css`
+  - Line 486-498: PLAYER column mobile width 100px → 130px
+  - Line 509-512: Player name max-width 60px → 90px
+  - Line 519-529: Added compact data column styling for mobile
+
+### Technical Details
+
+**Mobile Breakpoint Changes (@media max-width: 480px):**
+
+```css
+/* Before */
+.playerHeader, .playerCell {
+  width: 100px;
+}
+.playerName {
+  max-width: 60px;
+}
+.statHeader {
+  padding: 10px 6px;
+  font-size: 0.75rem;
+  min-width: 60px;
+}
+
+/* After */
+.playerHeader, .playerCell {
+  width: 130px;
+}
+.playerName {
+  max-width: 90px;
+}
+.statHeader {
+  padding: 8px 4px;
+  font-size: 0.6875rem;
+  min-width: 48px;
+}
+```
 
 ---
 
