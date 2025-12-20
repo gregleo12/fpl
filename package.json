@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "3.4.17",
+  "version": "3.4.18",
   "private": true,
   "scripts": {
     "dev": "next dev",

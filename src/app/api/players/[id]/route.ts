@@ -174,11 +174,11 @@ export async function GET(
     let isLive = false;
 
     if (currentGW > 0 && currentGWFixtures.length > 0) {
-      console.log(`[Player ${playerId}] Checking for live bonus. Team: ${player.team}, GW: ${currentGW}, Fixtures: ${currentGWFixtures.length}`);
+      console.log(`[Player ${playerId}] Checking for live bonus. Team: ${player.team_id}, GW: ${currentGW}, Fixtures: ${currentGWFixtures.length}`);
 
       // K-63e Fix #3: Find player's fixture directly by team (don't rely on explain data)
       const playerFixture = currentGWFixtures.find((f: any) =>
-        (f.team_h === player.team || f.team_a === player.team) &&
+        (f.team_h === player.team_id || f.team_a === player.team_id) &&
         f.started &&
         !f.finished
       );

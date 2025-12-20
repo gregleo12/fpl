@@ -2,7 +2,88 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.17 (December 20, 2025)
+**Current Version:** v3.4.18 (December 20, 2025)
+
+---
+
+## v3.4.18 - CRITICAL FIX: Use team_id not team (K-63e Final Fix) (Dec 20, 2025)
+
+**CRITICAL BUG FIX:** Modal bonus detection was completely broken - used wrong database column name.
+
+### Problem
+
+After v3.4.17 fix:
+- **Pitch view:** Working correctly (48 pts for Haaland TC) ✅
+- **Modal:** Still broken - no "Bonus (Live)" row, showing 13 × 3 = 39 ❌
+
+### Root Cause
+
+**Database schema uses `team_id`, not `team`:**
+
+```typescript
+// ❌ WRONG (v3.4.17)
+const playerFixture = currentGWFixtures.find((f: any) =>
+  (f.team_h === player.team || f.team_a === player.team) &&  // player.team = undefined!
+  f.started && !f.finished
+);
+
+// ✅ CORRECT (v3.4.18)
+const playerFixture = currentGWFixtures.find((f: any) =>
+  (f.team_h === player.team_id || f.team_a === player.team_id) &&  // player.team_id = 13
+  f.started && !f.finished
+);
+```
+
+**Evidence from Railway logs:**
+```
+[Player 430] Checking for live bonus. Team: undefined, GW: 17, Fixtures: 10
+[Player 430] Fixture found: None
+[Player 430] Final: isLive=false, provisionalBonus=0
+```
+
+The `Team: undefined` was the smoking gun - we queried `SELECT * FROM players` which returns `team_id` column, but the code tried to access `player.team` (doesn't exist).
+
+### Fix
+
+**File:** `/src/app/api/players/[id]/route.ts`
+
+Changed lines 177 and 181:
+- `player.team` → `player.team_id`
+
+Now logs will show: `Team: 13` instead of `Team: undefined`, fixture will be found, and `isLive=true, provisionalBonus=3`.
+
+### Why This Wasn't Caught Earlier
+
+- Pitch view (`/api/team/.../gameweek/`) uses `element.team` from bootstrap-static (not database)
+- Modal (`/api/players/[id]`) uses `player.team_id` from database
+- Different data sources → different column names
+- K-63e Fix #3 implemented the logic but used wrong column name
+
+### Testing
+
+Query Haaland (ID 430) team:
+```sql
+SELECT id, web_name, team_id FROM players WHERE id = 430;
+-- Returns: 430 | Haaland | 13 (Manchester City)
+```
+
+Expected logs after fix:
+```
+[Player 430] Checking for live bonus. Team: 13, GW: 17, Fixtures: 10
+[Player 430] Fixture found: ID 123, Started: true, Finished: false, player_stats count: 22
+[Player 430] Player in stats: BPS: 66
+[Player 430] Rank: 0, Provisional Bonus: 3
+[Player 430] Final: isLive=true, provisionalBonus=3
+```
+
+Modal should now display:
+```
+BPS: 66 (info only)
+Bonus (Live): 3 (+3 pts)  ← NEW ROW
+TOTAL POINTS: 13 × 3 = 39
+                    +9     ← Provisional bonus (3 × 3 captain)
+                    48
+```
 
 ---
 
