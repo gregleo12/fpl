@@ -2,7 +2,77 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.23 (December 20, 2025)
+**Current Version:** v3.4.24 (December 20, 2025)
+
+---
+
+## v3.4.24 - HOTFIX: K-64 Live Indicator Logic (Dec 20, 2025)
+
+**BUG FIX:** Red live indicator now only shows during the actual 90 minutes of play, not for finished matches.
+
+### Problem
+
+The K-64 live indicator (red pulsing dot) was showing for ALL matches that started today, including finished matches. This meant Saturday games that ended (90' finished) still showed the red dot incorrectly.
+
+**Expected:** Red dot only during the actual 90 minutes of play
+**Actual:** Red dot showing for all started games, even after full-time
+
+### Root Cause
+
+The `isLive` logic only checked:
+```typescript
+// ❌ WRONG - Shows for all started games (even finished)
+const isLive = fixtureInfo?.started && !fixtureInfo?.finished;
+```
+
+This didn't account for **provisional finished** status. When a match hits 90 minutes, FPL API sets `finished_provisional: true` (before final confirmation), but `finished: false` (until officially confirmed). During this window, the red dot incorrectly showed.
+
+### Fix
+
+Added `!finished_provisional` check to both My Team and Fixtures tab:
+
+**1. My Team Pitch View**
+
+**File:** `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` (Line 183)
+
+```typescript
+// ✅ CORRECT - Only show during actual 90 minutes
+const isLive = fixtureInfo?.started && !fixtureInfo?.finished && !fixtureInfo?.finished_provisional;
+```
+
+**2. Fixtures Tab (PL Fixture List)**
+
+**File:** `/src/app/api/fixtures/[gw]/route.ts` (Lines 61-65)
+
+```typescript
+// ✅ CORRECT - Only mark as live during actual 90 minutes
+let status: 'finished' | 'live' | 'not_started' = 'not_started';
+if (fixture.finished || fixture.finished_provisional) {
+  status = 'finished';
+} else if (fixture.started && !fixture.finished && !fixture.finished_provisional) {
+  status = 'live';
+}
+```
+
+### Result
+
+**Before Fix (Saturday 3pm games):**
+```
+12:30 - Arsenal vs Liverpool  ⚽ 2-1 🔴  ← Red dot showing (WRONG)
+15:00 - Man City vs Chelsea   ⚽ 3-0 🔴  ← Red dot showing (WRONG)
+17:30 - Spurs vs Newcastle     🕐 17:30  ← No dot (correct)
+```
+
+**After Fix (Saturday 3pm games):**
+```
+12:30 - Arsenal vs Liverpool  ⚽ 2-1     ← No dot (finished)
+15:00 - Man City vs Chelsea   ⚽ 3-0     ← No dot (finished)
+17:30 - Spurs vs Newcastle    🔴 1-0 45' ← Red dot (LIVE - correct!)
+```
+
+### Files Changed
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` (Line 183)
+- `/src/app/api/fixtures/[gw]/route.ts` (Lines 61-65)
 
 ---
 

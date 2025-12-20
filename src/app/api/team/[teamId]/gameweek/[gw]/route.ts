@@ -179,8 +179,8 @@ export async function GET(
       // K-63c: Add provisional bonus to event_points for live games
       const pointsWithBonus = player.points + provisionalBonus;
 
-      // K-64: Determine if player's fixture is currently live
-      const isLive = fixtureInfo?.started && !fixtureInfo?.finished;
+      // K-64: Determine if player's fixture is currently live (during the actual 90 minutes)
+      const isLive = fixtureInfo?.started && !fixtureInfo?.finished && !fixtureInfo?.finished_provisional;
 
       playerLookup[player.id] = {
         id: player.id,

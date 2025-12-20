@@ -56,11 +56,11 @@ export async function GET(
       const homeTeam = teamsMap.get(fixture.team_h);
       const awayTeam = teamsMap.get(fixture.team_a);
 
-      // Determine match status
+      // Determine match status (K-64: Only show live during actual 90 minutes)
       let status: 'finished' | 'live' | 'not_started' = 'not_started';
-      if (fixture.finished) {
+      if (fixture.finished || fixture.finished_provisional) {
         status = 'finished';
-      } else if (fixture.started && !fixture.finished) {
+      } else if (fixture.started && !fixture.finished && !fixture.finished_provisional) {
         status = 'live';
       }
 
