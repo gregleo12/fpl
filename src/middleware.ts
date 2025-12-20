@@ -25,6 +25,10 @@ export async function middleware(request: NextRequest) {
   const leagueMatch = pathname.match(/\/api\/league\/(\d+)/);
   const leagueId = leagueMatch ? leagueMatch[1] : null;
 
+  // Extract team ID from /api/team/[teamId]/* endpoints (K-62b)
+  const teamMatch = pathname.match(/\/api\/team\/(\d+)/);
+  const selectedTeamId = teamMatch ? teamMatch[1] : null;
+
   // Create response FIRST - don't block it
   const response = NextResponse.next();
 
@@ -37,7 +41,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || request.nextUrl.host;
   const trackUrl = `${protocol}://${host}/api/admin/track`;
 
-  console.log('[Middleware] Calling track endpoint:', trackUrl, { leagueId, endpoint: pathname });
+  console.log('[Middleware] Calling track endpoint:', trackUrl, { leagueId, selectedTeamId, endpoint: pathname });
   console.log('[Middleware] Request headers - protocol:', protocol, 'host:', host);
 
   // Call the tracking API endpoint
@@ -51,7 +55,8 @@ export async function middleware(request: NextRequest) {
       method: request.method,
       ip,
       userAgent,
-      responseTimeMs: responseTime
+      responseTimeMs: responseTime,
+      selectedTeamId  // K-62b: Extract manager ID from URL
     })
   })
   .then((res) => {

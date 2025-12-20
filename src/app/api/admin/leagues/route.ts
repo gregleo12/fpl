@@ -24,8 +24,8 @@ export async function GET() {
       league_teams AS (
         SELECT
           league_id,
-          COUNT(DISTINCT entry_1_id) + COUNT(DISTINCT entry_2_id) as team_count
-        FROM h2h_matches
+          COUNT(DISTINCT entry_id) as team_count
+        FROM league_standings
         GROUP BY league_id
       )
       SELECT
