@@ -2,7 +2,84 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.24 (December 20, 2025)
+**Current Version:** v3.4.25 (December 20, 2025)
+
+---
+
+## v3.4.25 - HOTFIX: K-64 My Team Live Indicator (Dec 20, 2025)
+
+**BUG FIX:** Red live indicator now properly hides for finished matches in My Team pitch view.
+
+### Problem
+
+v3.4.24 fixed the Fixtures tab but NOT My Team. All players still showed red dots even after their matches finished.
+
+**Cause:** The `finished_provisional` field wasn't being passed through the data pipeline in `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`, so the check on line 183 always evaluated to `false`.
+
+### Root Cause
+
+When building `fixturesData` and `teamFixtureLookup`, the code wasn't including `finished_provisional` from the FPL API response:
+
+```typescript
+// ❌ WRONG - Missing finished_provisional
+return {
+  id: fixture.id,
+  team_h: fixture.team_h,
+  team_a: fixture.team_a,
+  started: fixture.started ?? false,
+  finished: fixture.finished ?? false,
+  player_stats: playerStats
+};
+```
+
+This meant when we checked `fixtureInfo?.finished_provisional` on line 183, it was always `undefined` (falsy), so the condition `!fixtureInfo?.finished_provisional` was always `true`, causing all started matches to show the red dot.
+
+### Fix
+
+Added `finished_provisional` to the data pipeline in 2 places:
+
+**1. fixturesData mapping (Line 95):**
+
+```typescript
+// ✅ CORRECT - Include finished_provisional
+return {
+  id: fixture.id,
+  team_h: fixture.team_h,
+  team_a: fixture.team_a,
+  started: fixture.started ?? false,
+  finished: fixture.finished ?? false,
+  finished_provisional: fixture.finished_provisional ?? false,  // K-64
+  player_stats: playerStats
+};
+```
+
+**2. teamFixtureLookup (Lines 128, 138):**
+
+```typescript
+// ✅ CORRECT - Include finished_provisional for both home and away teams
+teamFixtureLookup[fixture.team_h] = {
+  opponent_id: fixture.team_a,
+  opponent_short: teamLookup[fixture.team_a]?.short_name || 'UNK',
+  opponent_name: teamLookup[fixture.team_a]?.name || 'Unknown',
+  was_home: true,
+  kickoff_time: fixture.kickoff_time,
+  started: fixture.started || false,
+  finished: fixture.finished || false,
+  finished_provisional: fixture.finished_provisional || false  // K-64
+};
+```
+
+### Result
+
+Now the check on line 183 works correctly:
+```typescript
+const isLive = fixtureInfo?.started && !fixtureInfo?.finished && !fixtureInfo?.finished_provisional;
+```
+
+Red dots now properly disappear when matches finish (90' + stoppage time) in **both** My Team and Fixtures tab.
+
+### Files Changed
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` (Lines 95, 128, 138)
 
 ---
 

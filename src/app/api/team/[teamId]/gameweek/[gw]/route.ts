@@ -92,6 +92,7 @@ export async function GET(
           team_a: fixture.team_a,
           started: fixture.started ?? false,
           finished: fixture.finished ?? false,
+          finished_provisional: fixture.finished_provisional ?? false,  // K-64: For live indicator logic
           player_stats: playerStats,  // Now includes BPS data for provisional bonus
         };
       });
@@ -123,7 +124,8 @@ export async function GET(
         was_home: true,
         kickoff_time: fixture.kickoff_time,
         started: fixture.started || false,
-        finished: fixture.finished || false
+        finished: fixture.finished || false,
+        finished_provisional: fixture.finished_provisional || false  // K-64: For live indicator logic
       };
       teamFixtureLookup[fixture.team_a] = {
         opponent_id: fixture.team_h,
@@ -132,7 +134,8 @@ export async function GET(
         was_home: false,
         kickoff_time: fixture.kickoff_time,
         started: fixture.started || false,
-        finished: fixture.finished || false
+        finished: fixture.finished || false,
+        finished_provisional: fixture.finished_provisional || false  // K-64: For live indicator logic
       };
     });
 
