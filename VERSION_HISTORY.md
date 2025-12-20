@@ -2,7 +2,134 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.18 (December 20, 2025)
+**Current Version:** v3.4.19 (December 20, 2025)
+
+---
+
+## v3.4.19 - Fix GW Rankings Modal Showing 0 Points (K-66) (Dec 20, 2025)
+
+**BUG FIX:** GW Points Rankings modal showed 0 pts for all managers during live gameweeks.
+
+### Problem
+
+When viewing GW17 rankings (live gameweek):
+- All 20 managers showed "0 pts" in rankings modal
+- User's My Team showed correct 95 GW PTS
+- Leaderboard completely broken during live games
+
+### Root Cause
+
+**API endpoint only queried database (violated K-27 Data Source Rules):**
+
+```typescript
+// ❌ WRONG - Always used database regardless of GW status
+const result = await db.query(`
+  SELECT mh.entry_id, m.player_name, m.team_name, mh.points
+  FROM manager_gw_history mh
+  JOIN managers m ON m.entry_id = mh.entry_id
+  WHERE mh.league_id = $1 AND mh.event = $2
+`, [leagueId, gw]);
+```
+
+**The Issue:**
+- Database `manager_gw_history` table only has data for **completed** gameweeks
+- Live gameweeks (GW17) have 0 points in database until sync runs after GW finishes
+- API returned all managers with `points: 0`
+
+**K-27 Data Source Rules:**
+- ✅ Completed GW → Use database
+- ✅ Live/In Progress GW → Use FPL API
+- ❌ This endpoint: Always database (WRONG!)
+
+### Fix
+
+**File:** `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts`
+
+**1. Check gameweek status:**
+```typescript
+// Determine if GW is completed, live, or upcoming
+const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+const currentEvent = bootstrapData.events.find((e: any) => e.id === gw);
+
+if (currentEvent.finished) {
+  status = 'completed';
+} else if (!currentEvent.is_current && !currentEvent.data_checked) {
+  status = 'upcoming';
+} else {
+  status = 'in_progress';
+}
+```
+
+**2. For live/upcoming GWs, calculate live scores:**
+```typescript
+if (status === 'in_progress' || status === 'upcoming') {
+  // Get all managers in league
+  const managersResult = await db.query(`
+    SELECT entry_id, player_name, team_name
+    FROM managers WHERE league_id = $1
+  `, [leagueId]);
+
+  // Calculate live score for each manager using scoreCalculator
+  const liveScoresPromises = managersResult.rows.map(async (manager) => {
+    const scoreResult = await calculateManagerLiveScore(manager.entry_id, gw, status);
+    return {
+      entry_id: manager.entry_id,
+      player_name: manager.player_name,
+      team_name: manager.team_name,
+      points: scoreResult.score  // Live calculated score
+    };
+  });
+
+  const liveScores = await Promise.all(liveScoresPromises);
+  // Sort and rank...
+}
+```
+
+**3. For completed GWs, use database (existing logic):**
+```typescript
+if (status === 'completed') {
+  // Use database K-27 cache (fast, no API calls)
+  const result = await db.query(`
+    SELECT mh.entry_id, m.player_name, m.team_name, mh.points
+    FROM manager_gw_history mh
+    JOIN managers m ON m.entry_id = mh.entry_id
+    WHERE mh.league_id = $1 AND mh.event = $2
+  `, [leagueId, gw]);
+}
+```
+
+### Benefits
+
+**Live Gameweeks:**
+- ✅ Shows accurate live scores with auto-subs, captain multipliers, bonus points
+- ✅ Rankings update as games progress
+- ✅ Matches points shown in My Team view
+
+**Completed Gameweeks:**
+- ✅ Fast database queries (no API calls)
+- ✅ Uses K-27 cache for instant results
+
+**Performance:**
+- Parallel API calls for all managers using `Promise.all()`
+- 20 managers → ~20 scoreCalculator calls in parallel
+- Acceptable for live rankings (only fetched on demand)
+
+### Related Issues
+
+This fix pattern can be applied to:
+- **K-67:** Worst Gameweeks showing 0 PTS (same root cause)
+- Any other stats that query `manager_gw_history` without checking GW status
+
+### Testing
+
+**During Live GW:**
+- [x] Rankings show live points
+- [x] Rankings update when refreshing
+- [x] User's rank matches actual GW points
+
+**After GW Finishes:**
+- [x] Rankings show final scores from database
+- [x] No unnecessary API calls for completed GWs
 
 ---
 

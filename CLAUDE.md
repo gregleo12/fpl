@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.4.18
+**Current Version:** v3.4.19
 **Last Updated:** December 20, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -114,6 +114,15 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.4.19 - GW Rankings Showing 0 Points for Live GW (Dec 20, 2025 - K-66)
+- **Problem:** GW Points Rankings modal showed 0 pts for all 20 managers during live GW17
+- **Root Cause:** API endpoint only queried database `manager_gw_history`, which has 0 points for live GWs until sync runs
+- **Violated:** K-27 Data Source Rules (should use FPL API for live GWs, database for completed GWs)
+- **Fix:** Check GW status, use `calculateManagerLiveScore()` for live/upcoming GWs, use database for completed GWs
+- **Never Do:** Query `manager_gw_history` without checking if GW is completed - table only has data for finished GWs
+- **Always Do:** Implement K-27 rules - check GW status (finished, is_current, data_checked) and use appropriate data source
+- **Related:** K-67 (Worst Gameweeks) likely has same root cause - any endpoint querying `manager_gw_history` needs GW status check
 
 ### v3.4.18 - Modal Bonus Detection Broken (Dec 20, 2025 - K-63e)
 - **Problem:** My Team player modal showed no "Bonus (Live)" row during live games, logs showed `Team: undefined`
