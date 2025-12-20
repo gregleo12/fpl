@@ -2,7 +2,97 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.15 (December 20, 2025)
+**Current Version:** v3.4.16 (December 20, 2025)
+
+---
+
+## v3.4.16 - K-63e: Fix Bonus Points Not Added to Totals (Dec 20, 2025)
+
+**CRITICAL BUG FIX:** Bonus points were calculated and detected (underline worked) but NOT added to displayed totals.
+
+### Problem
+
+K-63d and K-63c claimed to add bonus points, but totals didn't reflect them:
+
+**H2H Fixture Modal:**
+- Haaland (C) with TC: Showing 39 pts, Expected 48 pts
+- Calculation: Base 13 × 3 (TC) = 39 pts ❌
+- Should be: (13 + 3) × 3 = 48 pts ✅
+- Underline appeared (bonusPoints detected) but total wrong
+
+**My Team Modal:**
+- Missing "Bonus (Live)" row during live games
+- isLive detection relied on explain data (unreliable)
+
+### Root Cause
+
+**K-63d Implementation:**
+- ✅ bonusPoints field added to captain and common players
+- ✅ bonusPoints calculated using getBonusInfo()
+- ✅ Underline styling worked (detected bonusPoints > 0)
+- ❌ bonusPoints stored as **separate field**, never added to totals
+
+**K-63c Implementation:**
+- ✅ API calculated provisionalBonus
+- ✅ UI had "Bonus (Live)" row code
+- ❌ isLive detection failed (relied on explain data which might be empty)
+
+### Solution
+
+**Fix #1: Captain Total (liveMatch.ts:161-172)**
+```typescript
+// BEFORE:
+const rawCaptainPoints = captainLive?.stats?.total_points || 0;
+const captainPoints = rawCaptainPoints * captainMultiplier;
+
+// AFTER:
+const captainBonusInfo = getBonusInfo(...);  // Calculate first
+const captainPointsWithBonus = rawCaptainPoints + (captainBonusInfo.bonusPoints || 0);
+const captainPoints = captainPointsWithBonus * captainMultiplier;  // Now includes bonus
+```
+
+**Fix #2: Common Players (liveMatch.ts:960-979)**
+```typescript
+// BEFORE:
+let player1Points = basePoints;
+if (player1Captain) {
+  player1Points = basePoints * multiplier;  // No bonus
+}
+
+// AFTER:
+const bonusInfo = getBonusInfo(...);  // Calculate first
+const basePointsWithBonus = basePoints + (bonusInfo.bonusPoints || 0);
+let player1Points = basePointsWithBonus;
+if (player1Captain) {
+  player1Points = basePointsWithBonus * multiplier;  // Includes bonus
+}
+```
+
+**Fix #3: My Team isLive (players/[id]/route.ts:146-151)**
+```typescript
+// BEFORE:
+const currentGWStats = fplHistory.find(...);
+const playerExplain = currentGWStats.explain || [];  // ❌ Might be empty
+if (playerExplain.length > 0) { ... }
+
+// AFTER:
+const playerFixture = currentGWFixtures.find((f: any) =>
+  (f.team_h === player.team || f.team_a === player.team) &&  // ✅ Direct team lookup
+  f.started && !f.finished
+);
+```
+
+### Results
+
+- ✅ Captain totals include bonus before multiplier: (13+3) × 3 = 48 pts
+- ✅ Common players include bonus before multiplier
+- ✅ Underline styling still works (bonusPoints field preserved)
+- ✅ My Team modal detects live games reliably (no explain data needed)
+- ✅ "Bonus (Live)" row now appears during live games
+
+### Files Modified
+- `/src/lib/liveMatch.ts` - Fix captain and common players totals
+- `/src/app/api/players/[id]/route.ts` - Fix isLive detection
 
 ---
 

@@ -143,38 +143,29 @@ export async function GET(
     let isLive = false;
 
     if (currentGW > 0 && currentGWFixtures.length > 0) {
-      // Find current gameweek stats from fplHistory
-      const currentGWStats = fplHistory.find((h: any) => h.round === currentGW);
+      // K-63e Fix #3: Find player's fixture directly by team (don't rely on explain data)
+      const playerFixture = currentGWFixtures.find((f: any) =>
+        (f.team_h === player.team || f.team_a === player.team) &&
+        f.started &&
+        !f.finished
+      );
 
-      if (currentGWStats) {
-        // Find which fixture this player played in
-        const playerExplain = currentGWStats.explain || [];
+      if (playerFixture && playerFixture.player_stats && playerFixture.player_stats.length > 0) {
+        isLive = true;
 
-        if (playerExplain.length > 0) {
-          const fixtureId = playerExplain[0].fixture;
-          const fixture = currentGWFixtures.find((f: any) => f.id === fixtureId);
+        // Calculate provisional bonus from BPS ranking
+        const playerStats = playerFixture.player_stats;
+        const playerData = playerStats.find((p: any) => p.id === playerId);
 
-          if (fixture && fixture.started && !fixture.finished) {
-            // Game is live
-            isLive = true;
+        if (playerData) {
+          // Sort players by BPS (descending)
+          const sortedByBPS = [...playerStats].sort((a: any, b: any) => b.bps - a.bps);
+          const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
 
-            // Calculate provisional bonus from BPS ranking
-            if (fixture.player_stats && fixture.player_stats.length > 0) {
-              const playerStats = fixture.player_stats;
-              const playerData = playerStats.find((p: any) => p.id === playerId);
-
-              if (playerData) {
-                // Sort players by BPS (descending)
-                const sortedByBPS = [...playerStats].sort((a: any, b: any) => b.bps - a.bps);
-                const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
-
-                // Assign provisional bonus: top 3 get 3, 2, 1
-                if (rank === 0) provisionalBonus = 3;
-                else if (rank === 1) provisionalBonus = 2;
-                else if (rank === 2) provisionalBonus = 1;
-              }
-            }
-          }
+          // Assign provisional bonus: top 3 get 3, 2, 1
+          if (rank === 0) provisionalBonus = 3;
+          else if (rank === 1) provisionalBonus = 2;
+          else if (rank === 2) provisionalBonus = 1;
         }
       }
     }

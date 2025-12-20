@@ -157,9 +157,21 @@ function calculateLiveStats(
     captainMultiplier = 3; // Triple captain
   }
   const rawCaptainPoints = captainLive?.stats?.total_points || 0;
-  const captainPoints = rawCaptainPoints * captainMultiplier;
 
-  console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
+  // K-63e Fix #1: Calculate bonus info BEFORE multiplying
+  const captainOfficialBonus = captainLive?.stats?.bonus || 0;
+  const captainBonusInfo = getBonusInfo(
+    captainPick?.element || 0,
+    captainLive,
+    captainOfficialBonus,
+    fixturesData
+  );
+
+  // K-63e: Add bonus to raw points BEFORE applying captain multiplier
+  const captainPointsWithBonus = rawCaptainPoints + (captainBonusInfo.bonusPoints || 0);
+  const captainPoints = captainPointsWithBonus * captainMultiplier;
+
+  console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Bonus: ${captainBonusInfo.bonusPoints || 0}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
   // Calculate stats (players played, bench points, etc.)
   const isBenchBoost = picksData.active_chip === 'bboost';
@@ -262,14 +274,7 @@ function calculateLiveStats(
 
   console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
-  // K-63d: Calculate bonus info for captain
-  const captainOfficialBonus = captainLive?.stats?.bonus || 0;
-  const captainBonusInfo = getBonusInfo(
-    captainPick?.element || 0,
-    captainLive,
-    captainOfficialBonus,
-    fixturesData
-  );
+  // K-63e: Bonus info already calculated earlier (before multiplier applied)
 
   return {
     stats: {
@@ -951,27 +956,31 @@ function calculateCommonPlayers(
       }
 
       // Player wasn't subbed or only subbed in one team - use original points
-      // Calculate points for each team
-      let player1Points = basePoints;
-      let player2Points = basePoints;
+
+      // K-63e Fix #2: Calculate bonus info BEFORE multiplying
+      const officialBonus = liveElement?.stats?.bonus || 0;
+      const bonusInfo = getBonusInfo(elementId, liveElement, officialBonus, fixturesData);
+
+      // K-63e: Add bonus to base points BEFORE applying captain multiplier
+      const basePointsWithBonus = basePoints + (bonusInfo.bonusPoints || 0);
+
+      // Calculate points for each team (with bonus included)
+      let player1Points = basePointsWithBonus;
+      let player2Points = basePointsWithBonus;
 
       if (player1Captain) {
         const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
-        player1Points = basePoints * multiplier;
+        player1Points = basePointsWithBonus * multiplier;
       }
 
       if (player2Captain) {
         const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
-        player2Points = basePoints * multiplier;
+        player2Points = basePointsWithBonus * multiplier;
       }
-
-      // K-63d: Calculate bonus info for common player
-      const officialBonus = liveElement?.stats?.bonus || 0;
-      const bonusInfo = getBonusInfo(elementId, liveElement, officialBonus, fixturesData);
 
       return {
         name: element?.web_name || 'Unknown',
-        points: basePoints,
+        points: basePointsWithBonus,
         player1Points,
         player2Points,
         player1Captain,
