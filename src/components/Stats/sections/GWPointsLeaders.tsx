@@ -55,7 +55,7 @@ export function GWPointsLeaders({ data, onViewFullRankings }: Props) {
               </div>
             </div>
             <div className={styles.compactValue}>
-              <div style={{ fontWeight: 700, fontSize: '1.125rem', color: 'white' }}>
+              <div className={styles.statValue}>
                 {manager.points} <span style={{ fontSize: '0.625rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
               </div>
             </div>

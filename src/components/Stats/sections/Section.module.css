@@ -16,7 +16,7 @@
 }
 
 .subtitle {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 1rem;
 }
@@ -52,7 +52,7 @@
 }
 
 .itemRank {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #a78bfa;
   min-width: 2ch;
@@ -65,7 +65,7 @@
 }
 
 .itemName {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
   white-space: nowrap;
@@ -74,7 +74,7 @@
 }
 
 .itemMeta {
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
   margin-top: 0.25rem;
 }

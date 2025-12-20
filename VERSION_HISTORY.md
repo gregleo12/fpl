@@ -1,8 +1,56 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 277+ versions
-**Current Version:** v3.4.1 (December 19, 2025)
+**Total Releases:** 278+ versions
+**Current Version:** v3.4.2 (December 19, 2025)
+
+---
+
+## v3.4.2 - K-56b: GW Tab Font Sizes Match Season Tab (Dec 19, 2025)
+
+**UI CONSISTENCY FIX:** Reduced GW tab font sizes to match Season tab for consistent typography across Stats views.
+
+### Problem
+
+GW tab text appeared noticeably larger than Season tab due to inconsistent font sizes:
+- Manager names: 15px vs 14px (+1px)
+- Team names: 13px vs 12px (+1px)
+- Points values: 18px vs 16px (+2px - most visible)
+- Rank numbers: 18px vs 16px (+2px)
+- Subtitles: 14px vs 13px (+1px)
+
+### Changes Made
+
+**Section.module.css (4 changes):**
+
+| Element | Before | After | Change |
+|---------|--------|-------|--------|
+| `.subtitle` | 0.875rem (14px) | 0.8125rem (13px) | -1px |
+| `.itemRank` | 1.125rem (18px) | 1rem (16px) | -2px |
+| `.itemName` | 0.9375rem (15px) | 0.875rem (14px) | -1px |
+| `.itemMeta` | 0.8125rem (13px) | 0.75rem (12px) | -1px |
+
+**GWPointsLeaders.tsx (1 change):**
+- Replaced inline `fontSize: '1.125rem'` with `className={styles.statValue}` (1rem/16px)
+- Line 58: Points value now uses CSS class instead of inline style
+
+### Impact
+
+- GW and Season tabs now have consistent font sizes
+- More compact, professional appearance in GW tab
+- Matches Season tab's visual density
+- No functionality changes
+
+### Files Modified
+
+- `/src/components/Stats/sections/Section.module.css` - Updated 4 font-size declarations
+- `/src/components/Stats/sections/GWPointsLeaders.tsx` - Removed inline style, using CSS class
+
+### Related
+
+- Based on K-56 investigation findings
+- All changes are visual only, no logic changes
+- Mobile responsive styles unchanged
 
 ---
 
