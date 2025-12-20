@@ -2,7 +2,179 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.25 (December 20, 2025)
+**Current Version:** v3.4.26 (December 20, 2025)
+
+---
+
+## v3.4.26 - Add Desktop Refresh Mechanism (K-68) (Dec 20, 2025)
+
+**NEW FEATURE:** Desktop users can now manually refresh data with a dedicated refresh button, plus automatic refresh during live gameweeks.
+
+### Problem
+
+Mobile users had swipe-to-refresh, but desktop users had NO way to refresh data except manually reloading the entire page.
+
+### Solution: Option A + C
+
+1. **Manual Refresh Button** - Appears next to GW selector on desktop
+2. **Auto-Refresh** - Automatically refreshes every 60 seconds during live gameweeks
+
+### Implementation
+
+**1. GWSelector Component**
+
+**File:** `/src/components/PitchView/GWSelector.tsx`
+
+Added refresh button with lucide-react `RotateCw` icon:
+
+```tsx
+// K-68: Desktop Refresh Button
+{onRefresh && (
+  <button
+    className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+    onClick={onRefresh}
+    disabled={isRefreshing}
+    title="Refresh data"
+  >
+    <RotateCw size={18} />
+  </button>
+)}
+```
+
+**Props added:**
+- `onRefresh?: () => void` - Callback when refresh clicked
+- `isRefreshing?: boolean` - Shows spinning animation when refreshing
+
+**2. Refresh Button Styling**
+
+**File:** `/src/components/PitchView/GWSelector.module.css`
+
+```css
+.refreshButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: #00ff87;
+  color: #00ff87;
+}
+
+.refreshButton.spinning svg {
+  animation: spin 1s linear infinite;
+}
+```
+
+**Mobile:** Refresh button is hidden on mobile (swipe-to-refresh preferred)
+
+**3. MyTeamTab Refresh Logic**
+
+**File:** `/src/components/Dashboard/MyTeamTab.tsx`
+
+**Added state:**
+```tsx
+const [isRefreshing, setIsRefreshing] = useState(false);
+const [refreshKey, setRefreshKey] = useState(0);
+```
+
+**Manual refresh handler:**
+```tsx
+const handleRefresh = async () => {
+  setIsRefreshing(true);
+  try {
+    setRefreshKey(prev => prev + 1);  // Force PitchView re-fetch
+
+    // Fetch fresh stats with cache buster
+    const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`);
+    if (response.ok) {
+      const data = await response.json();
+      setGwPoints(data.gwPoints || 0);
+      setGwRank(data.gwRank || 0);
+      setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
+      setOverallPoints(data.overallPoints || 0);
+      setOverallRank(data.overallRank || 0);
+      setTeamValue(data.teamValue || 0);
+      setBank(data.bank || 0);
+    }
+  } finally {
+    setIsRefreshing(false);
+  }
+};
+```
+
+**Auto-refresh for live GW:**
+```tsx
+useEffect(() => {
+  if (!isLiveGW || selectedGW !== liveGWNumber) return;
+
+  const interval = setInterval(() => {
+    console.log('[K-68] Auto-refreshing live GW data...');
+    handleRefresh();
+  }, 60000); // Every 60 seconds
+
+  return () => clearInterval(interval);
+}, [isLiveGW, liveGWNumber, selectedGW, myTeamId]);
+```
+
+**PitchView force refresh:**
+```tsx
+<PitchView
+  key={`pitch-${refreshKey}`}  // Forces re-mount on refresh
+  leagueId={leagueId}
+  myTeamId={myTeamId}
+  selectedGW={selectedGW}
+  maxGW={maxGW}
+  onGWChange={setSelectedGW}
+  showGWSelector={false}
+/>
+```
+
+### User Experience
+
+**Desktop:**
+```
+┌──────────────────────────────────┐
+│   ←  GW 17 LIVE  →   [🔄]       │  ← Refresh button
+└──────────────────────────────────┘
+```
+
+**During Refresh:**
+- Icon spins while fetching
+- Button disabled during refresh
+- Stats and pitch data both refresh
+
+**Auto-Refresh:**
+- Only during LIVE gameweeks
+- Only when viewing the live GW (not historical)
+- Every 60 seconds automatically
+- Console log: `[K-68] Auto-refreshing live GW data...`
+
+**Mobile:**
+- Refresh button hidden (use swipe-to-refresh instead)
+- Auto-refresh still works during live GW
+
+### Benefits
+
+1. **Manual Control** - Desktop users can refresh on demand
+2. **Live Updates** - Auto-refresh keeps data fresh during live matches
+3. **Better UX** - No need to reload entire page
+4. **Efficient** - Only refreshes stats, not entire page
+5. **Visual Feedback** - Spinning animation shows refresh in progress
+
+### Files Changed
+- `/src/components/PitchView/GWSelector.tsx` - Added refresh button and props
+- `/src/components/PitchView/GWSelector.module.css` - Styling and animations
+- `/src/components/Dashboard/MyTeamTab.tsx` - Refresh logic and auto-refresh
 
 ---
 

@@ -1,15 +1,18 @@
 'use client';
 
 import styles from './GWSelector.module.css';
+import { RotateCw } from 'lucide-react';
 
 interface Props {
   selectedGW: number;
   maxGW: number;
   onGWChange: (gw: number) => void;
   isLive?: boolean;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
-export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false }: Props) {
+export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false, onRefresh, isRefreshing = false }: Props) {
   return (
     <div className={styles.gwSelector}>
       <button
@@ -33,6 +36,19 @@ export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false }: Pr
       >
         →
       </button>
+
+      {/* K-68: Desktop Refresh Button */}
+      {onRefresh && (
+        <button
+          className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+          onClick={onRefresh}
+          disabled={isRefreshing}
+          title="Refresh data"
+          aria-label="Refresh data"
+        >
+          <RotateCw size={18} />
+        </button>
+      )}
     </div>
   );
 }

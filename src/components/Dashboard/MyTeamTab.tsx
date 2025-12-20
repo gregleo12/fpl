@@ -52,6 +52,10 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   // History data for modals
   const [historyData, setHistoryData] = useState<any>(null);
 
+  // K-68: Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   // Fetch current GW and max GW
   useEffect(() => {
     async function fetchLeagueInfo() {
@@ -114,6 +118,44 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     fetchHistory();
   }, [myTeamId, leagueId]);
 
+  // K-68: Handle manual refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Increment refresh key to force re-fetch
+      setRefreshKey(prev => prev + 1);
+
+      // Fetch stats
+      const statsResponse = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`);
+      if (statsResponse.ok) {
+        const data = await statsResponse.json();
+        setGwPoints(data.gwPoints || 0);
+        setGwRank(data.gwRank || 0);
+        setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
+        setOverallPoints(data.overallPoints || 0);
+        setOverallRank(data.overallRank || 0);
+        setTeamValue(data.teamValue || 0);
+        setBank(data.bank || 0);
+      }
+    } catch (err: any) {
+      console.error('Error refreshing data:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // K-68: Auto-refresh during live gameweeks (every 60 seconds)
+  useEffect(() => {
+    if (!isLiveGW || selectedGW !== liveGWNumber) return;
+
+    const interval = setInterval(() => {
+      console.log('[K-68] Auto-refreshing live GW data...');
+      handleRefresh();
+    }, 60000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [isLiveGW, liveGWNumber, selectedGW, myTeamId]);
+
   return (
     <div className={styles.myTeamTab}>
       {/* Back to My Team button */}
@@ -153,6 +195,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           maxGW={maxGW}
           onGWChange={setSelectedGW}
           isLive={isLiveGW && selectedGW === liveGWNumber}
+          onRefresh={handleRefresh}
+          isRefreshing={isRefreshing}
         />
 
         {/* Stat Boxes - 2 Rows */}
@@ -212,6 +256,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         </div>
 
         <PitchView
+          key={`pitch-${refreshKey}`}
           leagueId={leagueId}
           myTeamId={myTeamId}
           selectedGW={selectedGW}
