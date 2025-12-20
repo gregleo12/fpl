@@ -96,16 +96,47 @@ export async function GET(
       console.error('[Player Detail] Error fetching current GW:', error);
     }
 
-    // K-63c: Fetch fixtures for current gameweek
+    // K-63c: Fetch fixtures and live data for current gameweek (need live data for BPS)
     let currentGWFixtures: any[] = [];
     if (currentGW > 0) {
       try {
-        const fixturesResponse = await fetch(
-          `https://fantasy.premierleague.com/api/fixtures/?event=${currentGW}`,
-          { cache: 'no-store' }
-        );
+        const [fixturesResponse, liveResponse] = await Promise.all([
+          fetch(
+            `https://fantasy.premierleague.com/api/fixtures/?event=${currentGW}`,
+            { cache: 'no-store' }
+          ),
+          fetch(
+            `https://fantasy.premierleague.com/api/event/${currentGW}/live/`,
+            { cache: 'no-store' }
+          )
+        ]);
+
         if (fixturesResponse.ok) {
-          currentGWFixtures = await fixturesResponse.json();
+          const fplFixtures = await fixturesResponse.json();
+          const liveData = liveResponse.ok ? await liveResponse.json() : null;
+
+          // Build fixtures with player_stats (like Rivals does)
+          currentGWFixtures = fplFixtures.map((fixture: any) => {
+            const playerStats = liveData?.elements
+              ?.filter((el: any) => {
+                const explain = el.explain || [];
+                return explain.some((exp: any) => exp.fixture === fixture.id);
+              })
+              .map((el: any) => ({
+                id: el.id,
+                bps: el.stats.bps || 0,
+                bonus: el.stats.bonus || 0,
+              })) || [];
+
+            return {
+              id: fixture.id,
+              team_h: fixture.team_h,
+              team_a: fixture.team_a,
+              started: fixture.started ?? false,
+              finished: fixture.finished ?? false,
+              player_stats: playerStats,  // Now includes BPS data
+            };
+          });
         }
       } catch (error) {
         console.error('[Player Detail] Error fetching current GW fixtures:', error);

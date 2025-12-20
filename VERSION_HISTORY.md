@@ -2,7 +2,106 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.16 (December 20, 2025)
+**Current Version:** v3.4.17 (December 20, 2025)
+
+---
+
+## v3.4.17 - Fix My Team Bonus (K-63e Follow-up) (Dec 20, 2025)
+
+**CRITICAL FIX:** K-63e fixed Rivals but NOT My Team - bonus still showing incorrectly.
+
+### Problem
+
+After v3.4.16, bonus points worked in Rivals but NOT in My Team:
+
+**My Team Pitch View:**
+- Haaland TC: Still showing 39 pts instead of 48 pts ❌
+
+**My Team Modal:**
+- Missing "Bonus (Live)" row ❌
+- Total: 13 × 3 = 39 (no bonus)
+
+### Root Cause
+
+**My Team uses different code than Rivals:**
+
+**Rivals (WORKED after v3.4.16):**
+- Endpoint: `/api/league/[id]/fixtures/[gw]/live`
+- **Builds `player_stats`** from `liveData.elements`
+- Each fixture: `{id, started, finished, player_stats: [{id, bps, bonus}]}` ✅
+- Provisional bonus calculation works ✅
+
+**My Team (BROKEN):**
+- Pitch endpoint: `/api/team/[teamId]/gameweek/[gw]`
+- Modal endpoint: `/api/players/[id]`
+- Both fetched fixtures from FPL API: `/api/fixtures/?event={gw}`
+- FPL API returns `stats` but NO `player_stats` with BPS ❌
+- `calculateProvisionalBonus()` looked for `fixture.player_stats` → returned 0 ❌
+
+**The Issue:**
+```typescript
+// FPL API /api/fixtures/?event=17 returns:
+{
+  id: 123,
+  started: true,
+  finished: false,
+  stats: [{identifier: 'goals_scored', a: [...], h: [...]}]  // ❌ No BPS
+}
+
+// But we need:
+{
+  id: 123,
+  started: true,
+  finished: false,
+  player_stats: [{id: 355, bps: 66, bonus: 0}]  // ✅ Has BPS
+}
+```
+
+### Solution
+
+Build `player_stats` from `liveData` in both My Team endpoints (matching Rivals pattern):
+
+**Fix #1: My Team Pitch** (`/api/team/[teamId]/gameweek/[gw]/route.ts`)
+```typescript
+// Fetch liveData + fixtures
+const [fixturesResponse, liveResponse] = await Promise.all([
+  fetch(`/api/fixtures/?event=${gw}`),
+  fetch(`/api/event/${gw}/live/`)  // ✅ Get BPS data
+]);
+
+// Build player_stats for each fixture
+fixturesData = fplFixtures.map((fixture: any) => {
+  const playerStats = liveData.elements
+    ?.filter((el: any) => {
+      const explain = el.explain || [];
+      return explain.some((exp: any) => exp.fixture === fixture.id);
+    })
+    .map((el: any) => ({
+      id: el.id,
+      bps: el.stats.bps,
+      bonus: el.stats.bonus
+    }));
+
+  return {
+    ...fixture,
+    player_stats: playerStats  // ✅ Now has BPS
+  };
+});
+```
+
+**Fix #2: My Team Modal** (`/api/players/[id]/route.ts`)
+- Same approach: fetch liveData and build player_stats
+
+### Results
+
+- ✅ My Team pitch: Haaland TC now shows 48 pts (16 × 3)
+- ✅ My Team modal: "Bonus (Live)" row now appears
+- ✅ My Team modal: Total includes provisional bonus
+- ✅ Matches Rivals behavior exactly
+
+### Files Modified
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - Build player_stats from liveData
+- `/src/app/api/players/[id]/route.ts` - Build player_stats from liveData
 
 ---
 

@@ -39,8 +39,8 @@ export async function GET(
     // Use shared score calculator - SINGLE SOURCE OF TRUTH
     const scoreResult = await calculateManagerLiveScore(entryId, gameweek, status);
 
-    // Fetch bootstrap data for team info, entry info, and fixtures for the gameweek
-    const [bootstrapResponse, entryResponse, fixturesResponse] = await Promise.all([
+    // Fetch bootstrap data for team info, entry info, fixtures, and live data (for BPS)
+    const [bootstrapResponse, entryResponse, fixturesResponse, liveResponse] = await Promise.all([
       fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -56,12 +56,46 @@ export async function GET(
         headers: {
           'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
         }
+      }),
+      fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        }
       })
     ]);
 
     const bootstrapData = bootstrapResponse.ok ? await bootstrapResponse.json() : null;
     const entryData = entryResponse.ok ? await entryResponse.json() : null;
-    const fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
+    const liveData = liveResponse.ok ? await liveResponse.json() : null;
+
+    // Build fixtures data with player_stats (like Rivals does)
+    let fixturesData: any[] = [];
+    if (fixturesResponse.ok) {
+      const fplFixtures = await fixturesResponse.json();
+
+      // Map fixtures to include player stats with BPS
+      fixturesData = fplFixtures.map((fixture: any) => {
+        const playerStats = liveData?.elements
+          ?.filter((el: any) => {
+            const explain = el.explain || [];
+            return explain.some((exp: any) => exp.fixture === fixture.id);
+          })
+          .map((el: any) => ({
+            id: el.id,
+            bps: el.stats.bps || 0,
+            bonus: el.stats.bonus || 0,
+          })) || [];
+
+        return {
+          id: fixture.id,
+          team_h: fixture.team_h,
+          team_a: fixture.team_a,
+          started: fixture.started ?? false,
+          finished: fixture.finished ?? false,
+          player_stats: playerStats,  // Now includes BPS data for provisional bonus
+        };
+      });
+    }
 
     // Create element lookup for team info
     const elementLookup: { [key: number]: any } = {};
