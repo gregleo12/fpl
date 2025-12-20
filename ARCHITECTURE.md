@@ -35,8 +35,10 @@ fpl/
 │   ├── lib/                    # Shared utilities
 │   │   ├── db.ts               # Database connection
 │   │   ├── fpl-api.ts          # FPL API client
+│   │   ├── fpl-errors.ts       # Error detection & messages (K-61)
 │   │   ├── fpl-calculations.ts # Auto-subs, bonus calc
 │   │   ├── scoreCalculator.ts  # Live score calculations
+│   │   ├── leagueSync.ts       # League data sync logic
 │   │   ├── analytics.ts        # Analytics tracking
 │   │   └── nameUtils.ts        # Name formatting
 │   │

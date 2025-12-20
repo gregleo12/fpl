@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.4.4
+**Current Version:** v3.4.7
 **Last Updated:** December 20, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -111,6 +111,19 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.4.6 - Sync Getting Stuck in 'syncing' Status (Dec 20, 2025 - K-60)
+- **Problem:** League stuck in `sync_status = 'syncing'` for 48+ hours, preventing new syncs
+- **Root Cause:** Sync started during FPL downtime, process crashed/timed out, status never updated to 'completed' or 'failed'
+- **Fix:** Auto-reset syncs stuck >10 minutes, enhanced error handling, added `last_sync_error` column, manual reset endpoint
+- **Never Do:** Update status at start of process without try-catch-finally to ensure status updates on errors
+- **Always Do:** Implement timeout protection and auto-reset for long-running processes
+
+### v3.4.5 - Transfers Not Showing for Live GW (Dec 20, 2025 - K-59)
+- **Problem:** GW17 transfers showed "No transfers made" despite user making 3 transfers
+- **Root Cause:** Transfers endpoint always queried database (violated K-27 rules), database had 0 GW17 transfers (last sync before GW17 started)
+- **Fix:** Check if GW is live/upcoming, fetch from FPL API for live GWs, use database for completed GWs
+- **Never Do:** Always use database for all GWs - must implement K-27 Data Source Rules (completed = DB, live = API)
 
 ### v3.1.2 - Player Cards Showing Stale Points (Dec 18, 2025)
 - **Problem:** Player cards on My Team pitch showed wrong points (Bruno GW16: 4 pts vs actual 13 pts)

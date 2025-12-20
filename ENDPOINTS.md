@@ -512,6 +512,77 @@ Syncs all player data from FPL API to database.
 
 ---
 
+## ❌ Error Responses (K-61)
+
+**All API endpoints return standardized FPLError objects when errors occur.**
+
+### FPLError Format
+
+```typescript
+{
+  error: {
+    type: string,        // Error type identifier
+    message: string,     // User-friendly error message
+    icon: string,        // Visual indicator (emoji)
+    retryable: boolean   // Whether the error can be retried
+  }
+}
+```
+
+### Error Types
+
+| Type | HTTP Code | Message | Retryable |
+|------|-----------|---------|-----------|
+| `fpl_updating` | 503 | "⏳ FPL is updating. Please try again in a few minutes." | Yes |
+| `invalid_league` | 404 | "❌ League not found. Please check the ID." | No |
+| `classic_league` | 400 | "⚠️ This is a Classic league. Only H2H leagues are supported." | No |
+| `rate_limited` | 429 | "⏱️ Too many requests. Please wait a moment." | Yes |
+| `network_error` | 500 | "🌐 Network error. Please check your connection." | Yes |
+| `sync_stuck` | 200 | "🔄 Sync appears stuck. Try Force Reset in Settings." | No |
+| `timeout` | 500 | "⏰ Request timed out. FPL may be slow - try again." | Yes |
+| `unknown` | 500 | "❌ Unable to load league. Please try again." | Yes |
+
+### Example Error Response
+
+**Request:** `GET /api/league/123456`
+
+**Response (503):**
+```json
+{
+  "error": {
+    "type": "fpl_updating",
+    "message": "FPL is updating. Please try again in a few minutes.",
+    "icon": "⏳",
+    "retryable": true
+  }
+}
+```
+
+### Endpoints Using FPLError
+
+- `GET /api/league/[id]` - Returns error objects for all failures
+- `POST /api/league/[id]/sync` - Returns error objects for sync failures
+- `GET /api/league/[id]/sync` - Returns `sync_stuck` error when applicable
+
+### Client-Side Handling
+
+```typescript
+const response = await fetch('/api/league/123456');
+const data = await response.json();
+
+if (data.error) {
+  // Display error with icon and message
+  showError(data.error.icon, data.error.message);
+
+  // Show retry button if retryable
+  if (data.error.retryable) {
+    showRetryButton();
+  }
+}
+```
+
+---
+
 ## 🚨 Common Issues
 
 ### Endpoint Returns 0 Values

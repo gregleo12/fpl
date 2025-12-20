@@ -1,6 +1,6 @@
 # RivalFPL - Database Reference
 
-**Last Updated:** December 18, 2025
+**Last Updated:** December 20, 2025
 **Database:** PostgreSQL on Railway
 
 ---
@@ -25,12 +25,33 @@ postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/railway
 
 | Table | Purpose | Key Columns |
 |-------|---------|-------------|
+| `leagues` | League info & sync status | id, name, sync_status, last_synced, last_sync_error |
 | `managers` | Manager/team info | entry_id, player_name, team_name |
 | `h2h_matches` | H2H match results | entry_1_id, entry_2_id, entry_1_points, entry_2_points, event |
 | `league_standings` | Current rankings | league_id, entry_id, rank, total |
 | `players` | All 760 PL players | id, web_name, team_id, position, now_cost |
 | `teams` | All 20 PL teams | id, name, short_name, code |
 | `player_gameweek_stats` | Player stats per GW | player_id, gameweek, total_points, minutes, goals |
+
+#### `leagues` Table Details
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | BIGINT | League ID (primary key) |
+| `name` | TEXT | League name |
+| `sync_status` | VARCHAR(20) | Current sync status: 'pending', 'syncing', 'completed', 'failed' |
+| `last_synced` | TIMESTAMP | Last successful sync timestamp |
+| `last_sync_error` | TEXT | Error message from last failed sync (K-60) |
+| `created_at` | TIMESTAMP | When league was first added |
+| `updated_at` | TIMESTAMP | Last metadata update |
+
+**Sync Status State Machine:**
+- `pending` → First-time league load, no sync started yet
+- `syncing` → Sync in progress
+- `completed` → Sync finished successfully
+- `failed` → Sync encountered an error
+
+**Auto-Reset:** Syncs stuck in 'syncing' status for >10 minutes are automatically reset to 'failed' (K-60)
 
 ### K-27 Cached Tables (Historical Data)
 
