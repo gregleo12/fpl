@@ -10,7 +10,7 @@ import { LiveMatchModal } from './LiveMatchModal';
 import { getLiveMatchData } from '@/lib/liveMatch';
 import type { LiveMatchData } from '@/types/liveMatch';
 import { TeamFixtures } from './TeamFixtures';
-import { Swords, Calendar } from 'lucide-react';
+import { Swords, Calendar, RotateCw } from 'lucide-react';
 
 // Helper function to format score - show negative scores in parentheses
 function formatScore(score: number): string {
@@ -219,6 +219,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   const [liveMatchData, setLiveMatchData] = useState<LiveMatchData | null>(null);
   const [loadingLiveData, setLoadingLiveData] = useState(false);
 
+  // K-68: Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Find the live or upcoming GW on initial load
   useEffect(() => {
     async function findOptimalGW() {
@@ -294,6 +297,16 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
       return () => clearInterval(interval);
     }
   }, [fixturesData?.status]);
+
+  // K-68: Manual refresh handler
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await fetchFixtures();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
   async function fetchFixtures() {
     setLoading(true);
@@ -503,6 +516,17 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
         {/* Gameweek Navigator */}
         <div className={styles.navigatorWrapper}>
+          {/* K-68: Desktop Refresh Button */}
+          <button
+            className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Refresh data"
+            aria-label="Refresh data"
+          >
+            <RotateCw size={18} />
+          </button>
+
           {/* Previous button */}
           <button
             className={styles.navButton}

@@ -92,6 +92,46 @@
   cursor: not-allowed;
 }
 
+/* K-68: Refresh Button */
+.refreshButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 0.25rem;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: #00ff87;
+  color: #00ff87;
+}
+
+.refreshButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refreshButton.spinning svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .gwDisplay {
   display: flex;
   align-items: center;
@@ -185,6 +225,11 @@
 
   .gwNumber {
     font-size: 1.25rem;
+  }
+
+  /* K-68: Hide refresh button on mobile */
+  .refreshButton {
+    display: none;
   }
 
   .sections {

@@ -2,7 +2,93 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.26 (December 20, 2025)
+**Current Version:** v3.4.27 (December 20, 2025)
+
+---
+
+## v3.4.27 - Adjust Refresh Button Position & Add to All Tabs (K-68) (Dec 20, 2025)
+
+**IMPROVEMENT:** Refresh button now on left side of GW selector, aligned right, and available on all desktop tabs.
+
+### Changes
+
+Based on user feedback, made three improvements to the refresh button:
+
+1. **Moved to left of GW selector** - Button now appears before the "←" button
+2. **Right-aligned layout** - GW selector pushed to right side of screen
+3. **Added to Rivals and Stats tabs** - Refresh button now on all 3 tabs (My Team, Rivals, Stats)
+
+### Visual Changes
+
+**Before (v3.4.26):**
+```
+[GW selector: ← GW 17 LIVE → 🔄]
+```
+
+**After (v3.4.27):**
+```
+                    [🔄 ← GW 17 LIVE →]  ← Right-aligned
+```
+
+### Implementation
+
+**1. My Team Tab**
+
+**File:** `/src/components/PitchView/GWSelector.tsx`
+- Moved `<RefreshButton />` before `<PrevButton />`
+- Removed right margin, added left margin spacing
+
+**File:** `/src/components/PitchView/GWSelector.module.css`
+- Added `justify-content: flex-end` to align right
+- Added `margin-left: auto` to push to right edge
+- Changed refresh button margin from `margin-left` to `margin-right`
+
+**2. Rivals Tab**
+
+**File:** `/src/components/Fixtures/FixturesTab.tsx`
+- Added `RotateCw` import from lucide-react
+- Added `isRefreshing` state
+- Added `handleRefresh()` function
+- Added refresh button before "◄" button in navigator
+
+**File:** `/src/components/Fixtures/Fixtures.module.css`
+- Added `.refreshButton` styles matching My Team
+- Added spinning animation
+- Hidden on mobile (<640px)
+
+**3. Stats Tab**
+
+**File:** `/src/components/Stats/StatsHub.tsx`
+- Added `RotateCw` import from lucide-react
+- Added `isRefreshing` state
+- Added `handleRefresh()` function
+- Added refresh button before "←" button in GW selector
+
+**File:** `/src/components/Stats/StatsHub.module.css`
+- Added `.refreshButton` styles matching other tabs
+- Added spinning animation
+- Hidden on mobile (<640px)
+
+### Behavior
+
+**Desktop:**
+- Refresh button visible on all tabs
+- Left of GW selector
+- Right-aligned layout
+- Spins during refresh
+- Hover effect (green glow)
+
+**Mobile:**
+- Refresh button hidden (swipe-to-refresh preferred)
+- Auto-refresh still works during live GW
+
+### Files Changed
+- `/src/components/PitchView/GWSelector.tsx` - Moved button position
+- `/src/components/PitchView/GWSelector.module.css` - Right alignment
+- `/src/components/Fixtures/FixturesTab.tsx` - Added refresh logic
+- `/src/components/Fixtures/Fixtures.module.css` - Added button styles
+- `/src/components/Stats/StatsHub.tsx` - Added refresh logic
+- `/src/components/Stats/StatsHub.module.css` - Added button styles
 
 ---
 

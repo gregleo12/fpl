@@ -7,6 +7,8 @@
   padding: 0.5rem 1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: flex-end;  /* K-68: Align right */
+  margin-left: auto;  /* K-68: Push to right */
 }
 
 .gwButton {
@@ -90,7 +92,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-left: 0.25rem;
+  margin-right: 0.25rem;  /* K-68: Space between refresh and previous button */
 }
 
 .refreshButton:hover:not(:disabled) {

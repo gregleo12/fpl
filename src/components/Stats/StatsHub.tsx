@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
+import { RotateCw } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -90,6 +91,9 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
   const [gwRankings, setGwRankings] = useState<GWRanking[]>([]);
   const [showRankingsModal, setShowRankingsModal] = useState(false);
 
+  // K-68: Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   useEffect(() => {
     if (view === 'gameweek') {
       fetchGameweekStats(selectedGW);
@@ -128,6 +132,16 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
     }
   }
 
+  // K-68: Manual refresh handler
+  async function handleRefresh() {
+    setIsRefreshing(true);
+    try {
+      await fetchGameweekStats(selectedGW);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
   return (
     <div className={styles.container}>
       {/* Header with View Toggle and GW Selector */}
@@ -163,6 +177,17 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
         {/* GW Selector (only for gameweek view) */}
         {view === 'gameweek' && (
           <div className={styles.gwSelector}>
+            {/* K-68: Desktop Refresh Button */}
+            <button
+              className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Refresh data"
+              aria-label="Refresh data"
+            >
+              <RotateCw size={18} />
+            </button>
+
             <button
               className={styles.gwButton}
               onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
