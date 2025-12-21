@@ -27,7 +27,7 @@ Inside each chip badge, the icon (star, lightning, target) was not vertically ce
 
 **File:** `src/components/Stats/sections/Section.module.css`
 - Changed `.chipBadge` line-height from 1.2 to 1 (compact, let flexbox handle centering)
-- Changed `.chipIcon` display from `block` to `flex` (better flexbox alignment)
+- Added `transform: translateY(1px)` to `.chipIcon` to nudge icon down for optical centering
 - Added `line-height: 1.2` to `.itemName` for consistency
 
 **Result:** Icon and text are now the same height and properly centered within chip badges.

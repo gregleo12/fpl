@@ -266,8 +266,9 @@
 }
 
 .chipIcon {
-  display: flex; /* K-70: Changed from block to flex for better alignment */
+  display: block;
   flex-shrink: 0;
+  transform: translateY(1px); /* K-70: Nudge icon down to align with text baseline */
 }
 
 /* Expand Button */
