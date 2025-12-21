@@ -271,6 +271,11 @@
   transform: translateY(1px); /* K-70: Nudge icon down to align with text baseline */
 }
 
+.chipText {
+  display: flex;
+  align-items: center; /* K-70: Make text a flex child for proper alignment with icon */
+}
+
 /* Expand Button */
 .expandButton {
   width: 100%;

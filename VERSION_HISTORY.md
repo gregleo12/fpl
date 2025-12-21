@@ -12,25 +12,50 @@
 
 ### Problem
 
-Inside each chip badge, the icon (star, lightning, target) was not vertically centered with the chip name (TC, FH, BB).
+Inside each chip badge, the icon (star, lightning, target) was not vertically centered with the chip name (TC, FH, BB). Icon sat visibly higher than text.
 
 ### Root Cause
 
-1. **Icon size mismatch:** Icon was 16px but text was 14px (0.875rem)
-2. **Line-height too large:** `.chipBadge` had `line-height: 1.2` adding extra vertical space
-3. **Icon display mode:** `.chipIcon` used `display: block` which doesn't align well in flexbox
+Text was inline content while icon was a block SVG. They used different alignment behaviors:
+- Text uses baseline alignment within its line-height
+- SVG uses its bounding box center
+- Even with `align-items: center`, these calculate their "center" differently
 
-### Fix
+### Fix Attempts (All Failed)
+
+1. Added `line-height: 1.2` to `.itemName` → No change
+2. Reduced icon size 16px → 14px → No change
+3. Changed `.chipBadge` line-height to 1 → No change
+4. Changed `.chipIcon` display to flex → No change
+5. Added `transform: translateY(1px)` → No change
+
+### Final Solution: Wrap Text in Flex Span
 
 **File:** `src/components/Stats/sections/ChipsPlayed.tsx`
-- Reduced icon size from 16px to 14px to match text size
+- Wrapped chip text in `<span className={styles.chipText}>`
+- Makes BOTH icon and text proper flex children (instead of text being inline)
 
 **File:** `src/components/Stats/sections/Section.module.css`
-- Changed `.chipBadge` line-height from 1.2 to 1 (compact, let flexbox handle centering)
-- Added `transform: translateY(1px)` to `.chipIcon` to nudge icon down for optical centering
-- Added `line-height: 1.2` to `.itemName` for consistency
+- Added `.chipText` class with `display: flex; align-items: center;`
+- Now both children use flexbox alignment behavior
 
-**Result:** Icon and text are now the same height and properly centered within chip badges.
+**Before:**
+```tsx
+<div className={styles.chipBadge}>
+  <IconComponent />  {/* flex child */}
+  TC                 {/* inline text - different alignment */}
+</div>
+```
+
+**After:**
+```tsx
+<div className={styles.chipBadge}>
+  <IconComponent />           {/* flex child */}
+  <span className={chipText}>TC</span>  {/* flex child */}
+</div>
+```
+
+**Result:** Both icon and text are now proper flex children, allowing `align-items: center` to work correctly.
 
 ---
 
