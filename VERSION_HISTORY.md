@@ -2,7 +2,74 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.27 (December 20, 2025)
+**Current Version:** v3.4.28 (December 21, 2025)
+
+---
+
+## v3.4.28 - Auto-Sub Visibility in My Team (K-69) (Dec 21, 2025)
+
+**BUG FIX / UX IMPROVEMENT:** Bench now shows subbed-out players with visual indicators for auto-substitutions.
+
+### Problem Solved
+
+When auto-substitutions occurred:
+- ✅ Subbed-in player appeared in starting XI (correct)
+- ❌ Subbed-out player was NOT visible on bench (bug)
+- ❌ No visual indication of which players were involved in subs
+
+### Changes
+
+**1. Fixed Auto-Sub Logic** (`/src/lib/fpl-calculations.ts`)
+- Modified `applyAutoSubstitutions()` to properly SWAP players between starting XI and bench
+- Previously: Bench player moved to starting XI, but starter was not added to bench
+- Now: Players are fully swapped - subbed-out starter appears on bench with their points
+
+**2. Added Auto-Sub Flags** (`/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`)
+- Added `is_sub_in` flag for players subbed INTO starting XI
+- Added `is_sub_out` flag for players subbed OUT to bench
+- Created `autoSubLookup` to map substitution data to player flags
+
+**3. Visual Indicators** (`/src/components/PitchView/PlayerCard.tsx`)
+- Added green arrow badge (↑) for subbed-in players (top-right corner)
+- Added red arrow badge (↓) for subbed-out players (top-right corner)
+- Tooltips explain the substitution ("Auto-subbed into starting XI" / "Auto-subbed out to bench")
+
+**4. Styling** (`/src/components/PitchView/PlayerCard.module.css`)
+- `.subInIcon`: Green circular badge with dark text
+- `.subOutIcon`: Red circular badge with white text
+- Responsive sizing for mobile (768px, 480px breakpoints)
+
+### Before & After
+
+**Before:**
+```
+Starting XI: [Subbed-in player] ← Visible ✅
+Bench: [Original bench players] ← Subbed-out player missing ❌
+```
+
+**After:**
+```
+Starting XI: [Subbed-in player ↑] ← Visible with green arrow ✅
+Bench: [Subbed-out player ↓] [Other bench players] ← All visible with red arrow ✅
+```
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `/src/lib/fpl-calculations.ts` | Fixed auto-sub swap logic |
+| `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` | Added auto-sub flags to player data |
+| `/src/components/PitchView/PitchView.tsx` | Updated PlayerInfo interface |
+| `/src/components/PitchView/PlayerCard.tsx` | Added auto-sub icon rendering |
+| `/src/components/PitchView/PlayerCard.module.css` | Styled auto-sub badges |
+
+### Testing Scenarios
+
+- [x] Single auto-sub: Subbed-out player visible on bench with ↓ icon
+- [x] Multiple auto-subs: All swapped players correctly positioned
+- [x] No auto-subs: No icons shown
+- [x] Bench Boost active: No auto-subs occur (all 15 play)
+- [x] Build succeeds with no errors
 
 ---
 

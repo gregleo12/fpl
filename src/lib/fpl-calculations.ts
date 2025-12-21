@@ -190,6 +190,7 @@ function isValidSubstitution(
 
 /**
  * Apply automatic substitutions according to FPL rules
+ * K-69: Now properly swaps players between starting11 and bench
  */
 export function applyAutoSubstitutions(squad: Squad): AutoSubResult {
   const result: AutoSubResult = {
@@ -216,13 +217,16 @@ export function applyAutoSubstitutions(squad: Squad): AutoSubResult {
 
     // Try each playing bench player in order
     for (let i = 0; i < playingBench.length; i++) {
-      const { player: benchPlayer } = playingBench[i];
+      const { player: benchPlayer, originalIndex: benchIndex } = playingBench[i];
 
       // Check if substitution maintains valid formation
       if (isValidSubstitution(result.squad.starting11, starter, benchPlayer)) {
-        // Perform substitution
+        // Perform substitution: SWAP the players
         const starterIndex = result.squad.starting11.findIndex(p => p.id === starter.id);
-        result.squad.starting11[starterIndex] = benchPlayer;
+
+        // K-69: Swap players between starting11 and bench
+        result.squad.starting11[starterIndex] = benchPlayer; // Bench player to starting XI
+        result.squad.bench[benchIndex] = starter; // Starter to bench
 
         // Calculate points gained
         const pointsGained = benchPlayer.points * benchPlayer.multiplier;

@@ -21,6 +21,8 @@ interface PlayerInfo {
   fixture_started?: boolean;
   fixture_finished?: boolean;
   isLive?: boolean;  // K-64: Live fixture indicator
+  is_sub_in?: boolean;  // K-69: Player was auto-subbed into starting XI
+  is_sub_out?: boolean;  // K-69: Player was auto-subbed out to bench
 }
 
 interface Props {
@@ -55,6 +57,18 @@ export function PlayerCard({ player, pick, isBench = false, onClick }: Props) {
       {/* K-64: Live Fixture Indicator */}
       {player.isLive && (
         <div className={styles.liveIndicator} />
+      )}
+
+      {/* K-69: Auto-Sub Indicators */}
+      {player.is_sub_in && (
+        <div className={styles.subInIcon} title="Auto-subbed into starting XI">
+          ↑
+        </div>
+      )}
+      {player.is_sub_out && (
+        <div className={styles.subOutIcon} title="Auto-subbed out to bench">
+          ↓
+        </div>
       )}
 
       {/* Kit Image - Cropped to show top 60-70% */}

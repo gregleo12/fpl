@@ -24,6 +24,8 @@ interface PlayerInfo {
   bonus?: number;
   minutes?: number;
   isLive?: boolean;  // K-64: Live fixture indicator
+  is_sub_in?: boolean;  // K-69: Player was auto-subbed into starting XI
+  is_sub_out?: boolean;  // K-69: Player was auto-subbed out to bench
 }
 
 interface Props {

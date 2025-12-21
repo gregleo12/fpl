@@ -81,6 +81,34 @@
   }
 }
 
+/* K-69: Auto-Sub Indicators - Top-right corner */
+.subInIcon,
+.subOutIcon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  z-index: 3;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subInIcon {
+  background: rgba(0, 255, 135, 0.9);  /* FPL green for subbed in */
+  color: #1a1a2e;  /* Dark text on green */
+}
+
+.subOutIcon {
+  background: rgba(255, 107, 107, 0.9);  /* Red for subbed out */
+  color: white;
+}
+
 /* Jersey Container - CROPPED to show only top 60-70% */
 .kitContainer {
   position: relative;
@@ -199,6 +227,15 @@
     right: 4px;
   }
 
+  .subInIcon,
+  .subOutIcon {
+    width: 14px;
+    height: 14px;
+    font-size: 0.6rem;
+    top: 4px;
+    right: 4px;
+  }
+
   .positionLabel {
     font-size: 0.65rem;
     margin-bottom: 3px;
@@ -250,6 +287,15 @@
   .liveIndicator {
     width: 6px;
     height: 6px;
+    top: 5px;
+    right: 5px;
+  }
+
+  .subInIcon,
+  .subOutIcon {
+    width: 13px;
+    height: 13px;
+    font-size: 0.55rem;
     top: 5px;
     right: 5px;
   }

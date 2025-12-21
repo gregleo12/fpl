@@ -166,6 +166,15 @@ export async function GET(
       return 0;
     };
 
+    // K-69: Create auto-sub lookup for flags
+    const autoSubLookup: { [key: number]: { is_sub_in?: boolean; is_sub_out?: boolean } } = {};
+    if (scoreResult.autoSubs && scoreResult.autoSubs.substitutions) {
+      scoreResult.autoSubs.substitutions.forEach(sub => {
+        autoSubLookup[sub.playerIn.id] = { is_sub_in: true };
+        autoSubLookup[sub.playerOut.id] = { is_sub_out: true };
+      });
+    }
+
     // Transform squad data to match frontend expectations
     const allPlayers = [...scoreResult.squad.starting11, ...scoreResult.squad.bench];
     const playerLookup: { [key: number]: any } = {};
@@ -185,6 +194,9 @@ export async function GET(
       // K-64: Determine if player's fixture is currently live (during the actual 90 minutes)
       const isLive = fixtureInfo?.started && !fixtureInfo?.finished && !fixtureInfo?.finished_provisional;
 
+      // K-69: Get auto-sub flags for this player
+      const autoSubFlags = autoSubLookup[player.id] || {};
+
       playerLookup[player.id] = {
         id: player.id,
         web_name: player.name,
@@ -203,7 +215,10 @@ export async function GET(
         kickoff_time: fixtureInfo?.kickoff_time || null,
         fixture_started: fixtureInfo?.started || false,
         fixture_finished: fixtureInfo?.finished || false,
-        isLive  // K-64: Visual indicator for live fixtures
+        isLive,  // K-64: Visual indicator for live fixtures
+        // K-69: Auto-sub flags
+        is_sub_in: autoSubFlags.is_sub_in || false,
+        is_sub_out: autoSubFlags.is_sub_out || false
       };
     });
 
