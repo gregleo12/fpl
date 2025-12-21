@@ -8,37 +8,29 @@
 
 ## v3.4.32 - Fix Chip Icons Vertical Alignment (K-70) (Dec 21, 2025)
 
-**CSS Fix:** Fixed vertical alignment issue in "Chips Played" section.
+**CSS + Component Fix:** Fixed vertical alignment of icons and text within chip badges.
 
 ### Problem
 
-Chip badges (TC, FH, BB, WC) were not vertically centered with manager names in the Chips Played list.
+Inside each chip badge, the icon (star, lightning, target) was not vertically centered with the chip name (TC, FH, BB).
 
 ### Root Cause
 
-Line-height mismatch between manager name and chip badge:
-- `.itemName`: No line-height specified → browser default (~1.5)
-- `.chipBadge`: `line-height: 1.2`
-
-Different line-heights caused text baselines to sit at different vertical positions, creating visual misalignment even though flexbox `align-items: center` was properly set.
+1. **Icon size mismatch:** Icon was 16px but text was 14px (0.875rem)
+2. **Line-height too large:** `.chipBadge` had `line-height: 1.2` adding extra vertical space
+3. **Icon display mode:** `.chipIcon` used `display: block` which doesn't align well in flexbox
 
 ### Fix
 
+**File:** `src/components/Stats/sections/ChipsPlayed.tsx`
+- Reduced icon size from 16px to 14px to match text size
+
 **File:** `src/components/Stats/sections/Section.module.css`
+- Changed `.chipBadge` line-height from 1.2 to 1 (compact, let flexbox handle centering)
+- Changed `.chipIcon` display from `block` to `flex` (better flexbox alignment)
+- Added `line-height: 1.2` to `.itemName` for consistency
 
-Added `line-height: 1.2` to `.itemName` to match `.chipBadge`:
-
-```css
-.itemName {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1.2;  /* K-70: Match chipBadge line-height for vertical alignment */
-  /* ... */
-}
-```
-
-**Result:** Both manager name and chip badge now use the same line-height, ensuring proper vertical alignment.
+**Result:** Icon and text are now the same height and properly centered within chip badges.
 
 ---
 

@@ -45,7 +45,7 @@ export function ChipsPlayed({ data }: Props) {
                 <div className={styles.itemName}>{manager.player_name}</div>
               </div>
               <div className={styles.chipBadge}>
-                <IconComponent size={16} color="#00ff87" className={styles.chipIcon} />
+                <IconComponent size={14} color="#00ff87" className={styles.chipIcon} />
                 {manager.chip_display}
               </div>
             </div>
