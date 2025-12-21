@@ -207,9 +207,11 @@ export function applyAutoSubstitutions(squad: Squad): AutoSubResult {
     .filter(p => p.position !== 'GK' && didNotPlay(p));
 
   // Get playing bench players (in order)
+  // K-69 FIX: Map FIRST to preserve original bench index, THEN filter
+  // This ensures originalIndex refers to actual bench position, not filtered array position
   const playingBench = result.squad.bench
-    .filter(p => !didNotPlay(p))
-    .map((p, idx) => ({ player: p, originalIndex: idx }));
+    .map((p, idx) => ({ player: p, originalIndex: idx }))  // Capture original index FIRST
+    .filter(item => !didNotPlay(item.player));             // Then filter out non-players
 
   // Try to substitute each non-playing starter
   for (const starter of nonPlayingStarters) {
@@ -217,7 +219,9 @@ export function applyAutoSubstitutions(squad: Squad): AutoSubResult {
 
     // Try each playing bench player in order
     for (let i = 0; i < playingBench.length; i++) {
-      const { player: benchPlayer, originalIndex: benchIndex } = playingBench[i];
+      const benchItem = playingBench[i];
+      const benchPlayer = benchItem.player;
+      const benchIndex = benchItem.originalIndex;
 
       // Check if substitution maintains valid formation
       if (isValidSubstitution(result.squad.starting11, starter, benchPlayer)) {

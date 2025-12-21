@@ -2,7 +2,80 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.30 (December 21, 2025)
+**Current Version:** v3.4.31 (December 21, 2025)
+
+---
+
+## v3.4.31 - HOTFIX: Fix Auto-Sub Player Duplication & Missing Players (K-69) (Dec 21, 2025)
+
+**CRITICAL HOTFIX:** Fixed auto-sub display bugs causing player duplication and missing bench players.
+
+### Problem
+
+After v3.4.28 auto-sub implementation, display had critical bugs:
+- **Bug 1:** Subbed-in player appeared in BOTH starting XI AND bench (duplicate)
+- **Bug 2:** 0-minute bench players completely missing (e.g., Estève invisible)
+- **Example:** Rodon showed in XI (correct) AND bench (wrong), while Estève disappeared
+
+### Root Cause
+
+**Code in `/src/lib/fpl-calculations.ts` line 210-212:**
+```typescript
+// WRONG - Filter FIRST, then map index
+const playingBench = result.squad.bench
+  .filter(p => !didNotPlay(p))         // Removes 0-minute players
+  .map((p, idx) => ({ player: p, originalIndex: idx }));  // Index in FILTERED array
+```
+
+**The Problem:**
+- Original bench: `[Minteh (0), Estève (1), Rodon (2), Other (3)]`
+- After filter: `[Minteh, Rodon]` (Estève removed - 0 minutes)
+- After map: `[{ Minteh, originalIndex: 0 }, { Rodon, originalIndex: 1 }]`
+
+Rodon gets `originalIndex: 1`, but his **actual** bench position is `2`!
+
+When swapping: `bench[1] = Van Hecke` → **Overwrites Estève at position 1** ❌
+
+### The Fix
+
+**Map FIRST to preserve original index, THEN filter:**
+```typescript
+// CORRECT - Map FIRST to capture original position
+const playingBench = result.squad.bench
+  .map((p, idx) => ({ player: p, originalIndex: idx }))  // Track ORIGINAL index
+  .filter(item => !didNotPlay(item.player));             // Then filter
+```
+
+**Now:**
+- After map: `[{ Minteh, 0 }, { Estève, 1 }, { Rodon, 2 }, { Other, 3 }]`
+- After filter: `[{ Minteh, 0 }, { Rodon, 2 }]` (Estève filtered but index preserved)
+
+Rodon gets `originalIndex: 2` (correct!) → `bench[2] = Van Hecke` ✅
+
+### Result
+
+**Before (v3.4.28-v3.4.30):**
+- Starting XI: Rodon ↑ (correct)
+- Bench: Van Hecke ↓, Minteh, **Rodon AGAIN** ❌, Estève MISSING ❌
+
+**After (v3.4.31):**
+- Starting XI: Rodon ↑ (correct) ✅
+- Bench: Minteh, Estève (0 pts), Van Hecke ↓, Other ✅
+- All 15 players visible, no duplicates ✅
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `/src/lib/fpl-calculations.ts` | Fix bench index tracking - map before filter |
+
+### Impact
+
+- ✅ All 15 players visible (11 starting + 4 bench)
+- ✅ No duplicate players
+- ✅ 0-minute bench players now visible (e.g., Estève)
+- ✅ Sub icons still work correctly (↑↓)
+- ✅ Bench order preserved correctly
 
 ---
 
