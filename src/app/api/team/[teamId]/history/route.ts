@@ -50,10 +50,11 @@ export async function GET(
     const db = await getDatabase();
 
     // Get GW history from database (for completed GWs)
+    // K-65: Database 'points' may be GROSS, so we calculate NET points here
     const historyResult = await db.query(`
       SELECT
         event,
-        points,
+        points - COALESCE(event_transfers_cost, 0) as points,
         overall_rank,
         rank as gw_rank,
         event_transfers_cost
@@ -63,6 +64,39 @@ export async function GET(
     `, [teamId, leagueId]);
 
     let history = historyResult.rows;
+
+    // K-65: Fallback to FPL API if database is empty (team not synced yet)
+    if (history.length === 0) {
+      try {
+        const fplHistoryResponse = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${teamId}/history/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        if (fplHistoryResponse.ok) {
+          const fplHistory = await fplHistoryResponse.json();
+          // Transform FPL API format to our format
+          // Use 'current' array which has all completed GWs
+          if (fplHistory.current && Array.isArray(fplHistory.current)) {
+            history = fplHistory.current.map((gw: any) => ({
+              event: gw.event,
+              // K-65: FPL API 'points' is GROSS (before transfer cost), subtract to get NET
+              points: gw.points - (gw.event_transfers_cost || 0),
+              overall_rank: gw.overall_rank,
+              gw_rank: gw.rank,
+              event_transfers_cost: gw.event_transfers_cost || 0
+            }));
+          }
+        }
+      } catch (apiError) {
+        console.error('[Team History API] Error fetching from FPL API:', apiError);
+        // Continue with empty history
+      }
+    }
 
     // K-65: If current GW is live/in-progress, calculate live points and add/update it in history
     if (currentGWStatus === 'in_progress' || currentGWStatus === 'upcoming') {

@@ -2,7 +2,65 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.29 (December 21, 2025)
+**Current Version:** v3.4.30 (December 21, 2025)
+
+---
+
+## v3.4.30 - HOTFIX: Correct Transfer Cost Deduction in Modals (K-65) (Dec 21, 2025)
+
+**CRITICAL HOTFIX:** Fixed 8-point discrepancy in Total Points modal caused by incorrect transfer cost handling.
+
+### Problem
+
+After v3.4.29, modal showed 1,081 total points instead of 1,073 (8 points too many).
+
+**Root Cause:**
+- FPL API returns **GROSS** points (before transfer cost) in the `points` field
+- Modal was summing GROSS points without subtracting transfer costs
+- Example: GW with 60 points and 4 transfer cost should show 56 net, but was showing 60
+
+### The Fix
+
+**Updated `/api/team/[teamId]/history` to return NET points consistently:**
+
+1. **Database Query:** Subtract transfer costs in SQL
+   ```sql
+   SELECT points - COALESCE(event_transfers_cost, 0) as points
+   ```
+
+2. **FPL API Fallback:** Subtract transfer costs when mapping
+   ```typescript
+   points: gw.points - (gw.event_transfers_cost || 0)
+   ```
+
+3. **Live GW:** Already returns NET (no change needed)
+   ```typescript
+   points: scoreResult.score  // calculateManagerLiveScore already deducts transfers
+   ```
+
+### Verification
+
+**FPL API Data Structure:**
+- `points` = GROSS points (before transfer cost)
+- `event_transfers_cost` = Transfer penalty
+- `total_points` = Cumulative NET points (confirms our calculation)
+
+**Example:**
+- GW2: `points=60`, `transfer_cost=4` → NET = 56 ✅
+- GW5: `points=54`, `transfer_cost=12` → NET = 42 ✅
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `/src/app/api/team/[teamId]/history/route.ts` | Subtract transfer costs from database and FPL API data |
+
+### Impact
+
+- ✅ Total Points modal now matches tile (1,073)
+- ✅ All GW points are NET (after transfer cost deduction)
+- ✅ Cumulative totals calculate correctly
+- ✅ Best/Worst GW calculations use correct values
 
 ---
 
