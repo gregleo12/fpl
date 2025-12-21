@@ -115,6 +115,31 @@ git push origin main
 
 ## 🐛 Recent Bugs (Don't Repeat These)
 
+### v3.4.30 - FPL API Returns GROSS Points, Not NET (Dec 21, 2025 - K-65 HOTFIX)
+- **Problem:** Total Points modal showed 1,081 instead of 1,073 (8 points too many)
+- **Root Cause:** FPL API's `points` field is GROSS (before transfer cost), not NET
+- **Example:** GW with 60 points and 4 transfer cost: `points=60`, but actual NET = 56
+- **Fix:** Always subtract `event_transfers_cost` from `points` when using FPL API data
+- **Code:** `points: gw.points - (gw.event_transfers_cost || 0)`
+- **Never Do:** Sum up FPL API `points` field directly - it's gross points
+- **Always Do:** Subtract transfer costs to get NET points for display/calculations
+
+### v3.4.28 - Auto-Sub Logic Didn't Swap Players (Dec 21, 2025 - K-69)
+- **Problem:** Subbed-out players disappeared entirely instead of showing on bench
+- **Root Cause:** `applyAutoSubstitutions()` only moved bench player to XI, didn't put starter on bench
+- **Result:** Bench showed 3 players instead of 4 after auto-sub
+- **Fix:** Properly SWAP players: `starting11[starterIndex] = benchPlayer; bench[benchIndex] = starter;`
+- **Never Do:** Only move one player without swapping - all 15 players must remain visible
+- **Always Do:** Use SWAP logic with `originalIndex` tracking to maintain all 15 players
+
+### v3.4.29 - Modals Showed Stale Database Data (Dec 21, 2025 - K-65)
+- **Problem:** Tiles showed live data (1,073 pts, 76K rank) but modals showed stale (985 pts, 194K rank)
+- **Root Cause:** Tiles used `/api/team/[teamId]/info` with live calc, modals used `/api/team/[teamId]/history` with only database
+- **Result:** Modals showed GW17 with 0 points because database not yet synced
+- **Fix:** Update history endpoint to call `calculateManagerLiveScore()` for live GW
+- **Never Do:** Return only database data for endpoints used during live GWs
+- **Always Do:** Check GW status and use live calculation for in-progress GWs
+
 ### v3.4.21 - K-66 Fix Used Wrong Table Join (Dec 20, 2025 - K-66 HOTFIX)
 - **Problem:** v3.4.19 K-66 fix broke GW Points Leaders - showed "No data available" instead of rankings
 - **Root Cause:** Managers query used `WHERE league_id = $1` but `managers` table has NO `league_id` column
