@@ -2,7 +2,86 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.28 (December 21, 2025)
+**Current Version:** v3.4.29 (December 21, 2025)
+
+---
+
+## v3.4.29 - Fix Total Points & Overall Rank Modals with Live Data (K-65) (Dec 21, 2025)
+
+**BUG FIX:** Total Points Analysis and Overall Rank Progress modals now show live data for current GW.
+
+### Problem Solved
+
+**Before:**
+- Tiles showed live data (1,073 total pts, 76K overall rank) ✅
+- Modals showed stale database data (985 total pts, 194K overall rank) ❌
+- Current GW (GW17) showed 0 points in modal tables ❌
+
+**Root Cause:**
+- Tiles used `/api/team/[teamId]/info` which had live calculation
+- Modals used `/api/team/[teamId]/history` which only fetched database data
+- Database had stale/no data for live GW
+
+### The Fix
+
+**Updated `/api/team/[teamId]/history` endpoint:**
+1. Determine current GW and status (completed/in-progress/upcoming)
+2. Fetch database history for all completed GWs
+3. **For live GW:** Calculate live score using `calculateManagerLiveScore()`
+4. Merge live GW data into history array
+5. Return combined history with live current GW
+
+**Implementation Details:**
+```typescript
+// Fetch bootstrap to determine current GW status
+const currentEvent = bootstrapData.events?.find((e: any) => e.is_current);
+
+// If current GW is live, calculate live score
+if (currentGWStatus === 'in_progress' || currentGWStatus === 'upcoming') {
+  const scoreResult = await calculateManagerLiveScore(teamId, currentGW, currentGWStatus);
+
+  // Fetch transfer cost and overall rank
+  const picksData = await fetch(...);
+
+  // Add or update live GW in history
+  history.push({
+    event: currentGW,
+    points: scoreResult.score,
+    overall_rank: overallRank,
+    gw_rank: gwRank,
+    event_transfers_cost: transferCost
+  });
+}
+```
+
+### After Implementation
+
+**Total Points Analysis Modal:**
+- ✅ Shows correct total (1,073 instead of 985)
+- ✅ GW17 shows live points (not 0)
+- ✅ Best/Worst GW calculations use live data
+- ✅ GW breakdown table includes live current GW
+
+**Overall Rank Progress Modal:**
+- ✅ Shows correct current rank (~76K instead of 194K)
+- ✅ GW17 shows live rank and points
+- ✅ Chart includes live current GW
+- ✅ Rank changes calculated correctly with live data
+
+### Files Modified
+
+| File | Change |
+|------|--------|
+| `/src/app/api/team/[teamId]/history/route.ts` | Added live GW calculation for current gameweek |
+
+### Testing Scenarios
+
+- [x] Tiles and modals show matching total points
+- [x] Tiles and modals show matching overall rank
+- [x] Current GW shows live points (not 0) in modal tables
+- [x] Best/Worst GW calculations exclude in-progress GW or use accurate live data
+- [x] Rank change arrows work correctly in Overall Rank modal
+- [x] Build succeeds with no errors
 
 ---
 

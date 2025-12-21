@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,9 +20,36 @@ export async function GET(
       );
     }
 
+    // K-65: Determine current GW and status
+    const bootstrapResponse = await fetch(
+      'https://fantasy.premierleague.com/api/bootstrap-static/',
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+        },
+        next: { revalidate: 60 }
+      }
+    );
+
+    let currentGW = 1;
+    let currentGWStatus: 'upcoming' | 'in_progress' | 'completed' = 'in_progress';
+
+    if (bootstrapResponse.ok) {
+      const bootstrapData = await bootstrapResponse.json();
+      const currentEvent = bootstrapData.events?.find((e: any) => e.is_current);
+      if (currentEvent) {
+        currentGW = currentEvent.id;
+        if (currentEvent.finished) {
+          currentGWStatus = 'completed';
+        } else if (!currentEvent.is_current && !currentEvent.data_checked) {
+          currentGWStatus = 'upcoming';
+        }
+      }
+    }
+
     const db = await getDatabase();
 
-    // Get GW history (for rank and points modals)
+    // Get GW history from database (for completed GWs)
     const historyResult = await db.query(`
       SELECT
         event,
@@ -33,6 +61,77 @@ export async function GET(
       WHERE entry_id = $1 AND league_id = $2
       ORDER BY event ASC
     `, [teamId, leagueId]);
+
+    let history = historyResult.rows;
+
+    // K-65: If current GW is live/in-progress, calculate live points and add/update it in history
+    if (currentGWStatus === 'in_progress' || currentGWStatus === 'upcoming') {
+      try {
+        // Calculate live score for current GW
+        const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, currentGWStatus);
+
+        // Fetch live picks to get transfer cost and overall rank
+        const picksResponse = await fetch(
+          `https://fantasy.premierleague.com/api/entry/${teamId}/event/${currentGW}/picks/`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            }
+          }
+        );
+
+        let gwRank = 0;
+        let transferCost = 0;
+        let overallRank = 0;
+
+        if (picksResponse.ok) {
+          const picksData = await picksResponse.json();
+          gwRank = picksData.entry_history?.rank || 0;
+          transferCost = picksData.entry_history?.event_transfers_cost || 0;
+          overallRank = picksData.entry_history?.overall_rank || 0;
+        }
+
+        // If no overall rank from picks (live GW), fetch from entry summary
+        if (overallRank === 0) {
+          const entryResponse = await fetch(
+            `https://fantasy.premierleague.com/api/entry/${teamId}/`,
+            {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+              }
+            }
+          );
+          if (entryResponse.ok) {
+            const entryData = await entryResponse.json();
+            overallRank = entryData.summary_overall_rank || 0;
+          }
+        }
+
+        // Check if current GW already exists in history (from database)
+        const existingGWIndex = history.findIndex(h => h.event === currentGW);
+
+        const liveGWData = {
+          event: currentGW,
+          points: scoreResult.score,
+          overall_rank: overallRank,
+          gw_rank: gwRank,
+          event_transfers_cost: transferCost
+        };
+
+        if (existingGWIndex >= 0) {
+          // Replace existing entry with live data
+          history[existingGWIndex] = liveGWData;
+        } else {
+          // Add new entry for current GW
+          history.push(liveGWData);
+          // Re-sort by event ASC
+          history.sort((a, b) => a.event - b.event);
+        }
+      } catch (liveError) {
+        console.error('[Team History API] Error calculating live GW:', liveError);
+        // Continue with database data only
+      }
+    }
 
     // Get transfers (for transfers modal)
     const transfersResult = await db.query(`
@@ -49,7 +148,7 @@ export async function GET(
     `, [teamId]);
 
     return NextResponse.json({
-      history: historyResult.rows,
+      history,
       transfers: transfersResult.rows,
     });
   } catch (error: any) {
