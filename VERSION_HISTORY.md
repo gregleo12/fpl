@@ -2,7 +2,43 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.31 (December 21, 2025)
+**Current Version:** v3.4.32 (December 21, 2025)
+
+---
+
+## v3.4.32 - Fix Chip Icons Vertical Alignment (K-70) (Dec 21, 2025)
+
+**CSS Fix:** Fixed vertical alignment issue in "Chips Played" section.
+
+### Problem
+
+Chip badges (TC, FH, BB, WC) were not vertically centered with manager names in the Chips Played list.
+
+### Root Cause
+
+Line-height mismatch between manager name and chip badge:
+- `.itemName`: No line-height specified → browser default (~1.5)
+- `.chipBadge`: `line-height: 1.2`
+
+Different line-heights caused text baselines to sit at different vertical positions, creating visual misalignment even though flexbox `align-items: center` was properly set.
+
+### Fix
+
+**File:** `src/components/Stats/sections/Section.module.css`
+
+Added `line-height: 1.2` to `.itemName` to match `.chipBadge`:
+
+```css
+.itemName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.2;  /* K-70: Match chipBadge line-height for vertical alignment */
+  /* ... */
+}
+```
+
+**Result:** Both manager name and chip badge now use the same line-height, ensuring proper vertical alignment.
 
 ---
 
