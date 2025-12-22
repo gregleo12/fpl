@@ -116,7 +116,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
     playerData.matchHistory.reduce((sum: number, m: any) => sum + m.opponentPoints, 0);
 
   return (
-    <div className={styles.myTeamTab}>
+    <div className={styles.statsTeamContainer}>
       {/* Team Overview with Rank */}
       <div className={styles.section}>
         <div className={styles.teamHeader}>

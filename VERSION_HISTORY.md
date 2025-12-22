@@ -2,7 +2,63 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.35 (December 21, 2025)
+**Current Version:** v3.4.36 (December 22, 2025)
+
+---
+
+## v3.4.36 - Fix Extra Container Padding in Stats > Team (K-74) (Dec 22, 2025)
+
+**Layout Fix:** Removed double padding in Stats > Team tab to match Stats > GW and Stats > Season.
+
+### Problem
+
+The Stats > Team page had extra padding compared to other Stats tabs (GW, Season), making content narrower and creating visual inconsistency:
+
+- **Desktop:** Extra `padding-top: 2.5rem` (doubled because StatsHub container already has 2.5rem)
+- **Mobile:** Extra `padding-left: 8px` and `padding-right: 8px` creating narrower content
+
+### Root Cause
+
+**File:** `src/components/Stats/MyTeamView.tsx` (line 119)
+
+MyTeamView was using `.myTeamTab` class from Dashboard.module.css, which was designed for the main Dashboard "My Team" tab (which is NOT inside StatsHub). This class includes:
+
+- Desktop: `padding-top: 2.5rem` at line 11
+- Mobile: `padding-left: 8px, padding-right: 8px` at lines 755-756
+
+Since MyTeamView is rendered INSIDE `StatsHub.tsx` (which already provides `padding-top: 2.5rem`), this created double padding. Compare to SeasonView which uses `padding-top: 0` in its container.
+
+### Fix
+
+**Files Modified:**
+1. `src/components/Dashboard/Dashboard.module.css` - Added new `.statsTeamContainer` class
+2. `src/components/Stats/MyTeamView.tsx` - Changed from `.myTeamTab` to `.statsTeamContainer`
+
+Created a stats-specific container class:
+
+```css
+/* K-74: Stats > Team container override - removes double padding from StatsHub */
+.statsTeamContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0; /* K-74: Remove double padding (StatsHub already has padding-top) */
+}
+
+@media (max-width: 480px) {
+  .statsTeamContainer {
+    gap: 10px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+```
+
+### Result
+
+- **Desktop:** Stats > Team now has same top spacing as Stats > GW and Stats > Season
+- **Mobile:** Full width content matching other Stats tabs
+- **Main Dashboard "My Team" tab:** Unchanged (still uses `.myTeamTab` with proper padding)
 
 ---
 
