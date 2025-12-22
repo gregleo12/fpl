@@ -2,7 +2,54 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.9 (December 22, 2025)
+**Current Version:** v3.5.10 (December 22, 2025)
+
+---
+
+## v3.5.10 - Match Stats Tabs Spacing to Rivals (K-96) (Dec 22, 2025)
+
+**UI Fix:** Increased vertical padding in Stats tabs container to match Rivals header bar height.
+
+### Problem
+
+Stats tabs header bar appeared slightly shorter/thinner than Rivals header bar due to insufficient padding:
+- Stats: `padding: 0.25rem` (4px all around)
+- Rivals: `padding: 0.5rem 1rem` (8px top/bottom, 16px left/right)
+
+This made the Stats tabs feel cramped vertically compared to Rivals.
+
+### Solution
+
+Updated Stats `.viewToggleBar` padding to match Rivals `.rivalsHeader` exactly:
+
+**Desktop:**
+```css
+.viewToggleBar {
+  padding: 0.5rem 1rem;  /* 8px top/bottom, 16px left/right */
+}
+```
+
+**Mobile (@media max-width: 640px):**
+```css
+.viewToggleBar {
+  padding: 0.5rem 0.75rem;  /* 8px top/bottom, 12px left/right */
+}
+```
+
+### Files Modified
+
+- `src/components/Stats/StatsHub.module.css` (updated padding on desktop and mobile)
+
+### Result
+
+✅ Stats tabs header now has identical height to Rivals header
+✅ Desktop: 0.5rem 1rem padding (8px vertical, 16px horizontal)
+✅ Mobile: 0.5rem 0.75rem padding (8px vertical, 12px horizontal)
+✅ Better visual consistency across tabs
+✅ More breathing room around tab badges
+
+**Before:** `padding: 0.25rem` → Header felt tight
+**After:** `padding: 0.5rem 1rem` → Matches Rivals exactly
 
 ---
 
