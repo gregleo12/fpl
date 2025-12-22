@@ -144,40 +144,40 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
 
   return (
     <div className={styles.container}>
-      {/* Header with View Toggle and GW Selector */}
-      <div className={styles.header}>
-        {/* View Toggle */}
-        <div className={styles.viewToggle}>
+      {/* K-94: Unified header bar - EXACT COPY from Rivals/My Team structure */}
+      <div className={styles.statsHeader}>
+        {/* Left group: View toggle tabs */}
+        <div className={styles.leftGroup}>
           <button
-            className={`${styles.viewButton} ${view === 'myteam' ? styles.active : ''}`}
+            className={`${styles.subTab} ${view === 'myteam' ? styles.subTabActive : ''}`}
             onClick={() => setView('myteam')}
           >
             Team
           </button>
           <button
-            className={`${styles.viewButton} ${view === 'gameweek' ? styles.active : ''}`}
+            className={`${styles.subTab} ${view === 'gameweek' ? styles.subTabActive : ''}`}
             onClick={() => setView('gameweek')}
           >
             GW
           </button>
           <button
-            className={`${styles.viewButton} ${view === 'season' ? styles.active : ''}`}
+            className={`${styles.subTab} ${view === 'season' ? styles.subTabActive : ''}`}
             onClick={() => setView('season')}
           >
             Season
           </button>
           <button
-            className={`${styles.viewButton} ${view === 'players' ? styles.active : ''}`}
+            className={`${styles.subTab} ${view === 'players' ? styles.subTabActive : ''}`}
             onClick={() => setView('players')}
           >
             Players
           </button>
         </div>
 
-        {/* GW Selector (only for gameweek view) */}
+        {/* Right group: GW selector (only for gameweek view) */}
         {view === 'gameweek' && (
-          <div className={styles.gwSelector}>
-            {/* K-68: Desktop Refresh Button */}
+          <div className={styles.rightGroup}>
+            {/* Refresh Button */}
             <button
               className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
               onClick={handleRefresh}
@@ -188,27 +188,30 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
               <RotateCw size={18} />
             </button>
 
+            {/* Previous button */}
             <button
-              className={styles.gwButton}
+              className={styles.navButton}
               onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
               disabled={selectedGW <= 1}
+              aria-label="Previous gameweek"
             >
               ◄
             </button>
 
-            <div className={styles.gwDisplay}>
-              <span className={styles.gwLabel}>GW</span>
-              <span className={styles.gwNumber}>{selectedGW}</span>
-              {/* K-89: Use pink pulsing dot like Rivals tab */}
+            {/* Gameweek display with live dot */}
+            <div className={styles.gwInfo}>
+              <span className={styles.gwNumber}>GW {selectedGW}</span>
               {selectedGW === currentGW && isCurrentGWLive && (
                 <span className={styles.liveDot} title="Live match"></span>
               )}
             </div>
 
+            {/* Next button */}
             <button
-              className={styles.gwButton}
+              className={styles.navButton}
               onClick={() => setSelectedGW(Math.min(currentGW, selectedGW + 1))}
               disabled={selectedGW >= currentGW}
+              aria-label="Next gameweek"
             >
               ►
             </button>

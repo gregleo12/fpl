@@ -2,7 +2,73 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.6 (December 22, 2025)
+**Current Version:** v3.5.7 (December 22, 2025)
+
+---
+
+## v3.5.7 - Apply Unified Header Bar to Stats Tab (K-94) (Dec 22, 2025)
+
+**Major Structure Change:** Restructured Stats tab to use the same unified header bar as Rivals and My Team tabs.
+
+### Problem
+
+Stats tab had a different header structure than Rivals/My Team:
+- Used separate `.header` container with `flex-wrap`
+- View toggle and GW selector were side-by-side but not in unified bar
+- Different CSS class names (`.viewButton`, `.gwButton`, `.gwSelector`)
+- No consistent styling with other tabs
+- Mobile responsive CSS referenced old class names
+
+### Solution
+
+**EXACT COPY of unified header structure from Rivals/My Team:**
+
+**HTML Structure:**
+```tsx
+<div className={styles.statsHeader}>
+  <div className={styles.leftGroup}>
+    <button className={styles.subTab}>Team</button>
+    <button className={styles.subTab}>GW</button>
+    <button className={styles.subTab}>Season</button>
+    <button className={styles.subTab}>Players</button>
+  </div>
+  {view === 'gameweek' && (
+    <div className={styles.rightGroup}>
+      <button className={styles.refreshButton}>↻</button>
+      <button className={styles.navButton}>◄</button>
+      <div className={styles.gwInfo}>
+        <span className={styles.gwNumber}>GW {selectedGW}</span>
+        <span className={styles.liveDot}></span>
+      </div>
+      <button className={styles.navButton}>►</button>
+    </div>
+  )}
+</div>
+```
+
+**CSS Updates:**
+- Created `.statsHeader` unified container (matches `.rivalsHeader`, `.myTeamHeader`)
+- Added `.leftGroup` and `.rightGroup` containers
+- Renamed `.viewButton` → `.subTab` and `.active` → `.subTabActive`
+- Renamed `.gwButton` → `.navButton`
+- Removed `.gwDisplay` and `.gwLabel`, replaced with `.gwInfo`
+- All dimensions match Rivals/My Team exactly (40px buttons, 0.9375rem font-size)
+- **Mobile media query placed AFTER desktop styles** (at end of file) to properly override
+
+### Files Modified
+
+- `src/components/Stats/StatsHub.tsx` (restructured JSX to match Rivals/My Team)
+- `src/components/Stats/StatsHub.module.css` (replaced all header CSS, moved mobile media query to end)
+
+### Result
+
+✅ Stats tab header now identical structure to Rivals and My Team
+✅ All three tabs (Rivals, My Team, Stats) now use unified header bar pattern
+✅ Consistent class names across all tabs (`.navButton`, `.gwInfo`, `.gwNumber`, `.liveDot`)
+✅ Desktop: 40px buttons, 0.9375rem font-size
+✅ Mobile: 32px buttons, 0.875rem font-size, refresh button hidden
+✅ Mobile media query correctly placed at end to override desktop styles
+✅ GW selector only shows when "GW" view is active (not for Team/Season/Players views)
 
 ---
 
