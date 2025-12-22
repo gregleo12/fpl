@@ -2,7 +2,86 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.8 (December 22, 2025)
+**Current Version:** v3.5.9 (December 22, 2025)
+
+---
+
+## v3.5.9 - Consolidate Performance Stats to 8 (K-95) (Dec 22, 2025)
+
+**Data Optimization:** Merged Performance and Season Stats sections into one consolidated Performance section with 8 carefully chosen stats in a 4x2 grid.
+
+### Problem
+
+Stats > Team view had 12 stats across 2 sections:
+- PERFORMANCE (8 stats): PLY, PTS, +/-, AVG, WIN, DRW, LSS, TOT
+- SEASON STATS (4 stats): Highest Score, Lowest Score, Biggest Win, Biggest Loss
+
+This was too many stats with some redundancy and less useful metrics.
+
+### Solution
+
+**Consolidated into 8 essential stats in 2 rows:**
+
+**Row 1 - Match Results:**
+- PTS (total points)
+- WIN (wins)
+- DRW (draws)
+- LOSS (losses - renamed from LSS)
+
+**Row 2 - Score Distribution:**
+- AVG (average points per GW)
+- HIGH (highest GW score - renamed from "Highest Score")
+- MED (median GW score - NEW)
+- LOW (lowest GW score - renamed from "Lowest Score")
+
+**Stats Removed:**
+- PLY (played) - redundant, can calculate from W+D+L
+- +/- (point differential) - less useful metric
+- TOT (total H2H points) - confusing metric
+- Biggest Win - nice to have but not essential
+- Biggest Loss - nice to have but not essential
+
+**New Stat Added:**
+- **MED (Median)** - Calculated from all GW scores:
+  ```typescript
+  // Sort scores and find middle value
+  const sortedScores = [...scores].sort((a, b) => a - b);
+  const mid = Math.floor(sortedScores.length / 2);
+  if (sortedScores.length % 2 === 0) {
+    medianScore = (sortedScores[mid - 1] + sortedScores[mid]) / 2;
+  } else {
+    medianScore = sortedScores[mid];
+  }
+  ```
+
+### Files Modified
+
+- `src/app/api/player/[id]/route.ts` (added median calculation)
+- `src/components/Stats/MyTeamView.tsx` (consolidated stats grid, removed Season Stats section)
+
+### Result
+
+✅ Performance section now has 8 focused stats in 4x2 grid
+✅ Season Stats section completely removed
+✅ New MED (median) stat provides better score distribution insight
+✅ Labels updated: LSS → LOSS, Highest Score → HIGH, Lowest Score → LOW
+✅ Cleaner, more focused stats display
+✅ Removed redundant and less useful metrics
+
+**Visual Layout:**
+```
+┌─────────────────────────────────────────────┐
+│  PERFORMANCE                                │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │ 1072 │ │  13  │ │   0  │ │   4  │       │
+│  │ PTS  │ │ WIN  │ │ DRW  │ │ LOSS │       │
+│  └──────┘ └──────┘ └──────┘ └──────┘       │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │ 63.1 │ │  95  │ │  65  │ │  32  │       │
+│  │ AVG  │ │ HIGH │ │ MED  │ │ LOW  │       │
+│  └──────┘ └──────┘ └──────┘ └──────┘       │
+└─────────────────────────────────────────────┘
+```
 
 ---
 

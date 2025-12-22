@@ -110,6 +110,21 @@ export async function GET(
 
     // Calculate season stats
     const scores = matchHistory.map(m => m.playerPoints);
+
+    // K-95: Calculate median score
+    let medianScore = 0;
+    if (scores.length > 0) {
+      const sortedScores = [...scores].sort((a, b) => a - b);
+      const mid = Math.floor(sortedScores.length / 2);
+      if (sortedScores.length % 2 === 0) {
+        // Even length: average of two middle values
+        medianScore = (sortedScores[mid - 1] + sortedScores[mid]) / 2;
+      } else {
+        // Odd length: middle value
+        medianScore = sortedScores[mid];
+      }
+    }
+
     const stats = {
       matchesPlayed: matchHistory.length,
       wins: matchHistory.filter(m => m.result === 'W').length,
@@ -119,6 +134,7 @@ export async function GET(
       averagePoints: scores.length > 0 ? (scores.reduce((sum, p) => sum + p, 0) / scores.length).toFixed(1) : '0',
       highestScore: scores.length > 0 ? Math.max(...scores) : 0,
       lowestScore: scores.length > 0 ? Math.min(...scores) : 0,
+      medianScore: medianScore, // K-95: New median stat
       biggestWin: matchHistory.length > 0 ? Math.max(...matchHistory.map(m => m.result === 'W' ? m.margin : 0)) : 0,
       biggestLoss: matchHistory.length > 0 ? Math.min(...matchHistory.map(m => m.result === 'L' ? m.margin : 0)) : 0,
     };

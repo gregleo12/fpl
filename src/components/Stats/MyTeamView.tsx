@@ -130,52 +130,48 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
         </div>
       </div>
 
-      {/* Performance Stats */}
+      {/* K-95: Performance Stats - Consolidated 8 stats in 2 rows */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Performance</h3>
+        {/* Row 1: PTS, WIN, DRW, LOSS */}
         <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.matchesPlayed}</span>
-          <span className={styles.statLabel}>PLY</span>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.totalPointsFor}</span>
+            <span className={styles.statLabel}>PTS</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.wins}</span>
+            <span className={styles.statLabel}>WIN</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.draws}</span>
+            <span className={styles.statLabel}>DRW</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.losses}</span>
+            <span className={styles.statLabel}>LOSS</span>
+          </div>
         </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.totalPointsFor}</span>
-          <span className={styles.statLabel}>PTS</span>
-        </div>
-        <div className={`${styles.statCard}`}>
-          <span className={`${styles.statValue} ${
-            differential > 0 ? styles.positive :
-            differential < 0 ? styles.negative :
-            ''
-          }`}>
-            {differential > 0 ? `+${differential}` : differential}
-          </span>
-          <span className={styles.statLabel}>+/-</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
-          <span className={styles.statLabel}>AVG</span>
-        </div>
-      </div>
 
-      <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.wins}</span>
-          <span className={styles.statLabel}>WIN</span>
+        {/* Row 2: AVG, HIGH, MED, LOW */}
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
+            <span className={styles.statLabel}>AVG</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.highestScore}</span>
+            <span className={styles.statLabel}>HIGH</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.medianScore}</span>
+            <span className={styles.statLabel}>MED</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{playerData.stats.lowestScore}</span>
+            <span className={styles.statLabel}>LOW</span>
+          </div>
         </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.draws}</span>
-          <span className={styles.statLabel}>DRW</span>
-        </div>
-        <div className={styles.statCard}>
-          <span className={styles.statValue}>{playerData.stats.losses}</span>
-          <span className={styles.statLabel}>LSS</span>
-        </div>
-        <div className={`${styles.statCard} ${styles.highlight}`}>
-          <span className={styles.statValue}>{myTeam.total}</span>
-          <span className={styles.statLabel}>TOT</span>
-        </div>
-      </div>
       </div>
 
       {/* Recent Form */}
@@ -203,33 +199,6 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
           </div>
         </div>
       )}
-
-      {/* Season Stats */}
-      <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Season Stats</h3>
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>{playerData.stats.highestScore}</span>
-            <span className={styles.statLabel}>Highest Score</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={styles.statValue}>{playerData.stats.lowestScore}</span>
-            <span className={styles.statLabel}>Lowest Score</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={`${styles.statValue} ${styles.positive}`}>
-              +{playerData.stats.biggestWin}
-            </span>
-            <span className={styles.statLabel}>Biggest Win</span>
-          </div>
-          <div className={styles.statCard}>
-            <span className={`${styles.statValue} ${styles.negative}`}>
-              {playerData.stats.biggestLoss}
-            </span>
-            <span className={styles.statLabel}>Biggest Loss</span>
-          </div>
-        </div>
-      </div>
 
       {/* League Position Over Time */}
       <PositionHistory
