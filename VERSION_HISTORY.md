@@ -8,54 +8,48 @@
 
 ## v3.4.32 - Fix Chip Icons Vertical Alignment (K-70) (Dec 21, 2025)
 
-**CSS + Component Fix:** Fixed vertical alignment of icons and text within chip badges.
+**CSS Fix:** Fixed vertical alignment of icons and text within chip badges.
 
 ### Problem
 
-Inside each chip badge, the icon (star, lightning, target) was not vertically centered with the chip name (TC, FH, BB). Icon sat visibly higher than text.
+Inside each chip badge, the icon (star, lightning, target) sat HIGHER than the chip name (TC, FH, BB).
 
-### Root Cause
+### Root Cause (Found via DevTools Investigation)
 
-Text was inline content while icon was a block SVG. They used different alignment behaviors:
-- Text uses baseline alignment within its line-height
-- SVG uses its bounding box center
-- Even with `align-items: center`, these calculate their "center" differently
+The SVG icon had **`margin-bottom: 8px`** (likely from Lucide React defaults), which in a flexbox container with `align-items: center` pushed the icon UP by creating extra space below it.
 
-### Fix Attempts (All Failed)
+### Failed Fix Attempts (Before Investigation)
 
 1. Added `line-height: 1.2` to `.itemName` → No change
 2. Reduced icon size 16px → 14px → No change
 3. Changed `.chipBadge` line-height to 1 → No change
 4. Changed `.chipIcon` display to flex → No change
 5. Added `transform: translateY(1px)` → No change
+6. Wrapped text in `<span className={chipText}>` → No change
 
-### Final Solution: Wrap Text in Flex Span
+**All attempts failed because they didn't address the actual root cause: the icon's margin-bottom.**
 
-**File:** `src/components/Stats/sections/ChipsPlayed.tsx`
-- Wrapped chip text in `<span className={styles.chipText}>`
-- Makes BOTH icon and text proper flex children (instead of text being inline)
+### Actual Fix
 
 **File:** `src/components/Stats/sections/Section.module.css`
-- Added `.chipText` class with `display: flex; align-items: center;`
-- Now both children use flexbox alignment behavior
 
-**Before:**
-```tsx
-<div className={styles.chipBadge}>
-  <IconComponent />  {/* flex child */}
-  TC                 {/* inline text - different alignment */}
-</div>
+Changed `.chipIcon` margin-bottom from 8px (default) to 2px:
+
+```css
+.chipIcon {
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 2px;  /* K-70: Centers icon with text - removes default 8px margin */
+}
 ```
 
-**After:**
-```tsx
-<div className={styles.chipBadge}>
-  <IconComponent />           {/* flex child */}
-  <span className={chipText}>TC</span>  {/* flex child */}
-</div>
-```
+**Removed:** `transform: translateY(1px)` - not needed.
 
-**Result:** Both icon and text are now proper flex children, allowing `align-items: center` to work correctly.
+**Result:** Icon and text now perfectly centered within chip badges.
+
+### Lesson Learned
+
+**Always investigate with DevTools BEFORE making code changes.** Six blind fix attempts failed because they didn't address the actual computed styles. One DevTools inspection revealed the root cause immediately.
 
 ---
 

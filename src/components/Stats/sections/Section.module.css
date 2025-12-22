@@ -268,7 +268,7 @@
 .chipIcon {
   display: block;
   flex-shrink: 0;
-  transform: translateY(1px); /* K-70: Nudge icon down to align with text baseline */
+  margin-bottom: 2px;  /* K-70: Centers icon with text - removes default 8px margin */
 }
 
 .chipText {

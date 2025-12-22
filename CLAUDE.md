@@ -115,6 +115,16 @@ git push origin main
 
 ## 🐛 Recent Bugs (Don't Repeat These)
 
+### v3.4.32 - CSS Bug Required DevTools Investigation (Dec 21, 2025 - K-70)
+- **Problem:** Chip icons (star/lightning/target) sat higher than text in badges
+- **What Didn't Work:** 6 blind CSS fix attempts (line-height, transforms, icon size, flexbox changes)
+- **Root Cause:** SVG had `margin-bottom: 8px` pushing icon UP in flexbox container
+- **How Found:** Browser DevTools inspection of computed styles
+- **Fix:** Changed `.chipIcon` margin-bottom to 2px
+- **Never Do:** Make blind CSS changes without inspecting computed styles first
+- **Always Do:** Open DevTools → Inspect element → Check computed styles BEFORE coding
+- **Lesson:** One minute of DevTools inspection beats 30 minutes of blind fixes
+
 ### v3.4.30 - FPL API Returns GROSS Points, Not NET (Dec 21, 2025 - K-65 HOTFIX)
 - **Problem:** Total Points modal showed 1,081 instead of 1,073 (8 points too many)
 - **Root Cause:** FPL API's `points` field is GROSS (before transfer cost), not NET
