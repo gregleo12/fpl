@@ -2,7 +2,61 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.14 (December 22, 2025)
+**Current Version:** v3.5.15 (December 22, 2025)
+
+---
+
+## v3.5.15 - Optimize Players Tab Header Layout (K-100) (Dec 22, 2025)
+
+**UI Optimization:** Reduced vertical space in Players tab header from 4 rows to 3 rows while maintaining mobile usability.
+
+### Problem
+
+Players tab header used excessive vertical space (~160px) with 4 rows:
+1. "All Players" title + Filter button
+2. "Showing X of Y players"
+3. Search bar
+4. View toggle buttons (Compact Stats / All Stats)
+
+### Solution
+
+**Reorganized to 3 rows (~120px, saves ~40px):**
+1. **Search bar** - Full width, first element for easy touch
+2. **View toggle + Filter** - Compact/All Stats on left, Filter on right
+3. **Player count** - Small text below controls
+
+**Component Changes (`src/components/Players/PlayersTab.tsx`):**
+- Removed "All Players" title (context clear from being on Players tab)
+- Moved Filter button inline with view toggle buttons
+- Restructured header layout to new 3-row format
+
+**CSS Changes (`src/components/Players/PlayersTab.module.css`):**
+- Removed `.header`, `.headerTop`, `.title` styles (no longer used)
+- Added `.controlsRow` with flexbox layout (`justify-content: space-between`)
+- Updated `.viewToggle` to work inside controls row (removed bottom margin)
+- Added margin-bottom to `.subtitle` for spacing
+
+### Layout Structure
+
+```
+Row 1: [Search bar - full width]
+Row 2: [Compact Stats] [All Stats] ←────→ [Filter]
+Row 3: Showing X of 760 players
+```
+
+### Files Modified
+
+- `src/components/Players/PlayersTab.tsx` (restructured header layout)
+- `src/components/Players/PlayersTab.module.css` (updated styles)
+
+### Result
+
+✅ Reduced header from 4 rows to 3 rows
+✅ Saved ~40px vertical space
+✅ Search bar at top for easy mobile touch
+✅ Filter button inline with toggle buttons
+✅ Player count visible below controls
+✅ More efficient use of screen space
 
 ---
 

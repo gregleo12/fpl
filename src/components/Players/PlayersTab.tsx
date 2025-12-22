@@ -286,24 +286,7 @@ export function PlayersTab() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <h2 className={styles.title}>All Players</h2>
-          <button
-            className={styles.filterButton}
-            onClick={() => setShowFilterModal(true)}
-            title="Filter Players"
-          >
-            <Filter size={18} />
-            Filter
-          </button>
-        </div>
-        <div className={styles.subtitle}>
-          Showing {searchFilteredPlayers.length} of {players.length} players
-        </div>
-      </div>
-
-      {/* Search Input */}
+      {/* K-100: Row 1 - Search Input */}
       <div className={styles.searchContainer}>
         <Search size={18} className={styles.searchIcon} />
         <input
@@ -324,19 +307,35 @@ export function PlayersTab() {
         )}
       </div>
 
-      <div className={styles.viewToggle}>
+      {/* K-100: Row 2 - View Toggle + Filter Button */}
+      <div className={styles.controlsRow}>
+        <div className={styles.viewToggle}>
+          <button
+            className={viewMode === 'compact' ? styles.active : ''}
+            onClick={() => setViewMode('compact')}
+          >
+            Compact Stats
+          </button>
+          <button
+            className={viewMode === 'all' ? styles.active : ''}
+            onClick={() => setViewMode('all')}
+          >
+            All Stats
+          </button>
+        </div>
         <button
-          className={viewMode === 'compact' ? styles.active : ''}
-          onClick={() => setViewMode('compact')}
+          className={styles.filterButton}
+          onClick={() => setShowFilterModal(true)}
+          title="Filter Players"
         >
-          Compact Stats
+          <Filter size={18} />
+          Filter
         </button>
-        <button
-          className={viewMode === 'all' ? styles.active : ''}
-          onClick={() => setViewMode('all')}
-        >
-          All Stats
-        </button>
+      </div>
+
+      {/* K-100: Row 3 - Player Count */}
+      <div className={styles.subtitle}>
+        Showing {searchFilteredPlayers.length} of {players.length} players
       </div>
 
       {searchFilteredPlayers.length === 0 ? (
