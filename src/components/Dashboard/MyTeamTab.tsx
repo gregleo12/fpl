@@ -192,8 +192,10 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
       <div className={styles.myTeamContent}>
         {/* K-91: EXACT COPY from Rivals header - unified nav bar */}
         <div className={styles.myTeamHeader}>
-          {/* Left group: empty for My Team (no tabs) */}
-          <div className={styles.leftGroup}></div>
+          {/* K-98: Left group - team name */}
+          <div className={styles.leftGroup}>
+            <span className={styles.teamNameHeader}>{myTeamName}</span>
+          </div>
 
           {/* Right group: GW selector - EXACT COPY from Rivals */}
           <div className={styles.rightGroup}>

@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.11 (December 22, 2025)
+**Current Version:** v3.5.12 (December 22, 2025)
+
+---
+
+## v3.5.12 - Add Team Name to My Team Header (K-98) (Dec 22, 2025)
+
+**UI Enhancement:** Added team name to the left side of the My Team header bar, matching the Rivals layout.
+
+### Problem
+
+My Team header had empty left side while Rivals shows "H2H | Fixtures" on the left:
+
+**Before:**
+```
+┌─────────────────────────────────────────────────────┐
+│ (empty)                   [◄]  GW 17  ●  [►]       │
+└─────────────────────────────────────────────────────┘
+```
+
+### Solution
+
+Added team name to left group with truncation for long names:
+
+**Component (`src/components/Dashboard/MyTeamTab.tsx`):**
+- Added team name to `.leftGroup` div
+- Uses `myTeamName` prop (already available)
+- New `.teamNameHeader` class for styling
+
+**Styles (`src/components/Dashboard/Dashboard.module.css`):**
+- Desktop: `max-width: 180px` with ellipsis truncation
+- Mobile: `max-width: 120px` with smaller font size
+- `font-size: 0.9375rem` (desktop), `0.875rem` (mobile)
+- `font-weight: 600`, `color: white`
+- `text-overflow: ellipsis` for long names
+
+### Files Modified
+
+- `src/components/Dashboard/MyTeamTab.tsx` (add team name to left group)
+- `src/components/Dashboard/Dashboard.module.css` (add `.teamNameHeader` styles)
+
+### Result
+
+✅ Team name displayed on left (e.g., "FC Matos")
+✅ Truncates with ellipsis if too long (e.g., "SalahMoLeykou...")
+✅ Never wraps to 2 lines
+✅ Doesn't interfere with GW selector
+✅ Responsive sizing (180px desktop, 120px mobile)
+
+**After:**
+```
+┌─────────────────────────────────────────────────────┐
+│ FC Matos                  [◄]  GW 17  ●  [►]       │
+└─────────────────────────────────────────────────────┘
+```
 
 ---
 
