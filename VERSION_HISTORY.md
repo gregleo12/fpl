@@ -2,7 +2,85 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.4 (December 22, 2025)
+**Current Version:** v3.5.5 (December 22, 2025)
+
+---
+
+## v3.5.5 - Copy Rivals Header to My Team (K-91) (Dec 22, 2025)
+
+**Major Structure Change:** Replaced My Team's standalone GW selector with the EXACT same full-width header bar structure used in Rivals tab.
+
+### Problem
+
+My Team used a standalone `<GWSelector>` component that:
+- Had `margin-left: auto` positioning (right-aligned)
+- Didn't span full width like Rivals
+- Looked disconnected from the overall design
+- Used different CSS structure than Rivals
+
+### Solution
+
+**EXACT COPY** of Rivals header structure to My Team:
+
+**Same HTML structure:**
+```tsx
+<div className={styles.myTeamHeader}>
+  <div className={styles.leftGroup}></div>  {/* Empty - no tabs */}
+  <div className={styles.rightGroup}>
+    {/* Refresh + GW selector */}
+  </div>
+</div>
+```
+
+**Same CSS values** (copied from `Fixtures.module.css`):
+- Container: `display: flex`, `justify-content: space-between`
+- Background: `rgba(0, 0, 0, 0.3)`
+- Border: `1px solid rgba(255, 255, 255, 0.1)`
+- Border-radius: `12px`
+- Padding: `0.5rem 1rem`
+- Gap: `1rem` (desktop), `0.75rem` (mobile)
+- All button sizes: `40px × 40px`
+- All font sizes: `0.9375rem`
+
+### What Changed
+
+**Before:**
+```
+                  [Refresh] [◄] GW 17 ● [►]  (right-aligned, auto margin)
+```
+
+**After:**
+```
+┌─────────────────────────────────────────────────────┐
+│ (empty)                   [◄]  GW 17  ●  [►]       │
+└─────────────────────────────────────────────────────┘
+```
+
+Same full-width bar as Rivals, just without the H2H/Fixtures tabs on the left.
+
+### Files Changed
+
+- `src/components/Dashboard/MyTeamTab.tsx` → Removed `<GWSelector>` import, added inline header structure with `RotateCw` icon
+- `src/components/Dashboard/Dashboard.module.css` → Added `.myTeamHeader`, `.leftGroup`, `.rightGroup`, `.navButton`, `.refreshButton`, `.gwInfo`, `.gwNumber`, `.liveDot` classes (exact copy from Rivals)
+
+### Result
+
+- ✅ My Team header now spans **full width** edge-to-edge
+- ✅ Identical structure and styling to Rivals tab
+- ✅ Same dark background, border, border-radius
+- ✅ Same button sizes (40px × 40px)
+- ✅ Same font sizes (0.9375rem)
+- ✅ Same spacing and gaps
+- ✅ Left side empty (no tabs), right side has GW selector
+- ✅ Consistent, professional appearance across tabs
+
+### Technical Notes
+
+- Removed standalone `GWSelector` component usage
+- Inlined all GW selector logic directly in MyTeamTab
+- Used `RotateCw` from lucide-react for refresh button
+- CSS classes named `.myTeamHeader` (vs Rivals' `.rivalsHeader`) but exact same values
+- Empty `.leftGroup` div maintained for structural consistency
 
 ---
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
 import { StatsPanel } from '@/components/PitchView/StatsPanel';
-import { GWSelector } from '@/components/PitchView/GWSelector';
+import { RotateCw } from 'lucide-react';
 import { RankProgressModal } from './RankProgressModal';
 import { PointsAnalysisModal } from './PointsAnalysisModal';
 import { GWPointsModal } from './GWPointsModal';
@@ -190,14 +190,56 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
       {/* Unified Layout - Same on all screen sizes */}
       <div className={styles.myTeamContent}>
-        <GWSelector
-          selectedGW={selectedGW}
-          maxGW={maxGW}
-          onGWChange={setSelectedGW}
-          isLive={isLiveGW && selectedGW === liveGWNumber}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        {/* K-91: EXACT COPY from Rivals header - unified nav bar */}
+        <div className={styles.myTeamHeader}>
+          {/* Left group: empty for My Team (no tabs) */}
+          <div className={styles.leftGroup}></div>
+
+          {/* Right group: GW selector - EXACT COPY from Rivals */}
+          <div className={styles.rightGroup}>
+            {/* Refresh Button */}
+            <button
+              className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Refresh data"
+              aria-label="Refresh data"
+            >
+              <RotateCw size={18} />
+            </button>
+
+            {/* Previous button */}
+            <button
+              className={styles.navButton}
+              onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
+              disabled={selectedGW <= 1}
+              aria-label="Previous gameweek"
+            >
+              ◄
+            </button>
+
+            {/* Gameweek display with live dot */}
+            <div className={styles.gwInfo}>
+              <span className={styles.gwNumber}>
+                GW {selectedGW}
+              </span>
+
+              {isLiveGW && selectedGW === liveGWNumber && (
+                <span className={styles.liveDot} title="Live match"></span>
+              )}
+            </div>
+
+            {/* Next button */}
+            <button
+              className={styles.navButton}
+              onClick={() => setSelectedGW(Math.min(maxGW, selectedGW + 1))}
+              disabled={selectedGW >= maxGW}
+              aria-label="Next gameweek"
+            >
+              ►
+            </button>
+          </div>
+        </div>
 
         {/* Stat Boxes - 2 Rows */}
         <div className={styles.statBoxesContainer}>
