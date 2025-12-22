@@ -200,19 +200,27 @@
   transform: translateY(1px);
 }
 
-.liveBadge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  background: rgba(255, 40, 130, 0.2);
-  border: 1px solid rgba(255, 40, 130, 0.6);
-  border-radius: 6px;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #ff2882;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+/* K-72: Pulsing live dot - replaces text badge to save horizontal space */
+.liveDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #ff2882;
+  border-radius: 50%;
+  animation: livePulse 1.5s ease-in-out infinite;
+  margin-left: 6px;
+}
+
+/* K-72: Live dot pulse animation with glow */
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
+  }
 }
 
 @keyframes pulse {
@@ -1109,7 +1117,7 @@
 /* Mobile Responsive - keep same row layout with proper spacing */
 @media (max-width: 640px) {
   .container {
-    padding: 0.75rem;
+    padding: 0.5rem;  /* K-72: Reduced from 0.75rem (30% reduction) */
   }
 
   .header {

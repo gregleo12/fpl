@@ -554,7 +554,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             </span>
 
             {fixturesData.status === 'in_progress' && (
-              <span className={styles.liveBadge}>LIVE</span>
+              <span className={styles.liveDot} title="Live match"></span>
             )}
           </div>
 

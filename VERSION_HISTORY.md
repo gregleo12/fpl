@@ -2,7 +2,62 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.33 (December 21, 2025)
+**Current Version:** v3.4.34 (December 21, 2025)
+
+---
+
+## v3.4.34 - Mobile H2H Header Improvements (K-72) (Dec 21, 2025)
+
+**UI/UX Fix:** Improved mobile Rivals tab header spacing and live indicator.
+
+### Problem
+
+On mobile in Rivals tab:
+1. **LIVE badge too wide:** Green "LIVE" text badge took ~60-70px horizontal space
+2. **Side margins too wide:** Large gap between phone edge and content (12px padding)
+
+### Fix
+
+**File:** `src/components/Fixtures/FixturesTab.tsx` (line 557)
+- Replaced `<span className={styles.liveBadge}>LIVE</span>` with pulsing dot
+
+**File:** `src/components/Fixtures/Fixtures.module.css`
+
+1. **Replaced LIVE text badge with pulsing dot** (saves ~50px horizontal space):
+```css
+.liveDot {
+  width: 8px;
+  height: 8px;
+  background: #ff2882;
+  border-radius: 50%;
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
+  }
+}
+```
+
+2. **Reduced mobile side padding** (30% reduction):
+```css
+@media (max-width: 640px) {
+  .container {
+    padding: 0.5rem;  /* Reduced from 0.75rem (12px → 8px) */
+  }
+}
+```
+
+**Result:**
+- More horizontal space on mobile for content
+- Cleaner, more subtle live indicator
+- Better use of screen real estate
 
 ---
 
