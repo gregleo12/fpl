@@ -494,10 +494,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   return (
     <div className={styles.container}>
-      {/* Header - matches Stats section */}
-      <div className={styles.header}>
-        {/* Sub-tabs: H2H Matches | Fixtures */}
-        <div className={styles.subTabsContainer}>
+      {/* K-75: Unified Rivals nav bar - single container with space-between */}
+      <div className={styles.rivalsHeader}>
+        {/* Left group: H2H / Fixtures toggle */}
+        <div className={styles.leftGroup}>
           <button
             className={`${styles.subTab} ${activeTab === 'h2h' ? styles.subTabActive : ''}`}
             onClick={() => setActiveTab('h2h')}
@@ -514,9 +514,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           </button>
         </div>
 
-        {/* Gameweek Navigator */}
-        <div className={styles.navigatorWrapper}>
-          {/* K-68: Desktop Refresh Button */}
+        {/* Right group: Refresh + GW selector with arrows + live dot */}
+        <div className={styles.rightGroup}>
+          {/* Refresh Button */}
           <button
             className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
             onClick={handleRefresh}

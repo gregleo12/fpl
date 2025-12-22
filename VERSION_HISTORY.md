@@ -2,7 +2,67 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.0 (December 22, 2025)
+**Current Version:** v3.5.1 (December 22, 2025)
+
+---
+
+## v3.5.1 - Unified Rivals Nav Bar (K-75) (Dec 22, 2025)
+
+**UI Refactor:** Consolidated Rivals tab navigation into a single unified container, matching the Stats tab pattern.
+
+### Problem
+
+The Rivals tab had two separate containers for navigation:
+1. H2H/Fixtures toggle (left)
+2. GW selector with navigation (right)
+
+**Issues:**
+- Heights didn't match
+- On wider screens, left container grew instead of space between groups
+- Looked disconnected and inconsistent with Stats tab design
+
+### Solution
+
+Created a unified nav bar with `space-between` layout:
+- Single container with consistent background/border
+- Left group: H2H / Fixtures toggle
+- Right group: Refresh button + GW selector with arrows + live dot
+- Space grows in the CENTER between groups on wider screens
+- Heights match automatically (same container)
+
+### Design Pattern
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [H2H] [Fixtures]                    ◄  GW 17  ●  ►     │
+│  ↑ left-aligned                         ↑ right-aligned │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Files Changed
+
+- `src/components/Fixtures/FixturesTab.tsx` → Updated to use unified `.rivalsHeader` structure
+- `src/components/Fixtures/Fixtures.module.css` → Added `.rivalsHeader`, `.leftGroup`, `.rightGroup` classes
+
+### Technical Details
+
+**New CSS Classes:**
+- `.rivalsHeader` → Unified container with `justify-content: space-between`
+- `.leftGroup` → Wrapper for H2H/Fixtures tabs
+- `.rightGroup` → Wrapper for refresh + GW navigation
+
+**Deprecated Classes (kept for backwards compatibility):**
+- `.header` → Replaced by `.rivalsHeader`
+- `.subTabsContainer` → Replaced by `.leftGroup`
+- `.navigatorWrapper` → Replaced by `.rightGroup`
+
+### Result
+
+- ✅ Consistent height across entire nav bar
+- ✅ Space grows between left and right groups (not on edges)
+- ✅ Matches Stats tab unified design pattern
+- ✅ Cleaner, more cohesive appearance
+- ✅ Mobile responsive with adjusted padding
 
 ---
 
