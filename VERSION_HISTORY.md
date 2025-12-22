@@ -2,7 +2,70 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.5 (December 22, 2025)
+**Current Version:** v3.5.6 (December 22, 2025)
+
+---
+
+## v3.5.6 - Fix My Team Mobile Button Sizing (K-93) (Dec 22, 2025)
+
+**HOTFIX:** Added missing mobile responsive CSS for My Team header buttons.
+
+### Problem
+
+After K-91 copied the Rivals header structure to My Team, desktop CSS matched perfectly (40px buttons, 0.9375rem font-size), but mobile responsive CSS was incomplete:
+
+**Rivals Mobile (@media max-width: 640px):**
+- Buttons reduce from 40px → 32px
+- Font sizes reduce from 0.9375rem → 0.875rem
+- Refresh button hidden
+
+**My Team Mobile (@media max-width: 640px):**
+- Only adjusted container padding
+- **MISSING button size reductions**
+- Result: Buttons stayed 40px on mobile (25% bigger than Rivals)
+
+### Root Cause
+
+K-91 only copied the container-level mobile CSS, not the button-level mobile CSS. On viewports ≤640px, My Team buttons remained at desktop size while Rivals buttons correctly scaled down.
+
+### Solution
+
+Added complete mobile responsive CSS to `Dashboard.module.css` line 1157-1171:
+
+```css
+@media (max-width: 640px) {
+  .myTeamHeader {
+    padding: 0.5rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  /* K-93: Mobile button sizing - EXACT COPY from Rivals */
+  .gwNumber {
+    font-size: 0.875rem;
+  }
+
+  .navButton {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+
+  .refreshButton {
+    display: none;
+  }
+}
+```
+
+### Files Modified
+
+- `src/components/Dashboard/Dashboard.module.css` (added 13 lines of mobile CSS)
+
+### Result
+
+✅ My Team buttons now match Rivals on ALL screen sizes (desktop AND mobile)
+✅ Mobile buttons: 32px (down from 40px on desktop)
+✅ Mobile font: 0.875rem (down from 0.9375rem on desktop)
+✅ Refresh button hidden on mobile (consistent with Rivals)
 
 ---
 

@@ -1153,6 +1153,22 @@
     padding: 0.5rem 0.75rem;
     gap: 0.75rem;
   }
+
+  /* K-93: Mobile button sizing - EXACT COPY from Rivals */
+  .gwNumber {
+    font-size: 0.875rem;
+  }
+
+  .navButton {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+
+  /* K-68: Hide refresh button on mobile */
+  .refreshButton {
+    display: none;
+  }
 }
 
 /* K-91: Navigation buttons - EXACT COPY from Rivals */
