@@ -2,7 +2,112 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.44 (December 22, 2025)
+**Current Version:** v3.4.45 (December 22, 2025)
+
+---
+
+## v3.4.45 - Fix Right-Side Alignment with Box-Sizing (K-86) (Dec 22, 2025)
+
+**Layout Fix:** Fixed right-side alignment issue where content didn't reach the right edge properly after K-85 changes.
+
+### Problem
+
+After K-85 wrapper implementation:
+- Left side: ✅ Correct 12px spacing
+- Right side: ❌ Extra ~20-30px gap
+- Content not extending to right edge symmetrically
+
+**Visual Evidence:**
+- My Team: GW selector, stat boxes, and pitch had extra right space
+- Rivals: H2H header and fixture cards had extra right space
+
+### Root Cause
+
+**File:** `src/app/dashboard/dashboard.module.css`
+**Line:** 252-254
+
+The `.dashboardTabWrapper` was missing `box-sizing: border-box`:
+
+```css
+.dashboardTabWrapper {
+  width: 100%;
+  /* Missing: box-sizing: border-box */
+}
+
+@media (max-width: 480px) {
+  .dashboardTabWrapper {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 0.75rem;   /* 12px */
+    padding-right: 0.75rem;  /* 12px */
+  }
+}
+```
+
+**The Box Model Problem:**
+
+Without `box-sizing: border-box`, CSS uses the default `content-box` model:
+
+```
+content-box (WRONG):
+- Content width: 100% = 358px
+- Padding ADDED: 12px left + 12px right = 24px
+- Total width: 358px + 24px = 382px (too wide!)
+- Result: Right side gets compressed or pushed
+```
+
+```
+border-box (CORRECT):
+- Total width: 100% = 358px
+- Padding INSIDE: 12px left + 12px right = 24px
+- Content width: 358px - 24px = 334px
+- Result: Symmetric 12px spacing both sides ✅
+```
+
+### Solution
+
+Added `box-sizing: border-box` to `.dashboardTabWrapper`:
+
+```css
+.dashboardTabWrapper {
+  width: 100%;
+  box-sizing: border-box;  /* K-86: Include padding in width calculation */
+}
+```
+
+This ensures that the 12px padding on each side is **included** in the 100% width calculation, not added to it.
+
+### Result
+
+**Before:**
+- Left edge: 12px spacing
+- Right edge: ~28-32px spacing (asymmetric)
+- Content box model causing width overflow
+
+**After:**
+- Left edge: 12px spacing ✅
+- Right edge: 12px spacing ✅
+- Content properly fills wrapper width
+- Symmetric appearance
+
+### Files Modified
+
+- `src/app/dashboard/dashboard.module.css` (line 254 added)
+
+### Verification
+
+- ✅ Build successful: `npm run build`
+- ✅ No TypeScript errors
+- ✅ Symmetric edge spacing on both sides
+- ✅ Content reaches right edge properly
+
+### Technical Note
+
+The CSS box model has two modes:
+1. **content-box** (default): `width` = content only, padding/border added outside
+2. **border-box**: `width` = content + padding + border (all inclusive)
+
+For layout wrappers with padding, `border-box` is essential to prevent width overflow issues.
 
 ---
 
