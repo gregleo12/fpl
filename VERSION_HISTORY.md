@@ -2,7 +2,73 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.18 (December 22, 2025)
+**Current Version:** v3.6.0 (December 22, 2025)
+
+---
+
+## v3.6.0 - Mobile Optimization & UI Polish (Dec 22, 2025)
+
+**Major Release:** Comprehensive mobile optimization and UI improvements across Stats, Players, and Dashboard tabs.
+
+### Features & Improvements
+
+#### K-97: Fix Season Statistics Header
+- Fixed completed gameweeks count to exclude current/live GW
+- Shortened "Season Statistics - X Gameweeks Completed" → "X GWs Completed"
+- Matched nav bar styling with white border and centered alignment
+
+#### K-98: Add Team Name to My Team Header
+- Added team name to left side of My Team header bar
+- Implemented text truncation with ellipsis for long names
+- Responsive sizing (180px desktop, 120px mobile)
+
+#### K-99: Update Stats Team Performance Grid
+- Removed redundant name/rank header from Performance section
+- Replaced MED stat with RANK (with ordinal suffix: 1st, 2nd, 3rd)
+- Clean 2-row grid: PTS/WIN/DRW/LOSS and AVG/HIGH/LOW/RANK
+
+#### Reduce Season Header Spacing
+- Decreased margins between "X GWs Completed" and surrounding containers
+- Improved visual hierarchy and reduced whitespace
+
+#### K-100: Optimize Players Tab Header Space
+- Reduced header from 4 rows to 3 rows (saved ~40px vertical space)
+- Moved Filter button inline with view toggle buttons
+- New layout: Row 1 (Search), Row 2 (Toggle + Filter), Row 3 (Count)
+
+#### K-101: Match Season GWs Text Style to Players Count
+- Removed container styling from "X GWs Completed"
+- Matched plain text style (0.875rem, rgba(255,255,255,0.6), 500 weight)
+- Consistent styling across tabs
+
+#### K-102: Tighten Players Tab Columns for Mobile
+- Reduced column widths to fit all 5 columns on iPhone 12 Pro (390px)
+- Player column: 130px → 90px (-40px)
+- Data columns: padding 8px 4px → 6px 3px, min-width 48px → 45px
+- Total savings: ~103px (410px → 307px)
+- Eliminated horizontal scroll on mobile
+
+#### K-103: Shorten GW Labels in Tables
+- Removed "GW" prefix from gameweek labels in table cells
+- Changed "GW17" → "17" (saved ~17px per cell)
+- Headers retain "GW" for context
+
+### Files Modified
+- `src/app/api/league/[id]/stats/season/route.ts`
+- `src/components/Stats/SeasonView.tsx`
+- `src/components/Stats/SeasonView.module.css`
+- `src/components/Dashboard/MyTeamTab.tsx`
+- `src/components/Dashboard/Dashboard.module.css`
+- `src/components/Stats/MyTeamView.tsx`
+- `src/components/Players/PlayersTab.tsx`
+- `src/components/Players/PlayersTab.module.css`
+
+### Impact
+- ✅ Significantly improved mobile experience (390px screens)
+- ✅ Reduced vertical space usage (~40px in Players tab)
+- ✅ Reduced horizontal space requirements (~120px total savings)
+- ✅ Consistent styling across all tabs
+- ✅ Better visual hierarchy and readability
 
 ---
 
