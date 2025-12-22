@@ -749,9 +749,8 @@
 
 /* K-54a: Compact layout for Stats Team tab on mobile (iPhone 12 Pro: 390px) */
 @media (max-width: 480px) {
-  /* K-76: Standardize to 12px edge spacing */
-  .leagueTab,
-  .myTeamTab {
+  /* K-78: Remove negative margins for .myTeamTab - StatsHub container handles edge alignment */
+  .leagueTab {
     gap: 10px;
     margin-left: -1rem;  /* Cancel parent .content 16px padding */
     margin-right: -1rem;
@@ -759,6 +758,16 @@
     padding-right: 0.75rem;
     overflow-x: hidden; /* K-54b: Prevent horizontal overflow */
     max-width: 100vw; /* K-54b: Ensure container doesn't exceed viewport */
+  }
+
+  /* K-78: .myTeamTab used in two contexts:
+     1. Main Dashboard - inside .content wrapper (has padding)
+     2. Stats > Team - inside StatsHub .container (already handles margins)
+     Since StatsHub .container uses negative margins, .myTeamTab should not */
+  .myTeamTab {
+    gap: 10px;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* 2. Internal padding reduction (30-40%) */

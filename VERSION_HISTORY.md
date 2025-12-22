@@ -2,7 +2,107 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.38 (December 22, 2025)
+**Current Version:** v3.4.39 (December 22, 2025)
+
+---
+
+## v3.4.39 - Fix Stats > Team Container Alignment (K-78) (Dec 22, 2025)
+
+**Layout Fix:** Fixed Stats > Team container alignment to match nav bar - equal left/right spacing.
+
+### Problem
+
+Stats > Team container was not centered and misaligned with the nav bar above:
+
+**Visual Issue:**
+- Container had more space on right than left (asymmetric)
+- Content shifted left relative to nav bar (Team | GW | Season | Players)
+- DevTools showed `div.Dashboard_myTeamTab__6vD0W` with unequal margins
+
+**Root Cause:**
+
+Double negative margin application:
+
+```
+.content (dashboard.module.css) - padding-left: 1rem, padding-right: 1rem
+└── StatsHub .container - margin: -1rem (cancels parent padding), padding: 0.75rem (adds 12px)
+    └── .myTeamTab - margin: -1rem (DOUBLE CANCEL!), padding: 0.75rem
+```
+
+The `.myTeamTab` was applying `-1rem` margins INSIDE `StatsHub .container` which already applied `-1rem` margins. This caused the content to shift and created asymmetric spacing.
+
+### Context: Two Uses of `.myTeamTab`
+
+The `.myTeamTab` class is used in two different contexts:
+
+1. **Main Dashboard "My Team" tab** - Direct child of `.content` wrapper (needs negative margins)
+2. **Stats > Team tab** - Child of `StatsHub .container` (should NOT apply negative margins)
+
+Previously, the mobile CSS applied negative margins to both contexts, causing the double-cancellation issue in Stats.
+
+### Fix
+
+**File:** `src/components/Dashboard/Dashboard.module.css` (lines 750-771)
+
+Separated the mobile overrides:
+
+```css
+@media (max-width: 480px) {
+  /* .leagueTab - keeps negative margins (needs them for Rank tab) */
+  .leagueTab {
+    gap: 10px;
+    margin-left: -1rem;  /* Cancel parent .content 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* .myTeamTab - removed negative margins (StatsHub handles edge alignment) */
+  .myTeamTab {
+    gap: 10px;
+    overflow-x: hidden;
+    max-width: 100vw;
+    /* No margins/padding - relies on parent container */
+  }
+}
+```
+
+### How It Works Now
+
+**Stats > Team (inside StatsHub):**
+```
+.content - padding: 1rem (16px sides)
+└── StatsHub .container - margin: -1rem, padding: 0.75rem → 12px from edge
+    └── .myTeamTab - no margins → inherits parent spacing → ALIGNED!
+```
+
+**Main Dashboard "My Team" (direct child of .content):**
+```
+.content - padding: 1rem (16px sides)
+└── MyTeamTab component (.myTeamTab) - no negative margins → uses parent padding
+```
+
+### Result
+
+✅ **Stats > Team now perfectly aligned with nav bar:**
+- Equal left/right spacing (12px from viewport edge)
+- Container width matches nav bar width
+- Borders align vertically
+- Consistent with Stats > GW, Season, Players tabs
+
+✅ **Main Dashboard "My Team" unaffected:**
+- Still works correctly with .content padding
+- No visual changes
+
+### Files Modified
+
+- `src/components/Dashboard/Dashboard.module.css` - Updated mobile CSS for .myTeamTab
+- `package.json` → v3.4.39
+- `VERSION_HISTORY.md` → This entry
+- `README.md` → Version update
+- `CLAUDE.md` → Version update
 
 ---
 
