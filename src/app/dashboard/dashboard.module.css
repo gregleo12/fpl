@@ -246,3 +246,18 @@
     font-size: 0.625rem;
   }
 }
+
+/* K-85: Wrapper for dashboard tabs to match nav bar width */
+/* Cancels parent .content padding and adds consistent 12px edge spacing */
+.dashboardTabWrapper {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .dashboardTabWrapper {
+    margin-left: -1rem;      /* Cancel parent 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;   /* Add back 12px */
+    padding-right: 0.75rem;
+  }
+}

@@ -2,7 +2,205 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.43 (December 22, 2025)
+**Current Version:** v3.4.44 (December 22, 2025)
+
+---
+
+## v3.4.44 - Fix My Team & Rivals Container Width to Match Nav Bar (K-85) (Dec 22, 2025)
+
+**Layout Fix:** Fixed inconsistent container widths across tabs by implementing wrapper-based solution for My Team and Rivals tabs.
+
+### Problem
+
+My Team and Rivals tabs appeared narrower than the nav bar and other tabs (Rank, Stats).
+
+**Measurement Evidence (iPhone 12 Pro, 390px width):**
+
+| Tab | Edge Spacing | Width Consistency |
+|-----|--------------|-------------------|
+| Rank | 12px | ✅ Matches nav bar |
+| Stats | 12px | ✅ Matches nav bar |
+| **My Team** | 16px | ❌ Narrower than nav |
+| **Rivals** | 16px | ❌ Narrower than nav |
+
+### Root Cause (K-84 Investigation)
+
+**File:** `src/app/dashboard/dashboard.module.css`
+**Lines:** 153-162, 225-227
+
+Parent `.content` has 16px left/right padding:
+
+```css
+.content {
+  padding-left: 1rem;   /* 16px */
+  padding-right: 1rem;  /* 16px */
+}
+```
+
+All tab components render inside `<main className={styles.content}>`.
+
+**How Other Tabs Work:**
+
+**Rank (LeagueTab)** and **Stats (StatsHub)** use negative margins to cancel parent padding:
+
+```css
+/* Dashboard.module.css:759-767 (Rank) */
+/* StatsHub.module.css:242-250 (Stats) */
+@media (max-width: 480px) {
+  .container {
+    margin-left: -1rem;   /* Cancel parent 16px */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
+  }
+}
+```
+
+**Result:** Content extends closer to screen edges (12px instead of 16px), matching nav bar width.
+
+**Why My Team & Rivals Were Broken:**
+
+Both lacked the negative margin pattern:
+- My Team (K-78 context): Removed negative margins to prevent double-canceling in Stats > Team
+- Rivals (K-81): Never had negative margins
+
+### The K-78 Context Problem
+
+From `Dashboard.module.css:769-772`:
+
+```css
+/* K-78: .myTeamTab used in two contexts:
+   1. Main Dashboard - inside .content wrapper (has padding)
+   2. Stats > Team - inside StatsHub .container (already handles margins)
+   Since StatsHub .container uses negative margins, .myTeamTab should not */
+```
+
+`.myTeamTab` is used in TWO different places:
+1. **Main Dashboard > My Team tab** (direct child of `.content` - needs negative margins)
+2. **Stats > Team** (child of StatsHub `.container` - already has negative margins)
+
+K-78 removed negative margins from `.myTeamTab` to prevent double-canceling in Stats > Team context, but this broke the Main Dashboard My Team tab.
+
+### Solution: Wrapper-Based Approach (Option B)
+
+Created a reusable `.dashboardTabWrapper` class that handles the negative margin pattern, then wrapped My Team and Rivals components in it.
+
+**Why This Works:**
+- Keeps context-specific logic in the parent (dashboard page)
+- Doesn't break Stats > Team (MyTeamView remains unchanged)
+- Doesn't require duplicating `.myTeamTab` styles
+- Easy to apply to multiple tabs
+
+### Changes Made
+
+**1. Added Wrapper Class**
+
+**File:** `src/app/dashboard/dashboard.module.css`
+**Lines:** 250-263
+
+```css
+/* K-85: Wrapper for dashboard tabs to match nav bar width */
+/* Cancels parent .content padding and adds consistent 12px edge spacing */
+.dashboardTabWrapper {
+  width: 100%;
+}
+
+@media (max-width: 480px) {
+  .dashboardTabWrapper {
+    margin-left: -1rem;      /* Cancel parent 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;   /* Add back 12px */
+    padding-right: 0.75rem;
+  }
+}
+```
+
+**2. Wrapped My Team Tab**
+
+**File:** `src/app/dashboard/page.tsx`
+**Lines:** 285-296
+
+```tsx
+{activeTab === 'myteam' && (isLoadingViewing ? (
+  <div className={styles.loading}>Loading player data...</div>
+) : (
+  <div className={styles.dashboardTabWrapper}>
+    <MyTeamTab
+      // ... props
+    />
+  </div>
+))}
+```
+
+**3. Wrapped Rivals (Fixtures) Tab**
+
+**File:** `src/app/dashboard/page.tsx`
+**Lines:** 273-280
+
+```tsx
+{activeTab === 'fixtures' && leagueData && (
+  <div className={styles.dashboardTabWrapper}>
+    <FixturesTab
+      // ... props
+    />
+  </div>
+)}
+```
+
+### Result
+
+**Before:**
+```
+.content (16px padding)
+└── MyTeamTab (no margins)
+    Result: 16px edge spacing ❌
+```
+
+**After:**
+```
+.content (16px padding)
+└── .dashboardTabWrapper (-16px margins, +12px padding)
+    └── MyTeamTab
+        Result: 12px edge spacing ✅
+```
+
+**Final Measurements:**
+
+| Tab | Before | After | Status |
+|-----|--------|-------|--------|
+| My Team | 16px edge spacing | 12px edge spacing | ✅ FIXED |
+| Rivals | 16px edge spacing | 12px edge spacing | ✅ FIXED |
+| Rank | 12px (unchanged) | 12px | ✅ Consistent |
+| Stats | 12px (unchanged) | 12px | ✅ Consistent |
+
+All tabs now have:
+- Identical 12px edge spacing
+- Same width as nav bar
+- Consistent appearance across all views
+
+### Files Modified
+
+- `src/app/dashboard/dashboard.module.css` (lines 250-263 added)
+- `src/app/dashboard/page.tsx` (lines 273, 280, 285, 296 wrapped in div)
+
+### Verification
+
+- ✅ Build successful: `npm run build`
+- ✅ No TypeScript errors
+- ✅ All tabs have consistent 12px edge spacing
+- ✅ Containers match nav bar width
+- ✅ Stats > Team still works (no double-canceling)
+
+### Investigation (K-84)
+
+Completed thorough investigation to identify the inconsistency:
+1. Measured nav bar width and margins
+2. Measured each tab container width and spacing
+3. Compared CSS between working tabs (Rank, Stats) and broken tabs (My Team, Rivals)
+4. Calculated exact width differences (32px = 16px per side)
+5. Identified parent `.content` padding as the source
+6. Recognized K-78 context conflict
+7. Designed wrapper-based solution to avoid breaking Stats > Team
 
 ---
 

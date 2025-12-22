@@ -270,26 +270,30 @@ export default function DashboardPage() {
           />
         )}
         {activeTab === 'fixtures' && leagueData && (
-          <FixturesTab
-            leagueId={state.leagueId}
-            myTeamId={state.myTeamId}
-            maxGW={38}
-            defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
-          />
+          <div className={styles.dashboardTabWrapper}>
+            <FixturesTab
+              leagueId={state.leagueId}
+              myTeamId={state.myTeamId}
+              maxGW={38}
+              defaultGW={leagueData.activeGW || leagueData.maxGW || 1}
+            />
+          </div>
         )}
         {activeTab === 'myteam' && (isLoadingViewing ? (
           <div className={styles.loading}>Loading player data...</div>
         ) : (
-          <MyTeamTab
-            data={leagueData}
-            playerData={viewingPlayerId ? viewingPlayerData : playerData}
-            myTeamId={viewingPlayerId || state.myTeamId}
-            myManagerName={viewingPlayerId ? viewingPlayerName : state.myManagerName}
-            myTeamName={viewingPlayerId ? viewingTeamName : state.myTeamName}
-            leagueId={state.leagueId}
-            isViewingOther={!!viewingPlayerId}
-            onBackToMyTeam={handleBackToMyTeam}
-          />
+          <div className={styles.dashboardTabWrapper}>
+            <MyTeamTab
+              data={leagueData}
+              playerData={viewingPlayerId ? viewingPlayerData : playerData}
+              myTeamId={viewingPlayerId || state.myTeamId}
+              myManagerName={viewingPlayerId ? viewingPlayerName : state.myManagerName}
+              myTeamName={viewingPlayerId ? viewingTeamName : state.myTeamName}
+              leagueId={state.leagueId}
+              isViewingOther={!!viewingPlayerId}
+              onBackToMyTeam={handleBackToMyTeam}
+            />
+          </div>
         ))}
         {activeTab === 'stats' && (
           <StatsTab

@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.4.43
+**Current Version:** v3.4.44
 **Last Updated:** December 22, 2025
 **Project:** FPL H2H Analytics Web App
 
