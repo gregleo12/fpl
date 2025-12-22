@@ -8,38 +8,48 @@
 
 ## v3.5.6 - Fix My Team Mobile Button Sizing (K-93) (Dec 22, 2025)
 
-**HOTFIX:** Added missing mobile responsive CSS for My Team header buttons.
+**HOTFIX:** Fixed mobile responsive CSS not applying due to incorrect CSS cascade order.
 
 ### Problem
 
-After K-91 copied the Rivals header structure to My Team, desktop CSS matched perfectly (40px buttons, 0.9375rem font-size), but mobile responsive CSS was incomplete:
+After K-91, My Team mobile buttons were still 40px (desktop size) instead of 32px, and refresh button was still showing on mobile despite CSS supposedly hiding it.
 
-**Rivals Mobile (@media max-width: 640px):**
-- Buttons reduce from 40px → 32px
-- Font sizes reduce from 0.9375rem → 0.875rem
-- Refresh button hidden
-
-**My Team Mobile (@media max-width: 640px):**
-- Only adjusted container padding
-- **MISSING button size reductions**
-- Result: Buttons stayed 40px on mobile (25% bigger than Rivals)
+**Symptoms:**
+- Buttons stayed 40px on mobile (should be 32px)
+- Refresh button visible on mobile (should be hidden)
+- My Team header taller than Rivals on mobile
+- Mobile CSS appeared correct in file but wasn't being applied
 
 ### Root Cause
 
-K-91 only copied the container-level mobile CSS, not the button-level mobile CSS. On viewports ≤640px, My Team buttons remained at desktop size while Rivals buttons correctly scaled down.
+**CSS CASCADE ORDER BUG:** The mobile media query was placed BEFORE the desktop button styles in the CSS file:
+
+```
+Line 1151: @media (max-width: 640px) { ... }  ← Mobile styles
+Line 1169: .refreshButton { display: none; }
+Line 1172: } ← End media query
+Line 1203: .refreshButton { width: 40px; height: 40px; }  ← Desktop styles OVERRIDE mobile!
+```
+
+In CSS, later rules override earlier rules. The desktop styles at line 1203 came AFTER the media query, so they overrode the mobile `display: none` rule.
 
 ### Solution
 
-Added complete mobile responsive CSS to `Dashboard.module.css` line 1157-1171:
+**Moved media query to END of CSS file** (after all desktop button styles) at line 1256-1276:
 
 ```css
+/* Desktop styles FIRST */
+.navButton { width: 40px; height: 40px; }
+.refreshButton { width: 40px; height: 40px; }
+.gwNumber { font-size: 0.9375rem; }
+
+/* Mobile media query LAST - properly overrides desktop */
 @media (max-width: 640px) {
   .myTeamHeader {
     padding: 0.5rem 0.75rem;
     gap: 0.75rem;
   }
 
-  /* K-93: Mobile button sizing - EXACT COPY from Rivals */
   .gwNumber {
     font-size: 0.875rem;
   }
@@ -51,21 +61,24 @@ Added complete mobile responsive CSS to `Dashboard.module.css` line 1157-1171:
   }
 
   .refreshButton {
-    display: none;
+    display: none;  /* ← Now properly hides button */
   }
 }
 ```
 
+**Key Learning:** In CSS, media queries MUST come AFTER the default styles they're meant to override, not before.
+
 ### Files Modified
 
-- `src/components/Dashboard/Dashboard.module.css` (added 13 lines of mobile CSS)
+- `src/components/Dashboard/Dashboard.module.css` (moved media query from line 1151 to line 1256)
 
 ### Result
 
-✅ My Team buttons now match Rivals on ALL screen sizes (desktop AND mobile)
-✅ Mobile buttons: 32px (down from 40px on desktop)
-✅ Mobile font: 0.875rem (down from 0.9375rem on desktop)
-✅ Refresh button hidden on mobile (consistent with Rivals)
+✅ Refresh button now properly hidden on mobile (was showing before)
+✅ Nav buttons now 32px on mobile (were 40px before)
+✅ GW number now 0.875rem on mobile (was 0.9375rem before)
+✅ My Team header height now matches Rivals exactly on mobile
+✅ Media query properly overrides desktop styles due to correct cascade order
 
 ---
 

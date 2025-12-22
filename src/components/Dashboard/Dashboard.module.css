@@ -1147,30 +1147,6 @@
   gap: 0.5rem;
 }
 
-/* K-91: Mobile responsive - matches Rivals exactly */
-@media (max-width: 640px) {
-  .myTeamHeader {
-    padding: 0.5rem 0.75rem;
-    gap: 0.75rem;
-  }
-
-  /* K-93: Mobile button sizing - EXACT COPY from Rivals */
-  .gwNumber {
-    font-size: 0.875rem;
-  }
-
-  .navButton {
-    width: 32px;
-    height: 32px;
-    font-size: 0.875rem;
-  }
-
-  /* K-68: Hide refresh button on mobile */
-  .refreshButton {
-    display: none;
-  }
-}
-
 /* K-91: Navigation buttons - EXACT COPY from Rivals */
 .navButton {
   background: rgba(255, 255, 255, 0.1);
@@ -1274,5 +1250,27 @@
   50% {
     opacity: 0.6;
     box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
+  }
+}
+
+/* K-93: Mobile responsive - MUST come AFTER desktop styles to override */
+@media (max-width: 640px) {
+  .myTeamHeader {
+    padding: 0.5rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .gwNumber {
+    font-size: 0.875rem;
+  }
+
+  .navButton {
+    width: 32px;
+    height: 32px;
+    font-size: 0.875rem;
+  }
+
+  .refreshButton {
+    display: none;
   }
 }
