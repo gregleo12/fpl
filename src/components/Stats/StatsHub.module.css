@@ -154,22 +154,27 @@
   text-align: center;
 }
 
-.liveBadge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #ef4444;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  animation: pulse 2s ease-in-out infinite;
-  margin-left: 0.25rem;
+/* K-89: Pink pulsing dot - matches Rivals tab style */
+.liveDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #ff2882;
+  border-radius: 50%;
+  animation: livePulse 1.5s ease-in-out infinite;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
-@keyframes pulse {
+/* K-89: Live dot pulse animation with glow */
+@keyframes livePulse {
   0%, 100% {
     opacity: 1;
+    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
   }
   50% {
     opacity: 0.6;
+    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
   }
 }
 

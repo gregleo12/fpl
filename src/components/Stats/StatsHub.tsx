@@ -193,14 +193,15 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
               onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
               disabled={selectedGW <= 1}
             >
-              ←
+              ◄
             </button>
 
             <div className={styles.gwDisplay}>
               <span className={styles.gwLabel}>GW</span>
               <span className={styles.gwNumber}>{selectedGW}</span>
+              {/* K-89: Use pink pulsing dot like Rivals tab */}
               {selectedGW === currentGW && isCurrentGWLive && (
-                <span className={styles.liveBadge}>LIVE</span>
+                <span className={styles.liveDot} title="Live match"></span>
               )}
             </div>
 
@@ -209,7 +210,7 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
               onClick={() => setSelectedGW(Math.min(currentGW, selectedGW + 1))}
               disabled={selectedGW >= currentGW}
             >
-              →
+              ►
             </button>
           </div>
         )}

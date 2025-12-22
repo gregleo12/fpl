@@ -2,7 +2,86 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.2 (December 22, 2025)
+**Current Version:** v3.5.3 (December 22, 2025)
+
+---
+
+## v3.5.3 - Standardize GW Selector Bar Style (K-89) (Dec 22, 2025)
+
+**UI Consistency:** Standardized GW selector styling across all tabs (My Team, Stats, Rivals) to use the same visual design.
+
+### Problem
+
+GW selector bars had inconsistent styling across tabs:
+- **Rivals:** Pink pulsing dot for LIVE indicator, `◄` and `►` arrows
+- **My Team:** Red "LIVE" text badge, `←` and `→` arrows
+- **Stats > GW:** Red "LIVE" text badge, `←` and `→` arrows
+
+This created visual inconsistency and made the UI feel less cohesive.
+
+### Solution
+
+Standardized all GW selectors to use the Rivals design pattern:
+
+**Changes Applied:**
+1. **Replaced text "LIVE" badges with pink pulsing dots** across My Team and Stats tabs
+2. **Changed arrow characters** from `←` `→` to `◄` `►` for consistency
+3. **Added `.liveDot` CSS class** with pink pulsing animation and glow effect
+4. **Maintained existing bar styling** (background, border, border-radius)
+
+### Visual Result
+
+All three tabs now show:
+```
+[◄]  GW 17  ●  [►]
+```
+
+Instead of the old mixed styles:
+```
+[←]  GW 17  LIVE  [→]    (old My Team/Stats)
+[◄]  GW 17  ●  [►]       (Rivals - now standard)
+```
+
+### Technical Details
+
+**Pink Pulsing Dot CSS:**
+```css
+.liveDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #ff2882;
+  border-radius: 50%;
+  animation: livePulse 1.5s ease-in-out infinite;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
+  }
+}
+```
+
+### Files Changed
+
+- `src/components/PitchView/GWSelector.tsx` → Changed arrows and LIVE indicator
+- `src/components/PitchView/GWSelector.module.css` → Added `.liveDot` class
+- `src/components/Stats/StatsHub.tsx` → Changed arrows and LIVE indicator
+- `src/components/Stats/StatsHub.module.css` → Added `.liveDot` class
+
+### Result
+
+- ✅ All GW selectors use consistent pink pulsing dot for LIVE indicator
+- ✅ All GW selectors use consistent `◄` and `►` arrow characters
+- ✅ Unified visual design across My Team, Stats, and Rivals tabs
+- ✅ More professional, cohesive user experience
 
 ---
 

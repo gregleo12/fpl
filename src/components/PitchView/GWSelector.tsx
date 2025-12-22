@@ -33,13 +33,14 @@ export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false, onRe
         onClick={() => onGWChange(Math.max(1, selectedGW - 1))}
         disabled={selectedGW <= 1}
       >
-        ←
+        ◄
       </button>
 
       <div className={styles.gwDisplay}>
         <span className={styles.gwLabel}>GW</span>
         <span className={styles.gwNumber}>{selectedGW}</span>
-        {isLive && <span className={styles.liveBadge}>LIVE</span>}
+        {/* K-89: Use pink pulsing dot like Rivals tab */}
+        {isLive && <span className={styles.liveDot} title="Live match"></span>}
       </div>
 
       <button
@@ -47,7 +48,7 @@ export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false, onRe
         onClick={() => onGWChange(Math.min(maxGW, selectedGW + 1))}
         disabled={selectedGW >= maxGW}
       >
-        →
+        ►
       </button>
     </div>
   );
