@@ -22,7 +22,7 @@ The `.gwSelector` had no background or border, making it appear as just the widt
 
 ### Fix
 
-Added background, padding, and border to make the full-width container visible:
+Added `width: 100%`, background, padding, and border:
 
 ```css
 .gwSelector {
@@ -31,15 +31,17 @@ Added background, padding, and border to make the full-width container visible:
   justify-content: center;  /* Keeps arrows centered around GW number */
   gap: 1rem;
   margin-bottom: 1rem;
-  /* K-73: Add background/border to show full width container */
+  /* K-73: Full width to match stat boxes below */
+  width: 100%;
   background: rgba(0, 0, 0, 0.3);
   padding: 0.75rem 1rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 }
 ```
 
-**Result:** GW selector now visually spans the same width as stat boxes and pitch container while keeping arrows and GW number centered together.
+**Result:** GW selector now spans the same width as stat boxes and pitch container while keeping arrows and GW number centered together.
 
 ---
 
