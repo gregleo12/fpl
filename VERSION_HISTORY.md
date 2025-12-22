@@ -2,7 +2,43 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.1 (December 22, 2025)
+**Current Version:** v3.5.2 (December 22, 2025)
+
+---
+
+## v3.5.2 - Center Live Dot in GW Selector (K-88) (Dec 22, 2025)
+
+**UI Polish:** Fixed positioning of the pink pulsing "LIVE" dot in the Rivals tab GW selector to be visually centered.
+
+### Problem
+
+The live dot was positioned too close to the right arrow button:
+- Current: `GW 17 ● →` (dot closer to arrow)
+- Expected: `GW 17  ●  →` (dot centered in gap)
+
+### Root Cause
+
+The `.liveDot` CSS only had `margin-left: 6px` with no `margin-right`, causing unequal spacing.
+
+### Solution
+
+Added equal margins on both sides of the live dot:
+```css
+.liveDot {
+  margin-left: 8px;   /* Space from GW number */
+  margin-right: 8px;  /* Space from right arrow */
+}
+```
+
+### Files Changed
+
+- `src/components/Fixtures/Fixtures.module.css` → Updated `.liveDot` margins
+
+### Result
+
+- ✅ Live dot now appears visually centered between GW number and right arrow
+- ✅ Equal spacing on both sides (8px left, 8px right)
+- ✅ Improved visual balance in navigation controls
 
 ---
 
