@@ -2,7 +2,93 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.36 (December 22, 2025)
+**Current Version:** v3.4.37 (December 22, 2025)
+
+---
+
+## v3.4.37 - Standardize Mobile Edge Spacing to 12px (K-76) (Dec 22, 2025)
+
+**UI Consistency:** Standardized edge-to-content spacing to **12px** across all mobile screens.
+
+### Problem
+
+Inconsistent spacing between phone edge and content created visual inconsistency and usability issues:
+
+| Screen | Before | Issue |
+|--------|---------|-------|
+| **Rivals** | 8px | Too tight, cramped |
+| **My Team** | 24px | Too wide, wasted space |
+| **Stats** | 6px | Extremely tight |
+| **Rank** | 16px | Inconsistent |
+| **Settings** | 24px | Too wide |
+
+### Goal
+
+Standardize all screens to **12px (0.75rem)** for:
+- Consistent visual rhythm
+- Adequate breathing room
+- Prevents content cutoff
+- Maximizes usable space without feeling cramped
+
+### Implementation Strategy
+
+Each tab container uses:
+1. Negative margin `-1rem` to cancel parent `.content` padding (16px)
+2. Then adds back `0.75rem` (12px) padding
+3. **Total from viewport edge: 12px**
+
+### Files Modified
+
+**1. Rivals (Fixtures)**
+- File: `src/components/Fixtures/Fixtures.module.css`
+- Changed: `padding: 0.5rem` → `padding: 0.75rem`
+- Result: **8px → 12px**
+
+**2. My Team**
+- File: `src/components/Dashboard/Dashboard.module.css` - `.myTeamTab`
+- Changed: `padding-left/right: 8px` → `margin -1rem + padding 0.75rem`
+- Result: **24px → 12px**
+
+**3. Stats (All Tabs)**
+- File: `src/components/Stats/StatsHub.module.css` - `.container`
+- Changed: `padding: 6px` → `padding: 0.75rem`
+- Result: **6px → 12px**
+
+**4. Stats > Team**
+- File: `src/components/Dashboard/Dashboard.module.css` - `.statsTeamContainer`
+- Changed: `padding: 0` → `margin -1rem + padding 0.75rem`
+- Result: **16px → 12px**
+
+**5. Rank (League)**
+- File: `src/components/Dashboard/Dashboard.module.css` - `.leagueTab`
+- Added: Mobile override with `margin -1rem + padding 0.75rem`
+- Result: **16px → 12px**
+
+**6. Settings**
+- File: `src/components/Settings/SettingsTab.module.css`
+- Added: Mobile override with `margin -1rem + padding 0.75rem`
+- Result: **24px → 12px**
+
+### CSS Pattern Used
+
+```css
+@media (max-width: 480px) {
+  .container {
+    margin-left: -1rem;   /* Cancel parent .content 16px */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
+  }
+}
+```
+
+### Result
+
+✅ **All screens now have identical 12px edge spacing on mobile**
+- Better visual consistency
+- No more cramped or wasteful layouts
+- Content properly visible (no cutoff)
+- Professional, polished feel
 
 ---
 

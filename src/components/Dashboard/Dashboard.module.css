@@ -757,20 +757,25 @@
 
 /* K-54a: Compact layout for Stats Team tab on mobile (iPhone 12 Pro: 390px) */
 @media (max-width: 480px) {
-  /* 1. Container width to match nav bar - reduce side padding */
+  /* K-76: Standardize to 12px edge spacing */
+  .leagueTab,
   .myTeamTab {
-    gap: 10px; /* Was 0.75rem = 12px */
-    padding-left: 8px;
-    padding-right: 8px;
+    gap: 10px;
+    margin-left: -1rem;  /* Cancel parent .content 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
     overflow-x: hidden; /* K-54b: Prevent horizontal overflow */
     max-width: 100vw; /* K-54b: Ensure container doesn't exceed viewport */
   }
 
-  /* K-74: Stats > Team container - minimal padding to match other Stats views */
+  /* K-76: Stats > Team - standardize to 12px */
   .statsTeamContainer {
     gap: 10px;
-    padding-left: 0;
-    padding-right: 0;
+    margin-left: -1rem;  /* Cancel parent .content 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
   }
 
   /* 2. Internal padding reduction (30-40%) */

@@ -1117,7 +1117,7 @@
 /* Mobile Responsive - keep same row layout with proper spacing */
 @media (max-width: 640px) {
   .container {
-    padding: 0.5rem;  /* K-72: Reduced from 0.75rem (30% reduction) */
+    padding: 0.75rem;  /* K-76: Standardized to 12px */
   }
 
   .header {

@@ -313,3 +313,13 @@
     font-size: 1.5rem;
   }
 }
+
+/* K-76: Standardize edge spacing to 12px on mobile */
+@media (max-width: 480px) {
+  .container {
+    margin-left: -1rem;  /* Cancel parent .content 16px padding */
+    margin-right: -1rem;
+    padding-left: 0.75rem;  /* Add back 12px */
+    padding-right: 0.75rem;
+  }
+}
