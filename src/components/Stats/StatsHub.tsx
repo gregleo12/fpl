@@ -144,80 +144,77 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
 
   return (
     <div className={styles.container}>
-      {/* K-94: Unified header bar - EXACT COPY from Rivals/My Team structure */}
-      <div className={styles.statsHeader}>
-        {/* Left group: View toggle tabs */}
-        <div className={styles.leftGroup}>
+      {/* K-94: First bar - View toggle (always visible) */}
+      <div className={styles.viewToggleBar}>
+        <button
+          className={`${styles.viewTab} ${view === 'myteam' ? styles.viewTabActive : ''}`}
+          onClick={() => setView('myteam')}
+        >
+          Team
+        </button>
+        <button
+          className={`${styles.viewTab} ${view === 'gameweek' ? styles.viewTabActive : ''}`}
+          onClick={() => setView('gameweek')}
+        >
+          GW
+        </button>
+        <button
+          className={`${styles.viewTab} ${view === 'season' ? styles.viewTabActive : ''}`}
+          onClick={() => setView('season')}
+        >
+          Season
+        </button>
+        <button
+          className={`${styles.viewTab} ${view === 'players' ? styles.viewTabActive : ''}`}
+          onClick={() => setView('players')}
+        >
+          Players
+        </button>
+      </div>
+
+      {/* K-94: Second bar - GW selector (only for gameweek view) */}
+      {view === 'gameweek' && (
+        <div className={styles.gwSelectorBar}>
+          {/* Refresh Button */}
           <button
-            className={`${styles.subTab} ${view === 'myteam' ? styles.subTabActive : ''}`}
-            onClick={() => setView('myteam')}
+            className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            title="Refresh data"
+            aria-label="Refresh data"
           >
-            Team
+            <RotateCw size={18} />
           </button>
+
+          {/* Previous button */}
           <button
-            className={`${styles.subTab} ${view === 'gameweek' ? styles.subTabActive : ''}`}
-            onClick={() => setView('gameweek')}
+            className={styles.navButton}
+            onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
+            disabled={selectedGW <= 1}
+            aria-label="Previous gameweek"
           >
-            GW
+            ◄
           </button>
+
+          {/* Gameweek display with live dot */}
+          <div className={styles.gwInfo}>
+            <span className={styles.gwNumber}>GW {selectedGW}</span>
+            {selectedGW === currentGW && isCurrentGWLive && (
+              <span className={styles.liveDot} title="Live match"></span>
+            )}
+          </div>
+
+          {/* Next button */}
           <button
-            className={`${styles.subTab} ${view === 'season' ? styles.subTabActive : ''}`}
-            onClick={() => setView('season')}
+            className={styles.navButton}
+            onClick={() => setSelectedGW(Math.min(currentGW, selectedGW + 1))}
+            disabled={selectedGW >= currentGW}
+            aria-label="Next gameweek"
           >
-            Season
-          </button>
-          <button
-            className={`${styles.subTab} ${view === 'players' ? styles.subTabActive : ''}`}
-            onClick={() => setView('players')}
-          >
-            Players
+            ►
           </button>
         </div>
-
-        {/* Right group: GW selector (only for gameweek view) */}
-        {view === 'gameweek' && (
-          <div className={styles.rightGroup}>
-            {/* Refresh Button */}
-            <button
-              className={`${styles.refreshButton} ${isRefreshing ? styles.spinning : ''}`}
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              title="Refresh data"
-              aria-label="Refresh data"
-            >
-              <RotateCw size={18} />
-            </button>
-
-            {/* Previous button */}
-            <button
-              className={styles.navButton}
-              onClick={() => setSelectedGW(Math.max(1, selectedGW - 1))}
-              disabled={selectedGW <= 1}
-              aria-label="Previous gameweek"
-            >
-              ◄
-            </button>
-
-            {/* Gameweek display with live dot */}
-            <div className={styles.gwInfo}>
-              <span className={styles.gwNumber}>GW {selectedGW}</span>
-              {selectedGW === currentGW && isCurrentGWLive && (
-                <span className={styles.liveDot} title="Live match"></span>
-              )}
-            </div>
-
-            {/* Next button */}
-            <button
-              className={styles.navButton}
-              onClick={() => setSelectedGW(Math.min(currentGW, selectedGW + 1))}
-              disabled={selectedGW >= currentGW}
-              aria-label="Next gameweek"
-            >
-              ►
-            </button>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Gameweek View */}
       {view === 'gameweek' && (

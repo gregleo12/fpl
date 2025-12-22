@@ -6,69 +6,66 @@
 
 ---
 
-## v3.5.7 - Apply Unified Header Bar to Stats Tab (K-94) (Dec 22, 2025)
+## v3.5.7 - Two-Bar Layout for Stats Tab (K-94) (Dec 22, 2025)
 
-**Major Structure Change:** Restructured Stats tab to use the same unified header bar as Rivals and My Team tabs.
+**Major Structure Change:** Restructured Stats tab to use TWO separate navigation bars stacked vertically.
 
 ### Problem
 
-Stats tab had a different header structure than Rivals/My Team:
-- Used separate `.header` container with `flex-wrap`
-- View toggle and GW selector were side-by-side but not in unified bar
-- Different CSS class names (`.viewButton`, `.gwButton`, `.gwSelector`)
-- No consistent styling with other tabs
-- Mobile responsive CSS referenced old class names
+Stats tab had a different structure than needed:
+- View toggle and GW selector were combined in one bar (not what was requested)
+- Should be two separate bars: one always visible, one conditional
 
 ### Solution
 
-**EXACT COPY of unified header structure from Rivals/My Team:**
+**Two separate bars stacked vertically:**
 
-**HTML Structure:**
+**Bar 1 - View Toggle (always visible):**
 ```tsx
-<div className={styles.statsHeader}>
-  <div className={styles.leftGroup}>
-    <button className={styles.subTab}>Team</button>
-    <button className={styles.subTab}>GW</button>
-    <button className={styles.subTab}>Season</button>
-    <button className={styles.subTab}>Players</button>
-  </div>
-  {view === 'gameweek' && (
-    <div className={styles.rightGroup}>
-      <button className={styles.refreshButton}>↻</button>
-      <button className={styles.navButton}>◄</button>
-      <div className={styles.gwInfo}>
-        <span className={styles.gwNumber}>GW {selectedGW}</span>
-        <span className={styles.liveDot}></span>
-      </div>
-      <button className={styles.navButton}>►</button>
-    </div>
-  )}
+<div className={styles.viewToggleBar}>
+  <button className={styles.viewTab}>Team</button>
+  <button className={styles.viewTab}>GW</button>
+  <button className={styles.viewTab}>Season</button>
+  <button className={styles.viewTab}>Players</button>
 </div>
 ```
 
-**CSS Updates:**
-- Created `.statsHeader` unified container (matches `.rivalsHeader`, `.myTeamHeader`)
-- Added `.leftGroup` and `.rightGroup` containers
-- Renamed `.viewButton` → `.subTab` and `.active` → `.subTabActive`
-- Renamed `.gwButton` → `.navButton`
-- Removed `.gwDisplay` and `.gwLabel`, replaced with `.gwInfo`
-- All dimensions match Rivals/My Team exactly (40px buttons, 0.9375rem font-size)
-- **Mobile media query placed AFTER desktop styles** (at end of file) to properly override
+**Bar 2 - GW Selector (only shows when GW view active):**
+```tsx
+{view === 'gameweek' && (
+  <div className={styles.gwSelectorBar}>
+    <button className={styles.refreshButton}>↻</button>
+    <button className={styles.navButton}>◄</button>
+    <div className={styles.gwInfo}>
+      <span className={styles.gwNumber}>GW {selectedGW}</span>
+      <span className={styles.liveDot}></span>
+    </div>
+    <button className={styles.navButton}>►</button>
+  </div>
+)}
+```
+
+**CSS Structure:**
+- `.viewToggleBar` - First bar with view tabs (Team/GW/Season/Players)
+- `.gwSelectorBar` - Second bar with GW selector (only visible on GW view)
+- GW selector bar uses same styling as Rivals/My Team unified bar
+- Both bars have consistent styling (40px buttons desktop, 32px mobile)
+- **Mobile media query placed AFTER desktop styles** to properly override
 
 ### Files Modified
 
-- `src/components/Stats/StatsHub.tsx` (restructured JSX to match Rivals/My Team)
-- `src/components/Stats/StatsHub.module.css` (replaced all header CSS, moved mobile media query to end)
+- `src/components/Stats/StatsHub.tsx` (two separate bar containers)
+- `src/components/Stats/StatsHub.module.css` (separate CSS for each bar, mobile media query at end)
 
 ### Result
 
-✅ Stats tab header now identical structure to Rivals and My Team
-✅ All three tabs (Rivals, My Team, Stats) now use unified header bar pattern
-✅ Consistent class names across all tabs (`.navButton`, `.gwInfo`, `.gwNumber`, `.liveDot`)
+✅ Two separate navigation bars stacked vertically
+✅ Bar 1 (view toggle) always visible
+✅ Bar 2 (GW selector) only shows when GW view is active
+✅ GW selector bar matches Rivals/My Team styling exactly
 ✅ Desktop: 40px buttons, 0.9375rem font-size
 ✅ Mobile: 32px buttons, 0.875rem font-size, refresh button hidden
 ✅ Mobile media query correctly placed at end to override desktop styles
-✅ GW selector only shows when "GW" view is active (not for Team/Season/Players views)
 
 ---
 
