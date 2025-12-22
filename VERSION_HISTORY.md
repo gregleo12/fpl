@@ -2,7 +2,37 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.13 (December 22, 2025)
+**Current Version:** v3.5.14 (December 22, 2025)
+
+---
+
+## v3.5.14 - Reduce Season Header Spacing (Dec 22, 2025)
+
+**UI Polish:** Reduced margins around "16 GWs Completed" container to match section spacing.
+
+### Problem
+
+The "16 GWs Completed" header had inconsistent spacing:
+- Too much space below (1rem margin-bottom)
+- Sections had excessive margin-bottom (3rem)
+- Didn't match the standard section gap (0.75rem)
+
+### Solution
+
+**Adjusted Spacing (`src/components/Stats/SeasonView.module.css`):**
+- `.seasonInfo` margin-bottom: `1rem` → `0.75rem`
+- `.section` margin-bottom: `3rem` → `0` (last element, no bottom margin needed)
+
+### Files Modified
+
+- `src/components/Stats/SeasonView.module.css` (reduced margins)
+
+### Result
+
+✅ Consistent spacing around "16 GWs Completed" container
+✅ Matches standard section gap (0.75rem)
+✅ Removed excessive bottom margin from leaderboards section
+✅ Cleaner, more balanced layout
 
 ---
 
