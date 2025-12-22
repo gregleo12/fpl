@@ -2,7 +2,135 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.41 (December 22, 2025)
+**Current Version:** v3.4.42 (December 22, 2025)
+
+---
+
+## v3.4.42 - Remove Rivals Container Internal Padding (K-81) (Dec 22, 2025)
+
+**Layout Fix:** Removed internal padding from Rivals (H2H Fixtures) `.container` class so child elements sit directly at container edges.
+
+### Problem
+
+The Fixtures `.container` had internal padding (1rem base = 16px, 0.75rem mobile = 12px) that created unnecessary gaps between the container border and child elements (header, matches, insights).
+
+**Visual Issue:**
+```
+┌─ Container border ─────────────┐
+│  ┌─ Content ─────────────┐    │  ← 16px gap (12px mobile)
+│  │ H2H Fixtures          │    │
+│  └───────────────────────┘    │
+└───────────────────────────────┘
+```
+
+This wasted valuable screen space and created inconsistency with other tabs (Stats > Team, League) where K-76, K-78, K-79, and K-80 had already removed internal padding.
+
+### Root Cause
+
+**File:** `src/components/Fixtures/Fixtures.module.css`
+
+**Line 2 (base):**
+```css
+.container {
+  padding: 1rem;  /* 16px internal padding */
+}
+```
+
+**Line 1120 (mobile ≤640px):**
+```css
+.container {
+  padding: 0.75rem;  /* 12px internal padding */
+}
+```
+
+**Line 10 (desktop ≥769px):**
+```css
+.container {
+  padding-top: 2.5rem;  /* Vertical spacing only */
+}
+```
+
+### Solution
+
+Removed all internal horizontal padding from `.container` across all breakpoints:
+
+**Base (lines 1-12):**
+```css
+.container {
+  /* K-81: Removed internal padding - children touch container edges */
+  padding: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  /* K-81: Explicitly transparent - no visual styling, only layout */
+  background: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+```
+
+**Desktop (lines 15-21):**
+```css
+@media (min-width: 769px) {
+  .container {
+    /* K-81: Keep only vertical spacing, no horizontal padding */
+    padding-top: 2.5rem;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+```
+
+**Mobile (lines 1128-1132):**
+```css
+@media (max-width: 640px) {
+  .container {
+    /* K-81: Removed internal padding - children touch container edges */
+    padding: 0;
+  }
+}
+```
+
+### Result
+
+**Before:**
+- Base: 16px internal padding all around
+- Desktop: 40px top padding + 16px horizontal
+- Mobile: 12px internal padding all around
+
+**After:**
+- Base: 0px internal padding
+- Desktop: 40px top padding, 0px horizontal
+- Mobile: 0px internal padding
+
+**Layout Stack:**
+```
+Phone edge
+└── 0px (edge spacing handled by parent tab container)
+    └── Fixtures .container (0px internal padding)
+        └── Children (header, matches, insights) - flush with container edges
+```
+
+### Files Modified
+
+- `src/components/Fixtures/Fixtures.module.css` (lines 1-12, 15-21, 1128-1132)
+
+### Verification
+
+- ✅ Build successful: `npm run build`
+- ✅ No TypeScript errors
+- ✅ Container is explicitly transparent (background, box-shadow, border: none)
+- ✅ Desktop preserves vertical spacing (2.5rem top)
+- ✅ Mobile removes internal padding
+- ✅ Pattern matches K-80 (My Team container fix)
+
+### Additional Notes
+
+- Added explicit transparency properties to prevent accidental styling
+- Preserved desktop vertical spacing for proper alignment with Stats section
+- Removed misleading K-76 comment from mobile padding (was internal padding, not edge spacing)
+- Completes the series of container padding removals: K-78 (alignment), K-79 (transparency), K-80 (My Team), K-81 (Rivals)
 
 ---
 

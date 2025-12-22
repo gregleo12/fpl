@@ -1,13 +1,23 @@
 .container {
-  padding: 1rem;
+  /* K-81: Removed internal padding - children touch container edges */
+  padding: 0;
   max-width: 1200px;
   margin: 0 auto;
+
+  /* K-81: Explicitly transparent - no visual styling, only layout */
+  background: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
 }
 
 /* Desktop: Add top padding to match Stats section */
 @media (min-width: 769px) {
   .container {
+    /* K-81: Keep only vertical spacing, no horizontal padding */
     padding-top: 2.5rem;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
@@ -1117,7 +1127,8 @@
 /* Mobile Responsive - keep same row layout with proper spacing */
 @media (max-width: 640px) {
   .container {
-    padding: 0.75rem;  /* K-76: Standardized to 12px */
+    /* K-81: Removed internal padding - children touch container edges */
+    padding: 0;
   }
 
   .header {
