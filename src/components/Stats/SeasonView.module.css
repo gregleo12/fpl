@@ -2,29 +2,25 @@
   padding-top: 0; /* K-71: Removed top padding */
 }
 
+/* K-97: Season header - match nav bar styling */
 .seasonInfo {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   background: rgba(0, 0, 0, 0.3);
-  padding: 1rem 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 135, 0.2);
-  margin-bottom: 0.75rem; /* K-71: Reduced from 1.5rem to 0.75rem (12px) */
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
-.seasonLabel {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.7);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+/* K-97: Removed .seasonLabel (no longer used) */
 
 .seasonGW {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
-  color: #00ff87;
+  color: white;
 }
 
 .section {

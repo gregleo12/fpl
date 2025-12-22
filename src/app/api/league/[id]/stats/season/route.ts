@@ -17,14 +17,19 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // Get bootstrap data to check which gameweeks have started
+    // K-97: Get bootstrap data to check which gameweeks have FINISHED (not just started)
     // Fallback to 38 if bootstrap fetch fails (include all GWs)
     let maxStartedGW = 38;
+    let completedGameweeksCount = 0;
     try {
       const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
       if (bootstrapResponse.ok) {
         const bootstrapData = await bootstrapResponse.json();
         const events = bootstrapData?.events || [];
+
+        // K-97: Count only FINISHED gameweeks (exclude current/live GW)
+        const finishedGameweeks = events.filter((e: any) => e.finished);
+        completedGameweeksCount = finishedGameweeks.length;
 
         // Find the highest gameweek that has started (is_current or finished)
         const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
@@ -112,7 +117,7 @@ export async function GET(
     ]);
 
     return NextResponse.json({
-      completedGameweeks: completedGameweeks.length,
+      completedGameweeks: completedGameweeksCount || completedGameweeks.length, // K-97: Use finished GWs count
       leaderboards: {
         captainPoints: captainLeaderboard,
         chipPerformance: {

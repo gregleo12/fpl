@@ -107,10 +107,9 @@ export function SeasonView({ leagueId }: Props) {
 
   return (
     <div className={styles.container}>
-      {/* Season Info */}
+      {/* K-97: Season Info - centered header with shortened text */}
       <div className={styles.seasonInfo}>
-        <span className={styles.seasonLabel}>Season Statistics</span>
-        <span className={styles.seasonGW}>{data.completedGameweeks} Gameweeks Completed</span>
+        <span className={styles.seasonGW}>{data.completedGameweeks} GWs Completed</span>
       </div>
 
       {/* Leaderboards Section */}

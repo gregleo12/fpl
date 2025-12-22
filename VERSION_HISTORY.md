@@ -2,7 +2,56 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.10 (December 22, 2025)
+**Current Version:** v3.5.11 (December 22, 2025)
+
+---
+
+## v3.5.11 - Fix Season Statistics Header (K-97) (Dec 22, 2025)
+
+**UI & Data Fix:** Fixed Season Statistics header to show correct count, shortened text, and match nav bar styling.
+
+### Problems
+
+1. Text too long: "17 Gameweeks Completed" is wordy
+2. Wrong count: Shows 17 (current GW) instead of 16 (completed GWs only)
+3. Redundant title: "SEASON STATISTICS" label unnecessary
+4. Inconsistent styling: Yellow border doesn't match nav bar design
+
+### Solution
+
+**API Route (`src/app/api/league/[id]/stats/season/route.ts`):**
+- Added `completedGameweeksCount` variable to count only FINISHED gameweeks
+- Filters bootstrap events by `e.finished` (not `e.is_current || e.finished`)
+- Returns correct count of completed GWs, excluding live/current GW
+
+**Component (`src/components/Stats/SeasonView.tsx`):**
+- Removed "Season Statistics" label span
+- Changed text from "X Gameweeks Completed" → "X GWs Completed"
+- Centered text in container
+
+**Styles (`src/components/Stats/SeasonView.module.css`):**
+- Updated `.seasonInfo` to match nav bar styling:
+  - `border: 1px solid rgba(255, 255, 255, 0.1)` (neutral border)
+  - `padding: 0.5rem 1rem` (match nav bar)
+  - `justify-content: center` (center text)
+- Updated `.seasonGW`:
+  - `color: white` (neutral text color)
+  - `font-size: 0.9375rem` (match nav bar)
+- Removed `.seasonLabel` styles (no longer used)
+
+### Files Modified
+
+- `src/app/api/league/[id]/stats/season/route.ts` (count only finished GWs)
+- `src/components/Stats/SeasonView.tsx` (remove label, shorten text)
+- `src/components/Stats/SeasonView.module.css` (match nav bar styling)
+
+### Result
+
+✅ Shows correct completed GWs count (16, not 17)
+✅ Shortened text: "16 GWs Completed" instead of "16 Gameweeks Completed"
+✅ Removed redundant "Season Statistics" title
+✅ Neutral styling matches nav bar (white border, centered)
+✅ API now filters to only finished gameweeks
 
 ---
 
