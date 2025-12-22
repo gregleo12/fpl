@@ -2,7 +2,122 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.42 (December 22, 2025)
+**Current Version:** v3.4.43 (December 22, 2025)
+
+---
+
+## v3.4.43 - Remove Dark Background Shadow from Stats > Team (K-83) (Dec 22, 2025)
+
+**Visual Fix:** Removed box-shadow from `.section` cards in Stats > Team to eliminate dark background effect.
+
+### Problem
+
+Stats > Team had a visible darker background/shadow behind content cards that didn't appear on other Stats tabs (GW, Season, Players). The dark area was visible between the phone edge and cards, creating a "container within a container" effect.
+
+**Visual Issue:**
+```
+┌─ Phone edge ────────────────────────────┐
+│        ↓ Dark shadow area ↓             │
+│  ┌─ Section card ─────────────────┐     │
+│  │ Performance                     │     │
+│  └─────────────────────────────────┘     │
+│        ↓ Overlapping shadows ↓          │
+│  ┌─ Section card ─────────────────┐     │
+│  │ Recent Form                     │     │
+│  └─────────────────────────────────┘     │
+└──────────────────────────────────────────┘
+```
+
+### Root Cause
+
+**File:** `src/components/Dashboard/Dashboard.module.css`
+**Line:** 26
+
+The `.section` class (used by My Team cards) had a large box-shadow:
+
+```css
+box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+/*          ↑  ↑   ↑    ↑
+            |  |   |    └── 60% opacity black
+            |  |   └──────── 40px blur radius (VERY LARGE)
+            |  └──────────── 10px below card
+            └─────────────── Centered horizontally
+*/
+```
+
+**Why it created the dark background:**
+1. 40px blur radius created large, spread-out shadows
+2. Multiple stacked cards = overlapping shadows
+3. Shadows extended beyond card edges into gaps
+4. Created illusion of a darker "background layer"
+
+### Comparison with Other Tabs
+
+**GW/Season/Players sections** (`Section.module.css`):
+```css
+.section {
+  background: linear-gradient(...);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* NO box-shadow property */
+}
+```
+
+**My Team sections** (`Dashboard.module.css`) BEFORE:
+```css
+.section {
+  background: linear-gradient(...);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);  /* ← Problem */
+}
+```
+
+### Solution
+
+Removed the box-shadow entirely to match the cleaner appearance of GW/Season/Players tabs:
+
+```css
+.section {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(55, 0, 60, 0.3) 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  /* K-83: Removed box-shadow - was creating dark background effect between cards */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+```
+
+### Result
+
+**Before:**
+- Large 40px blur shadows on each card
+- Overlapping shadows created dark areas between cards
+- Visible dark "background layer" effect
+
+**After:**
+- No box-shadow on cards
+- Clean, flat appearance matching other Stats tabs
+- No dark background effect
+- Consistent visual style across all Stats views
+
+### Files Modified
+
+- `src/components/Dashboard/Dashboard.module.css` (line 26 removed, comment added line 26)
+
+### Verification
+
+- ✅ Build successful: `npm run build`
+- ✅ No TypeScript errors
+- ✅ Dark background effect eliminated
+- ✅ Matches visual style of GW/Season/Players tabs
+
+### Investigation (K-82)
+
+Completed thorough investigation to identify the culprit:
+1. Compared DOM structure between Team and GW views
+2. Checked container CSS for backgrounds
+3. Identified `.section` box-shadow as root cause
+4. Confirmed containers were transparent
+5. Decided on Option C: Remove box-shadow entirely
 
 ---
 
