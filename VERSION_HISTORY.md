@@ -2,7 +2,39 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.32 (December 21, 2025)
+**Current Version:** v3.4.33 (December 21, 2025)
+
+---
+
+## v3.4.33 - Fix Season Stats Section Spacing (K-71) (Dec 21, 2025)
+
+**CSS Fix:** Fixed inconsistent spacing in Season Stats tab.
+
+### Problem
+
+In Stats > Season tab, the gap between sections was inconsistent:
+- **Small gap (4px):** SEASON STATISTICS header → Captain Points
+- **Larger gap (24px):** Captain Points → Chip Performance
+
+### Root Cause
+
+**File:** `src/components/Stats/SeasonView.module.css`
+
+The `.seasonInfo` header had `margin-bottom: 0.25rem` (4px), while the `.leaderboards` grid used `gap: 1.5rem` (24px) between sections.
+
+Previous comment showed intentional reduction: `"Reduced further by 50% - Fix 3"`, which created the inconsistency.
+
+### Fix
+
+Changed `.seasonInfo` margin-bottom to match grid gap:
+
+```css
+.seasonInfo {
+  margin-bottom: 1.5rem;  /* K-71: Match leaderboards gap for consistent spacing */
+}
+```
+
+**Result:** All spacing in Season Stats tab is now consistent at 1.5rem (24px).
 
 ---
 
