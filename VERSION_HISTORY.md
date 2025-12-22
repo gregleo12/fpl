@@ -2,7 +2,71 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.12 (December 22, 2025)
+**Current Version:** v3.5.13 (December 22, 2025)
+
+---
+
+## v3.5.13 - Update Stats Team Performance Grid (K-99) (Dec 22, 2025)
+
+**UI Simplification:** Removed name/rank header and replaced MED with RANK in Performance grid.
+
+### Changes
+
+**1. Removed Name/Rank Header Container**
+Deleted entire section showing manager name, team name, and rank badge. This was redundant since:
+- User already knows they're viewing their own team
+- Rank is now displayed in the Performance grid
+
+**Before:**
+```
+┌─────────────────────────────────────────┐
+│ Greg Lienart                    2nd     │
+│ FC Matos ★                              │
+└─────────────────────────────────────────┘
+```
+
+**2. Updated Performance Grid (Row 2)**
+Replaced MED (median) with RANK at position 4:
+
+| Position | Before | After |
+|----------|--------|-------|
+| Col 1 | AVG | AVG (unchanged) |
+| Col 2 | HIGH | HIGH (unchanged) |
+| Col 3 | MED | LOW (moved from col 4) |
+| Col 4 | LOW | RANK (new) |
+
+**RANK Formatting:**
+- Value: "1st", "2nd", "3rd", "4th", etc. (ordinal suffix)
+- Label: "RANK"
+- Uses existing `getOrdinalSuffix()` helper
+- Same styling as other stat boxes
+
+### Files Modified
+
+- `src/components/Stats/MyTeamView.tsx` (removed header, updated grid)
+
+### Result
+
+✅ Removed redundant name/rank header container
+✅ Replaced MED with RANK in bottom-right position
+✅ Row 2 now shows: AVG, HIGH, LOW, RANK
+✅ Cleaner, more focused Performance section
+✅ Rank displayed with ordinal suffix (e.g., "2nd")
+
+**After:**
+```
+┌─────────────────────────────────────────┐
+│ PERFORMANCE                             │
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │
+│ │ 1072 │ │  13  │ │  0   │ │  4   │    │
+│ │ PTS  │ │ WIN  │ │ DRW  │ │ LOSS │    │
+│ └──────┘ └──────┘ └──────┘ └──────┘    │
+│ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐    │
+│ │ 63.1 │ │  95  │ │  32  │ │ 2nd  │    │
+│ │ AVG  │ │ HIGH │ │ LOW  │ │ RANK │    │
+│ └──────┘ └──────┘ └──────┘ └──────┘    │
+└─────────────────────────────────────────┘
+```
 
 ---
 

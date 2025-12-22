@@ -117,20 +117,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
 
   return (
     <div className={styles.myTeamTab}>
-      {/* Team Overview with Rank */}
-      <div className={styles.section}>
-        <div className={styles.teamHeader}>
-          <div>
-            <h2 className={styles.managerName}>{shortenManagerName(myManagerName)}</h2>
-            <p className={styles.teamNameSubtitle}>{shortenTeamName(myTeamName)}</p>
-          </div>
-          <div className={styles.rankBadge}>
-            <span className={styles.rankNumber}>{getOrdinalSuffix(myTeam.rank)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* K-95: Performance Stats - Consolidated 8 stats in 2 rows */}
+      {/* K-99: Performance Stats - Removed header, 8 stats in 2 rows with RANK */}
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Performance</h3>
         {/* Row 1: PTS, WIN, DRW, LOSS */}
@@ -153,7 +140,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
           </div>
         </div>
 
-        {/* Row 2: AVG, HIGH, MED, LOW */}
+        {/* K-99: Row 2: AVG, HIGH, LOW, RANK */}
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <span className={styles.statValue}>{playerData.stats.averagePoints}</span>
@@ -164,12 +151,12 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
             <span className={styles.statLabel}>HIGH</span>
           </div>
           <div className={styles.statCard}>
-            <span className={styles.statValue}>{playerData.stats.medianScore}</span>
-            <span className={styles.statLabel}>MED</span>
-          </div>
-          <div className={styles.statCard}>
             <span className={styles.statValue}>{playerData.stats.lowestScore}</span>
             <span className={styles.statLabel}>LOW</span>
+          </div>
+          <div className={styles.statCard}>
+            <span className={styles.statValue}>{getOrdinalSuffix(myTeam.rank)}</span>
+            <span className={styles.statLabel}>RANK</span>
           </div>
         </div>
       </div>
