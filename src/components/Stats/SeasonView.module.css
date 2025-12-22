@@ -1,5 +1,5 @@
 .container {
-  padding-top: 0.25rem; /* Reduced by 75% from 1rem */
+  padding-top: 0; /* K-71: Removed top padding */
 }
 
 .seasonInfo {
@@ -10,7 +10,7 @@
   padding: 1rem 1.5rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 135, 0.2);
-  margin-bottom: 1.5rem; /* K-71: Match leaderboards gap for consistent spacing */
+  margin-bottom: 0.75rem; /* K-71: Reduced from 1.5rem to 0.75rem (12px) */
 }
 
 .seasonLabel {
