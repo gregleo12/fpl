@@ -2,7 +2,85 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.45 (December 22, 2025)
+**Current Version:** v3.4.46 (December 22, 2025)
+
+---
+
+## v3.4.46 - ACTUAL Fix for Right-Side Spacing (K-87) (Dec 22, 2025)
+
+**Critical Layout Fix:** Fixed asymmetric spacing where K-86 box-sizing solution did NOT work. Content was pushed left with large right gap (~30px+).
+
+### Problem
+
+After K-86 implementation:
+- Left side: ~12px spacing ✅
+- Right side: ~30px+ gap ❌
+- Content pushed to LEFT instead of centered
+- Nav bar wider than content containers
+
+### Root Cause
+
+**File:** `src/app/dashboard/dashboard.module.css`
+**Lines:** 252-255
+
+The `.dashboardTabWrapper` had `width: 100%` which constrained it to the parent's CONTENT box width:
+
+```css
+.dashboardTabWrapper {
+  width: 100%;  /* ❌ Problem: Constrains to parent content box */
+  box-sizing: border-box;
+}
+```
+
+**Why This Failed:**
+- `width: 100%` means "100% of parent's content width" (calculated BEFORE margins)
+- Even with negative margins `-1rem`, the content area stayed constrained
+- Negative margins tried to extend beyond parent, but width constraint prevented proper expansion
+- Result: Asymmetric spacing because width was fixed to parent content box
+
+### Solution
+
+**Remove explicit width** and let auto-width + negative margins define the natural width:
+
+```css
+.dashboardTabWrapper {
+  /* Auto-width: Let negative margins + padding define width naturally */
+  /* No width: 100% constraint */
+}
+
+@media (max-width: 480px) {
+  .dashboardTabWrapper {
+    margin-left: -1rem;      /* Extends beyond parent padding */
+    margin-right: -1rem;     /* Extends beyond parent padding */
+    padding-left: 0.75rem;   /* Creates 12px edge spacing */
+    padding-right: 0.75rem;  /* Creates 12px edge spacing */
+  }
+}
+```
+
+**Why This Works:**
+- Auto-width allows element to naturally expand accounting for negative margins
+- Negative margins extend wrapper beyond parent's 16px padding to reach viewport edges
+- Padding 12px each side creates symmetric edge spacing
+- Matches the working pattern used in `.leagueTab` (Rank tab)
+
+### Key Learning
+
+When using negative margins to cancel parent padding:
+- ❌ **Don't:** Set explicit `width: 100%` (constrains to content box)
+- ✅ **Do:** Use auto-width and let margins + padding define final width
+- ✅ **Pattern:** Parent padding → Child negative margins (same value) → Child padding (desired edge spacing)
+
+### Files Changed
+
+- `src/app/dashboard/dashboard.module.css` (lines 252-255)
+
+### Verified Fix
+
+- My Team: GW selector, stat boxes, pitch now touch edges symmetrically (12px both sides)
+- Rivals: H2H header and fixture cards now match nav bar width exactly
+- Both tabs now have consistent 12px edge spacing matching nav bar
+- No more asymmetric push-left effect
 
 ---
 

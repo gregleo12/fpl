@@ -250,8 +250,8 @@
 /* K-85: Wrapper for dashboard tabs to match nav bar width */
 /* Cancels parent .content padding and adds consistent 12px edge spacing */
 .dashboardTabWrapper {
-  width: 100%;
-  box-sizing: border-box;  /* K-86: Include padding in width calculation */
+  /* K-87: No explicit width - let negative margins + padding define width naturally */
+  /* width: 100% was constraining to parent content box, preventing margin extension */
 }
 
 @media (max-width: 480px) {
