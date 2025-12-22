@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.34 (December 21, 2025)
+**Current Version:** v3.4.35 (December 21, 2025)
+
+---
+
+## v3.4.35 - My Team GW Selector Full Width (K-73) (Dec 21, 2025)
+
+**UI Fix:** Made GW selector span full width to match containers below.
+
+### Problem
+
+On My Team tab, the GW selector was narrower than the stat boxes and pitch container below it, leaving empty space on the sides and creating visual inconsistency.
+
+### Root Cause
+
+**File:** `src/components/PitchView/PitchView.module.css`
+
+The `.gwSelector` had no background or border, making it appear as just the width of its content (arrows + text). The container itself was full width, but visually invisible.
+
+### Fix
+
+Added background, padding, and border to make the full-width container visible:
+
+```css
+.gwSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;  /* Keeps arrows centered around GW number */
+  gap: 1rem;
+  margin-bottom: 1rem;
+  /* K-73: Add background/border to show full width container */
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+```
+
+**Result:** GW selector now visually spans the same width as stat boxes and pitch container while keeping arrows and GW number centered together.
 
 ---
 

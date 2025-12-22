@@ -48,9 +48,14 @@
 .gwSelector {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center;  /* Keep arrows centered around GW number */
   gap: 1rem;
   margin-bottom: 1rem;
+  /* K-73: Add background/border to show full width container */
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .gwButton {
