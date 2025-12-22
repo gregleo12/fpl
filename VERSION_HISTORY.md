@@ -2,7 +2,125 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.40 (December 22, 2025)
+**Current Version:** v3.4.41 (December 22, 2025)
+
+---
+
+## v3.4.41 - Remove My Team Container Internal Padding (K-80) (Dec 22, 2025)
+
+**Layout Fix:** Removed internal padding from `.myTeamContent` container so child elements sit directly at container edges.
+
+### Problem
+
+The My Team container (`div.Dashboard_myTeamContent`) had internal padding (12px base, 10px mobile) that created unnecessary gaps between the container border and child elements (GW selector, stat boxes, pitch).
+
+**Visual Issue:**
+```
+┌─ Container border ─────────────┐
+│  ┌─ Content ─────────────┐    │  ← 12px gap
+│  │ GW 17 LIVE            │    │
+│  └───────────────────────┘    │
+└───────────────────────────────┘
+```
+
+This wasted valuable screen space, especially on mobile where every pixel counts.
+
+### Root Cause
+
+**File:** `src/components/Dashboard/Dashboard.module.css`
+
+**Line 986 (base):**
+```css
+.myTeamContent {
+  padding: 0 12px;  /* 12px internal padding */
+}
+```
+
+**Line 1093 (mobile ≤400px):**
+```css
+.myTeamContent {
+  padding: 0 10px;  /* 10px internal padding override */
+}
+```
+
+### Important: Not to Confuse with Edge Spacing
+
+This fix removes **internal** padding (container → content), NOT **edge** spacing (phone edge → container):
+
+```
+Phone edge │ 12px │ Container │ 0px │ Content
+           ↑              ↑
+    K-76 edge spacing   K-80 removes this
+    (preserved)         (removed)
+```
+
+The 12px spacing from phone edge to container (established in K-76) remains unchanged.
+
+### Fix
+
+**Changes:**
+
+1. **Base class (line 986):**
+```css
+.myTeamContent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0; /* K-80: Removed internal padding - content touches container edges */
+}
+```
+
+2. **Mobile override (line 1093):**
+```css
+@media (max-width: 400px) {
+  .myTeamContent {
+    gap: 6px;
+    /* K-80: No padding override needed - base is already 0 */
+  }
+}
+```
+
+3. **Desktop (line 991):** No change - only has `max-width` and `margin`, no padding
+
+### Verification
+
+Checked all `.myTeamContent` references:
+- **Base (line 986):** ✅ `padding: 0`
+- **Desktop (line 991):** ✅ No padding (only max-width, margin)
+- **Mobile (line 1093):** ✅ No padding (only gap)
+
+**Result:** Zero internal padding across all breakpoints.
+
+### Result
+
+✅ **Child elements now touch container edges:**
+- GW selector sits flush with container
+- Stat boxes sit flush with container
+- Pitch view sits flush with container
+- No wasted space between container and content
+
+✅ **Maximum space efficiency:**
+- Mobile: Maximizes usable screen space
+- Desktop: Cleaner, tighter layout
+- Edge spacing (12px) preserved from K-76
+
+**Layout Stack:**
+```
+Phone edge
+└── 12px spacing (K-76 - preserved)
+    └── Container (.myTeamContent)
+        └── 0px padding (K-80 - removed!)
+            └── Child elements (GW selector, stats, pitch)
+```
+
+### Files Modified
+
+- `src/components/Dashboard/Dashboard.module.css` - Removed `.myTeamContent` padding
+- `package.json` → v3.4.41
+- `VERSION_HISTORY.md` → This entry
+- `README.md` → Version update
+- `CLAUDE.md` → Version update
 
 ---
 
