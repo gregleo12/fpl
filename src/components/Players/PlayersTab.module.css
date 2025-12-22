@@ -478,49 +478,50 @@
     font-size: 0.8125rem;
   }
 
+  /* K-102: Tighter columns for mobile - fit all 5 columns on 390px */
   .playerHeader {
-    width: 130px;
-    max-width: 130px;
-    min-width: 130px;
-    padding: 8px 6px;
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+    padding: 8px 4px;
   }
 
   .playerCell {
-    width: 130px;
-    max-width: 130px;
-    min-width: 130px;
-    padding: 8px 6px;
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+    padding: 8px 4px;
   }
 
   .playerInfo {
-    gap: 8px;
+    gap: 6px;
   }
 
   .jersey {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
   }
 
   .playerName {
-    max-width: 90px;
+    max-width: 70px;
     font-size: 0.8125rem;
   }
 
   .positionBadge {
     font-size: 0.625rem;
-    padding: 1px 5px;
+    padding: 1px 4px;
   }
 
-  /* Compact data columns for mobile fit */
+  /* K-102: Compact data columns for mobile fit - all 5 columns visible */
   .statHeader {
-    padding: 8px 4px;
-    font-size: 0.6875rem;
-    min-width: 48px;
+    padding: 6px 3px;
+    font-size: 0.625rem;
+    min-width: 45px;
   }
 
   .statsCell {
-    padding: 8px 4px;
-    font-size: 0.75rem;
+    padding: 6px 3px;
+    font-size: 0.7rem;
   }
 
   /* Prevent iOS zoom on input focus */

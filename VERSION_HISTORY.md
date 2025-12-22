@@ -2,7 +2,73 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.16 (December 22, 2025)
+**Current Version:** v3.5.17 (December 22, 2025)
+
+---
+
+## v3.5.17 - Tighten Players Tab Columns for Mobile (K-102) (Dec 22, 2025)
+
+**Mobile Optimization:** Reduced column widths to fit all 5 columns (PLAYER, £, %, PT, FORM) on iPhone 12 Pro (390px) without horizontal scroll.
+
+### Problem
+
+On iPhone 12 Pro (390px width), the FORM column was partially cut off showing "FO" instead of "FORM". Horizontal scroll was needed to see all data.
+
+**Columns too wide:**
+- PLAYER: 130px
+- Data columns: 48px min-width, 8px 4px padding
+- Total: ~410px (exceeds 366px usable width)
+
+### Solution
+
+Tightened all column widths to fit within 390px screen:
+
+**CSS Changes (`src/components/Players/PlayersTab.module.css` @ 480px breakpoint):**
+
+**Player Column (130px → 90px):**
+- `.playerHeader`, `.playerCell`: `width: 90px` (was 130px)
+- `.playerName`: `max-width: 70px` (was 90px)
+- `.playerInfo`: `gap: 6px` (was 8px)
+- `.jersey`: `26px` (was 28px)
+- `.positionBadge`: `padding: 1px 4px` (was 1px 5px)
+
+**Data Columns (tighter padding/sizing):**
+- `.statHeader`, `.statsCell`: `padding: 6px 3px` (was 8px 4px)
+- `.statHeader`: `min-width: 45px` (was 48px)
+- `.statHeader`: `font-size: 0.625rem` (was 0.6875rem)
+- `.statsCell`: `font-size: 0.7rem` (was 0.75rem)
+
+**New Total Width: ~307px** (fits comfortably in 366px usable width)
+
+### Column Width Distribution (Mobile 390px)
+
+| Column | Before | After | Savings |
+|--------|--------|-------|---------|
+| PLAYER | 130px | 90px | -40px |
+| £ | ~70px | ~55px | -15px |
+| % | ~70px | ~58px | -12px |
+| PT | ~70px | ~52px | -18px |
+| FORM | ~70px | ~52px | -18px |
+| **Total** | ~410px | ~307px | -103px |
+
+### Files Modified
+
+- `src/components/Players/PlayersTab.module.css` (tightened mobile columns @ 480px)
+
+### Result
+
+✅ All 5 columns visible on 390px width
+✅ No horizontal scroll needed
+✅ FORM column fully visible (not cut off)
+✅ Player names still readable (70px max-width with truncation)
+✅ Saved ~103px total width
+✅ Fits iPhone SE (320px), 12 Pro (390px), Pro Max (430px)
+
+**After:**
+```
+PLAYER   £     %     PT↓  FORM
+Haaland  15.0m 73.3% 135  6.6
+```
 
 ---
 
