@@ -2,7 +2,87 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.39 (December 22, 2025)
+**Current Version:** v3.4.40 (December 22, 2025)
+
+---
+
+## v3.4.40 - Make Stats > Team Container Explicitly Transparent (K-79) (Dec 22, 2025)
+
+**Code Clarity:** Added explicit transparent properties to `.myTeamTab` for crystal-clear styling intent.
+
+### Problem
+
+While `.myTeamTab` container was already functionally transparent (had no background/shadow/border), it lacked explicit transparency declarations. This could lead to:
+- Ambiguity about intended styling
+- Risk of future CSS additions inadvertently adding visual styling
+- Unclear separation between layout (container) and visual styling (child sections)
+
+### Goal
+
+Make it **crystal clear** that `.myTeamTab` is a pure layout container with zero visual styling.
+
+### Fix
+
+**File:** `src/components/Dashboard/Dashboard.module.css` (lines 1-12)
+
+Added explicit transparent properties:
+
+```css
+.leagueTab,
+.myTeamTab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+
+  /* K-79: Explicitly transparent - no visual styling, only layout */
+  background: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+}
+```
+
+### What This Ensures
+
+**Container Role:**
+- `.myTeamTab` = Pure layout wrapper (flex, gap, spacing)
+- Visual styling = Only on child `.section` elements
+
+**Prevents:**
+- Accidental addition of background colors
+- Box shadows being added by global styles
+- Borders appearing from inheritance
+
+### Verification
+
+Checked all media queries for `.myTeamTab`:
+- **Base (line 2):** ✅ Explicitly transparent
+- **Desktop (line 17):** ✅ Only adds `padding-top: 2.5rem` (layout)
+- **Mobile (line 773):** ✅ Only adds `gap`, `overflow-x`, `max-width` (layout)
+
+No media query adds any visual styling - confirmed transparent across all breakpoints.
+
+### Result
+
+✅ **Container is now explicitly and intentionally transparent:**
+- No background (transparent)
+- No shadow (none)
+- No border (none)
+- Only provides flex layout and spacing
+- Child sections (`.section`) have visual styling (correct)
+
+✅ **Code clarity improved:**
+- Future developers see explicit intent
+- Less risk of accidental styling additions
+- Clear separation: layout (container) vs visual (sections)
+
+### Files Modified
+
+- `src/components/Dashboard/Dashboard.module.css` - Added explicit transparency
+- `package.json` → v3.4.40
+- `VERSION_HISTORY.md` → This entry
+- `README.md` → Version update
+- `CLAUDE.md` → Version update
 
 ---
 
