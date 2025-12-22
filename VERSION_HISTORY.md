@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.46 (December 22, 2025)
+**Current Version:** v3.5.0 (December 22, 2025)
+
+---
+
+## v3.5.0 - Layout Consistency Release (Dec 22, 2025)
+
+**Minor Version Release:** This release fixes critical layout issues affecting container width consistency across all dashboard tabs.
+
+### Summary of Changes (K-81 through K-87)
+
+This version includes fixes from tasks K-81 through K-87, addressing:
+- Container padding inconsistencies
+- Dark background shadows between cards
+- Width alignment issues between tabs and navigation bar
+- Asymmetric spacing on mobile devices
+
+### Key Fixes Included
+
+**K-81:** Removed internal padding from Rivals container
+**K-82-K-83:** Removed dark background shadow in Stats > Team tab
+**K-84-K-85:** Fixed container width inconsistency using wrapper pattern
+**K-86-K-87:** Fixed asymmetric spacing by removing width constraint
+
+### Final Result
+
+All dashboard tabs now have:
+- ✅ Consistent 12px edge spacing on mobile
+- ✅ Content width matches navigation bar exactly
+- ✅ No dark shadows between card elements
+- ✅ Symmetric spacing on both left and right sides
+- ✅ Clean, unified layout across My Team, Rivals, Rank, Stats, and Settings tabs
+
+### Files Changed
+
+- `src/components/Fixtures/Fixtures.module.css`
+- `src/components/Dashboard/Dashboard.module.css`
+- `src/app/dashboard/dashboard.module.css`
+- `src/app/dashboard/page.tsx`
 
 ---
 
