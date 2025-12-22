@@ -2,7 +2,88 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.4.37 (December 22, 2025)
+**Current Version:** v3.4.38 (December 22, 2025)
+
+---
+
+## v3.4.38 - Revert K-74: Restore Stats > Team Container (K-77) (Dec 22, 2025)
+
+**Layout Fix:** Reverted K-74 changes to restore consistent container structure across all Stats tabs.
+
+### Problem
+
+After K-74, Stats > Team tab rendered differently than other Stats tabs (GW, Season, Players):
+
+- **Stats > Team:** No container wrapper, content appeared edge-to-edge
+- **Stats > GW/Season/Players:** Had container wrapper with consistent spacing
+
+This created visual inconsistency where Stats > Team looked wider/different than the other tabs.
+
+### Root Cause
+
+**K-74 Changes (Now Reverted):**
+1. Created new `.statsTeamContainer` class with `padding-top: 0`
+2. Changed `MyTeamView.tsx` to use `.statsTeamContainer` instead of `.myTeamTab`
+3. Goal was to remove double padding, but inadvertently removed the container structure
+
+### Fix
+
+Reverted all K-74 changes:
+
+**1. MyTeamView.tsx (line 119)**
+```tsx
+// BEFORE (K-74)
+<div className={styles.statsTeamContainer}>
+
+// AFTER (K-77 - Reverted)
+<div className={styles.myTeamTab}>
+```
+
+**2. Dashboard.module.css**
+- Deleted `.statsTeamContainer` class entirely (lines 750-756)
+- Deleted `.statsTeamContainer` mobile override (lines 772-779)
+
+**3. Transparent Container**
+- `.myTeamTab` was already transparent (no background, no box-shadow)
+- Only provides layout structure (flex, gap, padding)
+- Visual styling comes from child `.section` elements
+
+### Implementation Notes
+
+The `.myTeamTab` class serves as a transparent container wrapper:
+
+```css
+.myTeamTab {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* No background */
+  /* No box-shadow */
+  /* Only structure and spacing */
+}
+```
+
+The double padding issue from K-74 was actually a non-issue because:
+- StatsHub's `padding-top: 2.5rem` is on the outer container
+- MyTeamTab's structure doesn't add extra padding-top by default
+- K-76 already standardized mobile edge spacing to 12px
+
+### Result
+
+✅ **All Stats tabs now have consistent container structure:**
+- Stats > Team matches Stats > GW, Season, Players
+- Container is transparent (invisible)
+- Content width identical across all tabs
+- Mobile spacing remains 12px (from K-76)
+
+### Files Modified
+
+- `src/components/Stats/MyTeamView.tsx` - Reverted to `.myTeamTab`
+- `src/components/Dashboard/Dashboard.module.css` - Removed `.statsTeamContainer` class
+- `package.json` → v3.4.38
+- `VERSION_HISTORY.md` → This entry
+- `README.md` → Version update
+- `CLAUDE.md` → Version update
 
 ---
 
