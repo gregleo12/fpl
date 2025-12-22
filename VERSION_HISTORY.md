@@ -2,7 +2,63 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.15 (December 22, 2025)
+**Current Version:** v3.5.16 (December 22, 2025)
+
+---
+
+## v3.5.16 - Match Season GWs Text Style to Players Count (K-101) (Dec 22, 2025)
+
+**UI Consistency:** Removed container around "16 GWs Completed" and styled it as plain text to match "Showing 760 of 760 players".
+
+### Problem
+
+Season tab showed "16 GWs Completed" in a dark container box with white text, while Players tab showed "Showing 760 of 760 players" as simple grey text with no container.
+
+**Before:**
+```
+┌─────────────────────────────────────┐
+│      16 GWs Completed               │  ← White text in dark box
+└─────────────────────────────────────┘
+```
+
+### Solution
+
+Removed all container styling and matched the text style to Players tab.
+
+**Component Changes (`src/components/Stats/SeasonView.tsx`):**
+- Removed inner `<span className={styles.seasonGW}>` wrapper
+- Text now directly in `.seasonInfo` div
+
+**CSS Changes (`src/components/Stats/SeasonView.module.css`):**
+- Removed container styling:
+  - `background: rgba(0, 0, 0, 0.3)` → removed
+  - `border: 1px solid rgba(255, 255, 255, 0.1)` → removed
+  - `border-radius: 12px` → removed
+  - `padding: 0.5rem 1rem` → removed
+- Updated text styling to match Players tab:
+  - `font-size: 0.875rem` (14px)
+  - `color: rgba(255, 255, 255, 0.6)` (muted grey)
+  - `font-weight: 500`
+  - `margin-bottom: 1rem`
+- Removed `.seasonGW` class (no longer used)
+
+### Files Modified
+
+- `src/components/Stats/SeasonView.tsx` (removed inner span)
+- `src/components/Stats/SeasonView.module.css` (removed container, matched text style)
+
+### Result
+
+✅ Removed container around "16 GWs Completed"
+✅ Matched text style to Players tab (muted grey, no box)
+✅ Consistent styling across tabs
+✅ Cleaner, less cluttered appearance
+✅ Same font size, color, and weight as Players count
+
+**After:**
+```
+16 GWs Completed               ← Light grey text, no container
+```
 
 ---
 

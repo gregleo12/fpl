@@ -2,26 +2,17 @@
   padding-top: 0; /* K-71: Removed top padding */
 }
 
-/* K-97: Season header - match nav bar styling */
+/* K-101: Season GWs text - match Players count style (no container) */
 .seasonInfo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 0.5rem 1rem;
-  margin-bottom: 0.75rem; /* Reduced to match section spacing */
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
   text-align: center;
+  margin-bottom: 1rem;
 }
 
 /* K-97: Removed .seasonLabel (no longer used) */
-
-.seasonGW {
-  font-size: 0.9375rem;
-  font-weight: 600;
-  color: white;
-}
+/* K-101: Removed .seasonGW (no longer used - text is now in .seasonInfo) */
 
 .section {
   margin-bottom: 0; /* Removed excess spacing - last element */

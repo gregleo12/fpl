@@ -107,9 +107,9 @@ export function SeasonView({ leagueId }: Props) {
 
   return (
     <div className={styles.container}>
-      {/* K-97: Season Info - centered header with shortened text */}
+      {/* K-101: Season GWs count - match Players tab style (plain text, no container) */}
       <div className={styles.seasonInfo}>
-        <span className={styles.seasonGW}>{data.completedGameweeks} GWs Completed</span>
+        {data.completedGameweeks} GWs Completed
       </div>
 
       {/* Leaderboards Section */}
