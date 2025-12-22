@@ -2,7 +2,53 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.17 (December 22, 2025)
+**Current Version:** v3.5.18 (December 22, 2025)
+
+---
+
+## v3.5.18 - Shorten GW Labels in Tables (K-103) (Dec 22, 2025)
+
+**Mobile Optimization:** Removed "GW" prefix from gameweek labels in table cells to save horizontal space. Headers retain "GW" for context.
+
+### Problem
+
+Table cells showing "GW17", "GW3", etc. consumed unnecessary horizontal space on mobile devices.
+
+**Space Usage:**
+- "GW17": ~35px width
+- "17": ~18px width
+- **Savings:** ~17px per cell
+
+### Solution
+
+Removed "GW" prefix from gameweek values in table cells while keeping headers labeled "GW" for context.
+
+**Changes (`src/components/Stats/MyTeamView.tsx`):**
+
+**Chips Played Table (Line 219):**
+```tsx
+<td>{chip.event}</td>  // Was: <td>GW{chip.event}</td>
+```
+
+**Chips Faced Table (Line 289):**
+```tsx
+<td>{chip.event}</td>  // Was: <td>GW{chip.event}</td>
+```
+
+**Match History Table (Line 338):**
+```tsx
+<td>{match.event}</td>  // Was: <td>GW{match.event}</td>
+```
+
+### Result
+
+- ✅ All tables show gameweek numbers without "GW" prefix
+- ✅ Headers still show "GW" for context
+- ✅ Saved ~17px horizontal space per cell
+- ✅ Better mobile readability
+
+**Files Modified:**
+- `src/components/Stats/MyTeamView.tsx`
 
 ---
 

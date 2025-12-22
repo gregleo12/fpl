@@ -216,7 +216,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                   return (
                     <tr key={chip.event}>
                       <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.name)}</span></td>
-                      <td>GW{chip.event}</td>
+                      <td>{chip.event}</td>
                       <td>{match?.opponentName ? shortenManagerName(match.opponentName) : '-'}</td>
                       <td>
                         {match ? `${match.playerPoints}-${match.opponentPoints}` : '-'}
@@ -286,7 +286,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
                             {getChipAbbreviation(chip.chipName)}
                           </span>
                         </td>
-                        <td>GW{chip.event}</td>
+                        <td>{chip.event}</td>
                         <td>{shortenManagerName(chip.opponentName)}</td>
                         <td>
                           {yourScore}-{chip.opponentPoints}
@@ -335,7 +335,7 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
 
                 return (
                   <tr key={match.event}>
-                    <td>GW{match.event}</td>
+                    <td>{match.event}</td>
                     <td>{shortenManagerName(match.opponentName)}</td>
                     <td>{match.playerPoints}-{match.opponentPoints}</td>
                     <td>
