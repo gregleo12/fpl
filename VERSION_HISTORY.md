@@ -2,7 +2,70 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.3 (December 22, 2025)
+**Current Version:** v3.5.4 (December 22, 2025)
+
+---
+
+## v3.5.4 - Fix GW Selector SIZE (K-90 - K-89 Follow-up) (Dec 22, 2025)
+
+**Critical Fix:** K-89 only fixed cosmetic elements (arrows, dot). This fix addresses the actual sizing inconsistencies that made bars look different heights.
+
+### Problem
+
+After K-89, GW selectors had inconsistent **dimensions** across tabs:
+- **Stats > GW bar:** TALLER than Rivals (larger buttons, larger text)
+- **My Team bar:** TALLER than Rivals (larger buttons, larger text)
+- **My Team bar:** NOT full width (had alignment issues)
+
+### Root Cause
+
+My Team and Stats tabs had different pixel values than Rivals reference:
+
+| Element | Rivals (Correct) | My Team/Stats (Wrong) |
+|---------|------------------|----------------------|
+| Container gap | 0.5rem | 0.75rem ❌ |
+| Arrow buttons | 40px × 40px | 36px × 36px ❌ |
+| Refresh button | 40px × 40px | 36px × 36px ❌ |
+| Arrow font-size | 0.9375rem | 1.125rem ❌ |
+| GW number font-size | 0.9375rem | 1.5rem ❌ |
+
+### Solution
+
+Extracted **EXACT** pixel values from Rivals CSS and applied them to My Team and Stats:
+
+**Fixed Values:**
+```css
+/* Container */
+.gwSelector {
+  gap: 0.5rem;  /* Was 0.75rem */
+}
+
+/* Arrow and Refresh Buttons */
+.gwButton, .refreshButton {
+  width: 40px;   /* Was 36px */
+  height: 40px;  /* Was 36px */
+  font-size: 0.9375rem;  /* Was 1.125rem */
+}
+
+/* GW Number */
+.gwNumber {
+  font-size: 0.9375rem;  /* Was 1.5rem */
+}
+```
+
+### Files Changed
+
+- `src/components/PitchView/GWSelector.module.css` → Fixed button sizes, gaps, font sizes
+- `src/components/Stats/StatsHub.module.css` → Fixed button sizes, gaps, font sizes
+
+### Result
+
+- ✅ All GW selector bars now have **identical height**
+- ✅ All button sizes match exactly (40px × 40px)
+- ✅ All font sizes match exactly (0.9375rem for GW, arrows)
+- ✅ All spacing matches exactly (0.5rem gap)
+- ✅ My Team, Stats, and Rivals bars are visually indistinguishable
+- ✅ Professional, pixel-perfect consistency across all tabs
 
 ---
 
