@@ -2,7 +2,86 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 280+ versions
-**Current Version:** v3.5.7 (December 22, 2025)
+**Current Version:** v3.5.8 (December 22, 2025)
+
+---
+
+## v3.5.8 - Style Stats Tabs to Match Rivals (K-94) (Dec 22, 2025)
+
+**UI Enhancement:** Applied Rivals tab styling to Stats view toggle tabs with icons and badge backgrounds.
+
+### Problem
+
+Stats tab buttons (Team, GW, Season, Players) had plain text styling:
+- No badge/pill backgrounds
+- No icons
+- Different visual hierarchy than Rivals tabs
+- Inconsistent styling across app
+
+### Solution
+
+**Applied EXACT Rivals tab styling:**
+
+**Added Icons (Lucide React):**
+- Team: `Home` icon (house)
+- GW: `BarChart2` icon (bar chart)
+- Season: `Trophy` icon (trophy)
+- Players: `Shirt` icon (jersey)
+
+**CSS Updates - EXACT COPY from Rivals:**
+```css
+.subTab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subTabActive {
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
+}
+```
+
+**Mobile Responsive:**
+```css
+@media (max-width: 640px) {
+  .subTab {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.5rem;
+  }
+}
+```
+
+### Files Modified
+
+- `src/components/Stats/StatsHub.tsx` (added icons, updated class names to `.subTab`/`.subTabActive`)
+- `src/components/Stats/StatsHub.module.css` (copied `.subTab` styling from Rivals, added mobile overrides)
+
+### Result
+
+✅ Stats tabs now match Rivals tabs exactly:
+- Badge/pill backgrounds with borders
+- Icons before text (16px size)
+- Selected tab: Green tint (#00ff87) with green border
+- Non-selected tab: Grey text with subtle border
+- Hover state: Lighter background
+
+✅ Desktop: 0.5rem 1rem padding, 0.9375rem font-size
+✅ Mobile: 0.5rem padding, 0.875rem font-size
+✅ Icons scale with flex-shrink: 0
+✅ All transitions smooth (0.2s ease)
+
+**Visual Result:**
+```
+Before: Team   GW   Season   Players
+After:  [🏠 Team]  [📊 GW]  [🏆 Season]  [👕 Players]
+```
 
 ---
 

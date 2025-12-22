@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, Home, BarChart2, Trophy, Shirt } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -144,30 +144,34 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
 
   return (
     <div className={styles.container}>
-      {/* K-94: First bar - View toggle (always visible) */}
+      {/* K-94: First bar - View toggle with icons (matches Rivals style) */}
       <div className={styles.viewToggleBar}>
         <button
-          className={`${styles.viewTab} ${view === 'myteam' ? styles.viewTabActive : ''}`}
+          className={`${styles.subTab} ${view === 'myteam' ? styles.subTabActive : ''}`}
           onClick={() => setView('myteam')}
         >
+          <Home size={16} />
           Team
         </button>
         <button
-          className={`${styles.viewTab} ${view === 'gameweek' ? styles.viewTabActive : ''}`}
+          className={`${styles.subTab} ${view === 'gameweek' ? styles.subTabActive : ''}`}
           onClick={() => setView('gameweek')}
         >
+          <BarChart2 size={16} />
           GW
         </button>
         <button
-          className={`${styles.viewTab} ${view === 'season' ? styles.viewTabActive : ''}`}
+          className={`${styles.subTab} ${view === 'season' ? styles.subTabActive : ''}`}
           onClick={() => setView('season')}
         >
+          <Trophy size={16} />
           Season
         </button>
         <button
-          className={`${styles.viewTab} ${view === 'players' ? styles.viewTabActive : ''}`}
+          className={`${styles.subTab} ${view === 'players' ? styles.subTabActive : ''}`}
           onClick={() => setView('players')}
         >
+          <Shirt size={16} />
           Players
         </button>
       </div>

@@ -22,9 +22,10 @@
   margin-bottom: 1rem;
 }
 
-.viewTab {
-  background: transparent;
-  border: none;
+/* K-94: Sub-tab buttons - EXACT COPY from Rivals */
+.subTab {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.6);
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -33,17 +34,24 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.viewTab:hover {
+.subTab svg {
+  flex-shrink: 0;
+}
+
+.subTab:hover {
   color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.viewTabActive {
-  background: rgba(0, 255, 135, 0.2);
-  color: #00ff87;
-  border: 1px solid rgba(0, 255, 135, 0.3);
+.subTabActive {
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
 }
 
 /* K-94: Second bar - GW selector (only for GW view) - EXACT COPY from Rivals/My Team */
@@ -222,9 +230,10 @@
     justify-content: center;
   }
 
-  .viewTab {
+  /* K-94: Mobile subTab sizing - matches Rivals */
+  .subTab {
     font-size: 0.875rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 0.5rem;
   }
 
   .gwSelectorBar {
