@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -875,22 +876,36 @@ async function calculateStreaks(
   };
 }
 
-// Calculate best and worst gameweeks from database
+// Calculate best and worst gameweeks from database (K-109 Phase 4: Hybrid approach)
 async function calculateBestWorstGameweeks(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  // K-67: Filter to only COMPLETED gameweeks (exclude live/upcoming GWs with 0 points)
+  console.log('[K-109 Phase 4] Calculating Best/Worst Gameweeks');
+
+  // K-67 + K-109: Determine completed vs live gameweeks
   let completedGameweeks = gameweeks;
+  let currentGW: number | null = null;
+  let currentGWStatus: 'completed' | 'in_progress' | 'upcoming' = 'completed';
+
   try {
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     if (bootstrapResponse.ok) {
       const bootstrapData = await bootstrapResponse.json();
       const events = bootstrapData?.events || [];
 
-      // Only include finished gameweeks (not is_current, only finished=true)
+      // Find current gameweek
+      const currentEvent = events.find((e: any) => e.is_current);
+      if (currentEvent) {
+        currentGW = currentEvent.id;
+        currentGWStatus = currentEvent.finished ? 'completed' :
+                         currentEvent.is_current ? 'in_progress' : 'upcoming';
+        console.log(`[K-109 Phase 4] Current GW: ${currentGW}, Status: ${currentGWStatus}`);
+      }
+
+      // Only include finished gameweeks in DB query
       const finishedGWs = events
         .filter((e: any) => e.finished)
         .map((e: any) => e.id);
@@ -898,47 +913,90 @@ async function calculateBestWorstGameweeks(
       // Filter gameweeks to only include finished ones
       completedGameweeks = gameweeks.filter(gw => finishedGWs.includes(gw));
 
-      console.log(`[K-67] Filtered gameweeks: ${gameweeks.length} → ${completedGameweeks.length} (excluded live/upcoming)`);
+      console.log(`[K-109 Phase 4] Gameweeks: ${gameweeks.length} total, ${completedGameweeks.length} completed`);
     }
   } catch (error) {
-    console.error('[K-67] Error fetching bootstrap for GW filtering:', error);
-    // Fallback to all gameweeks if bootstrap fetch fails
+    console.error('[K-109 Phase 4] Error fetching bootstrap:', error);
   }
 
-  // If no completed gameweeks, return empty
-  if (completedGameweeks.length === 0) {
+  // Get completed GW scores from database
+  let allScores: any[] = [];
+
+  if (completedGameweeks.length > 0) {
+    const scoresResult = await db.query(`
+      SELECT
+        mgh.entry_id,
+        mgh.event,
+        mgh.points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history mgh
+      JOIN managers m ON mgh.entry_id = m.entry_id
+      WHERE mgh.league_id = $1
+        AND mgh.event = ANY($2)
+      ORDER BY mgh.points DESC
+    `, [leagueId, completedGameweeks]);
+
+    allScores = scoresResult.rows.map((row: any) => ({
+      entry_id: row.entry_id,
+      player_name: row.player_name,
+      team_name: row.team_name,
+      event: row.event,
+      points: row.points || 0,
+    }));
+
+    console.log(`[K-109 Phase 4] Fetched ${allScores.length} scores from DB for completed GWs`);
+  }
+
+  // K-109 Phase 4: If current GW is live, add K-108c scores
+  if (currentGW && currentGWStatus !== 'completed') {
+    console.log(`[K-109 Phase 4] Adding live GW${currentGW} scores via K-108c...`);
+
+    const liveScoresPromises = managers.map(async (manager) => {
+      try {
+        const result = await calculateTeamGameweekScore(manager.entry_id, currentGW);
+        return {
+          entry_id: manager.entry_id,
+          player_name: manager.player_name,
+          team_name: manager.team_name,
+          event: currentGW,
+          points: result.points.net_total
+        };
+      } catch (error: any) {
+        console.error(`[K-109 Phase 4] Error calculating score for ${manager.entry_id}:`, error.message);
+        return null;
+      }
+    });
+
+    const liveScores = (await Promise.all(liveScoresPromises)).filter(Boolean);
+    console.log(`[K-109 Phase 4] Calculated ${liveScores.length} live scores for GW${currentGW}`);
+
+    // Merge with completed scores
+    allScores = [...allScores, ...liveScores];
+    console.log(`[K-109 Phase 4] Total scores (DB + live): ${allScores.length}`);
+  }
+
+  // If no scores at all, return empty
+  if (allScores.length === 0) {
+    console.log('[K-109 Phase 4] No scores available');
     return {
       best: [],
       worst: []
     };
   }
 
-  // Get all gameweek scores from manager_gw_history (only completed GWs)
-  const scoresResult = await db.query(`
-    SELECT
-      mgh.entry_id,
-      mgh.event,
-      mgh.points,
-      m.player_name,
-      m.team_name
-    FROM manager_gw_history mgh
-    JOIN managers m ON mgh.entry_id = m.entry_id
-    WHERE mgh.league_id = $1
-      AND mgh.event = ANY($2)
-    ORDER BY mgh.points DESC
-  `, [leagueId, completedGameweeks]);
+  // Sort for best and worst
+  const sortedBest = [...allScores].sort((a, b) => b.points - a.points);
+  const sortedWorst = [...allScores].sort((a, b) => a.points - b.points);
 
-  const allScores = scoresResult.rows.map((row: any) => ({
-    entry_id: row.entry_id,
-    player_name: row.player_name,
-    team_name: row.team_name,
-    event: row.event,
-    points: row.points || 0,
-  }));
+  console.log('[K-109 Phase 4] Best/Worst calculated:', {
+    bestTopThree: sortedBest.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points })),
+    worstTopThree: sortedWorst.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points }))
+  });
 
   return {
-    best: allScores,
-    worst: [...allScores].reverse(), // Create copy before reversing
+    best: sortedBest,
+    worst: sortedWorst,
   };
 }
 

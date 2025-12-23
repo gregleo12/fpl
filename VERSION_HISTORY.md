@@ -1,8 +1,81 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 285+ versions
-**Current Version:** v3.6.5 (December 23, 2025)
+**Total Releases:** 286+ versions
+**Current Version:** v3.6.6 (December 23, 2025)
+
+---
+
+## v3.6.6 - K-109 Phase 4: Stats Season Tab Uses K-108c for Live GW (Dec 23, 2025)
+
+**Feature:** Hybrid approach for Stats > Season tab - database for completed GWs, K-108c for live GW.
+
+### Changes
+
+**Season Stats API Hybrid Approach:**
+- Updated `/api/league/[id]/stats/season` to detect current GW status
+- Best/Worst Gameweeks now uses K-108c for live/current GW
+- Completed GWs continue using fast database queries
+- Live GW scores calculated in parallel for all 20 managers
+
+**BestWorstGameweeks Function:**
+- Added current GW status detection (completed vs in_progress vs upcoming)
+- Database query for completed GWs only
+- K-108c parallel calculation for live GW
+- Merged results for complete historical + live view
+- Comprehensive debug logging with `[K-109 Phase 4]` prefix
+
+**Frontend Debug Logging:**
+- Added console logging to `BestWorstGW` component
+- Shows unique GWs in dataset to verify live GW inclusion
+- Logs top 3 best/worst scores for verification
+
+**Code Pattern:**
+```typescript
+// Completed GWs from DB (fast)
+const dbScores = await db.query(/* ... */);
+
+// If current GW is live, add K-108c scores
+if (currentGW && currentGWStatus !== 'completed') {
+  const liveScores = await Promise.all(
+    managers.map(m => calculateTeamGameweekScore(m.entry_id, currentGW))
+  );
+  allScores = [...dbScores, ...liveScores];
+}
+```
+
+### Files Modified
+- `src/app/api/league/[id]/stats/season/route.ts` - Added K-108c hybrid logic
+- `src/components/Stats/season/BestWorstGW.tsx` - Added debug logging
+- `package.json` (v3.6.6)
+- `VERSION_HISTORY.md`
+- `README.md`
+
+### Impact
+- ✅ Best/Worst Gameweeks includes current GW scores when live
+- ✅ Historical data still uses fast DB queries
+- ✅ Season stats now show complete picture during live GWs
+- ✅ Consistent with K-109 hybrid approach
+
+### Performance
+- **During live GW:** 20 K-108c calls + DB queries (~2-3s total)
+- **Between GWs:** DB queries only (~50-100ms)
+- Only calculates live scores when current GW is in_progress
+
+### Testing
+- Navigate to league 804742 > Stats > Season tab
+- During live GW: verify Best Gameweeks includes current GW
+- Check console for `[K-109 Phase 4]` logs showing hybrid calculation
+- Between GWs: verify fast DB-only response
+
+### Related
+- K-108: Player points (100% accuracy)
+- K-108c: Team totals calculation
+- K-109 Phase 1: My Team stat boxes (✅ Complete)
+- K-109 Phase 2: Rivals tab (✅ Complete)
+- K-109 Phases 2-4: My Team pitch view (✅ Complete)
+- K-109 Phase 3: Stats GW rankings (✅ Complete)
+- K-109 Phase 4: Stats Season tab (✅ Complete)
 
 ---
 
