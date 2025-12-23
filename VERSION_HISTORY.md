@@ -1,8 +1,107 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 287+ versions
-**Current Version:** v3.7.0 (December 23, 2025)
+**Total Releases:** 288+ versions
+**Current Version:** v3.7.1 (December 23, 2025)
+
+---
+
+## v3.7.1 - K-110: Player Season Totals Single Source of Truth (Dec 23, 2025)
+
+**Feature:** Calculate accurate player season totals from K-108 data instead of relying on stale FPL API bootstrap totals.
+
+### The Problem
+
+- **Players Tab Total:** Shows stale FPL bootstrap `total_points` (updated 24-48h after each GW)
+- **GW Points:** Shows accurate K-108 `calculated_points` for individual gameweeks
+- **Example:** Haaland GW17 = 16 pts (accurate), but season total = 135 (missing GW17), actual should be 151
+
+### The Solution (K-110)
+
+Calculate player season total by summing all K-108 `calculated_points`:
+
+```sql
+SELECT SUM(calculated_points) as season_total
+FROM player_gameweek_stats
+WHERE player_id = $1 AND gameweek <= $2
+```
+
+### Changes
+
+**New File:**
+- `src/lib/playerCalculator.ts` - Player season total calculation functions
+
+**Updated Endpoints:**
+- `/api/players` - Now shows K-110 calculated season totals for all 760 players
+- `/api/players/[id]` - Player detail modal shows K-110 calculated total
+
+**Functions Added:**
+- `calculatePlayerSeasonTotal(playerId, throughGameweek)` - Single player
+- `calculateAllPlayerSeasonTotals(throughGameweek)` - Batch for all players
+- `getCurrentGameweek()` - Helper to determine GW to calculate through
+
+### Impact
+
+- ✅ **Instant accuracy** - No 24-48h delay waiting for FPL bootstrap update
+- ✅ **Players Tab** - Shows accurate totals immediately after GW sync
+- ✅ **Player Modal** - TOTAL stat box shows K-110 calculated total
+- ✅ **Consistent** - Uses same K-108 data as individual GW points
+- ✅ **Performance** - Batch query for all 760 players: < 100ms
+
+### Example
+
+**Before (Stale FPL Bootstrap):**
+- Haaland: 135 pts (missing GW17's 16 pts)
+
+**After (K-110 Calculated):**
+- Haaland: 151 pts (135 + 16 = accurate!)
+
+### Logging
+
+```
+[K-110] Calculating season totals for all players through GW17
+[K-110] Calculated 458 player season totals in 87ms
+[K-110] Haaland: FPL=135, K-110=151, Diff=16
+```
+
+### Technical Details
+
+**API Response Changes:**
+```typescript
+// /api/players response now includes:
+{
+  total_points: 151,        // K-110 calculated total
+  fpl_total_points: 135,    // Original FPL bootstrap (for comparison)
+  // ... other fields
+}
+
+// /api/players/[id] response now includes:
+{
+  totals: {
+    points: 151,            // K-110 calculated total
+    fpl_points: 135,        // Original FPL bootstrap
+    // ... other stats
+  }
+}
+```
+
+### Files Modified
+- `src/lib/playerCalculator.ts` (NEW)
+- `src/app/api/players/route.ts`
+- `src/app/api/players/[id]/route.ts`
+- `package.json` (v3.7.1)
+- `VERSION_HISTORY.md`
+- `README.md`
+
+### Relationship to K-108/K-108c
+
+| Feature | What It Does |
+|---------|--------------|
+| **K-108** | Player GW points (`calculated_points` column) |
+| **K-108c** | Team GW totals (sum of player points) |
+| **K-110** | Player season totals (sum of all GW points) |
+
+K-110 builds on K-108 - it simply sums the `calculated_points` we already have.
 
 ---
 

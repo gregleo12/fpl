@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateAllPlayerSeasonTotals, getCurrentGameweek } from '@/lib/playerCalculator';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -107,11 +108,29 @@ export async function GET(request: NextRequest) {
       'SELECT id, name, short_name FROM teams ORDER BY name'
     );
 
+    // K-110: Calculate accurate season totals from K-108 data
+    const currentGW = await getCurrentGameweek();
+    const seasonTotals = await calculateAllPlayerSeasonTotals(currentGW);
+    console.log(`[K-110] Calculated season totals for ${seasonTotals.size} players through GW${currentGW}`);
+
     // Format players
-    const players = playersResult.rows.map((p: any) => ({
-      ...p,
-      price: `£${(p.now_cost / 10).toFixed(1)}m`
-    }));
+    const players = playersResult.rows.map((p: any) => {
+      // K-110: Replace stale FPL total_points with calculated total
+      const calculatedTotal = seasonTotals.get(p.id);
+      const total = calculatedTotal !== undefined ? calculatedTotal : p.total_points;
+
+      // Log if we're using K-110 vs FPL bootstrap
+      if (calculatedTotal !== undefined && calculatedTotal !== p.total_points) {
+        console.log(`[K-110] ${p.web_name}: FPL=${p.total_points}, K-110=${calculatedTotal}, Diff=${calculatedTotal - p.total_points}`);
+      }
+
+      return {
+        ...p,
+        total_points: total, // K-110 calculated total
+        fpl_total_points: p.total_points, // Keep original for comparison
+        price: `£${(p.now_cost / 10).toFixed(1)}m`
+      };
+    });
 
     return NextResponse.json({
       players,

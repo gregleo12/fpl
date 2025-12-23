@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { syncPlayerHistory } from '@/lib/sync/playerSync';
+import { calculatePlayerSeasonTotal } from '@/lib/playerCalculator';
 
 // Force dynamic rendering for fresh player data (K-63b)
 export const dynamic = 'force-dynamic';
@@ -211,6 +212,18 @@ export async function GET(
 
     console.log(`[Player ${playerId}] Final: isLive=${isLive}, provisionalBonus=${provisionalBonus}`);
 
+    // K-110: Calculate accurate season total from K-108 data
+    let seasonTotal = player.total_points; // Fallback to FPL bootstrap
+    if (currentGW > 0) {
+      try {
+        seasonTotal = await calculatePlayerSeasonTotal(playerId, currentGW);
+        console.log(`[K-110] Player ${playerId} (${player.web_name}): FPL=${player.total_points}, K-110=${seasonTotal}, Diff=${seasonTotal - player.total_points}`);
+      } catch (error) {
+        console.error(`[K-110] Error calculating season total for player ${playerId}:`, error);
+        // Fall back to FPL bootstrap total on error
+      }
+    }
+
     return NextResponse.json({
       player: {
         ...player,
@@ -226,7 +239,8 @@ export async function GET(
       pastSeasons,
       fixtures,
       totals: {
-        points: player.total_points,
+        points: seasonTotal, // K-110: Accurate calculated total
+        fpl_points: player.total_points, // Original FPL bootstrap total for comparison
         minutes: player.minutes,
         goals_scored: player.goals_scored,
         assists: player.assists,
