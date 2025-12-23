@@ -1,8 +1,66 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 283+ versions
-**Current Version:** v3.6.3 (December 23, 2025)
+**Total Releases:** 284+ versions
+**Current Version:** v3.6.4 (December 23, 2025)
+
+---
+
+## v3.6.4 - K-109 Phases 2-4: My Team Pitch View Uses K-108c (Dec 23, 2025)
+
+**Feature:** Complete My Team integration with K-108c - pitch view, auto-subs, and player modal.
+
+### Changes
+
+**Phase 2: Pitch View Player Cards**
+- Updated `/api/team/[teamId]/gameweek/[gw]` to use K-108c
+- Player points now from `player_gameweek_stats.calculated_points` (100% accurate)
+- Removed dependency on old `calculateManagerLiveScore()`
+- Simplified endpoint: fetch from DB, enrich with FPL API data
+- Returns same format so frontend works without changes
+
+**Phase 3: Auto-Sub Indicators**
+- Auto-sub flags now from K-108c `auto_subs` data
+- `is_sub_in` and `is_sub_out` flags set correctly
+- Frontend already has visual indicators (will be enhanced later)
+- Console logs show auto-sub count for debugging
+
+**Phase 4: Player Modal Breakdown**
+- Added K-108c breakdown to API response
+- Includes: starting_xi_total, captain_bonus, bench_boost_total, auto_sub_total
+- Player modal can now show accurate score breakdown
+- Transfer costs correctly displayed
+
+**Code Cleanup:**
+- Removed old scoreCalculator dependency from My Team
+- New endpoint is 212 lines vs old 260+ lines (cleaner)
+- All K-108 data from single source (database)
+- Consistent with Rivals tab implementation
+
+### Files Modified
+- `src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - Complete rewrite using K-108c
+- `package.json` (v3.6.4)
+- `VERSION_HISTORY.md`
+- `README.md`
+
+### Impact
+- ✅ My Team pitch view shows 100% accurate points
+- ✅ Auto-sub indicators work correctly from K-108c data
+- ✅ Player modal has full score breakdown
+- ✅ Consistent calculation across entire app (My Team, Rivals, Stats)
+
+### Testing
+- Test with league 804742, select your team
+- Navigate to My Team tab
+- Check GW17 (or any completed GW)
+- Verify player points match FPL exactly
+- Look for `[K-109 Phase 2]` and `[K-109 Phase 3]` console logs
+
+### Related
+- K-108: Player points (100% accuracy)
+- K-108c: Team totals calculation
+- K-109 Phase 1: Stat boxes (✅ Complete)
+- K-109 Phases 2-4: Pitch view (✅ Complete)
 
 ---
 

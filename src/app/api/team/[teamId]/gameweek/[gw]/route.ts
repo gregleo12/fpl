@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { getDatabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+/**
+ * K-109 Phases 2-4: My Team Pitch View using K-108c
+ *
+ * Returns detailed team data for pitch view with:
+ * - Accurate points from K-108c
+ * - Auto-sub indicators
+ * - Player stats and fixture info
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { teamId: string; gw: string } }
@@ -17,96 +26,61 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
-    // Determine gameweek status
-    let status: 'upcoming' | 'in_progress' | 'completed' = 'in_progress';
-    try {
-      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-      if (bootstrapResponse.ok) {
-        const bootstrapData = await bootstrapResponse.json();
-        const currentEvent = bootstrapData.events.find((e: any) => e.id === gameweek);
-        if (currentEvent) {
-          if (currentEvent.finished) {
-            status = 'completed';
-          } else if (!currentEvent.is_current && !currentEvent.data_checked) {
-            status = 'upcoming';
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error determining gameweek status:', error);
+    console.log(`[K-109 Phase 2] Fetching team data for entry ${entryId}, GW${gameweek}...`);
+
+    // K-109 Phase 2: Use K-108c for accurate score calculation
+    const teamScore = await calculateTeamGameweekScore(entryId, gameweek);
+    console.log(`[K-109 Phase 2] K-108c score: ${teamScore.points.net_total} pts, status: ${teamScore.status}`);
+
+    const db = await getDatabase();
+
+    // Get manager picks from database
+    const picksResult = await db.query(
+      `SELECT player_id, position, multiplier, is_captain, is_vice_captain
+       FROM manager_picks
+       WHERE entry_id = $1 AND event = $2
+       ORDER BY position`,
+      [entryId, gameweek]
+    );
+
+    if (picksResult.rows.length === 0) {
+      return NextResponse.json({ error: 'No picks found' }, { status: 404 });
     }
 
-    // Use shared score calculator - SINGLE SOURCE OF TRUTH
-    const scoreResult = await calculateManagerLiveScore(entryId, gameweek, status);
+    const picks = picksResult.rows;
+    const playerIds = picks.map((p: any) => p.player_id);
 
-    // Fetch bootstrap data for team info, entry info, fixtures, and live data (for BPS)
-    const [bootstrapResponse, entryResponse, fixturesResponse, liveResponse] = await Promise.all([
-      fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        },
-        next: { revalidate: 300 }
-      }),
-      fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
-      }),
-      fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
-      }),
-      fetch(`https://fantasy.premierleague.com/api/event/${gameweek}/live/`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-        }
-      })
+    // Get player data from database (K-108 calculated points)
+    const playersResult = await db.query(
+      `SELECT
+        p.id,
+        p.web_name,
+        p.team_id as team,
+        p.team_code,
+        p.element_type,
+        COALESCE(pgs.calculated_points, 0) as event_points,
+        COALESCE(pgs.minutes, 0) as minutes,
+        COALESCE(pgs.bps, 0) as bps,
+        COALESCE(pgs.bonus, 0) as bonus
+       FROM players p
+       LEFT JOIN player_gameweek_stats pgs
+         ON pgs.player_id = p.id AND pgs.gameweek = $1
+       WHERE p.id = ANY($2)`,
+      [gameweek, playerIds]
+    );
+
+    // Fetch FPL API data for fixtures and teams
+    const [bootstrapResponse, entryResponse, fixturesResponse] = await Promise.all([
+      fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
+      fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`),
+      fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`)
     ]);
 
     const bootstrapData = bootstrapResponse.ok ? await bootstrapResponse.json() : null;
     const entryData = entryResponse.ok ? await entryResponse.json() : null;
-    const liveData = liveResponse.ok ? await liveResponse.json() : null;
+    const fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
 
-    // Build fixtures data with player_stats (like Rivals does)
-    let fixturesData: any[] = [];
-    if (fixturesResponse.ok) {
-      const fplFixtures = await fixturesResponse.json();
-
-      // Map fixtures to include player stats with BPS
-      fixturesData = fplFixtures.map((fixture: any) => {
-        const playerStats = liveData?.elements
-          ?.filter((el: any) => {
-            const explain = el.explain || [];
-            return explain.some((exp: any) => exp.fixture === fixture.id);
-          })
-          .map((el: any) => ({
-            id: el.id,
-            bps: el.stats.bps || 0,
-            bonus: el.stats.bonus || 0,
-          })) || [];
-
-        return {
-          id: fixture.id,
-          team_h: fixture.team_h,
-          team_a: fixture.team_a,
-          started: fixture.started ?? false,
-          finished: fixture.finished ?? false,
-          finished_provisional: fixture.finished_provisional ?? false,  // K-64: For live indicator logic
-          player_stats: playerStats,  // Now includes BPS data for provisional bonus
-        };
-      });
-    }
-
-    // Create element lookup for team info
-    const elementLookup: { [key: number]: any } = {};
-    if (bootstrapData) {
-      bootstrapData.elements.forEach((el: any) => {
-        elementLookup[el.id] = el;
-      });
-    }
-
-    // Create team lookup for fixture info
+    // Create team lookup
     const teamLookup: { [key: number]: any } = {};
     if (bootstrapData) {
       bootstrapData.teams.forEach((team: any) => {
@@ -125,7 +99,7 @@ export async function GET(
         kickoff_time: fixture.kickoff_time,
         started: fixture.started || false,
         finished: fixture.finished || false,
-        finished_provisional: fixture.finished_provisional || false  // K-64: For live indicator logic
+        finished_provisional: fixture.finished_provisional || false
       };
       teamFixtureLookup[fixture.team_a] = {
         opponent_id: fixture.team_h,
@@ -135,133 +109,100 @@ export async function GET(
         kickoff_time: fixture.kickoff_time,
         started: fixture.started || false,
         finished: fixture.finished || false,
-        finished_provisional: fixture.finished_provisional || false  // K-64: For live indicator logic
+        finished_provisional: fixture.finished_provisional || false
       };
     });
 
-    // K-63c: Helper function to calculate provisional bonus
-    const calculateProvisionalBonus = (playerId: number, fixtures: any[]): number => {
-      // Find the fixture this player is in
-      const element = elementLookup[playerId];
-      if (!element) return 0;
-
-      const playerTeam = element.team;
-      const fixture = fixtures.find((f: any) =>
-        (f.team_h === playerTeam || f.team_a === playerTeam) && f.started && !f.finished
-      );
-
-      if (!fixture || !fixture.player_stats) return 0;
-
-      // Find player in fixture stats
-      const playerData = fixture.player_stats.find((p: any) => p.id === playerId);
-      if (!playerData) return 0;
-
-      // Sort by BPS and calculate provisional bonus
-      const sortedByBPS = [...fixture.player_stats].sort((a: any, b: any) => b.bps - a.bps);
-      const rank = sortedByBPS.findIndex((p: any) => p.id === playerId);
-
-      if (rank === 0) return 3;
-      if (rank === 1) return 2;
-      if (rank === 2) return 1;
-      return 0;
-    };
-
-    // K-69: Create auto-sub lookup for flags
+    // K-109 Phase 3: Create auto-sub lookup from K-108c data
     const autoSubLookup: { [key: number]: { is_sub_in?: boolean; is_sub_out?: boolean } } = {};
-    if (scoreResult.autoSubs && scoreResult.autoSubs.substitutions) {
-      scoreResult.autoSubs.substitutions.forEach(sub => {
-        autoSubLookup[sub.playerIn.id] = { is_sub_in: true };
-        autoSubLookup[sub.playerOut.id] = { is_sub_out: true };
-      });
-    }
+    teamScore.auto_subs.forEach(sub => {
+      autoSubLookup[sub.in] = { is_sub_in: true };
+      autoSubLookup[sub.out] = { is_sub_out: true };
+    });
 
-    // Transform squad data to match frontend expectations
-    const allPlayers = [...scoreResult.squad.starting11, ...scoreResult.squad.bench];
+    console.log(`[K-109 Phase 3] Auto-subs: ${teamScore.auto_subs.length} substitutions`);
+
+    // Build player data lookup
     const playerLookup: { [key: number]: any } = {};
-
-    allPlayers.forEach(player => {
-      const element = elementLookup[player.id];
-      const positionMap: { [key: string]: number } = { GK: 1, DEF: 2, MID: 3, FWD: 4 };
-      const playerTeam = element?.team || 0;
-      const fixtureInfo = teamFixtureLookup[playerTeam] || null;
-
-      // K-63c: Calculate provisional bonus for live games ONLY (not completed GWs)
-      // K-106a: For completed GWs, player.points from scoreCalculator already includes official bonus
-      // Adding provisional bonus again would double-count (e.g., Haaland 16pts + 3 = 19, then ×3 = 57 instead of 48)
-      const provisionalBonus = status === 'completed' ? 0 : calculateProvisionalBonus(player.id, fixturesData);
-
-      // K-63c: Add provisional bonus to event_points for live games
-      const pointsWithBonus = player.points + provisionalBonus;
-
-      // K-64: Determine if player's fixture is currently live (during the actual 90 minutes)
+    playersResult.rows.forEach((player: any) => {
+      const fixtureInfo = teamFixtureLookup[player.team] || null;
       const isLive = fixtureInfo?.started && !fixtureInfo?.finished && !fixtureInfo?.finished_provisional;
-
-      // K-69: Get auto-sub flags for this player
       const autoSubFlags = autoSubLookup[player.id] || {};
 
       playerLookup[player.id] = {
         id: player.id,
-        web_name: player.name,
-        team: playerTeam,
-        team_code: element?.team_code || 0,
-        element_type: positionMap[player.position] || 0,
-        event_points: pointsWithBonus,  // K-63c: Includes provisional bonus for live games
-        bps: player.bps || 0,
-        bonus: player.bonus || 0,
-        minutes: player.minutes || 0,
-        multiplier: player.multiplier,
-        // Fixture info for players who haven't played
+        web_name: player.web_name,
+        team: player.team,
+        team_code: player.team_code,
+        element_type: player.element_type,
+        event_points: player.event_points, // K-108 calculated points (100% accurate)
+        bps: player.bps,
+        bonus: player.bonus,
+        minutes: player.minutes,
+        // Fixture info
         opponent_short: fixtureInfo?.opponent_short || null,
         opponent_name: fixtureInfo?.opponent_name || null,
         was_home: fixtureInfo?.was_home ?? null,
         kickoff_time: fixtureInfo?.kickoff_time || null,
         fixture_started: fixtureInfo?.started || false,
         fixture_finished: fixtureInfo?.finished || false,
-        isLive,  // K-64: Visual indicator for live fixtures
-        // K-69: Auto-sub flags
+        isLive,
+        // K-109 Phase 3: Auto-sub flags from K-108c
         is_sub_in: autoSubFlags.is_sub_in || false,
         is_sub_out: autoSubFlags.is_sub_out || false
       };
     });
 
-    // Transform picks to match original format - CORRECTLY assign positions
-    // Starting 11 gets positions 1-11, bench gets positions 12-15
-    const starting11Picks = scoreResult.squad.starting11.map((player, index) => ({
-      element: player.id,
-      position: index + 1, // Positions 1-11
-      multiplier: player.multiplier,
-      is_captain: player.multiplier === 2,
-      is_vice_captain: false // Would need to be extracted from original picks if needed
+    // Transform picks to match frontend format
+    const transformedPicks = picks.map((pick: any) => ({
+      element: pick.player_id,
+      position: pick.position,
+      multiplier: pick.multiplier,
+      is_captain: pick.is_captain,
+      is_vice_captain: pick.is_vice_captain
     }));
 
-    const benchPicks = scoreResult.squad.bench.map((player, index) => ({
-      element: player.id,
-      position: index + 12, // Positions 12-15
-      multiplier: player.multiplier,
-      is_captain: false, // Bench players can't be captain
-      is_vice_captain: false
-    }));
+    console.log(`[K-109 Phase 2] Returning ${transformedPicks.length} picks with K-108c data`);
 
-    const picks = [...starting11Picks, ...benchPicks];
-
-    // Return enriched data with live stats, autosubs, and provisional bonus
+    // Return enriched data
     return NextResponse.json({
-      picks,
+      picks: transformedPicks,
       playerData: playerLookup,
-      gwPoints: scoreResult.score,
-      breakdown: scoreResult.breakdown,
-      autoSubs: scoreResult.autoSubs,
-      chip: scoreResult.chip,
-      captain: scoreResult.captain,
+      // K-109 Phase 4: Include K-108c breakdown for modal
+      gwPoints: teamScore.points.net_total,
+      breakdown: {
+        starting_xi_total: teamScore.points.starting_xi_total,
+        captain_bonus: teamScore.points.captain_bonus,
+        bench_boost_total: teamScore.points.bench_boost_total,
+        auto_sub_total: teamScore.points.auto_sub_total,
+        gross_total: teamScore.points.gross_total,
+        transfer_cost: teamScore.points.transfer_cost,
+        net_total: teamScore.points.net_total
+      },
+      autoSubs: teamScore.auto_subs.map(sub => ({
+        playerOut: {
+          id: sub.out,
+          name: sub.out_name
+        },
+        playerIn: {
+          id: sub.in,
+          name: sub.in_name,
+          points: sub.points_gained
+        }
+      })),
+      chip: teamScore.active_chip,
+      captain: {
+        name: teamScore.captain_name
+      },
       transfers: {
-        count: 0, // Would need original picks data
-        cost: scoreResult.breakdown.transferCost
+        count: 0, // Not available in K-108c
+        cost: teamScore.points.transfer_cost
       },
       overallPoints: entryData?.summary_overall_points || 0,
       overallRank: entryData?.summary_overall_rank || 0
     });
   } catch (error: any) {
-    console.error('Error fetching gameweek data:', error);
+    console.error('[K-109 Phase 2] Error fetching gameweek data:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to fetch gameweek data' },
       { status: 500 }
