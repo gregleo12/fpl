@@ -47,9 +47,11 @@ npm run build
 
 ## Current Version
 
-**v3.7.4** (December 23, 2025)
+**v4.0.0** (December 24, 2025)
 
-See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for details.
+**🎉 MAJOR RELEASE:** K-108c Single Source of Truth Architecture
+
+See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
 ---
 
