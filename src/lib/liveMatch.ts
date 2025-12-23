@@ -957,35 +957,33 @@ function calculateCommonPlayers(
 
       // Player wasn't subbed or only subbed in one team - use original points
 
-      // K-63e Fix #2: Calculate bonus info BEFORE multiplying
-      const officialBonus = liveElement?.stats?.bonus || 0;
-      const bonusInfo = getBonusInfo(elementId, liveElement, officialBonus, fixturesData);
-
-      // K-63e: Add bonus to base points BEFORE applying captain multiplier
-      const basePointsWithBonus = basePoints + (bonusInfo.bonusPoints || 0);
-
-      // Calculate points for each team (with bonus included)
-      let player1Points = basePointsWithBonus;
-      let player2Points = basePointsWithBonus;
+      // K-109 Phase 7 Extended: FPL API total_points ALREADY includes bonus - don't add again!
+      // Calculate points for each team
+      let player1Points = basePoints;
+      let player2Points = basePoints;
 
       if (player1Captain) {
         const multiplier = picks1Data.active_chip === '3xc' ? 3 : 2;
-        player1Points = basePointsWithBonus * multiplier;
+        player1Points = basePoints * multiplier;
       }
 
       if (player2Captain) {
         const multiplier = picks2Data.active_chip === '3xc' ? 3 : 2;
-        player2Points = basePointsWithBonus * multiplier;
+        player2Points = basePoints * multiplier;
       }
+
+      // Get bonus info for display purposes only (don't add to points - already included!)
+      const officialBonus = liveElement?.stats?.bonus || 0;
+      const bonusInfo = getBonusInfo(elementId, liveElement, officialBonus, fixturesData);
 
       return {
         name: element?.web_name || 'Unknown',
-        points: basePointsWithBonus,
+        points: basePoints,
         player1Points,
         player2Points,
         player1Captain,
         player2Captain,
-        bonusPoints: bonusInfo.bonusPoints,
+        bonusPoints: bonusInfo.bonusPoints, // For display only
       };
     })
     .filter((player): player is Exclude<typeof player, null> => player !== null);

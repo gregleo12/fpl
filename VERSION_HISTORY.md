@@ -8,7 +8,7 @@
 
 ## v3.7.2 - K-109 Phase 7: Fix Live Match Modal Bonus Double-Counting (Dec 23, 2025)
 
-**Bug Fix:** Captain points in Live Match Modal were showing incorrect scores due to bonus being counted twice.
+**Bug Fix:** Captain and Common Players in Live Match Modal were showing incorrect scores due to bonus being counted twice.
 
 ### The Bug
 
@@ -56,13 +56,17 @@ const captainBonusInfo = getBonusInfo(...);
 ### Changes
 
 **File Modified:**
-- `src/lib/liveMatch.ts` - Fixed captain points calculation (removed bonus double-counting)
+- `src/lib/liveMatch.ts` - Fixed bonus double-counting in two sections:
+  1. **Captain Section (lines 154-174):** Removed bonus addition before captain multiplier
+  2. **Common Players Section (lines 960-989):** Removed bonus addition before captain multiplier
 
 **Impact:**
 - ✅ Live Match Modal captain points now accurate
 - ✅ Triple Captain (TC) shows correct points (e.g., 16 × 3 = 48, not 57)
 - ✅ Regular Captain (C) shows correct points (e.g., 16 × 2 = 32, not 35)
-- ✅ Captains section matches Common Players section
+- ✅ Common Players section shows correct points (no more bonus double-counting)
+- ✅ Bench section verified correct (no bug found)
+- ✅ All sections now use total_points directly without adding bonus again
 - ✅ No more user trust issues with conflicting scores
 
 ### Testing
@@ -90,6 +94,11 @@ Captain calculation should:
 ### Related
 
 This bug was introduced in K-63e when provisional bonus display was added. The comment "Add bonus to raw points BEFORE applying captain multiplier" was incorrect - the bonus is already in the raw points from FPL API.
+
+**Bug Hunt Results:**
+- ✅ Captain section - Bug found and FIXED
+- ✅ Common Players section - Bug found and FIXED (same pattern)
+- ✅ Bench section - Verified NO BUG (correctly uses total_points directly)
 
 ---
 
