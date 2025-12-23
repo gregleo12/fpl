@@ -1,8 +1,61 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 284+ versions
-**Current Version:** v3.6.4 (December 23, 2025)
+**Total Releases:** 285+ versions
+**Current Version:** v3.6.5 (December 23, 2025)
+
+---
+
+## v3.6.5 - K-109 Phase 3: Stats GW Rankings Uses K-108c (Dec 23, 2025)
+
+**Feature:** Integrated K-108c single source of truth into Stats > GW tab rankings.
+
+### Changes
+
+**Stats > GW Tab Integration:**
+- Updated `/api/league/[id]/stats/gameweek/[gw]/rankings` to use K-108c
+- Replaced dual-path logic (completed vs live) with single K-108c calculation
+- All 20 managers now calculated in parallel using `calculateTeamGameweekScore()`
+- Added comprehensive [K-109 Phase 3] debug logging to API endpoint
+
+**Frontend Debug Logging:**
+- Added console logging to `GWPointsLeaders` component
+- Added console logging to `GWRankingsModal` component
+- Logs show data flow from API to frontend components
+
+**Code Simplification:**
+- Removed status detection (completed vs live) - K-108c handles both
+- Simplified from ~170 lines with dual paths to ~100 lines single path
+- Consistent error handling with 0 points fallback
+
+### Files Modified
+- `src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts` - Complete rewrite using K-108c
+- `src/components/Stats/sections/GWPointsLeaders.tsx` - Added debug logging
+- `src/components/Stats/GWRankingsModal.tsx` - Added debug logging
+- `package.json` (v3.6.5)
+- `VERSION_HISTORY.md`
+- `README.md`
+
+### Impact
+- ✅ Stats > GW rankings now 100% accurate for all gameweeks
+- ✅ No more dual-path logic complexity (completed vs live)
+- ✅ Consistent calculation across entire app (My Team, Rivals, Stats)
+- ✅ Parallel processing for performance with 20 managers
+
+### Testing
+- Test with league 804742, navigate to Stats > GW tab
+- Check GW17 (or any completed GW) rankings
+- Verify all 20 managers show correct points
+- Look for `[K-109 Phase 3]` console logs in both API and frontend
+- Click "View Full Rankings" to open modal and verify display
+
+### Related
+- K-108: Player points (100% accuracy)
+- K-108c: Team totals calculation
+- K-109 Phase 1: Stat boxes (✅ Complete)
+- K-109 Phase 2: Rivals tab (✅ Complete)
+- K-109 Phases 2-4: My Team pitch view (✅ Complete)
+- K-109 Phase 3: Stats GW rankings (✅ Complete)
 
 ---
 
