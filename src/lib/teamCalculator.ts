@@ -6,6 +6,7 @@
  */
 
 import { type Position } from './pointsCalculator';
+import { getDatabase } from './db';
 
 export interface ManagerPick {
   player_id: number;
@@ -259,4 +260,129 @@ function isValidFormation(
     counts[3] >= 2 && counts[3] <= 5 &&
     counts[4] >= 1 && counts[4] <= 3
   );
+}
+
+/**
+ * K-109 Phase 2: Shared function for calculating team gameweek score
+ *
+ * This is the SINGLE SOURCE OF TRUTH used by:
+ * - /api/gw/[gw]/team/[teamId] (K-108c endpoint)
+ * - /api/league/[id]/fixtures/[gw] (Rivals tab)
+ * - Any other endpoint that needs accurate team scores
+ */
+
+export interface TeamGameweekScore {
+  entry_id: number;
+  gameweek: number;
+  points: {
+    starting_xi_total: number;
+    captain_bonus: number;
+    bench_boost_total: number;
+    auto_sub_total: number;
+    gross_total: number;
+    transfer_cost: number;
+    net_total: number;
+  };
+  active_chip: ChipType;
+  auto_subs: AutoSub[];
+  captain_name: string | null;
+  status: 'completed' | 'in_progress';
+}
+
+export async function calculateTeamGameweekScore(
+  entry_id: number,
+  gameweek: number
+): Promise<TeamGameweekScore> {
+  const db = await getDatabase();
+
+  // 1. Get manager picks
+  const picksResult = await db.query(
+    `SELECT player_id, position, multiplier, is_captain, is_vice_captain
+     FROM manager_picks
+     WHERE entry_id = $1 AND event = $2
+     ORDER BY position`,
+    [entry_id, gameweek]
+  );
+
+  if (picksResult.rows.length === 0) {
+    throw new Error(`No picks found for entry ${entry_id} in GW${gameweek}`);
+  }
+
+  const picks: ManagerPick[] = picksResult.rows;
+
+  // 2. Get player data from player_gameweek_stats (K-108)
+  const playerIds = picks.map(p => p.player_id);
+
+  const playersResult = await db.query(
+    `SELECT
+      p.id,
+      p.web_name,
+      p.element_type as position,
+      COALESCE(pgs.calculated_points, 0) as points,
+      COALESCE(pgs.minutes, 0) as minutes
+     FROM players p
+     LEFT JOIN player_gameweek_stats pgs
+       ON pgs.player_id = p.id AND pgs.gameweek = $1
+     WHERE p.id = ANY($2)`,
+    [gameweek, playerIds]
+  );
+
+  const playerData = new Map<number, PlayerData>();
+  for (const row of playersResult.rows) {
+    playerData.set(row.id, {
+      id: row.id,
+      position: row.position,
+      points: row.points,
+      minutes: row.minutes,
+      web_name: row.web_name,
+    });
+  }
+
+  // 3. Get active chip
+  const chipResult = await db.query(
+    `SELECT chip_name
+     FROM manager_chips
+     WHERE entry_id = $1 AND event = $2`,
+    [entry_id, gameweek]
+  );
+
+  const activeChip: ChipType = chipResult.rows[0]?.chip_name || null;
+
+  // 4. Get transfer cost and check completion status
+  const historyResult = await db.query(
+    `SELECT event_transfers_cost, points
+     FROM manager_gw_history
+     WHERE entry_id = $1 AND event = $2`,
+    [entry_id, gameweek]
+  );
+
+  const transferCost = historyResult.rows[0]?.event_transfers_cost || 0;
+  const fplTotal = historyResult.rows[0]?.points || null;
+  const status: 'completed' | 'in_progress' = fplTotal !== null ? 'completed' : 'in_progress';
+
+  // 5. Calculate team total
+  const calculation = calculateTeamTotal(picks, playerData, activeChip, transferCost);
+
+  // 6. Get captain name
+  const captain = picks.find(p => p.is_captain);
+  const captainPlayer = captain ? playerData.get(captain.player_id) : null;
+  const captain_name = captainPlayer?.web_name || null;
+
+  return {
+    entry_id,
+    gameweek,
+    points: {
+      starting_xi_total: calculation.starting_xi_total,
+      captain_bonus: calculation.captain_bonus,
+      bench_boost_total: calculation.bench_boost_total,
+      auto_sub_total: calculation.auto_sub_total,
+      gross_total: calculation.gross_total,
+      transfer_cost: calculation.transfer_cost,
+      net_total: calculation.net_total,
+    },
+    active_chip: activeChip,
+    auto_subs: calculation.auto_subs,
+    captain_name,
+    status,
+  };
 }

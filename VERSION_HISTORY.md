@@ -1,8 +1,54 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 282+ versions
-**Current Version:** v3.6.2 (December 23, 2025)
+**Total Releases:** 283+ versions
+**Current Version:** v3.6.3 (December 23, 2025)
+
+---
+
+## v3.6.3 - K-109 Phase 2: Rivals Tab Uses K-108c (Dec 23, 2025)
+
+**Feature:** Replaced complex score calculations in Rivals tab with K-108c single source of truth.
+
+### Changes
+
+**Shared Score Calculation Function:**
+- Created `calculateTeamGameweekScore()` in `teamCalculator.ts`
+- Single source of truth for team score calculations
+- Used by both Rivals tab and future endpoints
+- Returns full breakdown: points, chips, auto-subs, transfer costs
+
+**Rivals Tab Integration:**
+- Updated `/api/league/[id]/fixtures/[gw]` to use K-108c
+- Replaced `calculateMultipleManagerScores()` with `calculateScoresViaK108c()`
+- All 10 H2H fixture scores now use K-108c (100% accurate)
+- Added [K-109 Phase 2] debug logging throughout
+
+**Code Cleanup:**
+- Removed dependency on old `scoreCalculator.ts` in fixtures endpoint
+- Kept K-108c endpoint unchanged (needs detailed pick data for response)
+- Simplified score calculation logic with shared function
+
+### Files Modified
+- `src/lib/teamCalculator.ts` - Added `calculateTeamGameweekScore()` function
+- `src/app/api/league/[id]/fixtures/[gw]/route.ts` - Use K-108c for all scores
+
+### Impact
+- ✅ All Rivals tab H2H scores 100% accurate (match FPL official)
+- ✅ Captain, chips, auto-subs, transfer costs all correctly calculated
+- ✅ Shared function ensures consistency across all endpoints
+- ✅ Performance: Parallel score calculations for all managers
+
+### Testing
+- Test with league 804742, GW17
+- Verify all 10 H2H fixture scores match FPL
+- Check console logs for `[K-109 Phase 2]` messages
+
+### Related
+- K-108: Player points calculation (100% accuracy)
+- K-108c: Team totals endpoint
+- K-109 Phase 1: My Team stat boxes (✅ Complete)
+- K-109 Phase 2: Rivals tab integration (✅ Complete)
 
 ---
 

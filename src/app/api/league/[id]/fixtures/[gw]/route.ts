@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateMultipleManagerScores } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 // Force dynamic rendering and disable caching for live scores
 export const dynamic = 'force-dynamic';
@@ -86,19 +86,19 @@ export async function GET(
       }
     }
 
-    // For in-progress and completed gameweeks, fetch picks data for chips, hits, and captains
+    // K-109 Phase 2: Use K-108c for all score calculations
     let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null; captain: string | null }> | null = null;
     if (status === 'in_progress' || status === 'completed') {
       try {
-        console.log(`GW${gw} is ${status.toUpperCase()} - fetching picks data from FPL API...`);
-        liveScoresMap = await fetchLiveScoresFromPicks(matches, gw, status);
-        console.log(`Fetched picks data for ${liveScoresMap.size} entries`);
+        console.log(`[K-109 Phase 2] GW${gw} is ${status.toUpperCase()} - calculating scores via K-108c...`);
+        liveScoresMap = await calculateScoresViaK108c(matches, gw);
+        console.log(`[K-109 Phase 2] Calculated ${liveScoresMap.size} scores using K-108c`);
       } catch (error) {
-        console.error('Error fetching picks data:', error);
-        // Fall back to database scores if live fetch fails
+        console.error('[K-109 Phase 2] Error calculating scores via K-108c:', error);
+        // Fall back to database scores if K-108c fails
       }
     } else {
-      console.log(`GW${gw} status: ${status} - using database scores`);
+      console.log(`[K-109 Phase 2] GW${gw} status: ${status} - using database scores`);
     }
 
     // Format matches for response
@@ -178,11 +178,14 @@ export async function GET(
   }
 }
 
-// Helper function to fetch live scores from picks data during live and completed gameweeks
-async function fetchLiveScoresFromPicks(
+/**
+ * K-109 Phase 2: Calculate scores using K-108c single source of truth
+ *
+ * Replaces the old fetchLiveScoresFromPicks() function with K-108c logic
+ */
+async function calculateScoresViaK108c(
   matches: any[],
-  gw: number,
-  status: 'in_progress' | 'completed'
+  gw: number
 ): Promise<Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>> {
   const scoresMap = new Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>();
 
@@ -191,46 +194,57 @@ async function fetchLiveScoresFromPicks(
     matches.flatMap((match: any) => [match.entry_1_id, match.entry_2_id])
   ));
 
-  console.log(`Fetching picks data for ${entryIds.length} entries in GW${gw}...`);
+  console.log(`[K-109 Phase 2] Calculating scores for ${entryIds.length} entries in GW${gw} using K-108c...`);
 
-  // Use the shared score calculator - this handles all calculation logic
-  const scores = await calculateMultipleManagerScores(entryIds, gw, status);
+  // Calculate all scores in parallel using K-108c
+  const scorePromises = entryIds.map(async (entryId) => {
+    try {
+      const result = await calculateTeamGameweekScore(entryId, gw);
+      return { entryId, result };
+    } catch (error: any) {
+      console.error(`[K-109 Phase 2] Error calculating score for entry ${entryId}:`, error.message);
+      return { entryId, result: null };
+    }
+  });
 
-  console.log(`Successfully calculated ${scores.size} scores using shared calculator`);
+  const scoreResults = await Promise.all(scorePromises);
 
-  // Build the scores map in the format expected by the calling code
-  scores.forEach((scoreResult, entryId) => {
-    // Extract transfer cost from breakdown
-    const transferCost = scoreResult.breakdown.transferCost;
+  // Build the scores map
+  scoreResults.forEach(({ entryId, result }) => {
+    if (!result) return;
+
+    const transferCost = result.points.transfer_cost;
     const hit = transferCost > 0 ? -transferCost : 0;
 
     scoresMap.set(entryId, {
-      score: scoreResult.score,
+      score: result.points.net_total,
       hit,
-      chip: scoreResult.chip,
-      captain: scoreResult.captain?.name || null
+      chip: result.active_chip,
+      captain: result.captain_name
     });
 
     // Log score details
-    const logParts = [`Entry ${entryId}: ${scoreResult.score} pts`];
+    const logParts = [`[K-109 Phase 2] Entry ${entryId}: ${result.points.net_total} pts`];
     if (transferCost > 0) {
-      logParts.push(`(${scoreResult.score + transferCost} from players - ${transferCost} hits)`);
+      logParts.push(`(${result.points.gross_total} gross - ${transferCost} hits)`);
     }
-    if (scoreResult.chip) {
-      logParts.push(`chip: ${scoreResult.chip}`);
+    if (result.active_chip) {
+      logParts.push(`chip: ${result.active_chip}`);
     }
-    if (scoreResult.captain) {
-      logParts.push(`captain: ${scoreResult.captain.name}`);
+    if (result.captain_name) {
+      logParts.push(`captain: ${result.captain_name}`);
     }
     console.log(logParts.join(' '));
 
     // Log auto-subs if any
-    if (scoreResult.autoSubs && scoreResult.autoSubs.substitutions.length > 0) {
-      console.log(`Entry ${entryId}: Auto-subs applied - ${scoreResult.autoSubs.substitutions.map(s =>
-        `${s.playerOut.name} → ${s.playerIn.name} (+${s.playerIn.points} pts)`
+    if (result.auto_subs.length > 0) {
+      console.log(`[K-109 Phase 2] Entry ${entryId}: Auto-subs - ${result.auto_subs.map(s =>
+        `${s.out_name} → ${s.in_name} (+${s.points_gained} pts)`
       ).join(', ')}`);
     }
   });
+
+  console.log(`[K-109 Phase 2] Successfully calculated ${scoresMap.size}/${entryIds.length} scores using K-108c`);
 
   return scoresMap;
 }
