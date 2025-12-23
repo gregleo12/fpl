@@ -30,10 +30,9 @@ function getBonusInfo(playerId: number, liveElement: any, officialBonus: number,
     return { bonusPoints: officialBonus };
   }
 
-  // K-106a: If fixture is finished, bonus is already in total_points - return 0
-  // For completed fixtures, total_points includes official bonus, so adding it again would double-count
+  // If fixture is finished, use official bonus
   if (fixture.finished) {
-    return { bonusPoints: 0 };
+    return { bonusPoints: officialBonus };
   }
 
   // Calculate provisional bonus from BPS ranking

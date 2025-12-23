@@ -1,6 +1,6 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.6.2
+**Current Version:** v3.6.1
 **Last Updated:** December 23, 2025
 **Project:** FPL H2H Analytics Web App
 
@@ -114,17 +114,6 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
-
-### v3.6.2 - liveMatch.ts Provisional Bonus for Finished Fixtures (Dec 23, 2025 - K-106a Part 2)
-- **Problem:** H2H Modal showed inflated scores even after K-106a fix (Haaland TC: 57pts instead of 48pts)
-- **Root Cause:** `liveMatch.ts` `getBonusInfo()` returned `officialBonus` for finished fixtures instead of 0
-- **Why Wrong:** `total_points` already includes official bonus, so adding it again double-counts
-- **Example:** Haaland: `rawPoints=16` (includes 3 bonus) + `getBonusInfo()=3` = 19pts, then ×3 = 57pts ❌
-- **Fix:** Changed `getBonusInfo()` line 35-37 to return `bonusPoints: 0` for finished fixtures
-- **Impact:** Fixed H2H Modal, may also fix GW PTS tile and H2H cards
-- **Never Do:** Return official bonus from helper functions for finished fixtures - bonus is already in total_points
-- **Always Do:** For finished fixtures, return 0 bonus; only calculate provisional for unfinished fixtures
-- **Code Pattern:** `if (fixture.finished) return { bonusPoints: 0 };  // Bonus already in total_points`
 
 ### v3.6.1 - Provisional Bonus Added to Completed Gameweeks (Dec 23, 2025 - K-106a)
 - **Problem:** Player scores inflated for completed GWs (Haaland TC showed 57pts instead of 48pts)
