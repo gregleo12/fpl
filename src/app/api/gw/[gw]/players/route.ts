@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculatePoints, type Position } from '@/lib/pointsCalculator';
+import { calculatePoints, calculateProvisionalBonus, type Position, type PlayerLiveData } from '@/lib/pointsCalculator';
 
 // Force dynamic rendering for fresh data
 export const dynamic = 'force-dynamic';
@@ -52,17 +52,23 @@ export async function GET(
 
     // 2. Fetch data based on status
     let players;
+    let bonusStatus: 'confirmed' | 'provisional' | 'none' = 'none';
+
     if (gwStatus.status === 'completed') {
       // Completed GW: Read from database
       players = await fetchFromDatabase(gameweek, playerIds, teamId, position);
+      bonusStatus = 'confirmed';
     } else {
       // Live or Upcoming: Fetch from FPL API
-      players = await fetchFromAPI(gameweek, playerIds, teamId, position);
+      const result = await fetchFromAPI(gameweek, playerIds, teamId, position);
+      players = result.players;
+      bonusStatus = result.bonusStatus;
     }
 
     return NextResponse.json({
       gameweek,
       status: gwStatus.status,
+      bonus_status: bonusStatus,
       data_source: gwStatus.status === 'completed' ? 'database' : 'api',
       count: players.length,
       players,
@@ -263,6 +269,7 @@ async function fetchFromDatabase(
       total: row.calculated_points,
       fpl_total: row.fpl_total_points,
       match: row.calculated_points === row.fpl_total_points,
+      bonus_status: 'confirmed' as const,
       breakdown: row.points_breakdown,
     },
   }));
@@ -276,7 +283,7 @@ async function fetchFromAPI(
   playerIds: number[] | null,
   teamId: number | null,
   position: Position | null
-) {
+): Promise<{ players: any[]; bonusStatus: 'provisional' | 'none' }> {
   // Fetch bootstrap-static for player info and teams
   const [bootstrapResponse, liveResponse, fixturesResponse] = await Promise.all([
     fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
@@ -319,11 +326,29 @@ async function fetchFromAPI(
     };
   });
 
+  // Determine bonus status
+  const anyFixtureStarted = fixturesData.some((f: any) => f.started);
+  const bonusStatus: 'provisional' | 'none' = anyFixtureStarted ? 'provisional' : 'none';
+
+  // Build player live data for provisional bonus calculation
+  const playerLiveData: PlayerLiveData[] = liveData.elements.map((e: any) => ({
+    id: e.id,
+    team: bootstrapData.elements.find((el: any) => el.id === e.id)?.team || 0,
+    bps: e.stats.bps || 0,
+    minutes: e.stats.minutes || 0,
+  }));
+
+  // Calculate provisional bonus
+  const provisionalBonusMap = calculateProvisionalBonus(fixturesData, playerLiveData);
+
   // Process each player
   let players = bootstrapData.elements.map((element: any) => {
     const liveElement = liveData.elements.find((e: any) => e.id === element.id);
     const stats = liveElement?.stats || {};
     const fixture = fixturesByTeam[element.team];
+
+    // Get provisional bonus (or 0 if not in map)
+    const provisionalBonus = provisionalBonusMap.get(element.id) || 0;
 
     // Calculate points using our calculator
     const calculated = calculatePoints({
@@ -338,8 +363,8 @@ async function fetchFromAPI(
       yellow_cards: stats.yellow_cards || 0,
       red_cards: stats.red_cards || 0,
       saves: stats.saves || 0,
-      bonus: stats.bonus || 0,
-      defensive_contribution: 0, // Not available in live API
+      bonus: provisionalBonus, // Use provisional bonus for live matches
+      defensive_contribution: stats.defensive_contribution || 0,
     }, element.element_type as Position);
 
     return {
@@ -367,9 +392,9 @@ async function fetchFromAPI(
         yellow_cards: stats.yellow_cards || 0,
         red_cards: stats.red_cards || 0,
         saves: stats.saves || 0,
-        bonus: stats.bonus || 0,
+        bonus: stats.bonus || 0, // Official bonus (usually 0 during live)
         bps: stats.bps || 0,
-        defensive_contribution: 0,
+        defensive_contribution: stats.defensive_contribution || 0,
         influence: stats.influence || '0.0',
         creativity: stats.creativity || '0.0',
         threat: stats.threat || '0.0',
@@ -383,6 +408,7 @@ async function fetchFromAPI(
         total: calculated.total,
         fpl_total: stats.total_points || 0,
         match: calculated.total === (stats.total_points || 0),
+        bonus_status: bonusStatus,
         breakdown: calculated.breakdown,
       },
     };
@@ -401,5 +427,5 @@ async function fetchFromAPI(
     players = players.filter((p: any) => p.position === position);
   }
 
-  return players;
+  return { players, bonusStatus };
 }

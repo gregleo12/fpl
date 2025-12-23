@@ -209,3 +209,117 @@ export function positionGetsSavePoints(position: Position): boolean {
   // Only GK gets points for saves
   return position === 1;
 }
+
+/**
+ * K-108b: Provisional Bonus Points Calculation
+ */
+
+export interface PlayerLiveData {
+  id: number;
+  team: number;
+  bps: number;
+  minutes: number;
+}
+
+export interface BPSGroup {
+  bps: number;
+  players: PlayerLiveData[];
+}
+
+/**
+ * Group players by their BPS value (for handling ties)
+ */
+function groupByBPS(players: PlayerLiveData[]): BPSGroup[] {
+  const groups: BPSGroup[] = [];
+
+  for (const player of players) {
+    const existingGroup = groups.find(g => g.bps === player.bps);
+    if (existingGroup) {
+      existingGroup.players.push(player);
+    } else {
+      groups.push({ bps: player.bps, players: [player] });
+    }
+  }
+
+  // Sort groups by BPS descending
+  groups.sort((a, b) => b.bps - a.bps);
+
+  return groups;
+}
+
+/**
+ * Determine bonus points for a given position in ranking
+ * Handles tiebreaker rules
+ */
+function getBonusForPosition(position: number): number {
+  if (position === 1) {
+    return 3; // 1st place gets 3
+  } else if (position === 2) {
+    return 2; // 2nd place gets 2
+  } else if (position === 3) {
+    return 1; // 3rd place gets 1
+  }
+  return 0; // 4th+ get nothing
+}
+
+/**
+ * Calculate provisional bonus points for all fixtures
+ *
+ * Returns a map of player_id -> provisional_bonus
+ *
+ * Rules:
+ * - Top 3 BPS in each fixture get bonus (3, 2, 1)
+ * - Only players with minutes > 0 are eligible
+ * - Ties are handled according to FPL rules
+ */
+export function calculateProvisionalBonus(
+  fixtures: Array<{ id: number; team_h: number; team_a: number; started: boolean; finished: boolean }>,
+  allPlayers: PlayerLiveData[]
+): Map<number, number> {
+  const bonusMap = new Map<number, number>();
+
+  // Process each fixture
+  for (const fixture of fixtures) {
+    // Skip if not started or already finished
+    if (!fixture.started || fixture.finished) {
+      continue;
+    }
+
+    // Get players in this fixture who have played
+    const fixturePlayers = allPlayers.filter(p =>
+      (p.team === fixture.team_h || p.team === fixture.team_a) && p.minutes > 0
+    );
+
+    if (fixturePlayers.length === 0) {
+      continue;
+    }
+
+    // Sort by BPS descending
+    const sorted = fixturePlayers.sort((a, b) => b.bps - a.bps);
+
+    // Group by BPS to handle ties
+    const bpsGroups = groupByBPS(sorted);
+
+    // Award bonus points
+    let position = 1;
+
+    for (const group of bpsGroups) {
+      // Stop if we've gone past 3rd place
+      if (position > 3) {
+        break;
+      }
+
+      const bonusPoints = getBonusForPosition(position);
+
+      // Award bonus to all players in this group
+      for (const player of group.players) {
+        bonusMap.set(player.id, bonusPoints);
+      }
+
+      // Move to next position
+      position += group.players.length;
+    }
+  }
+
+  return bonusMap;
+}
