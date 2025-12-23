@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,11 +98,13 @@ export async function GET(
       }
     }
 
-    // K-65: If current GW is live/in-progress, calculate live points and add/update it in history
+    // K-65 + K-109 Phase 5: If current GW is live/in-progress, calculate live points and add/update it in history
     if (currentGWStatus === 'in_progress' || currentGWStatus === 'upcoming') {
       try {
-        // Calculate live score for current GW
-        const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, currentGWStatus);
+        // K-109 Phase 5: Use K-108c for live GW score
+        console.log(`[K-109 Phase 5] Calculating live GW${currentGW} for team ${teamId} using K-108c`);
+        const teamScore = await calculateTeamGameweekScore(parseInt(teamId), currentGW);
+        const scoreResult = { score: teamScore.points.net_total };
 
         // Fetch live picks to get transfer cost and overall rank
         const picksResponse = await fetch(
@@ -121,7 +123,8 @@ export async function GET(
         if (picksResponse.ok) {
           const picksData = await picksResponse.json();
           gwRank = picksData.entry_history?.rank || 0;
-          transferCost = picksData.entry_history?.event_transfers_cost || 0;
+          // K-109 Phase 5: Transfer cost from K-108c
+          transferCost = teamScore.points.transfer_cost;
           overallRank = picksData.entry_history?.overall_rank || 0;
         }
 

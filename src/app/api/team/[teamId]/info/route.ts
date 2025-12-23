@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -76,9 +76,11 @@ export async function GET(
       }
     }
 
-    // Use live score calculator for accurate GW points
-    const scoreResult = await calculateManagerLiveScore(parseInt(teamId), currentGW, status);
-    const gwPoints = scoreResult.score;
+    // K-109 Phase 5: Use K-108c for accurate GW points
+    console.log(`[K-109 Phase 5] Calculating GW${currentGW} points for team ${teamId} using K-108c`);
+    const teamScore = await calculateTeamGameweekScore(parseInt(teamId), currentGW);
+    const gwPoints = teamScore.points.net_total;
+    console.log(`[K-109 Phase 5] Team ${teamId} GW${currentGW}: ${gwPoints} pts (status: ${teamScore.status})`);
 
     // Fetch picks for selected GW (for rank/transfers display)
     const picksResponse = await fetch(
@@ -97,9 +99,10 @@ export async function GET(
       const picksData = await picksResponse.json();
       // K-65: GW rank is only available after GW finishes (FPL limitation)
       gwRank = picksData.entry_history?.rank || 0;
+      // K-109 Phase 5: Transfer cost from K-108c, count from FPL API
       gwTransfers = {
         count: picksData.entry_history?.event_transfers || 0,
-        cost: picksData.entry_history?.event_transfers_cost || 0
+        cost: teamScore.points.transfer_cost
       };
     }
 

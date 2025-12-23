@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateMultipleManagerScores } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -306,7 +306,7 @@ async function fetchChipsPlayed(
   return managersWithChips;
 }
 
-// Fetch scores - uses live calculation for in-progress GWs, database for completed
+// Fetch scores - uses K-108c for in-progress GWs, database for completed (K-109 Phase 6)
 async function fetchScores(
   db: any,
   leagueId: number,
@@ -314,31 +314,37 @@ async function fetchScores(
   managersData: any[],
   status: 'completed' | 'in_progress' | 'upcoming'
 ) {
-  // For in-progress or upcoming gameweeks, calculate live scores
+  // K-109 Phase 6: For in-progress or upcoming gameweeks, use K-108c
   if (status === 'in_progress' || status === 'upcoming') {
-    console.log(`GW${gw} is ${status} - calculating live scores using shared calculator`);
-
-    const entryIds = managersData.map((m: any) => m.entry_id);
+    console.log(`[K-109 Phase 6] GW${gw} is ${status} - calculating scores using K-108c`);
 
     try {
-      // Use shared score calculator for live scores
-      const liveScores = await calculateMultipleManagerScores(entryIds, gw, status);
-
-      // Convert to expected format
-      const scoresData = Array.from(liveScores.entries()).map(([entryId, scoreResult]) => {
-        const manager = managersData.find((m: any) => m.entry_id === entryId);
-        return {
-          entry_id: entryId,
-          player_name: manager?.player_name || 'Unknown',
-          team_name: manager?.team_name || 'Unknown',
-          score: scoreResult.score,
-        };
+      // Calculate scores for all managers in parallel using K-108c
+      const scoresPromises = managersData.map(async (manager: any) => {
+        try {
+          const teamScore = await calculateTeamGameweekScore(manager.entry_id, gw);
+          return {
+            entry_id: manager.entry_id,
+            player_name: manager.player_name,
+            team_name: manager.team_name,
+            score: teamScore.points.net_total,
+          };
+        } catch (error: any) {
+          console.error(`[K-109 Phase 6] Error for ${manager.entry_id}:`, error.message);
+          return {
+            entry_id: manager.entry_id,
+            player_name: manager.player_name,
+            team_name: manager.team_name,
+            score: 0,
+          };
+        }
       });
 
-      console.log(`Calculated ${scoresData.length} live scores`);
+      const scoresData = await Promise.all(scoresPromises);
+      console.log(`[K-109 Phase 6] Calculated ${scoresData.length} scores using K-108c`);
       return scoresData;
     } catch (error) {
-      console.error('Error calculating live scores:', error);
+      console.error('[K-109 Phase 6] Error calculating live scores:', error);
       // Fallback to database on error
     }
   }

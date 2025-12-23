@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateMultipleManagerScores } from '@/lib/scoreCalculator';
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 // Force dynamic rendering - prevent caching and static generation
 export const dynamic = 'force-dynamic';
@@ -413,18 +413,28 @@ export async function GET(
             // Default to in_progress if we can't determine
           }
 
-          // Use the shared score calculator - includes provisional bonus!
-          const scores = await calculateMultipleManagerScores(
-            entryIds,
-            currentGW,
-            status
-          );
+          // K-109 Phase 6: Use K-108c for accurate live scores
+          console.log(`[K-109 Phase 6] Calculating live GW${currentGW} scores for ${entryIds.length} teams using K-108c`);
+
+          const scoresPromises = entryIds.map(async (entryId: number) => {
+            try {
+              const teamScore = await calculateTeamGameweekScore(entryId, currentGW);
+              return { entryId, score: teamScore.points.net_total };
+            } catch (error: any) {
+              console.error(`[K-109 Phase 6] Error for ${entryId}:`, error.message);
+              return { entryId, score: 0 };
+            }
+          });
+
+          const scoresResults = await Promise.all(scoresPromises);
 
           // Extract scores from results
           const liveScores = new Map<number, number>();
-          scores.forEach((result, entryId) => {
-            liveScores.set(entryId, result.score);
+          scoresResults.forEach(({ entryId, score }) => {
+            liveScores.set(entryId, score);
           });
+
+          console.log(`[K-109 Phase 6] Calculated ${liveScores.size} live scores`);
 
           // Update matches with live scores
           matchesWithLiveScores = allMatches.map((match: any) => {
