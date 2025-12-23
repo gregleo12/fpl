@@ -271,17 +271,25 @@ function getBonusForPosition(position: number): number {
  * - Top 3 BPS in each fixture get bonus (3, 2, 1)
  * - Only players with minutes > 0 are eligible
  * - Ties are handled according to FPL rules
+ *
+ * @param includeFinished - If true, calculate for finished fixtures too (for testing)
  */
 export function calculateProvisionalBonus(
   fixtures: Array<{ id: number; team_h: number; team_a: number; started: boolean; finished: boolean }>,
-  allPlayers: PlayerLiveData[]
+  allPlayers: PlayerLiveData[],
+  includeFinished: boolean = false
 ): Map<number, number> {
   const bonusMap = new Map<number, number>();
 
   // Process each fixture
   for (const fixture of fixtures) {
-    // Skip if not started or already finished
-    if (!fixture.started || fixture.finished) {
+    // Skip if not started
+    if (!fixture.started) {
+      continue;
+    }
+
+    // Skip finished fixtures unless testing
+    if (fixture.finished && !includeFinished) {
       continue;
     }
 
