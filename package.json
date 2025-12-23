@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -22,6 +22,7 @@
     "sync:pl-fixtures": "npx tsx src/scripts/sync-pl-fixtures.ts",
     "migrate:k108": "npx tsx src/scripts/run-k108-migration.ts",
     "sync:player-gw-stats": "npx tsx src/scripts/sync-player-gw-stats.ts",
+    "sync:all-leagues": "npx tsx src/scripts/bulk-sync-all-leagues.ts",
     "test:provisional-bonus": "npx tsx src/scripts/test-provisional-bonus.ts",
     "test:team-totals": "npx tsx src/scripts/test-team-totals.ts"
   },

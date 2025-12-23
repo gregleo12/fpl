@@ -1,8 +1,118 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 291+ versions
-**Current Version:** v4.0.1 (December 24, 2025)
+**Total Releases:** 292+ versions
+**Current Version:** v4.0.2 (December 24, 2025)
+
+---
+
+## v4.0.2 - K-115: Bulk Sync Script for All Leagues (Dec 24, 2025)
+
+**Script:** Created bulk sync tool to ensure all 126 tracked leagues have K-108 data populated.
+
+### What's New
+
+Added `bulk-sync-all-leagues.ts` script to perform one-time migration ensuring all existing leagues have K-108 `calculated_points` data in `player_gameweek_stats` table.
+
+**Why This Is Needed:**
+- v4.0.0 deployed K-108c architecture to production
+- New users get K-108 data automatically on first sync (K-112)
+- Existing 126 leagues may have historical data but missing K-108 calculated points
+- This script ensures everyone has K-108 data before they notice issues
+
+### Script Features
+
+**Functionality:**
+- Fetches all leagues from `leagues` table
+- Calls `syncLeagueData()` for each league (triggers K-112 → K-108 sync)
+- Processes sequentially (one at a time, not parallel)
+- 30-second delay between leagues (conservative rate limiting)
+- Detailed progress logging with percentage completion
+- Error handling (continues on failures, logs all errors)
+- Summary report at end (success/failed counts)
+
+**Safety:**
+- ✅ Idempotent (safe to re-run multiple times)
+- ✅ Non-destructive (only adds data, doesn't delete)
+- ✅ Rate-limited (30s delays prevent FPL API overload)
+- ✅ Error recovery (continues on failures)
+- ✅ Independent transactions (each league isolated)
+
+**Performance:**
+- **126 leagues** to sync
+- **30 seconds delay** between each
+- **Estimated runtime:** ~1.5-2 hours
+- **FPL API calls:** ~3,800 total (within free tier)
+- **Can run in background** (nohup with log file)
+
+### How to Run
+
+```bash
+# Set production database URL
+export DATABASE_URL="postgresql://postgres:PASSWORD@caboose.proxy.rlwy.net:45586/railway"
+
+# Run in background with logging
+nohup npm run sync:all-leagues > k115-sync.log 2>&1 &
+
+# Monitor progress
+tail -f k115-sync.log
+```
+
+See `K-115-BULK-SYNC-GUIDE.md` for full execution guide.
+
+### Files Created
+
+- `src/scripts/bulk-sync-all-leagues.ts` - Main sync script
+- `K-115-BULK-SYNC-GUIDE.md` - Complete execution guide
+- `package.json` - Added `sync:all-leagues` npm script
+
+### Expected Output
+
+```
+╔═══════════════════════════════════════════════════════════════╗
+║         K-115: Bulk Sync All Leagues for K-108 Data          ║
+╚═══════════════════════════════════════════════════════════════╝
+
+✅ Found 126 leagues to sync
+⏱️  Estimated runtime: ~63-126 minutes
+
+[1/126] (1%) Syncing: Dedoume FPL 9th edition (ID: 804742)...
+[1/126] ✅ Success: Dedoume FPL 9th edition
+[2/126] (2%) Syncing: Gentleman's Lounge (ID: 76559)...
+...
+[126/126] (100%) Syncing: League 5 (ID: 5)...
+
+✅ Success: 124/126
+❌ Failed: 2/126
+⏱️  Total time: 87 minutes
+```
+
+### Post-Sync Verification
+
+Run K-113 query to confirm K-108 data is populated:
+
+```sql
+SELECT gameweek, COUNT(*) as total, COUNT(calculated_points) as with_data
+FROM player_gameweek_stats
+WHERE gameweek IN (15, 16, 17)
+GROUP BY gameweek;
+```
+
+Expected: 100% of rows have `calculated_points` populated.
+
+### Why This Update?
+
+After deploying v4.0.0 (K-108c architecture), we need to ensure all existing leagues have K-108 data. New leagues get this automatically via K-112 integration, but the 126 existing leagues need a one-time backfill.
+
+This script performs that migration safely and efficiently.
+
+### Impact
+
+- ✅ Ensures all 126 existing leagues have K-108 data
+- ✅ Prevents users from seeing incorrect scores
+- ✅ One-time migration (won't need to run again)
+- ✅ Safe to run (idempotent, non-destructive)
+- ✅ Detailed logging for troubleshooting
 
 ---
 
