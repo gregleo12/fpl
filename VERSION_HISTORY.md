@@ -18,7 +18,7 @@ Added a temporary, non-intrusive feedback banner that appears at the bottom of t
 - 🔧 Alert message: "We just shipped a big update! Notice anything off?"
 - "Report Issue" button → Opens email to greg@rivalfpl.com with pre-filled subject and page URL
 - Dismissable (✕ button) → Stores preference in localStorage
-- Auto-expires January 7, 2025 (2 weeks from deployment)
+- Auto-expires January 7, 2026 (2 weeks from deployment)
 - Positioned above mobile navigation on mobile, at bottom on desktop
 
 **Implementation Details:**
@@ -26,7 +26,8 @@ Added a temporary, non-intrusive feedback banner that appears at the bottom of t
 - **Styles:** `src/components/Layout/FeedbackBanner.module.css`
 - **Integration:** Added to `src/app/layout.tsx` (root layout)
 - **Storage Key:** `feedback-banner-dismissed-v1` (localStorage)
-- **Expiry Date:** January 7, 2025
+- **Expiry Date:** January 7, 2026 (2 weeks from deployment)
+- **Fix:** Corrected expiry year from 2025 to 2026 (initial deployment had wrong year)
 
 **User Experience:**
 - Appears on first visit after deployment
