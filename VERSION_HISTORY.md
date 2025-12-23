@@ -1,8 +1,68 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 281+ versions
-**Current Version:** v3.6.1 (December 23, 2025)
+**Total Releases:** 282+ versions
+**Current Version:** v3.6.2 (December 23, 2025)
+
+---
+
+## v3.6.2 - CRITICAL: Fix liveMatch.ts Provisional Bonus (K-106a Part 2) (Dec 23, 2025)
+
+**Critical Bug Fix:** liveMatch.ts was still adding provisional bonus for completed fixtures, causing H2H Modal to show incorrect scores.
+
+### Problem
+
+K-106a fixed the My Team pitch, but H2H Modal (Live Match) still showed inflated scores:
+- **My Team pitch**: Haaland TC showed 48 pts ✅ (correct)
+- **H2H Modal**: Haaland TC showed 57 pts ❌ (wrong)
+- **GW PTS tile**: Showed 95 instead of 97 ❌
+- **H2H cards**: Showed 95-89 instead of 97-89 ❌
+
+### Root Cause
+
+`liveMatch.ts` `getBonusInfo()` function (line 34-36) was returning `officialBonus` for finished fixtures:
+```typescript
+if (fixture.finished) {
+  return { bonusPoints: officialBonus };  // ❌ WRONG!
+}
+```
+
+This bonus was then **added** to `total_points` which already included it, causing double-counting.
+
+**Example:**
+1. Haaland `rawCaptainPoints` = 16 (includes 3 bonus)
+2. `captainOfficialBonus` = 3
+3. `getBonusInfo()` returns 3
+4. `captainPointsWithBonus` = 16 + 3 = 19 ❌
+5. `captainPoints` = 19 × 3 = 57 ❌
+
+### Solution
+
+Changed `getBonusInfo()` to return 0 for finished fixtures since bonus is already in `total_points`:
+```typescript
+// K-106a: If fixture is finished, bonus is already in total_points - return 0
+if (fixture.finished) {
+  return { bonusPoints: 0 };
+}
+```
+
+### Files Modified
+- `src/lib/liveMatch.ts` - Fixed `getBonusInfo()` to return 0 for finished fixtures (lines 33-37)
+
+### Impact
+- ✅ H2H Modal now shows correct scores for completed fixtures
+- ✅ Captain multipliers apply to correct base
+- ✅ No impact on live/in-progress fixtures (still calculate provisional bonus)
+
+### Testing Required
+- Verify H2H Modal shows Haaland TC at 48 pts (not 57)
+- Verify GW PTS tile shows correct totals
+- Verify H2H cards show correct scores
+- Check Railway logs for K-106b debug output
+
+### Related
+- K-106a: Fixed My Team pitch provisional bonus
+- K-106b: Investigating remaining -2pt discrepancy (debug logging added)
 
 ---
 

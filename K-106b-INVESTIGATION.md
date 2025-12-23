@@ -137,23 +137,29 @@ console.log(`[K-106b DEBUG] - Captain: ${captain?.name || 'none'} (×${captain?.
 - Added comprehensive debug logging
 - Documented investigation approach
 - Build tested successfully
+- **v3.6.2**: Fixed liveMatch.ts `getBonusInfo()` to return 0 for finished fixtures
 
-⏳ **Waiting:**
-- K-106a deployment to staging/production
-- Real GW17 data testing with debug logs
+⏳ **Ready for Deployment:**
+- K-106a (v3.6.1): My Team pitch provisional bonus fix
+- K-106a Part 2 (v3.6.2): H2H Modal (liveMatch.ts) provisional bonus fix
+- K-106b debug logging: Ready to diagnose remaining issues
 
-❌ **Blocked:**
-- Cannot proceed until K-106a is deployed
-- Need live data to see debug output
+🔍 **Next Steps After Deployment:**
+- Test H2H Modal - should show Haaland TC at 48pts (not 57pts)
+- Test GW PTS tile - should show 97 (not 95)
+- Test H2H cards - should show 97-89 (not 95-89)
+- Review Railway logs for K-106b debug output if issues persist
 
 ---
 
 ## Related Tasks
 
-- **K-106a**: Fix Provisional Bonus for Completed GWs (MUST deploy first)
+- **v3.6.1 (K-106a)**: Fixed My Team pitch provisional bonus ✅
+- **v3.6.2 (K-106a Part 2)**: Fixed H2H Modal provisional bonus ✅
+- **K-106b debug logging**: Ready to diagnose remaining -2pt issues
 - **K-105**: Score Calculation Architecture Investigation (completed)
 
 ---
 
 **Last Updated:** December 23, 2025
-**Next Action:** Wait for K-106a deployment, then test with real data
+**Next Action:** Deploy v3.6.2 to staging and test all score displays
