@@ -80,16 +80,35 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`);
-        if (!response.ok) throw new Error('Failed to fetch stats');
-        const data = await response.json();
-        setGwPoints(data.gwPoints || 0);
-        setGwRank(data.gwRank || 0);
-        setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
-        setOverallPoints(data.overallPoints || 0);
-        setOverallRank(data.overallRank || 0);
-        setTeamValue(data.teamValue || 0);
-        setBank(data.bank || 0);
+        // K-109 Phase 1: Use K-108c for GW points and transfer cost (100% accurate)
+        const [teamResponse, infoResponse] = await Promise.all([
+          fetch(`/api/gw/${selectedGW}/team/${myTeamId}`),
+          fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`)
+        ]);
+
+        // Get GW points and transfer cost from K-108c
+        if (teamResponse.ok) {
+          const teamData = await teamResponse.json();
+          setGwPoints(teamData.points.net_total || 0);
+          setGwTransfers({
+            count: 0, // Will be set from info endpoint
+            cost: teamData.points.transfer_cost || 0
+          });
+        }
+
+        // Get other stats from existing endpoint
+        if (infoResponse.ok) {
+          const data = await infoResponse.json();
+          setGwRank(data.gwRank || 0);
+          setGwTransfers(prev => ({
+            count: data.gwTransfers?.count || 0,
+            cost: prev.cost // Keep K-108c transfer cost
+          }));
+          setOverallPoints(data.overallPoints || 0);
+          setOverallRank(data.overallRank || 0);
+          setTeamValue(data.teamValue || 0);
+          setBank(data.bank || 0);
+        }
       } catch (err: any) {
         console.error('Error fetching stats:', err);
       }
@@ -125,13 +144,30 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
       // Increment refresh key to force re-fetch
       setRefreshKey(prev => prev + 1);
 
-      // Fetch stats
-      const statsResponse = await fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`);
-      if (statsResponse.ok) {
-        const data = await statsResponse.json();
-        setGwPoints(data.gwPoints || 0);
+      // K-109 Phase 1: Use K-108c for GW points and transfer cost (100% accurate)
+      const [teamResponse, infoResponse] = await Promise.all([
+        fetch(`/api/gw/${selectedGW}/team/${myTeamId}?t=${Date.now()}`),
+        fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`)
+      ]);
+
+      // Get GW points and transfer cost from K-108c
+      if (teamResponse.ok) {
+        const teamData = await teamResponse.json();
+        setGwPoints(teamData.points.net_total || 0);
+        setGwTransfers({
+          count: 0, // Will be set from info endpoint
+          cost: teamData.points.transfer_cost || 0
+        });
+      }
+
+      // Get other stats from existing endpoint
+      if (infoResponse.ok) {
+        const data = await infoResponse.json();
         setGwRank(data.gwRank || 0);
-        setGwTransfers(data.gwTransfers || { count: 0, cost: 0 });
+        setGwTransfers(prev => ({
+          count: data.gwTransfers?.count || 0,
+          cost: prev.cost // Keep K-108c transfer cost
+        }));
         setOverallPoints(data.overallPoints || 0);
         setOverallRank(data.overallRank || 0);
         setTeamValue(data.teamValue || 0);

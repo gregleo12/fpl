@@ -193,9 +193,9 @@ async function testTeamTotals(leagueId: number, gameweek: number) {
 
     console.log('\n💊 CHIP USAGE');
     console.log('-'.repeat(80));
-    for (const [chip, count] of chipUsage) {
+    Array.from(chipUsage.entries()).forEach(([chip, count]) => {
       console.log(`${chip.padEnd(15)}: ${count} managers`);
-    }
+    });
 
     console.log('\n' + '='.repeat(80));
     console.log(`[Team Totals Test] League ${leagueId}, GW${gameweek} test complete\n`);

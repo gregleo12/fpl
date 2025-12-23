@@ -64,7 +64,7 @@ export function calculateTeamTotal(
   let auto_subs: AutoSub[] = [];
 
   if (activeChip === 'bboost') {
-    // BENCH BOOST: All 15 players score
+    // BENCH BOOST: All 15 players score (captain gets 2x)
     for (const pick of picks) {
       const player = playerData.get(pick.player_id);
       if (!player) continue;
@@ -72,9 +72,9 @@ export function calculateTeamTotal(
       const points = player.points;
 
       if (pick.is_captain) {
-        const captainMultiplier = activeChip === '3xc' ? 3 : 2;
+        // Bench boost only: captain multiplier is always 2
         starting_xi_total += points;
-        captain_bonus += points * (captainMultiplier - 1);
+        captain_bonus += points;
       } else {
         if (pick.position <= 11) {
           starting_xi_total += points;

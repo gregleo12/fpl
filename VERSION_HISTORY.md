@@ -1,8 +1,50 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 281+ versions
-**Current Version:** v3.6.1 (December 23, 2025)
+**Total Releases:** 282+ versions
+**Current Version:** v3.6.2 (December 23, 2025)
+
+---
+
+## v3.6.2 - K-109 Phase 1: My Team Stat Boxes Use K-108c (Dec 23, 2025)
+
+**Feature:** Integrated K-108c team totals calculation into My Team stat boxes for 100% accuracy.
+
+### Changes
+
+**My Team Tab Integration (K-109 Phase 1):**
+- Updated stat boxes to fetch from `/api/gw/[gw]/team/[teamId]` (K-108c endpoint)
+- GW Points now uses `points.net_total` from K-108c (100% accurate, validated)
+- Transfer Cost uses `points.transfer_cost` from K-108c
+- Other stats (overall points, rank, team value) still from existing `/api/team/[teamId]/info`
+- Updated both initial fetch and manual refresh logic
+
+**Bug Fixes:**
+- Fixed TypeScript error in `teamCalculator.ts` - bench boost can't have triple captain
+- Fixed Map iteration in test scripts for TypeScript strict mode compatibility
+
+### Files Modified
+- `src/components/Dashboard/MyTeamTab.tsx` - Updated fetchStats() and handleRefresh() to use K-108c
+- `src/lib/teamCalculator.ts` - Fixed captain multiplier logic in bench boost block
+- `src/scripts/test-provisional-bonus.ts` - Fixed Map.entries() iteration
+- `src/scripts/test-team-totals.ts` - Fixed Map.entries() iteration
+
+### Impact
+- ✅ My Team GW points now 100% accurate (matches FPL official totals)
+- ✅ Transfer costs display correctly from K-108c calculation
+- ✅ No breaking changes - incremental integration (Phase 1 only)
+- ✅ Build passes TypeScript strict checks
+
+### Next Steps
+- Phase 2: Update pitch view player cards (TBD)
+- Phase 3: Add auto-sub indicators (TBD)
+- Phase 4: Update player modal (TBD)
+
+### Related
+- K-108: Single Source of Truth for player points (100% accuracy)
+- K-108b: Provisional bonus calculation
+- K-108c: Team totals with chips and auto-subs
+- K-109: My Team integration (Phase 1 of 4)
 
 ---
 

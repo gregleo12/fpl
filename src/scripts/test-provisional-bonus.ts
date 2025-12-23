@@ -136,11 +136,11 @@ async function testProvisionalBonus(gameweek: number) {
     bpsGroups.get(key)!.push(result);
   }
 
-  for (const [key, group] of bpsGroups) {
+  Array.from(bpsGroups.entries()).forEach(([key, group]) => {
     if (group.length > 1) {
       tieExamples.push(...group);
     }
-  }
+  });
 
   // Report results
   console.log('\n📊 SUMMARY');
@@ -189,7 +189,7 @@ async function testProvisionalBonus(gameweek: number) {
       fixtureGroups.get(result.fixture)!.push(result);
     }
 
-    for (const [fixture, group] of fixtureGroups) {
+    Array.from(fixtureGroups.entries()).forEach(([fixture, group]) => {
       // Sort by BPS descending
       group.sort((a, b) => b.bps - a.bps);
 
@@ -205,7 +205,7 @@ async function testProvisionalBonus(gameweek: number) {
           matchStr
         );
       }
-    }
+    });
   }
 
   console.log('\n' + '='.repeat(80));
