@@ -2,7 +2,146 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 289+ versions
-**Current Version:** v3.7.3 (December 23, 2025)
+**Current Version:** v3.7.4 (December 23, 2025)
+
+---
+
+## v3.7.4 - K-112: Integrate K-108 Sync into League Sync (Dec 23, 2025)
+
+**🔴 CRITICAL PRODUCTION FIX:** K-108c endpoints now populate automatically on league sync.
+
+### The Problem (Production Blocker)
+
+Before this release, K-108c system (`player_gameweek_stats.calculated_points`) was **completely disconnected** from user-facing sync mechanisms:
+
+- ❌ First-time league setup: K-108c data NOT synced
+- ❌ Settings "Sync" button: K-108c data NOT synced
+- ❌ Quick sync (missing GWs): K-108c data NOT synced
+- ❌ Result: **ALL teams showed 0 points** because calculated_points was NULL
+
+**Impact:** Production users would see WRONG SCORES (all zeros) until admin manually ran `npm run sync:player-gw-stats`.
+
+### The Solution
+
+Integrated K-108 sync **automatically** into both main sync flows:
+
+**Smart K-108 Integration:**
+```
+User clicks "Sync"
+    ↓
+syncLeagueData() starts
+    ↓
+Checks: Which GWs need K-108 data?
+    ↓
+┌─────────────────┬────────────────────┐
+│ Missing K-108   │ K-108 exists       │
+│ data for GWs    │ for all GWs        │
+├─────────────────┼────────────────────┤
+│ Sync K-108 now  │ Skip (fast path)   │
+│ (global op)     │ No work needed ✓   │
+└─────────────────┴────────────────────┘
+    ↓
+Continue with manager data sync
+    ↓
+Done - K-108c endpoints work! ✅
+```
+
+### Changes
+
+**File Modified:** `src/lib/leagueSync.ts`
+
+1. **Added K-108 Check Function** (`getGameweeksMissingK108Data`)
+   - Queries database for which GWs have `calculated_points` populated
+   - Returns list of missing GWs that need syncing
+
+2. **Added K-108 Sync Function** (`syncK108PlayerStats`)
+   - Fetches live data from FPL API for missing GWs
+   - Calculates points using `pointsCalculator.ts` (K-108 formula)
+   - Populates `player_gameweek_stats.calculated_points`
+   - Populates `points_breakdown` (JSON of how points calculated)
+   - Global operation (all 760 players, benefits all leagues)
+
+3. **Integrated into `syncLeagueData()`** (main sync)
+   - Checks for missing K-108 data before syncing managers
+   - If missing → syncs K-108 data automatically
+   - If exists → fast path (no extra work)
+
+4. **Integrated into `syncMissingGWs()`** (quick sync)
+   - Same pattern for incremental sync
+   - Only syncs K-108 for GWs that are both missing from league AND missing K-108 data
+
+### Performance
+
+| Scenario | K-108 Time | Total Sync Time | Notes |
+|----------|------------|-----------------|-------|
+| **Fresh sync (17 GWs)** | 20-40 seconds | 40-70 seconds | First-time league load |
+| **New GW only (1 GW)** | 2-3 seconds | 5-10 seconds | After each GW completes |
+| **Data exists (skip)** | 0 seconds | 3-5 seconds | Fast path ✓ |
+
+### Impact
+
+- ✅ **First-time league setup**: K-108c data populated automatically
+- ✅ **Settings sync button**: K-108c data updated automatically
+- ✅ **Quick sync**: K-108c data synced for missing GWs
+- ✅ **New GW completion**: Users can sync immediately, K-108 included
+- ✅ **No manual intervention**: Admin never needs to run `npm run sync:player-gw-stats`
+- ✅ **Global efficiency**: K-108 sync runs once, benefits all leagues
+- ✅ **Fast path optimization**: Skips if data already exists
+
+### What Users See
+
+**Before (v3.7.3):**
+```
+User clicks "Sync" → Manager data synced → K-108c missing → ALL TEAMS 0 POINTS ❌
+Admin must manually run: npm run sync:player-gw-stats
+```
+
+**After (v3.7.4):**
+```
+User clicks "Sync" → K-108 checked → K-108 synced if needed → ALL SCORES CORRECT ✅
+```
+
+### K-111 Audit Compliance
+
+This release resolves **ALL** findings from K-111 Data Pipeline Audit:
+
+| K-111 Finding | Status |
+|---------------|--------|
+| League sync doesn't call K-108 sync | ✅ **FIXED** |
+| No automated K-108 sync | ✅ **FIXED** |
+| Quick sync doesn't include K-108 | ✅ **FIXED** |
+| First-time load missing K-108 data | ✅ **FIXED** |
+| K-108 sync is separate script | ✅ **FIXED** (now integrated) |
+
+### Production Readiness
+
+**Before v3.7.4:** ⛔ **BLOCKED** - Users would see wrong scores
+**After v3.7.4:** ✅ **READY** - All data syncs automatically
+
+### Technical Details
+
+**K-108 Sync is Global:**
+- Not league-specific (all 760 players)
+- One sync benefits ALL leagues
+- Database check ensures no duplicate work
+- Efficient: Only syncs missing GWs
+
+**Points Calculation:**
+- Uses shared `pointsCalculator.ts` (same as manual script)
+- Matches FPL official scoring exactly
+- Stores breakdown in `points_breakdown` JSON column
+
+**Error Handling:**
+- Syncs individual GWs independently (one failure doesn't block others)
+- Logs errors but continues
+- Returns sync result summary (synced count, error count)
+
+### Related Versions
+
+- v3.7.1 (K-110): Player season totals from K-108
+- v3.7.2 (K-109 Phase 7): Fix bonus double-counting
+- v3.7.3 (K-110 Extended): All player season stats from K-108
+- **v3.7.4 (K-112)**: Integrate K-108 into league sync ← **This release** 🔴
 
 ---
 

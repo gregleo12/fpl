@@ -1,6 +1,237 @@
 import { getDatabase } from '@/lib/db';
+import { calculatePoints, type Position } from '@/lib/pointsCalculator';
 
 const SYNC_INTERVAL_HOURS = 24; // Re-sync if older than 24 hours
+
+/**
+ * K-112: Check which gameweeks are missing K-108 calculated_points data
+ * Returns array of GW numbers that need K-108 syncing
+ */
+async function getGameweeksMissingK108Data(
+  db: any,
+  maxGW: number
+): Promise<number[]> {
+  console.log(`[K-108 Check] Checking for missing calculated_points up to GW${maxGW}...`);
+
+  // Query: For each GW, check if ANY player has calculated_points
+  const result = await db.query(`
+    SELECT DISTINCT gameweek
+    FROM player_gameweek_stats
+    WHERE gameweek <= $1
+      AND calculated_points IS NOT NULL
+    ORDER BY gameweek
+  `, [maxGW]);
+
+  const populatedGWs = new Set(result.rows.map((r: any) => parseInt(r.gameweek)));
+  const missingGWs: number[] = [];
+
+  for (let gw = 1; gw <= maxGW; gw++) {
+    if (!populatedGWs.has(gw)) {
+      missingGWs.push(gw);
+    }
+  }
+
+  if (missingGWs.length > 0) {
+    console.log(`[K-108 Check] Missing calculated_points for GWs: ${missingGWs.join(', ')}`);
+  } else {
+    console.log(`[K-108 Check] All GWs 1-${maxGW} have calculated_points ✓`);
+  }
+
+  return missingGWs;
+}
+
+/**
+ * K-112: Sync K-108 calculated_points for specified gameweeks
+ * This is a GLOBAL operation (affects all 760 players, benefits all leagues)
+ */
+async function syncK108PlayerStats(
+  db: any,
+  gameweeks: number[],
+  bootstrap: any
+): Promise<{ synced: number; errors: number }> {
+  console.log(`[K-108 Sync] Starting sync for ${gameweeks.length} gameweek(s): ${gameweeks.join(', ')}`);
+
+  const players = bootstrap.elements || [];
+  const teams = bootstrap.teams || [];
+
+  // Build team lookup
+  const teamLookup: { [key: number]: any } = {};
+  teams.forEach((team: any) => {
+    teamLookup[team.id] = team;
+  });
+
+  let synced = 0;
+  let errors = 0;
+
+  // Process each gameweek
+  for (const gw of gameweeks) {
+    try {
+      console.log(`[K-108 Sync] Fetching live data for GW${gw}...`);
+
+      // Fetch fixtures for this GW
+      const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gw}`);
+      if (!fixturesResponse.ok) {
+        console.error(`[K-108 Sync] Failed to fetch fixtures for GW${gw}`);
+        errors++;
+        continue;
+      }
+      const fixtures = await fixturesResponse.json();
+
+      // Build fixture lookup by team
+      const fixturesByTeam: { [key: number]: any } = {};
+      fixtures.forEach((fixture: any) => {
+        fixturesByTeam[fixture.team_h] = {
+          id: fixture.id,
+          opponent_team_id: fixture.team_a,
+          opponent_short: teamLookup[fixture.team_a]?.short_name || 'UNK',
+          was_home: true,
+          started: fixture.started || false,
+          finished: fixture.finished || false,
+        };
+        fixturesByTeam[fixture.team_a] = {
+          id: fixture.id,
+          opponent_team_id: fixture.team_h,
+          opponent_short: teamLookup[fixture.team_h]?.short_name || 'UNK',
+          was_home: false,
+          started: fixture.started || false,
+          finished: fixture.finished || false,
+        };
+      });
+
+      // Fetch live data
+      const liveResponse = await fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`);
+      if (!liveResponse.ok) {
+        console.error(`[K-108 Sync] Failed to fetch live data for GW${gw}`);
+        errors++;
+        continue;
+      }
+      const liveData = await liveResponse.json();
+
+      let gwSynced = 0;
+
+      // Process each player
+      for (const player of players) {
+        try {
+          const liveElement = liveData.elements.find((e: any) => e.id === player.id);
+          if (!liveElement) {
+            // Player didn't play this GW, skip
+            continue;
+          }
+
+          const stats = liveElement.stats;
+          const fixture = fixturesByTeam[player.team];
+
+          // Calculate points using K-108 formula
+          const calculated = calculatePoints({
+            minutes: stats.minutes || 0,
+            goals_scored: stats.goals_scored || 0,
+            assists: stats.assists || 0,
+            clean_sheets: stats.clean_sheets || 0,
+            goals_conceded: stats.goals_conceded || 0,
+            own_goals: stats.own_goals || 0,
+            penalties_saved: stats.penalties_saved || 0,
+            penalties_missed: stats.penalties_missed || 0,
+            yellow_cards: stats.yellow_cards || 0,
+            red_cards: stats.red_cards || 0,
+            saves: stats.saves || 0,
+            bonus: stats.bonus || 0,
+            defensive_contribution: stats.defensive_contribution || 0,
+          }, player.element_type as Position);
+
+          const fplTotal = stats.total_points || 0;
+
+          // Insert or update player_gameweek_stats with calculated_points
+          await db.query(`
+            INSERT INTO player_gameweek_stats (
+              player_id, gameweek,
+              fixture_id, opponent_team_id, opponent_short, was_home,
+              fixture_started, fixture_finished,
+              minutes, goals_scored, assists, clean_sheets, goals_conceded,
+              own_goals, penalties_saved, penalties_missed, yellow_cards, red_cards,
+              saves, bonus, bps, defensive_contribution,
+              influence, creativity, threat, ict_index,
+              expected_goals, expected_assists, expected_goal_involvements,
+              total_points, calculated_points, points_breakdown,
+              updated_at
+            ) VALUES (
+              $1, $2,
+              $3, $4, $5, $6,
+              $7, $8,
+              $9, $10, $11, $12, $13,
+              $14, $15, $16, $17, $18,
+              $19, $20, $21, $22,
+              $23, $24, $25, $26,
+              $27, $28, $29,
+              $30, $31, $32,
+              NOW()
+            )
+            ON CONFLICT (player_id, gameweek)
+            DO UPDATE SET
+              calculated_points = EXCLUDED.calculated_points,
+              points_breakdown = EXCLUDED.points_breakdown,
+              total_points = EXCLUDED.total_points,
+              bonus = EXCLUDED.bonus,
+              bps = EXCLUDED.bps,
+              updated_at = NOW()
+          `, [
+            player.id, gw,
+            fixture?.id || null,
+            fixture?.opponent_team_id || null,
+            fixture?.opponent_short || null,
+            fixture?.was_home || false,
+            fixture?.started || false,
+            fixture?.finished || false,
+            stats.minutes || 0,
+            stats.goals_scored || 0,
+            stats.assists || 0,
+            stats.clean_sheets || 0,
+            stats.goals_conceded || 0,
+            stats.own_goals || 0,
+            stats.penalties_saved || 0,
+            stats.penalties_missed || 0,
+            stats.yellow_cards || 0,
+            stats.red_cards || 0,
+            stats.saves || 0,
+            stats.bonus || 0,
+            stats.bps || 0,
+            stats.defensive_contribution || 0,
+            stats.influence || '0.0',
+            stats.creativity || '0.0',
+            stats.threat || '0.0',
+            stats.ict_index || '0.0',
+            stats.expected_goals || '0.00',
+            stats.expected_assists || '0.00',
+            stats.expected_goal_involvements || '0.00',
+            fplTotal,
+            calculated.total,
+            JSON.stringify(calculated.breakdown),
+          ]);
+
+          gwSynced++;
+          synced++;
+
+        } catch (error) {
+          console.error(`[K-108 Sync] Error processing player ${player.id} GW${gw}:`, error);
+          errors++;
+        }
+      }
+
+      console.log(`[K-108 Sync] GW${gw} complete: ${gwSynced} players synced`);
+
+      // Rate limiting between GWs
+      if (gw !== gameweeks[gameweeks.length - 1]) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+    } catch (error) {
+      console.error(`[K-108 Sync] Error syncing GW${gw}:`, error);
+      errors++;
+    }
+  }
+
+  console.log(`[K-108 Sync] Complete: ${synced} player records synced, ${errors} errors`);
+  return { synced, errors };
+}
 
 /**
  * Sync PL fixtures (completed only)
@@ -122,6 +353,24 @@ export async function syncMissingGWs(
     // Get bootstrap data for player names
     const bootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     const bootstrap = await bootstrapRes.json();
+
+    // ========== K-112: SYNC K-108 PLAYER STATS (GLOBAL OPERATION) ==========
+    // Check if K-108 calculated_points exists for the missing GWs
+    console.log(`[K-112] Quick sync: Checking K-108 data for missing GWs...`);
+    const maxGW = Math.max(...missingGWs);
+    const missingK108GWs = await getGameweeksMissingK108Data(db, maxGW);
+
+    // Only sync K-108 for GWs that are both missing from league AND missing K-108 data
+    const k108ToSync = missingK108GWs.filter(gw => missingGWs.includes(gw));
+
+    if (k108ToSync.length > 0) {
+      console.log(`[K-112] Quick sync: Syncing K-108 data for ${k108ToSync.length} GW(s): ${k108ToSync.join(', ')}`);
+      const k108Result = await syncK108PlayerStats(db, k108ToSync, bootstrap);
+      console.log(`[K-112] Quick sync K-108 complete: ${k108Result.synced} players, ${k108Result.errors} errors`);
+    } else {
+      console.log(`[K-112] Quick sync: K-108 data exists for all missing GWs ✓`);
+    }
+    // ========================================================================
 
     // Sync transfers for all managers (once per manager, covers all GWs)
     console.log(`[Sync] Syncing transfers for ${managers.length} managers...`);
@@ -377,6 +626,21 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
     const bootstrap = await bootstrapRes.json();
     const currentGW = bootstrap.events.find((e: any) => e.is_current)?.id || 16;
     const completedGWs = Array.from({ length: currentGW }, (_, i) => i + 1);
+
+    // ========== K-112: SYNC K-108 PLAYER STATS (GLOBAL OPERATION) ==========
+    // Check if K-108 calculated_points exists for needed GWs
+    // This is global (all 760 players), not league-specific - benefits all leagues
+    console.log(`[K-112] Checking K-108 data status for GW1-${currentGW}...`);
+    const missingK108GWs = await getGameweeksMissingK108Data(db, currentGW);
+
+    if (missingK108GWs.length > 0) {
+      console.log(`[K-112] K-108 data missing for ${missingK108GWs.length} gameweek(s), syncing now...`);
+      const k108Result = await syncK108PlayerStats(db, missingK108GWs, bootstrap);
+      console.log(`[K-112] K-108 sync complete: ${k108Result.synced} players, ${k108Result.errors} errors`);
+    } else {
+      console.log(`[K-112] K-108 data exists for all GWs, fast path ✓`);
+    }
+    // ========================================================================
 
     // Sync each manager
     for (const entryId of managerIds) {
