@@ -80,48 +80,25 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   useEffect(() => {
     async function fetchStats() {
       try {
-        console.log('[K-109 Phase 1] Fetching stats:', { myTeamId, selectedGW });
-
         // K-109 Phase 1: Use K-108c for GW points and transfer cost (100% accurate)
-        const k108cUrl = `/api/gw/${selectedGW}/team/${myTeamId}`;
-        const infoUrl = `/api/team/${myTeamId}/info?gw=${selectedGW}`;
-
-        console.log('[K-109 Phase 1] Calling K-108c:', k108cUrl);
-        console.log('[K-109 Phase 1] Calling info:', infoUrl);
-
         const [teamResponse, infoResponse] = await Promise.all([
-          fetch(k108cUrl),
-          fetch(infoUrl)
+          fetch(`/api/gw/${selectedGW}/team/${myTeamId}`),
+          fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`)
         ]);
-
-        console.log('[K-109 Phase 1] K-108c response status:', teamResponse.status, teamResponse.ok);
-        console.log('[K-109 Phase 1] Info response status:', infoResponse.status, infoResponse.ok);
 
         // Get GW points and transfer cost from K-108c
         if (teamResponse.ok) {
           const teamData = await teamResponse.json();
-          console.log('[K-109 Phase 1] K-108c data:', {
-            net_total: teamData.points?.net_total,
-            transfer_cost: teamData.points?.transfer_cost,
-            gross_total: teamData.points?.gross_total,
-            status: teamData.status
-          });
           setGwPoints(teamData.points.net_total || 0);
           setGwTransfers({
             count: 0, // Will be set from info endpoint
             cost: teamData.points.transfer_cost || 0
           });
-        } else {
-          console.error('[K-109 Phase 1] K-108c request failed:', await teamResponse.text());
         }
 
         // Get other stats from existing endpoint
         if (infoResponse.ok) {
           const data = await infoResponse.json();
-          console.log('[K-109 Phase 1] Info data:', {
-            gwPoints: data.gwPoints,
-            gwTransfers: data.gwTransfers
-          });
           setGwRank(data.gwRank || 0);
           setGwTransfers(prev => ({
             count: data.gwTransfers?.count || 0,
@@ -131,11 +108,9 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           setOverallRank(data.overallRank || 0);
           setTeamValue(data.teamValue || 0);
           setBank(data.bank || 0);
-        } else {
-          console.error('[K-109 Phase 1] Info request failed:', await infoResponse.text());
         }
       } catch (err: any) {
-        console.error('[K-109 Phase 1] Error fetching stats:', err);
+        console.error('Error fetching stats:', err);
       }
     }
 
@@ -166,38 +141,23 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      console.log('[K-109 Phase 1] Manual refresh triggered:', { myTeamId, selectedGW });
-
       // Increment refresh key to force re-fetch
       setRefreshKey(prev => prev + 1);
 
       // K-109 Phase 1: Use K-108c for GW points and transfer cost (100% accurate)
-      const k108cUrl = `/api/gw/${selectedGW}/team/${myTeamId}?t=${Date.now()}`;
-      const infoUrl = `/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`;
-
-      console.log('[K-109 Phase 1] Refresh calling K-108c:', k108cUrl);
-
       const [teamResponse, infoResponse] = await Promise.all([
-        fetch(k108cUrl),
-        fetch(infoUrl)
+        fetch(`/api/gw/${selectedGW}/team/${myTeamId}?t=${Date.now()}`),
+        fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`)
       ]);
-
-      console.log('[K-109 Phase 1] Refresh K-108c status:', teamResponse.status);
 
       // Get GW points and transfer cost from K-108c
       if (teamResponse.ok) {
         const teamData = await teamResponse.json();
-        console.log('[K-109 Phase 1] Refresh K-108c data:', {
-          net_total: teamData.points?.net_total,
-          transfer_cost: teamData.points?.transfer_cost
-        });
         setGwPoints(teamData.points.net_total || 0);
         setGwTransfers({
           count: 0, // Will be set from info endpoint
           cost: teamData.points.transfer_cost || 0
         });
-      } else {
-        console.error('[K-109 Phase 1] Refresh K-108c failed:', await teamResponse.text());
       }
 
       // Get other stats from existing endpoint
@@ -214,7 +174,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         setBank(data.bank || 0);
       }
     } catch (err: any) {
-      console.error('[K-109 Phase 1] Error refreshing data:', err);
+      console.error('Error refreshing data:', err);
     } finally {
       setIsRefreshing(false);
     }
