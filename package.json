@@ -22,7 +22,8 @@
     "sync:pl-fixtures": "npx tsx src/scripts/sync-pl-fixtures.ts",
     "migrate:k108": "npx tsx src/scripts/run-k108-migration.ts",
     "sync:player-gw-stats": "npx tsx src/scripts/sync-player-gw-stats.ts",
-    "test:provisional-bonus": "npx tsx src/scripts/test-provisional-bonus.ts"
+    "test:provisional-bonus": "npx tsx src/scripts/test-provisional-bonus.ts",
+    "test:team-totals": "npx tsx src/scripts/test-team-totals.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
