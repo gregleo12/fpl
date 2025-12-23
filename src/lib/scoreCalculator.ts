@@ -375,9 +375,25 @@ export function calculateScoreFromData(
   if (status === 'completed') {
     const officialPoints = picksData.entry_history?.points || 0;
     const finalScore = officialPoints - transferCost;
+    const gw = picksData.entry_history?.event || 'unknown';
+
+    // K-106b: Debug logging to investigate -2pt discrepancy
+    console.log(`[K-106b DEBUG] Entry ${entryId} GW${gw} (COMPLETED):`);
+    console.log(`[K-106b DEBUG] - Official Points (GROSS): ${officialPoints}`);
+    console.log(`[K-106b DEBUG] - Transfer Cost: ${transferCost}`);
+    console.log(`[K-106b DEBUG] - Final Score (NET): ${finalScore}`);
+    console.log(`[K-106b DEBUG] - Data Source: ${picksData.entry_history ? 'entry_history' : 'FALLBACK TO 0'}`);
+    console.log(`[K-106b DEBUG] - Active Chip: ${activeChip || 'none'}`);
 
     const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
     const captain = squad.starting11.find(p => p.multiplier > 1);
+
+    // K-106b: Log squad composition for verification
+    const squadTotal = squad.starting11.reduce((sum, p) => sum + p.points, 0);
+    const benchTotal = squad.bench.reduce((sum, p) => sum + p.points, 0);
+    console.log(`[K-106b DEBUG] - Starting XI total (raw): ${squadTotal}`);
+    console.log(`[K-106b DEBUG] - Bench total (raw): ${benchTotal}`);
+    console.log(`[K-106b DEBUG] - Captain: ${captain?.name || 'none'} (×${captain?.multiplier || 1})`);
 
     return {
       entryId,
