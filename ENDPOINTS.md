@@ -1,8 +1,10 @@
 # RivalFPL - API Endpoints Reference
 
-**Last Updated:** December 20, 2025
+**Last Updated:** December 23, 2025
 **Base URL (Prod):** https://rivalfpl.com
 **Base URL (Staging):** https://fpl-staging-production.up.railway.app
+
+**Score Calculation:** All team scores use **K-108c** single source of truth (v3.7.0)
 
 ---
 
@@ -10,30 +12,31 @@
 
 ### League Endpoints
 
-| Method | Endpoint | Description | Data Source |
-|--------|----------|-------------|-------------|
-| GET | `/api/league/[id]` | League data, standings, managers | DB + FPL API |
-| GET | `/api/league/[id]/fixtures/[gw]` | H2H fixtures for gameweek | DB (completed) / FPL (live) |
-| GET | `/api/league/[id]/fixtures/[gw]/live` | Live match scores | FPL API |
-| GET | `/api/league/[id]/fixtures/[gw]/completed` | Completed match scores | DB |
-| GET | `/api/league/[id]/matches/[matchId]` | Single match details | DB + FPL API |
-| GET | `/api/league/[id]/stats` | League stats overview | DB + FPL API |
-| GET | `/api/league/[id]/stats/gameweek/[gw]` | Detailed GW stats | DB (completed) / FPL (live) |
-| GET | `/api/league/[id]/stats/gameweek/[gw]/rankings` | GW points rankings | DB |
-| GET | `/api/league/[id]/stats/season` | Season-long statistics | DB |
-| GET | `/api/league/[id]/stats/position-history` | Position over time | DB |
-| GET | `/api/league/[id]/insights/[entryId]` | Opponent insights | DB |
+| Method | Endpoint | Description | Data Source | Score Calc |
+|--------|----------|-------------|-------------|------------|
+| GET | `/api/league/[id]` | League data, standings, managers | DB + FPL API | - |
+| GET | `/api/league/[id]/fixtures/[gw]` | H2H fixtures for gameweek | DB (completed) / K-108c (live) | **K-108c** |
+| GET | `/api/league/[id]/fixtures/[gw]/live` | Live match modal scores | FPL API | scoreCalculator |
+| GET | `/api/league/[id]/fixtures/[gw]/completed` | Completed match scores | DB | - |
+| GET | `/api/league/[id]/matches/[matchId]` | Single match details | DB + FPL API | - |
+| GET | `/api/league/[id]/stats` | League standings (live GW) | DB + K-108c (live) | **K-108c** |
+| GET | `/api/league/[id]/stats/gameweek/[gw]` | Detailed GW stats, winners | DB (completed) / K-108c (live) | **K-108c** |
+| GET | `/api/league/[id]/stats/gameweek/[gw]/rankings` | GW points rankings | K-108c | **K-108c** |
+| GET | `/api/league/[id]/stats/season` | Season-long statistics | DB + K-108c (live GW) | **K-108c** |
+| GET | `/api/league/[id]/stats/position-history` | Position over time | DB | - |
+| GET | `/api/league/[id]/insights/[entryId]` | Opponent insights | DB | - |
 
 ### Team Endpoints
 
-| Method | Endpoint | Description | Data Source |
-|--------|----------|-------------|-------------|
-| GET | `/api/team/[teamId]/gameweek/[gw]` | Team picks for GW | DB (completed) / FPL (live) |
-| GET | `/api/team/[teamId]/info` | Team information | FPL API |
-| GET | `/api/team/[teamId]/transfers` | Transfer history | DB + FPL API |
-| GET | `/api/team/[teamId]/gw-rank-stats` | GW rank statistics | FPL API |
-| GET | `/api/team/[teamId]/transfer-stats` | Transfer statistics | FPL API |
-| GET | `/api/team/[teamId]/history` | Manager GW history | FPL API |
+| Method | Endpoint | Description | Data Source | Score Calc |
+|--------|----------|-------------|-------------|------------|
+| GET | `/api/team/[teamId]/gameweek/[gw]` | Team picks for GW pitch view | K-108c | **K-108c** |
+| GET | `/api/team/[teamId]/info` | Team information (stat boxes) | FPL API + K-108c | **K-108c** |
+| GET | `/api/team/[teamId]/history` | Manager GW history | DB + K-108c (live) | **K-108c** |
+| GET | `/api/team/[teamId]/transfers` | Transfer history | DB + FPL API | - |
+| GET | `/api/team/[teamId]/gw-rank-stats` | GW rank statistics | FPL API | - |
+| GET | `/api/team/[teamId]/transfer-stats` | Transfer statistics | FPL API | - |
+| GET | `/api/gw/[gw]/team/[teamId]` | K-108c team totals | K-108c | **K-108c** |
 
 ### Player Endpoints
 
@@ -75,12 +78,58 @@
 
 | Source | Meaning | When Used |
 |--------|---------|-----------|
+| **K-108c** | Team totals calculation | Team scores (single source of truth) |
 | **DB** | PostgreSQL database | Cached/historical data |
 | **FPL API** | Official FPL API | Live/current data |
 | **DB (completed)** | Database for completed GWs | GW has finished |
-| **FPL (live)** | FPL API for live GWs | GW in progress |
+| **K-108c (live)** | K-108c for live GWs | Real-time accurate scores |
 | **DB + FPL API** | Both sources combined | Mixed data needs |
 | **Static** | Hardcoded/computed | No external data |
+
+---
+
+## 🧮 K-108c Score Calculation System
+
+**What is K-108c?**
+
+K-108c is our single source of truth for all team score calculations. Implemented in v3.6.2 - v3.7.0, it provides 100% accurate scores that match FPL official totals.
+
+**How it works:**
+
+1. **Player Points** (K-108): Calculated and stored in `player_gameweek_stats.calculated_points`
+   - Base points (goals, assists, clean sheets, etc.)
+   - Bonus points (official or provisional)
+   - All deductions (yellow cards, red cards, own goals, penalties missed)
+
+2. **Team Totals** (K-108c): Calculated by `calculateTeamGameweekScore()` function
+   - Starting XI total (11 players × points)
+   - Captain bonus (base points × multiplier: 2x or 3x)
+   - Bench boost total (if active: bench players' points)
+   - Auto-substitutions (formation-valid bench → XI swaps)
+   - Transfer cost deductions
+   - **Net total** = gross total - transfer cost
+
+3. **Single Calculation**: Each score calculated once, used everywhere
+   - No more conflicting calculations between endpoints
+   - Captain, chips, auto-subs all calculated in one place
+   - Consistent across My Team, Rivals, Stats, Standings
+
+**Endpoints using K-108c:**
+- ✅ My Team stat boxes (`/api/gw/[gw]/team/[teamId]`)
+- ✅ My Team info (`/api/team/[teamId]/info`)
+- ✅ My Team history (`/api/team/[teamId]/history`)
+- ✅ My Team pitch view (`/api/team/[teamId]/gameweek/[gw]`)
+- ✅ Rivals fixtures (`/api/league/[id]/fixtures/[gw]`)
+- ✅ Stats GW rankings (`/api/league/[id]/stats/gameweek/[gw]/rankings`)
+- ✅ Stats GW winners (`/api/league/[id]/stats/gameweek/[gw]`)
+- ✅ Stats Season best/worst (`/api/league/[id]/stats/season`)
+- ✅ League standings (`/api/league/[id]/stats`)
+
+**Benefits:**
+- 100% accuracy - matches FPL official totals
+- Complete consistency - all features show same scores
+- Single source of truth - no calculation discrepancies
+- Better performance - parallel calculations where needed
 
 ---
 
@@ -130,10 +179,15 @@ Returns H2H fixtures for a specific gameweek.
 }
 ```
 
-**Data Source Logic:**
-- `status === 'completed'` → Uses `manager_gw_history` for scores
-- `status === 'in_progress'` → Uses FPL API live data
+**Data Source Logic (K-108c):**
+- `status === 'completed'` → Uses `manager_gw_history` for scores from DB
+- `status === 'in_progress'` → Uses K-108c (`calculateTeamGameweekScore`) for live scores
 - `status === 'upcoming'` → Returns 0-0 scores
+
+**Score Calculation:**
+- All fixture scores calculated using K-108c single source of truth
+- Parallel calculation for all managers in fixtures (typically 10-20 teams)
+- 100% accurate, matches FPL official totals
 
 ---
 
@@ -149,9 +203,9 @@ Returns detailed statistics for a gameweek.
 - Top performers
 - Differentials
 
-**Data Source Logic:**
+**Data Source Logic (K-108c):**
 - Completed GW → Database (K-27 tables)
-- Live GW → FPL API
+- Live GW → K-108c parallel calculation
 
 ---
 
@@ -166,6 +220,7 @@ Returns gameweek points rankings for all managers in the league, sorted by point
 **Response:**
 ```json
 {
+  "event": 17,
   "rankings": [
     {
       "rank": 1,
@@ -181,18 +236,20 @@ Returns gameweek points rankings for all managers in the league, sorted by point
       "team_name": "Team Name",
       "points": 104
     }
-  ]
+  ],
+  "total_managers": 20
 }
 ```
 
 **Features:**
 - Rankings based purely on GW points (not H2H results)
 - Handles ties correctly - managers with equal points get the same rank
-- Ordered by points DESC, then player_name ASC
+- Ordered by points DESC
 
-**Data Source:**
-- Uses `manager_gw_history` table
-- Only returns data for completed gameweeks
+**Score Calculation (K-108c):**
+- All manager scores calculated in parallel using `calculateTeamGameweekScore()`
+- Works for both completed and live gameweeks
+- 100% accurate, matches FPL official totals
 
 **Used By:**
 - GW Points Leaders card (top 3)

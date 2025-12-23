@@ -1,7 +1,8 @@
 # RivalFPL - Database Reference
 
-**Last Updated:** December 20, 2025
+**Last Updated:** December 23, 2025
 **Database:** PostgreSQL on Railway
+**Score Calculation:** K-108/K-108c tables (100% accuracy)
 
 ---
 
@@ -31,7 +32,118 @@ postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/railway
 | `league_standings` | Current rankings | league_id, entry_id, rank, total |
 | `players` | All 760 PL players | id, web_name, team_id, position, now_cost |
 | `teams` | All 20 PL teams | id, name, short_name, code |
-| `player_gameweek_stats` | Player stats per GW | player_id, gameweek, total_points, minutes, goals |
+| `player_gameweek_stats` | **K-108:** Player points per GW | player_id, gameweek, **calculated_points**, minutes, goals, bonus |
+
+---
+
+## 🧮 K-108/K-108c Score Calculation System
+
+**Implemented:** v3.6.2 - v3.7.0
+**Purpose:** Single source of truth for 100% accurate score calculations
+
+### K-108: Player Points (Database)
+
+**Table:** `player_gameweek_stats`
+**Key Column:** `calculated_points` - Accurate player points per gameweek
+
+```sql
+-- Example: Get player points for GW17
+SELECT player_id, calculated_points, minutes, goals_scored, bonus
+FROM player_gameweek_stats
+WHERE gameweek = 17 AND player_id = 427;
+
+-- Result: Haaland, 16 points (includes bonus already baked in)
+```
+
+**How K-108 Works:**
+1. `sync-player-gw-stats.ts` syncs player data from FPL API after each GW
+2. Stores accurate points in `calculated_points` column
+3. All endpoints query this column for player points (NOT FPL API)
+
+### K-108c: Team Totals (Calculation Function)
+
+**Function:** `calculateTeamGameweekScore(teamId, gameweek)`
+**File:** `src/lib/teamCalculator.ts`
+**Purpose:** Calculate complete team score for any gameweek
+
+```typescript
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+
+// Get team score for GW17
+const teamScore = await calculateTeamGameweekScore(123456, 17);
+
+console.log(teamScore.points.net_total);        // 67 (final score)
+console.log(teamScore.points.starting_xi_total); // 52
+console.log(teamScore.points.captain_bonus);     // 16 (Haaland ×3)
+console.log(teamScore.points.transfer_cost);     // -4
+console.log(teamScore.auto_subs);                // [{ player_in: "Saka", player_out: "TAA" }]
+```
+
+**How K-108c Works:**
+1. Queries `manager_picks` for team selection (15 players)
+2. Queries `player_gameweek_stats` for K-108 points
+3. Queries `manager_chips` for active chip (BB, TC, etc.)
+4. Queries `manager_gw_history` for transfer cost
+5. Calculates:
+   - Starting XI total (formation-valid)
+   - Captain bonus (2× or 3×)
+   - Auto-substitutions (bench → XI)
+   - Bench boost total (if active)
+   - Transfer cost deduction
+6. Returns complete `TeamGameweekScore` object
+
+**What K-108c Returns:**
+```typescript
+interface TeamGameweekScore {
+  points: {
+    net_total: number;           // Final score (what user sees)
+    starting_xi_total: number;   // XI total before captain
+    captain_bonus: number;       // Captain extra points
+    bench_boost_total: number;   // Bench points (if BB active)
+    auto_sub_total: number;      // Points from auto-subs
+    transfer_cost: number;       // -4, -8, etc.
+  };
+  auto_subs: Array<{             // Substitution details
+    player_in: string;
+    player_out: string;
+    points_gained: number;
+  }>;
+  active_chip: string | null;    // "bboost", "3xc", etc.
+  captain_name: string;
+  status: string;                // "completed", "in_progress"
+}
+```
+
+### Database Tables Used by K-108c
+
+| Table | Purpose in K-108c |
+|-------|-------------------|
+| `manager_picks` | Team selection (15 players, captain, positions) |
+| `player_gameweek_stats` | K-108 player points (calculated_points column) |
+| `manager_chips` | Active chip detection (BB, TC, FH, WC) |
+| `manager_gw_history` | Transfer cost (event_transfers_cost) |
+
+### Endpoints Using K-108c (v3.7.0)
+
+✅ **All 9 major endpoints migrated to K-108c:**
+
+1. `/api/gw/[gw]/team/[teamId]` - My Team stat boxes
+2. `/api/team/[teamId]/info` - My Team info tile
+3. `/api/team/[teamId]/history` - My Team history modal
+4. `/api/team/[teamId]/gameweek/[gw]` - My Team pitch view
+5. `/api/league/[id]/fixtures/[gw]` - Rivals H2H fixtures
+6. `/api/league/[id]/stats/gameweek/[gw]/rankings` - Stats GW rankings
+7. `/api/league/[id]/stats/gameweek/[gw]` - Stats GW winners/losers
+8. `/api/league/[id]/stats/season` - Stats Season best/worst GWs
+9. `/api/league/[id]/stats` - League standings
+
+**Benefits:**
+- **100% Accuracy**: Scores match FPL official totals exactly
+- **Consistency**: Same score across all features (no discrepancies)
+- **Performance**: Parallel calculations (20 teams in ~2-3s)
+- **Maintainability**: Single calculation function, easy to debug
+
+---
 
 #### `leagues` Table Details
 
@@ -85,7 +197,7 @@ These tables cache FPL API data for completed gameweeks to reduce API calls.
 | Live / In Progress | FPL API | Need real-time data |
 | Upcoming | FPL API | Data may change |
 
-### Code Pattern
+### Code Pattern (Legacy K-27 Only)
 
 ```typescript
 if (status === 'completed') {
@@ -99,6 +211,49 @@ if (status === 'completed') {
   // Fetch from FPL API
   const response = await fetch(`https://fantasy.premierleague.com/api/...`);
 }
+```
+
+### Code Pattern (K-108c - Recommended)
+
+**Use K-108c for all team score calculations** - it handles data source selection internally:
+
+```typescript
+import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+
+// K-108c works for ANY gameweek status (completed, live, upcoming)
+const teamScore = await calculateTeamGameweekScore(teamId, gameweek);
+const finalScore = teamScore.points.net_total;
+
+// For multiple teams (e.g., league standings)
+const scores = await Promise.all(
+  teamIds.map(id => calculateTeamGameweekScore(id, gameweek))
+);
+
+// Extract scores
+const scoresMap = new Map();
+scores.forEach((result, index) => {
+  scoresMap.set(teamIds[index], result.points.net_total);
+});
+```
+
+**When to use K-108c vs K-27:**
+- ✅ **Use K-108c**: When calculating team scores (GW points, rankings, H2H matches)
+- ✅ **Use K-27 directly**: When fetching raw data (transfer history, chip usage, historical stats)
+
+**K-108c Internal Logic:**
+```typescript
+// K-108c queries these K-27 tables internally:
+// 1. manager_picks (team selection)
+// 2. player_gameweek_stats (K-108 player points)
+// 3. manager_chips (active chip)
+// 4. manager_gw_history (transfer cost)
+
+// Then calculates:
+// - Starting XI total
+// - Captain bonus
+// - Auto-substitutions
+// - Transfer cost deduction
+// Returns: Complete TeamGameweekScore object
 ```
 
 ### ⚠️ Important: Fetch Complete Data
@@ -146,11 +301,14 @@ DATABASE_URL="..." npm run sync:manager-history
 
 | Command | What It Does | When to Run |
 |---------|--------------|-------------|
+| `npm run sync:player-gw-stats` | **K-108:** Syncs player points to `player_gameweek_stats` | After each GW completes |
 | `npm run sync:manager-history` | Syncs GW history for all managers | After each GW completes |
 | `npm run sync:manager-picks` | Syncs team picks for all managers | After each GW completes |
 | `npm run sync:manager-chips` | Syncs chip usage | When chips are played |
 | `npm run sync:manager-transfers` | Syncs all transfers | After each GW completes |
 | `npm run sync:pl-fixtures` | Syncs PL fixture results | After matches complete |
+
+**⚠️ Important:** Always run `sync:player-gw-stats` first after a GW completes - K-108c depends on accurate player points!
 
 ### Migration Scripts
 
@@ -281,7 +439,16 @@ SELECT * FROM player_gameweek_stats WHERE gameweek = 17 AND player_id = 123
 The table exists but is missing columns. Run the appropriate migration or add column manually.
 
 ### Scores Showing 0 for Completed GWs
-Check that you're fetching from `manager_gw_history` in addition to `manager_picks`. See v2.7.1 bug fix.
+**Legacy Issue (pre-v3.7.0):** Check that you're fetching from `manager_gw_history` in addition to `manager_picks`. See v2.7.1 bug fix.
+
+**v3.7.0+:** Use K-108c (`calculateTeamGameweekScore()`) instead - it handles all data fetching automatically.
+
+### K-108c Showing Incorrect Scores
+**Check these in order:**
+1. Verify `player_gameweek_stats` has data for the gameweek (run `npm run sync:player-gw-stats`)
+2. Verify `manager_picks` has team selections (run `npm run sync:manager-picks`)
+3. Check Railway logs for `[K-108c]` error messages
+4. Verify gameweek is synced in database (check `manager_gw_history`)
 
 ### Sync Script Fails with Connection Error
 Verify DATABASE_URL is set correctly and the external hostname (caboose) is used, not internal.

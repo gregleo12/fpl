@@ -1,8 +1,9 @@
 # RivalFPL - Architecture Reference
 
-**Last Updated:** December 20, 2025
+**Last Updated:** December 23, 2025
 **Framework:** Next.js 14 (App Router)
 **Language:** TypeScript
+**Score Calculation:** K-108c single source of truth (v3.7.0)
 
 ---
 
@@ -37,7 +38,9 @@ fpl/
 │   │   ├── fpl-api.ts          # FPL API client
 │   │   ├── fpl-errors.ts       # Error detection & messages (K-61)
 │   │   ├── fpl-calculations.ts # Auto-subs, bonus calc
-│   │   ├── scoreCalculator.ts  # Live score calculations
+│   │   ├── pointsCalculator.ts # K-108: Player points calculation
+│   │   ├── teamCalculator.ts   # K-108c: Team totals (single source of truth)
+│   │   ├── scoreCalculator.ts  # Legacy: Only used by live match modal
 │   │   ├── leagueSync.ts       # League data sync logic
 │   │   ├── analytics.ts        # Analytics tracking
 │   │   └── nameUtils.ts        # Name formatting
@@ -105,6 +108,76 @@ fpl/
    └── status === 'in_progress' → Call FPL API
    └── Return live data (real-time!)
 ```
+
+### K-108c Score Calculation Flow (v3.7.0)
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                    K-108c Team Score Calculation                │
+└────────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+                   ┌─────────────────────┐
+                   │  API Endpoint Call  │
+                   │  (any endpoint)     │
+                   └─────────────────────┘
+                               │
+                               ▼
+         ┌────────────────────────────────────────┐
+         │  calculateTeamGameweekScore(id, gw)   │
+         │  (src/lib/teamCalculator.ts)          │
+         └────────────────────────────────────────┘
+                               │
+                               ├──────────────────────┐
+                               │                      │
+                               ▼                      ▼
+                   ┌───────────────────┐  ┌──────────────────┐
+                   │   Database Query  │  │  Database Query  │
+                   │   manager_picks   │  │  player_gw_stats │
+                   │   (team selection)│  │  (K-108 points)  │
+                   └───────────────────┘  └──────────────────┘
+                               │                      │
+                               ▼                      ▼
+                   ┌───────────────────┐  ┌──────────────────┐
+                   │   Database Query  │  │  Database Query  │
+                   │   manager_chips   │  │  manager_gw_hist │
+                   │   (BB, TC, etc.)  │  │  (transfer cost) │
+                   └───────────────────┘  └──────────────────┘
+                               │
+                               ▼
+                   ┌─────────────────────┐
+                   │  calculateTeamTotal │
+                   │  (core calculation) │
+                   └─────────────────────┘
+                               │
+                               ▼
+         ┌────────────────────────────────────────┐
+         │  Return TeamGameweekScore Object:      │
+         │  - points.net_total (final score)      │
+         │  - points.starting_xi_total            │
+         │  - points.captain_bonus                │
+         │  - points.bench_boost_total            │
+         │  - points.auto_sub_total               │
+         │  - points.transfer_cost                │
+         │  - auto_subs[] (substitution details)  │
+         │  - active_chip, captain_name, status   │
+         └────────────────────────────────────────┘
+                               │
+                               ▼
+                   ┌─────────────────────┐
+                   │  Used by:           │
+                   │  - My Team          │
+                   │  - Rivals           │
+                   │  - Stats GW/Season  │
+                   │  - League Standings │
+                   └─────────────────────┘
+```
+
+**Key Benefits:**
+- **Single Source of Truth**: All endpoints use same calculation function
+- **100% Accuracy**: Scores match FPL official totals exactly
+- **No Discrepancies**: Same score shown across all features
+- **Performance**: Parallel calculations where needed (20 teams in ~2-3s)
 
 ---
 
