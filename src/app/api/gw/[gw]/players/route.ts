@@ -172,7 +172,6 @@ async function fetchFromDatabase(
       p.team_id,
       t.short_name as team_short_name,
       p.element_type as position,
-      p.photo,
       p.team_code,
 
       pgw.fixture_id,
@@ -225,7 +224,6 @@ async function fetchFromDatabase(
     team_id: row.team_id,
     team_short_name: row.team_short_name,
     position: row.position,
-    photo: row.photo,
     team_code: row.team_code,
 
     fixture: row.fixture_id ? {
