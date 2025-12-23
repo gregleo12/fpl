@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateAllPlayerSeasonTotals, getCurrentGameweek } from '@/lib/playerCalculator';
+import { calculateAllPlayerSeasonStats, getCurrentGameweek } from '@/lib/playerCalculator';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -108,26 +108,59 @@ export async function GET(request: NextRequest) {
       'SELECT id, name, short_name FROM teams ORDER BY name'
     );
 
-    // K-110: Calculate accurate season totals from K-108 data
+    // K-110: Calculate accurate season stats from K-108 data
     const currentGW = await getCurrentGameweek();
-    const seasonTotals = await calculateAllPlayerSeasonTotals(currentGW);
-    console.log(`[K-110] Calculated season totals for ${seasonTotals.size} players through GW${currentGW}`);
+    const seasonStats = await calculateAllPlayerSeasonStats(currentGW);
+    console.log(`[K-110] Calculated season stats for ${seasonStats.size} players through GW${currentGW}`);
 
     // Format players
     const players = playersResult.rows.map((p: any) => {
-      // K-110: Replace stale FPL total_points with calculated total
-      const calculatedTotal = seasonTotals.get(p.id);
-      const total = calculatedTotal !== undefined ? calculatedTotal : p.total_points;
+      // K-110: Replace stale FPL stats with calculated stats from K-108
+      const calculated = seasonStats.get(p.id);
 
-      // Log if we're using K-110 vs FPL bootstrap
-      if (calculatedTotal !== undefined && calculatedTotal !== p.total_points) {
-        console.log(`[K-110] ${p.web_name}: FPL=${p.total_points}, K-110=${calculatedTotal}, Diff=${calculatedTotal - p.total_points}`);
+      if (calculated) {
+        // Log discrepancies for verification
+        const diffs = [];
+        if (calculated.total_points !== p.total_points) diffs.push(`pts: ${p.total_points}→${calculated.total_points}`);
+        if (calculated.goals !== p.goals_scored) diffs.push(`goals: ${p.goals_scored}→${calculated.goals}`);
+        if (calculated.assists !== p.assists) diffs.push(`assists: ${p.assists}→${calculated.assists}`);
+        if (calculated.minutes !== p.minutes) diffs.push(`mins: ${p.minutes}→${calculated.minutes}`);
+        if (calculated.bonus !== p.bonus) diffs.push(`bonus: ${p.bonus}→${calculated.bonus}`);
+
+        if (diffs.length > 0) {
+          console.log(`[K-110] ${p.web_name}: ${diffs.join(', ')}`);
+        }
+
+        return {
+          ...p,
+          // Override with K-110 calculated stats
+          total_points: calculated.total_points,
+          goals_scored: calculated.goals,
+          assists: calculated.assists,
+          minutes: calculated.minutes,
+          bonus: calculated.bonus,
+          bps: calculated.bps,
+          clean_sheets: calculated.clean_sheets,
+          goals_conceded: calculated.goals_conceded,
+          saves: calculated.saves,
+          yellow_cards: calculated.yellow_cards,
+          red_cards: calculated.red_cards,
+          own_goals: calculated.own_goals,
+          penalties_missed: calculated.penalties_missed,
+          starts: calculated.starts,
+          // Keep original FPL values for comparison/debugging
+          fpl_total_points: p.total_points,
+          fpl_goals: p.goals_scored,
+          fpl_assists: p.assists,
+          fpl_minutes: p.minutes,
+          fpl_bonus: p.bonus,
+          price: `£${(p.now_cost / 10).toFixed(1)}m`
+        };
       }
 
+      // No calculated stats available (shouldn't happen, but fallback to FPL)
       return {
         ...p,
-        total_points: total, // K-110 calculated total
-        fpl_total_points: p.total_points, // Keep original for comparison
         price: `£${(p.now_cost / 10).toFixed(1)}m`
       };
     });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { syncPlayerHistory } from '@/lib/sync/playerSync';
-import { calculatePlayerSeasonTotal } from '@/lib/playerCalculator';
+import { calculatePlayerSeasonStats } from '@/lib/playerCalculator';
 
 // Force dynamic rendering for fresh player data (K-63b)
 export const dynamic = 'force-dynamic';
@@ -212,15 +212,22 @@ export async function GET(
 
     console.log(`[Player ${playerId}] Final: isLive=${isLive}, provisionalBonus=${provisionalBonus}`);
 
-    // K-110: Calculate accurate season total from K-108 data
-    let seasonTotal = player.total_points; // Fallback to FPL bootstrap
+    // K-110: Calculate accurate season stats from K-108 data
+    let calculatedStats = null;
     if (currentGW > 0) {
       try {
-        seasonTotal = await calculatePlayerSeasonTotal(playerId, currentGW);
-        console.log(`[K-110] Player ${playerId} (${player.web_name}): FPL=${player.total_points}, K-110=${seasonTotal}, Diff=${seasonTotal - player.total_points}`);
+        calculatedStats = await calculatePlayerSeasonStats(playerId, currentGW);
+        console.log(`[K-110] Player ${playerId} (${player.web_name}):`, {
+          pts: `${player.total_points}→${calculatedStats.total_points}`,
+          goals: `${player.goals_scored}→${calculatedStats.goals}`,
+          assists: `${player.assists}→${calculatedStats.assists}`,
+          mins: `${player.minutes}→${calculatedStats.minutes}`,
+          bonus: `${player.bonus}→${calculatedStats.bonus}`,
+          starts: calculatedStats.starts
+        });
       } catch (error) {
-        console.error(`[K-110] Error calculating season total for player ${playerId}:`, error);
-        // Fall back to FPL bootstrap total on error
+        console.error(`[K-110] Error calculating season stats for player ${playerId}:`, error);
+        // Fall back to FPL bootstrap stats on error
       }
     }
 
@@ -239,18 +246,31 @@ export async function GET(
       pastSeasons,
       fixtures,
       totals: {
-        points: seasonTotal, // K-110: Accurate calculated total
-        fpl_points: player.total_points, // Original FPL bootstrap total for comparison
-        minutes: player.minutes,
-        goals_scored: player.goals_scored,
-        assists: player.assists,
-        clean_sheets: player.clean_sheets,
-        goals_conceded: player.goals_conceded,
+        // K-110: Use calculated stats from K-108 data (instant accuracy)
+        points: calculatedStats?.total_points ?? player.total_points,
+        minutes: calculatedStats?.minutes ?? player.minutes,
+        goals_scored: calculatedStats?.goals ?? player.goals_scored,
+        assists: calculatedStats?.assists ?? player.assists,
+        clean_sheets: calculatedStats?.clean_sheets ?? player.clean_sheets,
+        goals_conceded: calculatedStats?.goals_conceded ?? player.goals_conceded,
+        bonus: calculatedStats?.bonus ?? player.bonus,
+        bps: calculatedStats?.bps ?? player.bps,
+        saves: calculatedStats?.saves ?? player.saves,
+        yellow_cards: calculatedStats?.yellow_cards ?? player.yellow_cards,
+        red_cards: calculatedStats?.red_cards ?? player.red_cards,
+        own_goals: calculatedStats?.own_goals ?? player.own_goals,
+        penalties_missed: calculatedStats?.penalties_missed ?? player.penalties_missed,
+        starts: calculatedStats?.starts ?? 0,
+        // Keep FPL xG/xA (not in player_gameweek_stats)
         expected_goals: parseFloat(player.expected_goals),
         expected_assists: parseFloat(player.expected_assists),
         expected_goal_involvements: parseFloat(player.expected_goal_involvements),
-        bonus: player.bonus,
-        bps: player.bps
+        // Original FPL values for comparison
+        fpl_points: player.total_points,
+        fpl_goals: player.goals_scored,
+        fpl_assists: player.assists,
+        fpl_minutes: player.minutes,
+        fpl_bonus: player.bonus
       },
       per90,
       provisionalBonus,  // K-63c: Provisional bonus for live games

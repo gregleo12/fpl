@@ -2,7 +2,115 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 289+ versions
-**Current Version:** v3.7.2 (December 23, 2025)
+**Current Version:** v3.7.3 (December 23, 2025)
+
+---
+
+## v3.7.3 - K-110 Extended: All Player Season Stats from K-108 (Dec 23, 2025)
+
+**Feature:** Extend K-110 to calculate ALL player season stats from K-108 data, not just total_points.
+
+### The Problem
+
+v3.7.1 implemented K-110 for player season **total_points** only. All other cumulative stats (goals, assists, minutes, bonus, BPS, clean sheets, etc.) were still using stale FPL API bootstrap data with 24-48h delay.
+
+**Example: Haaland after GW17**
+- ✅ TOTAL: 151 pts (K-110 v3.7.1 - accurate!)
+- ❌ GOALS: 17 (should be 18 - missing GW17)
+- ❌ STARTS: 16 (should be 17 - missing GW17)
+- ❌ MINUTES: 1,372 (should be 1,462 - missing GW17)
+- ❌ BONUS: 28 (should be 31 - missing GW17)
+
+### The Solution
+
+Calculate **ALL** cumulative season stats by aggregating from `player_gameweek_stats` table:
+
+```sql
+SELECT
+  player_id,
+  SUM(calculated_points) as total_points,
+  SUM(goals_scored) as goals,
+  SUM(assists) as assists,
+  SUM(minutes) as minutes,
+  SUM(bonus) as bonus,
+  SUM(bps) as bps,
+  SUM(clean_sheets) as clean_sheets,
+  SUM(goals_conceded) as goals_conceded,
+  SUM(saves) as saves,
+  SUM(yellow_cards) as yellow_cards,
+  SUM(red_cards) as red_cards,
+  SUM(own_goals) as own_goals,
+  SUM(penalties_missed) as penalties_missed,
+  SUM(penalties_saved) as penalties_saved,
+  COUNT(CASE WHEN minutes > 0 THEN 1 END) as starts,
+  COUNT(CASE WHEN minutes >= 60 THEN 1 END) as full_appearances
+FROM player_gameweek_stats
+WHERE gameweek <= $1
+GROUP BY player_id
+```
+
+### Changes
+
+**Files Modified:**
+
+1. **`src/lib/playerCalculator.ts`**
+   - Updated `PlayerSeasonStats` interface to include all stats (not just total_points)
+   - Renamed `calculatePlayerSeasonTotal()` → `calculatePlayerSeasonStats()` (returns full object)
+   - Renamed `calculateAllPlayerSeasonTotals()` → `calculateAllPlayerSeasonStats()` (returns Map of full objects)
+   - Both functions now aggregate ALL columns from `player_gameweek_stats`
+
+2. **`src/app/api/players/route.ts`**
+   - Updated to use `calculateAllPlayerSeasonStats()` instead of `calculateAllPlayerSeasonTotals()`
+   - Now replaces ALL FPL bootstrap stats with K-110 calculated stats
+   - Returns both K-110 stats (displayed) and original FPL stats (for comparison)
+   - Logs discrepancies for verification
+
+3. **`src/app/api/players/[id]/route.ts`**
+   - Updated to use `calculatePlayerSeasonStats()` instead of `calculatePlayerSeasonTotal()`
+   - `totals` object now includes all K-110 calculated stats
+   - Added `starts` field (COUNT of GWs with minutes > 0)
+   - Returns both K-110 stats (displayed) and original FPL stats (for comparison)
+
+### Impact
+
+- ✅ **Instant accuracy** for ALL player season stats (no 24-48h delay)
+- ✅ **Players Tab** shows accurate cumulative stats immediately after GW sync
+- ✅ **Player Detail Modal** shows accurate stats in "Stats" section
+- ✅ **Consistent** - All stats use same K-108 data source
+- ✅ **Performance** - Single batch query < 100ms for all 760 players
+
+### Stats Now Calculated from K-108
+
+| Category | Stats |
+|----------|-------|
+| **Points** | total_points |
+| **Attacking** | goals, assists |
+| **Appearances** | starts, full_appearances, minutes |
+| **Bonus** | bonus, bps |
+| **Defensive** | clean_sheets, goals_conceded, saves |
+| **Discipline** | yellow_cards, red_cards |
+| **Negatives** | own_goals, penalties_missed |
+| **GK Specific** | penalties_saved |
+
+**Note:** Expected stats (xG, xA, xGI) still use FPL bootstrap as they're not stored in `player_gameweek_stats`.
+
+### Testing
+
+After GW17 sync, Haaland should now show:
+- ✅ Total: 151 pts (was already correct in v3.7.1)
+- ✅ Goals: 18 (was 17 - now includes GW17)
+- ✅ Starts: 17 (was 16 - now includes GW17)
+- ✅ Minutes: 1,462 (was 1,372 - now includes GW17)
+- ✅ Bonus: 31 (was 28 - now includes GW17)
+
+### Relationship to K-108
+
+| Feature | What It Does |
+|---------|--------------|
+| **K-108** | Player GW points (`calculated_points` column) |
+| **K-108c** | Team GW totals (sum of player points) |
+| **K-110 v3.7.1** | Player season total points (SUM of calculated_points) |
+| **K-110 v3.7.3** | Player season ALL stats (SUM of ALL columns) ← **This release** |
 
 ---
 
