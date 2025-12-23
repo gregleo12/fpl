@@ -1,8 +1,95 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 288+ versions
-**Current Version:** v3.7.1 (December 23, 2025)
+**Total Releases:** 289+ versions
+**Current Version:** v3.7.2 (December 23, 2025)
+
+---
+
+## v3.7.2 - K-109 Phase 7: Fix Live Match Modal Bonus Double-Counting (Dec 23, 2025)
+
+**Bug Fix:** Captain points in Live Match Modal were showing incorrect scores due to bonus being counted twice.
+
+### The Bug
+
+**Symptoms:**
+- Haaland (TC) showing: **57 pts** ❌
+- Should show: **48 pts** ✅
+- Bonus points were being added to total_points (which already includes bonus), then multiplied by captain multiplier
+
+**Example (Haaland TC):**
+```
+WRONG calculation:
+- rawCaptainPoints = 16 (includes 3 bonus)
+- captainBonusInfo.bonusPoints = 3
+- captainPointsWithBonus = 16 + 3 = 19  ❌ (bonus counted twice!)
+- captainPoints = 19 × 3 = 57 ❌
+
+CORRECT calculation:
+- rawCaptainPoints = 16 (includes 3 bonus)
+- captainPoints = 16 × 3 = 48 ✅
+```
+
+### Root Cause
+
+**File:** `src/lib/liveMatch.ts` lines 159-173
+
+The code was adding bonus points to `rawCaptainPoints`, but FPL API's `total_points` **already includes bonus**. This caused bonus to be counted twice before applying the captain multiplier.
+
+**Old Code (Bug):**
+```typescript
+const rawCaptainPoints = captainLive?.stats?.total_points || 0;
+const captainBonusInfo = getBonusInfo(...);
+const captainPointsWithBonus = rawCaptainPoints + (captainBonusInfo.bonusPoints || 0); // ❌ ADDS BONUS AGAIN!
+const captainPoints = captainPointsWithBonus * captainMultiplier;
+```
+
+**New Code (Fixed):**
+```typescript
+const rawCaptainPoints = captainLive?.stats?.total_points || 0;
+// FPL API total_points ALREADY includes bonus - just multiply
+const captainPoints = rawCaptainPoints * captainMultiplier; // ✅ CORRECT!
+// Get bonus info for display purposes only
+const captainBonusInfo = getBonusInfo(...);
+```
+
+### Changes
+
+**File Modified:**
+- `src/lib/liveMatch.ts` - Fixed captain points calculation (removed bonus double-counting)
+
+**Impact:**
+- ✅ Live Match Modal captain points now accurate
+- ✅ Triple Captain (TC) shows correct points (e.g., 16 × 3 = 48, not 57)
+- ✅ Regular Captain (C) shows correct points (e.g., 16 × 2 = 32, not 35)
+- ✅ Captains section matches Common Players section
+- ✅ No more user trust issues with conflicting scores
+
+### Testing
+
+**Test Case: Haaland TC with 16 base points (includes 3 bonus)**
+- Before: 57 pts ❌ (bonus double-counted)
+- After: 48 pts ✅ (correct: 16 × 3)
+
+**Test Case: Regular captain with bonus**
+- Before: Points + (bonus × 2) ❌
+- After: Points × 2 ✅
+
+### Technical Details
+
+FPL API returns:
+- `total_points`: Includes ALL points (base + bonus) ✅
+- `bonus`: The bonus value (for display/reference only)
+
+Captain calculation should:
+- ✅ Use `total_points` directly (bonus already included)
+- ✅ Multiply by captain multiplier (2 or 3)
+- ✅ Store bonus value for display purposes only
+- ❌ Never add bonus to total_points (would double-count)
+
+### Related
+
+This bug was introduced in K-63e when provisional bonus display was added. The comment "Add bonus to raw points BEFORE applying captain multiplier" was incorrect - the bonus is already in the raw points from FPL API.
 
 ---
 

@@ -158,7 +158,11 @@ function calculateLiveStats(
   }
   const rawCaptainPoints = captainLive?.stats?.total_points || 0;
 
-  // K-63e Fix #1: Calculate bonus info BEFORE multiplying
+  // K-109 Phase 7: FPL API total_points ALREADY includes bonus - don't add again!
+  // Just multiply the total points by captain multiplier
+  const captainPoints = rawCaptainPoints * captainMultiplier;
+
+  // Get bonus info for display purposes only (don't add to points - already included!)
   const captainOfficialBonus = captainLive?.stats?.bonus || 0;
   const captainBonusInfo = getBonusInfo(
     captainPick?.element || 0,
@@ -167,11 +171,7 @@ function calculateLiveStats(
     fixturesData
   );
 
-  // K-63e: Add bonus to raw points BEFORE applying captain multiplier
-  const captainPointsWithBonus = rawCaptainPoints + (captainBonusInfo.bonusPoints || 0);
-  const captainPoints = captainPointsWithBonus * captainMultiplier;
-
-  console.log(`Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints}, Bonus: ${captainBonusInfo.bonusPoints || 0}, Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
+  console.log(`[K-109 Phase 7] Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints} (includes ${captainOfficialBonus} bonus), Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
   // Calculate stats (players played, bench points, etc.)
   const isBenchBoost = picksData.active_chip === 'bboost';
