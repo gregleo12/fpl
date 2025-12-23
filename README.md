@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.0.0** (December 24, 2025)
+**v4.0.1** (December 24, 2025)
 
-**🎉 MAJOR RELEASE:** K-108c Single Source of Truth Architecture
+Added temporary feedback banner for post-K108 deployment user feedback.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

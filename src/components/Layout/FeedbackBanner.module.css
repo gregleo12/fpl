@@ -1,0 +1,104 @@
+/* FeedbackBanner.module.css */
+
+.banner {
+  position: fixed;
+  bottom: 70px; /* Above mobile nav */
+  left: 0;
+  right: 0;
+  background: rgba(55, 0, 60, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 2px solid #00ff87;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.icon {
+  font-size: 16px;
+}
+
+.text {
+  font-size: 14px;
+  color: white;
+}
+
+.reportButton {
+  background: rgba(0, 255, 135, 0.2);
+  border: 1px solid #00ff87;
+  color: #00ff87;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.reportButton:hover {
+  background: rgba(0, 255, 135, 0.3);
+}
+
+.reportButton:active {
+  background: rgba(0, 255, 135, 0.4);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+  transition: color 0.2s ease;
+}
+
+.closeButton:hover {
+  color: white;
+}
+
+/* Desktop - no mobile nav, so bottom: 0 */
+@media (min-width: 769px) {
+  .banner {
+    bottom: 0;
+  }
+}
+
+/* Mobile - more compact */
+@media (max-width: 480px) {
+  .banner {
+    padding: 8px 12px;
+  }
+
+  .text {
+    font-size: 13px;
+  }
+
+  .reportButton {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}

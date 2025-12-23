@@ -1,8 +1,67 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 290+ versions
-**Current Version:** v4.0.0 (December 24, 2025)
+**Total Releases:** 291+ versions
+**Current Version:** v4.0.1 (December 24, 2025)
+
+---
+
+## v4.0.1 - K-114: Temporary Feedback Banner (Dec 24, 2025)
+
+**Feature:** Added dismissable feedback banner for post-K108 deployment user feedback.
+
+### What's New
+
+Added a temporary, non-intrusive feedback banner that appears at the bottom of the app to encourage users to report any issues they notice after the major K-108c architecture update (v4.0.0).
+
+**Banner Features:**
+- 🔧 Alert message: "We just shipped a big update! Notice anything off?"
+- "Report Issue" button → Opens email to greg@rivalfpl.com with pre-filled subject and page URL
+- Dismissable (✕ button) → Stores preference in localStorage
+- Auto-expires January 7, 2025 (2 weeks from deployment)
+- Positioned above mobile navigation on mobile, at bottom on desktop
+
+**Implementation Details:**
+- **Component:** `src/components/Layout/FeedbackBanner.tsx`
+- **Styles:** `src/components/Layout/FeedbackBanner.module.css`
+- **Integration:** Added to `src/app/layout.tsx` (root layout)
+- **Storage Key:** `feedback-banner-dismissed-v1` (localStorage)
+- **Expiry Date:** January 7, 2025
+
+**User Experience:**
+- Appears on first visit after deployment
+- Can be dismissed permanently (per device/browser)
+- Doesn't interfere with app functionality
+- Slide-up animation on appearance
+- Responsive design (compact on mobile)
+
+**Technical:**
+- Client-side component (`'use client'`)
+- Uses `lucide-react` for close icon
+- Smooth transitions and animations
+- Backdrop blur effect for modern look
+- Green accent color matching app theme (`#00ff87`)
+
+### Why This Update?
+
+The v4.0.0 release was a major architectural change (K-108c migration). This banner provides a low-friction way for users to report any calculation discrepancies or issues they encounter, helping us quickly identify and fix any edge cases we might have missed.
+
+### Files Modified
+
+- `src/components/Layout/FeedbackBanner.tsx` (created)
+- `src/components/Layout/FeedbackBanner.module.css` (created)
+- `src/app/layout.tsx` (integrated FeedbackBanner)
+- `package.json` (v4.0.0 → v4.0.1)
+- `VERSION_HISTORY.md` (this file)
+- `README.md` (version updated)
+
+### Impact
+
+- ✅ Low friction user feedback mechanism
+- ✅ Temporary (auto-expires after 2 weeks)
+- ✅ No backend required (mailto link)
+- ✅ Dismissable (respects user preference)
+- ✅ No performance impact
 
 ---
 

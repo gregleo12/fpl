@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { UpdateBanner } from '@/components/UpdateBanner/UpdateBanner';
+import { FeedbackBanner } from '@/components/Layout/FeedbackBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({
       <body>
         <UpdateBanner />
         {children}
+        <FeedbackBanner />
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
