@@ -1,7 +1,7 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v3.6.0
-**Last Updated:** December 22, 2025
+**Current Version:** v3.6.1
+**Last Updated:** December 23, 2025
 **Project:** FPL H2H Analytics Web App
 
 ---
@@ -114,6 +114,16 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v3.6.1 - Provisional Bonus Added to Completed Gameweeks (Dec 23, 2025 - K-106a)
+- **Problem:** Player scores inflated for completed GWs (Haaland TC showed 57pts instead of 48pts)
+- **Root Cause:** `/api/team/[teamId]/gameweek/[gw]` added provisional bonus regardless of GW status
+- **Example:** Haaland GW17: 16pts (includes 3 bonus) + 3 provisional = 19pts, then ×3 captain = 57pts ❌
+- **Correct:** Haaland GW17: 16pts (includes bonus already) ×3 captain = 48pts ✅
+- **Fix:** Check `status === 'completed'` before adding provisional bonus - completed GWs already include official bonus in `total_points`
+- **Never Do:** Add provisional bonus without checking GW/fixture completion status
+- **Always Do:** For completed GWs, use `total_points` as-is (bonus already baked in); only add provisional for live/in-progress GWs
+- **Code Pattern:** `const provisionalBonus = status === 'completed' ? 0 : calculateProvisionalBonus(...)`
 
 ### v3.4.32 - CSS Bug Required DevTools Investigation (Dec 21, 2025 - K-70)
 - **Problem:** Chip icons (star/lightning/target) sat higher than text in badges

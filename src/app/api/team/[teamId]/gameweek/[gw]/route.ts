@@ -185,8 +185,10 @@ export async function GET(
       const playerTeam = element?.team || 0;
       const fixtureInfo = teamFixtureLookup[playerTeam] || null;
 
-      // K-63c: Calculate provisional bonus for live games
-      const provisionalBonus = calculateProvisionalBonus(player.id, fixturesData);
+      // K-63c: Calculate provisional bonus for live games ONLY (not completed GWs)
+      // K-106a: For completed GWs, player.points from scoreCalculator already includes official bonus
+      // Adding provisional bonus again would double-count (e.g., Haaland 16pts + 3 = 19, then ×3 = 57 instead of 48)
+      const provisionalBonus = status === 'completed' ? 0 : calculateProvisionalBonus(player.id, fixturesData);
 
       // K-63c: Add provisional bonus to event_points for live games
       const pointsWithBonus = player.points + provisionalBonus;

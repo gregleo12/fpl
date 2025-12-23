@@ -47,7 +47,7 @@ npm run build
 
 ## Current Version
 
-**v3.6.0** (December 22, 2025)
+**v3.6.1** (December 23, 2025)
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for details.
 
