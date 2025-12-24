@@ -232,17 +232,15 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
 
       <div className={styles.section}>
         <div className={styles.buttonRow}>
-          <div style={{ position: 'relative', width: '100%' }}>
-            <button
-              onClick={() => router.push('/updates')}
-              className={styles.primaryButton}
-              style={{ width: '100%' }}
-            >
-              <Sparkles size={18} style={{ marginRight: '0.5rem' }} />
-              <span>What's New</span>
-            </button>
+          <button
+            onClick={() => router.push('/updates')}
+            className={styles.primaryButton}
+            style={{ position: 'relative' }}
+          >
+            <Sparkles size={18} style={{ marginRight: '0.5rem' }} />
+            <span>What's New</span>
             <NotificationBadge show={showNewVersionBadge} />
-          </div>
+          </button>
           <button
             onClick={() => setShowFeedbackModal(true)}
             className={styles.secondaryButton}
