@@ -23,6 +23,7 @@
     "migrate:k108": "npx tsx src/scripts/run-k108-migration.ts",
     "sync:player-gw-stats": "npx tsx src/scripts/sync-player-gw-stats.ts",
     "sync:all-leagues": "npx tsx src/scripts/bulk-sync-all-leagues.ts",
+    "fix:incomplete-history": "npx tsx src/scripts/fix-incomplete-manager-history.ts",
     "test:provisional-bonus": "npx tsx src/scripts/test-provisional-bonus.ts",
     "test:team-totals": "npx tsx src/scripts/test-team-totals.ts"
   },
