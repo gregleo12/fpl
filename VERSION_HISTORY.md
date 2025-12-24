@@ -15,7 +15,7 @@
 After deploying v4.0.0 K-108c architecture, added a temporary feedback banner to collect user reports of any issues during the transition period.
 
 **Banner Features:**
-- **Position:** Fixed at bottom of screen (above mobile nav)
+- **Position:** Opposite of navigation bar (mobile: top, desktop: bottom)
 - **Content:** "🔧 We just shipped a big update! Notice anything off?"
 - **Report Action:** Opens mailto link to greg@rivalfpl.com with pre-filled subject and current page URL
 - **Dismissable:** ✕ button saves preference to localStorage
@@ -41,8 +41,8 @@ After deploying v4.0.0 K-108c architecture, added a temporary feedback banner to
 - Backdrop blur effect for modern look
 - Smooth transitions on hover/active states
 - Mobile-optimized (smaller padding/font on <480px)
-- Desktop: bottom: 0 (no nav overlap)
-- Mobile: bottom: 70px (above mobile nav)
+- **Mobile:** top: 0 with slideDown animation (nav is at bottom)
+- **Desktop:** bottom: 0 with slideUp animation (nav is at top)
 
 **UX:**
 - Non-intrusive but visible
@@ -69,6 +69,39 @@ After deploying v4.0.0 K-108c architecture, added a temporary feedback banner to
 - Failures: 0
 
 **Explanation of 67 vs 126 leagues:** Production database contains 67 actual leagues (not 126). All 67 have been synced successfully.
+
+### K-116 Investigation: Incomplete Manager History
+
+**Issue Discovered:** Some returning users experiencing "Failed to fetch" errors on first load.
+
+**Root Cause:** 17 leagues have managers with `manager_picks` data but missing `manager_gw_history` data, causing K-108c score calculations to fail.
+
+**Investigation Results:**
+- ✅ All 67 leagues have K-108 player data (100% coverage)
+- ❌ 17 leagues have incomplete manager history:
+  - 🔴 2 leagues missing 7-12 managers' history (high priority)
+  - 🟡 3 leagues missing 2-6 managers' history (medium priority)
+  - 🟢 12 leagues missing 1 manager's history (low priority)
+
+**Example:** League 500234 (🇺🇳 H2H League 5) has 26 managers, but only 14 have `manager_gw_history`. The remaining 12 have picks for all 17 GWs but zero gameweek history records.
+
+**Solution:**
+Created `fix-incomplete-manager-history.ts` script to:
+- Identify all leagues with incomplete manager history
+- Re-sync each league with full data refresh (`forceClear=true`)
+- 30-second rate limiting between leagues
+- Comprehensive logging and verification
+
+**Script Usage:**
+```bash
+npm run fix:incomplete-history
+```
+
+**Expected Impact:** Eliminates "Failed to fetch" errors for users in affected leagues by ensuring all managers have complete K-108c data.
+
+**Files Created:**
+- `src/scripts/fix-incomplete-manager-history.ts` - Targeted sync script
+- `package.json` - Added `fix:incomplete-history` npm script
 
 ---
 
