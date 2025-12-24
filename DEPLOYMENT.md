@@ -1,7 +1,7 @@
 # RivalFPL - Deployment Guide
 
-**Last Updated:** December 16, 2025
-**Current Version:** v2.7.1
+**Last Updated:** December 24, 2025
+**Current Version:** v4.1.0
 **Platform:** Railway
 
 ---
@@ -101,15 +101,26 @@ Before deploying:
 - [ ] Code changes complete
 - [ ] Local build passes (`npm run build`)
 - [ ] Version bumped in package.json
-- [ ] VERSION_HISTORY.md updated
+- [ ] VERSION_HISTORY.md updated (technical details)
+- [ ] changelog.json updated (user-facing, see CHANGELOG_GUIDE.md)
+- [ ] README.md version updated
 - [ ] Committed with version in message
 
-After pushing:
+After pushing to staging:
 
 - [ ] Check Railway dashboard for build status
-- [ ] Verify app loads on target environment
+- [ ] Verify app loads on staging environment
 - [ ] Test key features work
 - [ ] Check for console errors
+- [ ] Verify What's New page shows latest updates
+
+After pushing to production:
+
+- [ ] Check Railway dashboard for build status
+- [ ] Verify app loads on production
+- [ ] Test key features work
+- [ ] Check version badge appears for existing users
+- [ ] Confirm What's New page accessible
 
 ---
 

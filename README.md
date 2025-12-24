@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.0.3** (December 24, 2025)
+**v4.1.0** (December 24, 2025)
 
-Added bulk sync script for migrating all 126 leagues to K-108 architecture.
+Added What's New page with notification badges and comprehensive update history back to v2.0.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

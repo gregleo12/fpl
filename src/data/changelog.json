@@ -1,14 +1,15 @@
 [
   {
-    "version": "4.0.8",
+    "version": "4.1.0",
     "date": "2024-12-24",
-    "title": "Updates Page & Feedback",
+    "title": "What's New Page & Notifications",
     "changes": [
-      "Added What's New page to see recent updates",
-      "Version toast notifications when app updates",
-      "Team Value now shows total budget (squad + ITB)",
-      "Feedback modal for easy bug reporting",
-      "WhatsApp Community integration"
+      "Added What's New page showing 24+ versions of update history",
+      "Red notification badges when new version available",
+      "Badges auto-hide after visiting What's New",
+      "Feedback modal with WhatsApp, Email, and Reddit options",
+      "Settings page reorganized with icons instead of emojis",
+      "Version toast notifications when app updates"
     ]
   },
   {

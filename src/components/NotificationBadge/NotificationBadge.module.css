@@ -1,7 +1,7 @@
 .badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
+  top: -4px;
+  right: -4px;
   width: 8px;
   height: 8px;
   background: #ff0066;
@@ -9,6 +9,7 @@
   border: 2px solid #1a1a2e;
   animation: fadeIn 0.3s ease-out, pulse 2s ease-in-out infinite;
   z-index: 10;
+  pointer-events: none;
 }
 
 @keyframes fadeIn {

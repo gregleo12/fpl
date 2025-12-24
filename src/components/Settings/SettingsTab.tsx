@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Repeat, User, LogOut } from 'lucide-react';
+import { RefreshCw, Repeat, User, LogOut, Sparkles, MessageSquare } from 'lucide-react';
 import { loadState, clearState } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { useNewVersionBadge } from '@/hooks/useNewVersionBadge';
@@ -232,12 +232,13 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
 
       <div className={styles.section}>
         <div className={styles.buttonRow}>
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
             <button
               onClick={() => router.push('/updates')}
               className={styles.primaryButton}
+              style={{ width: '100%' }}
             >
-              <span style={{ marginRight: '0.5rem' }}>✨</span>
+              <Sparkles size={18} style={{ marginRight: '0.5rem' }} />
               <span>What's New</span>
             </button>
             <NotificationBadge show={showNewVersionBadge} />
@@ -246,7 +247,7 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             onClick={() => setShowFeedbackModal(true)}
             className={styles.secondaryButton}
           >
-            <span style={{ marginRight: '0.5rem' }}>💬</span>
+            <MessageSquare size={18} style={{ marginRight: '0.5rem' }} />
             <span>Feedback</span>
           </button>
         </div>

@@ -2,7 +2,130 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 293+ versions
-**Current Version:** v4.0.3 (December 24, 2025)
+**Current Version:** v4.1.0 (December 24, 2025)
+
+---
+
+## v4.1.0 - What's New Page & Notification System (Dec 24, 2025)
+
+**Feature:** Added comprehensive What's New page with notification badges and user-facing update history.
+
+### What's New
+
+Introduced a dedicated updates page accessible from Settings, displaying all major releases and features in a user-friendly format. Users now get notified when new versions are deployed with red notification badges.
+
+**Key Features:**
+- **What's New Page:** Displays 24+ versions of update history back to v2.0 (Nov 2024)
+- **Notification Badges:** Red dots with pulse animation on Settings tab and "What's New" button
+- **Smart Detection:** Automatically shows badge when new version detected
+- **Auto-Hide:** Badge disappears after visiting What's New page
+- **Cross-Tab Sync:** Uses localStorage events to sync badge state across tabs
+- **User-Focused Content:** Translated technical changes into user-friendly descriptions
+- **Feedback Modal:** Added quick access to WhatsApp, Email, and Reddit support channels
+
+### Implementation
+
+**New Files:**
+- `/src/app/updates/page.tsx` - What's New page component
+- `/src/app/updates/updates.module.css` - Styling for updates page
+- `/src/data/changelog.json` - User-facing changelog data (24 entries)
+- `/src/hooks/useNewVersionBadge.ts` - Hook to check for new versions
+- `/src/components/NotificationBadge/NotificationBadge.tsx` - Reusable badge component
+- `/src/components/NotificationBadge/NotificationBadge.module.css` - Badge styling with animations
+- `/src/components/Settings/FeedbackModal.tsx` - Feedback options modal
+- `/src/components/Settings/FeedbackModal.module.css` - Modal styling
+- `/CHANGELOG_GUIDE.md` - Documentation for maintaining user-facing changelog
+
+**Modified Files:**
+- `/src/components/Settings/SettingsTab.tsx` - Reorganized with What's New + Feedback at top, added badges
+- `/src/components/Settings/SettingsTab.module.css` - Added buttonRow, primaryButton, secondaryButton styles
+- `/src/app/dashboard/page.tsx` - Added notification badge to Settings tab icon
+
+### How It Works
+
+**Version Detection:**
+1. `useNewVersionBadge` hook fetches `/api/version` on mount
+2. Compares `currentVersion` with `localStorage.lastSeenVersion`
+3. Returns `true` if versions don't match, triggering badge display
+4. Listens for localStorage changes to sync across tabs
+
+**Badge Display:**
+- Shows on Settings tab icon (bottom navigation)
+- Shows on "What's New" button (Settings page)
+- Red dot (8px) with 2s pulse animation
+- Positioned top-right of target element
+
+**Badge Dismissal:**
+- Visiting `/updates` page sets `localStorage.lastSeenVersion = currentVersion`
+- Badge immediately hides via localStorage event listener
+- Persists across sessions until next version bump
+
+### User Experience
+
+**Settings Page Reorganization:**
+- **Top Section:** What's New (primary green) + Feedback (secondary grey)
+- **Icons:** Replaced emojis with Lucide React icons (Sparkles, MessageSquare)
+- **Layout:** Grid with equal columns and proper spacing
+
+**What's New Page:**
+- Clean, card-based layout
+- Version badges with dates
+- Categorized changes per version
+- Footer with WhatsApp Community link
+
+**Feedback Modal:**
+- Three clear options: WhatsApp, Email, Reddit
+- Icon-based design with descriptions
+- Opens external links in new tab
+- Email pre-fills subject line
+
+### Design Details
+
+**Badge Styling:**
+- Color: `#ff0066` (brand pink)
+- Size: 8px × 8px circle
+- Border: 2px solid `#1a1a2e` (background color)
+- Position: `top: -4px, right: -4px`
+- Animation: fadeIn (0.3s) + pulse (2s infinite)
+- z-index: 10, pointer-events: none
+
+**Button Icons:**
+- Sparkles (18px) for What's New
+- MessageSquare (18px) for Feedback
+- Consistent `marginRight: 0.5rem` spacing
+
+### Documentation
+
+**New Guides:**
+- `/CHANGELOG_GUIDE.md` - Complete guide for maintaining user-facing changelog
+  - Core principles (user-focused, production only)
+  - Translation guide (technical → user-friendly)
+  - Step-by-step process
+  - Examples of good vs bad entries
+  - Checklist for updates
+
+**Process Updates:**
+- Deployment checklist now includes changelog updates
+- VERSION_HISTORY.md tracks technical details
+- changelog.json maintains user-facing content
+- Maximum 20-30 entries in changelog.json
+
+### Testing
+
+**Tested Scenarios:**
+- ✅ Badge appears when version bumped
+- ✅ Badge disappears after visiting /updates
+- ✅ Badge syncs across multiple tabs
+- ✅ Button layout maintains proper spacing
+- ✅ Icons render correctly on all buttons
+- ✅ Modal opens/closes smoothly
+- ✅ External links open correctly
+
+### Related
+
+**K-118:** Initial What's New page and version toast implementation
+**K-119:** Notification badge system
+**Post-4.0.0:** User feedback collection and update communication improvements
 
 ---
 
