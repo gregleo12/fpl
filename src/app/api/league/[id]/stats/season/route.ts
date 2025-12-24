@@ -1170,17 +1170,48 @@ async function calculateFormRankings(
   try {
     console.log('[FORM RANKINGS] Calculating form rankings for league:', leagueId);
 
-    // Get last 5 completed gameweeks
-    const last5GWs = completedGameweeks.slice(-5);
+    // Need at least 6 GWs to calculate trend (5 current + 1 previous minimum)
+    if (completedGameweeks.length < 6) {
+      console.log('[FORM RANKINGS] Not enough gameweeks for trend calculation (need 6+), have:', completedGameweeks.length);
 
-    if (last5GWs.length === 0) {
-      console.log('[FORM RANKINGS] No completed gameweeks available');
-      return [];
+      // Just calculate current form without trend
+      const last5GWs = completedGameweeks.slice(-Math.min(5, completedGameweeks.length));
+      const result = await db.query(`
+        SELECT
+          mgh.entry_id,
+          m.player_name,
+          m.team_name,
+          SUM(mgh.points) as last5_points
+        FROM manager_gw_history mgh
+        JOIN managers m ON m.entry_id = mgh.entry_id
+        WHERE mgh.league_id = $1
+          AND mgh.event = ANY($2)
+        GROUP BY mgh.entry_id, m.player_name, m.team_name
+        ORDER BY last5_points DESC
+      `, [leagueId, last5GWs]);
+
+      return result.rows.map((row: any, index: number) => ({
+        entry_id: row.entry_id,
+        player_name: row.player_name,
+        team_name: row.team_name,
+        last5_points: parseInt(row.last5_points) || 0,
+        form_rank: index + 1,
+        season_rank: 0,
+        trend: 0 // No trend available yet
+      }));
     }
 
-    console.log('[FORM RANKINGS] Using last 5 GWs:', last5GWs);
+    // Get last 5 completed gameweeks (current form period)
+    const last5GWs = completedGameweeks.slice(-5);
 
-    const result = await db.query(`
+    // Get previous 5 gameweeks (past form period for comparison)
+    const previous5GWs = completedGameweeks.slice(-10, -5);
+
+    console.log('[FORM RANKINGS] Current form GWs:', last5GWs);
+    console.log('[FORM RANKINGS] Previous form GWs:', previous5GWs);
+
+    // Calculate current form rankings (last 5 GWs)
+    const currentResult = await db.query(`
       SELECT
         mgh.entry_id,
         m.player_name,
@@ -1194,30 +1225,39 @@ async function calculateFormRankings(
       ORDER BY last5_points DESC
     `, [leagueId, last5GWs]);
 
-    console.log('[FORM RANKINGS] League standings sample:', {
-      count: leagueStandings.length,
-      first3: leagueStandings.slice(0, 3),
-      types: leagueStandings.slice(0, 3).map((s: any) => ({
-        entry_id: s.entry_id,
-        entry_id_type: typeof s.entry_id,
-        rank: s.rank
-      }))
+    // Calculate previous form rankings (5 GWs before that)
+    const previousResult = await db.query(`
+      SELECT
+        mgh.entry_id,
+        SUM(mgh.points) as prev5_points
+      FROM manager_gw_history mgh
+      WHERE mgh.league_id = $1
+        AND mgh.event = ANY($2)
+      GROUP BY mgh.entry_id
+      ORDER BY prev5_points DESC
+    `, [leagueId, previous5GWs]);
+
+    // Create a map of previous form ranks
+    const previousFormRanks: Record<number, number> = {};
+    previousResult.rows.forEach((row: any, index: number) => {
+      previousFormRanks[row.entry_id] = index + 1;
     });
 
-    const formRankings = result.rows.map((row: any, index: number) => {
-      const formRank = index + 1;
-      // Ensure type matching - convert both to integers
-      const rowEntryId = parseInt(row.entry_id);
-      const standing = leagueStandings.find((s: any) => parseInt(s.entry_id) === rowEntryId);
-      const seasonRank = standing?.rank || 0;
-      const trend = seasonRank - formRank; // Positive = improved, Negative = dropped
+    // Build form rankings with trend comparison
+    const formRankings = currentResult.rows.map((row: any, index: number) => {
+      const currentFormRank = index + 1;
+      const previousFormRank = previousFormRanks[row.entry_id] || 0;
+
+      // Trend = previous rank - current rank
+      // Positive = improved (was 5th, now 2nd = +3)
+      // Negative = declined (was 2nd, now 5th = -3)
+      const trend = previousFormRank > 0 ? previousFormRank - currentFormRank : 0;
 
       if (index < 3) {
         console.log(`[FORM RANKINGS] Manager ${row.player_name}:`, {
-          entry_id: rowEntryId,
-          formRank,
-          standing,
-          seasonRank,
+          entry_id: row.entry_id,
+          currentFormRank,
+          previousFormRank,
           trend
         });
       }
@@ -1227,18 +1267,21 @@ async function calculateFormRankings(
         player_name: row.player_name,
         team_name: row.team_name,
         last5_points: parseInt(row.last5_points) || 0,
-        form_rank: formRank,
-        season_rank: seasonRank,
+        form_rank: currentFormRank,
+        season_rank: previousFormRank, // Store previous rank here for reference
         trend: trend
       };
     });
 
     console.log('[FORM RANKINGS] Calculated form rankings:', {
       count: formRankings.length,
-      gws: last5GWs,
+      currentGWs: last5GWs,
+      previousGWs: previous5GWs,
       topThree: formRankings.slice(0, 3).map((f: any) => ({
         name: f.player_name,
         points: f.last5_points,
+        currentRank: f.form_rank,
+        previousRank: f.season_rank,
         trend: f.trend
       }))
     });
