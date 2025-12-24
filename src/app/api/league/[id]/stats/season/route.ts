@@ -1062,15 +1062,21 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
 
         const picksData = await picksRes.json();
 
-        // Team value from entry_history
+        // Team value from entry_history (actual squad value)
         const teamValue = (picksData.entry_history?.value || 1000) / 10;
+        // In The Bank (ITB)
+        const bank = (picksData.entry_history?.bank || 0) / 10;
+        // Total budget = squad value + ITB
+        const totalValue = teamValue + bank;
 
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
           team_value: teamValue,
-          value_gain: teamValue - 100.0, // Gain from starting £100m
+          bank: bank,
+          total_value: totalValue,
+          value_gain: totalValue - 100.0, // Gain from starting £100m
         };
       } catch (error) {
         console.error(`[Value Rankings] Error for ${manager.entry_id}:`, error);
@@ -1078,9 +1084,9 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
       }
     }));
 
-    // Filter out nulls and sort by team value
+    // Filter out nulls and sort by total value (team value + ITB)
     const validData = valueData.filter(d => d !== null);
-    const sorted = [...validData].sort((a, b) => b.team_value - a.team_value);
+    const sorted = [...validData].sort((a, b) => b.total_value - a.total_value);
 
     return sorted;
   } catch (error) {

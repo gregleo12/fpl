@@ -9,6 +9,8 @@ interface ValueData {
   player_name: string;
   team_name: string;
   team_value: number;
+  bank: number;
+  total_value: number;
   value_gain: number;
 }
 
@@ -28,7 +30,10 @@ export function ValueLeaderboard({ data }: Props) {
       </div>
       <div className={styles.stats}>
         <div className={styles.statValue}>
-          £{item.team_value.toFixed(1)}m
+          £{item.total_value.toFixed(1)}m
+        </div>
+        <div className={styles.meta} style={{ fontSize: '0.6875rem', marginTop: '2px' }}>
+          Team: £{item.team_value.toFixed(1)}m | ITB: £{item.bank.toFixed(1)}m
         </div>
       </div>
     </div>
@@ -39,7 +44,7 @@ export function ValueLeaderboard({ data }: Props) {
       <div className={styles.card}>
         <h4 className={styles.cardTitle}>📈 Team Value</h4>
         <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
-          Current squad value
+          Total budget (squad + ITB)
         </div>
         <div className={styles.noData}>No data available</div>
       </div>
@@ -54,7 +59,7 @@ export function ValueLeaderboard({ data }: Props) {
       >
         <h4 className={styles.cardTitle}>📈 Team Value</h4>
         <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
-          Current squad value
+          Total budget (squad + ITB)
         </div>
 
         <div className={styles.list}>

@@ -57,6 +57,8 @@ export interface ValueData {
   player_name: string;
   team_name: string;
   team_value: number;
+  bank: number;
+  total_value: number;
   value_gain: number;
 }
 
