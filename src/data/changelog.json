@@ -2,36 +2,54 @@
   {
     "version": "4.0.8",
     "date": "2024-12-24",
-    "title": "Updates Page & Settings Improvements",
+    "title": "Updates Page & Feedback",
     "changes": [
-      "Added What's New page to see all recent updates",
-      "Version notifications when app updates",
+      "Added What's New page to see recent updates",
+      "Version toast notifications when app updates",
       "Team Value now shows total budget (squad + ITB)",
       "Feedback modal for easy bug reporting",
       "WhatsApp Community integration"
     ]
   },
   {
-    "version": "3.7.4",
-    "date": "2024-12-23",
+    "version": "4.0.3",
+    "date": "2024-12-24",
+    "title": "Temporary Feedback Banner",
+    "changes": [
+      "Added feedback banner for post-update bug reports",
+      "Links to email for quick issue reporting",
+      "Auto-expires after 2 weeks"
+    ]
+  },
+  {
+    "version": "4.0.0",
+    "date": "2024-12-24",
     "title": "Major Scoring Engine Update",
     "changes": [
-      "Complete rewrite of point calculations for accuracy",
-      "Automatic data sync when viewing leagues",
-      "Faster page loads with optimized queries",
+      "Complete rewrite of point calculations",
       "Single source of truth for all scores",
-      "Background sync for returning users"
+      "Faster page loads with optimized queries",
+      "Improved accuracy for live gameweeks"
+    ]
+  },
+  {
+    "version": "3.7.4",
+    "date": "2024-12-23",
+    "title": "Auto-Sync & Background Updates",
+    "changes": [
+      "Automatic data sync when viewing leagues",
+      "Background sync for returning users",
+      "Improved error handling"
     ]
   },
   {
     "version": "3.6.1",
     "date": "2024-12-23",
-    "title": "Live Score Accuracy Improvements",
+    "title": "Live Score Accuracy Fix",
     "changes": [
-      "Fixed provisional bonus points for live matches",
-      "More accurate captain and bench boost calculations",
-      "Improved auto-substitution logic",
-      "Better handling of in-progress gameweeks"
+      "Fixed provisional bonus for completed gameweeks",
+      "More accurate captain point calculations",
+      "Better handling of bench boost chips"
     ]
   },
   {
@@ -40,58 +58,218 @@
     "title": "Mobile Optimization & UI Polish",
     "changes": [
       "Optimized layout for mobile devices",
-      "Improved navigation consistency across tabs",
-      "Better spacing and alignment throughout app",
-      "Fixed player modal display issues",
-      "Standardized header bars and buttons"
+      "Improved navigation consistency",
+      "Better spacing and alignment",
+      "Standardized header bars"
     ]
   },
   {
     "version": "3.5.0",
     "date": "2024-12-19",
-    "title": "Stats Tab Enhancements",
+    "title": "Layout Consistency Release",
     "changes": [
-      "Added Captain Points leaderboard",
-      "New Chip Performance statistics",
-      "Win/Loss streak tracking",
-      "Best and Worst Gameweek rankings",
-      "Season-long trends visualization"
+      "Fixed container width issues",
+      "Standardized spacing across tabs",
+      "Improved GW selector styling",
+      "Better mobile responsiveness"
     ]
   },
   {
     "version": "3.4.0",
-    "date": "2024-12-18",
-    "title": "Player Details & Analysis",
+    "date": "2024-12-15",
+    "title": "Stats Tab - Season View",
     "changes": [
-      "Enhanced player cards with detailed stats",
-      "Season performance overview",
-      "Head-to-head player comparisons",
-      "Fixture difficulty indicators",
-      "Form and consistency metrics"
+      "Added Captain Points leaderboard",
+      "New Chip Performance statistics",
+      "Win/Loss streak tracking",
+      "Best and Worst Gameweek rankings"
     ]
   },
   {
     "version": "3.3.0",
-    "date": "2024-12-17",
-    "title": "Rivals Tab Improvements",
+    "date": "2024-12-14",
+    "title": "Stats Tab - Gameweek View",
     "changes": [
-      "Added H2H fixtures view",
-      "Match result predictions",
-      "Common players analysis",
-      "Live match tracking",
-      "Historical matchup stats"
+      "Added GW Points Leaders",
+      "New Transfer Activity section",
+      "Chip usage tracking",
+      "Common ownership analysis"
     ]
   },
   {
     "version": "3.2.0",
-    "date": "2024-12-16",
-    "title": "Performance & Stability",
+    "date": "2024-12-13",
+    "title": "Stats Tab Launch",
     "changes": [
-      "Faster data loading across all pages",
-      "Improved error handling and recovery",
-      "Better offline support",
-      "Reduced API call frequency",
-      "Database query optimizations"
+      "New Stats tab with league analytics",
+      "Team and Player comparison views",
+      "Interactive charts and visualizations",
+      "Season-long statistics"
+    ]
+  },
+  {
+    "version": "3.1.0",
+    "date": "2024-12-12",
+    "title": "Players Tab Improvements",
+    "changes": [
+      "Enhanced player filtering and sorting",
+      "Improved player modal with detailed stats",
+      "Better mobile layout",
+      "Performance optimizations"
+    ]
+  },
+  {
+    "version": "3.0.0",
+    "date": "2024-12-11",
+    "title": "Players Tab Release",
+    "changes": [
+      "New Players tab with full squad view",
+      "Player search and filtering",
+      "Detailed player statistics",
+      "Season performance tracking"
+    ]
+  },
+  {
+    "version": "2.12.0",
+    "date": "2024-12-10",
+    "title": "Polish & Performance",
+    "changes": [
+      "Players tab performance improvements",
+      "Better loading states",
+      "Optimized data fetching",
+      "UI polish and refinements"
+    ]
+  },
+  {
+    "version": "2.11.0",
+    "date": "2024-12-09",
+    "title": "Player Detail Modal",
+    "changes": [
+      "Comprehensive player detail modal",
+      "Grouped stat cards",
+      "Season history view",
+      "Fixture analysis"
+    ]
+  },
+  {
+    "version": "2.10.0",
+    "date": "2024-12-08",
+    "title": "Advanced Player Filtering",
+    "changes": [
+      "Filter modal with multiple criteria",
+      "Advanced sorting options",
+      "Player search functionality",
+      "Save filter preferences"
+    ]
+  },
+  {
+    "version": "2.9.0",
+    "date": "2024-12-07",
+    "title": "Auto-Sync on First Load",
+    "changes": [
+      "Automatic data sync on first league load",
+      "Progress bar showing sync status",
+      "Quick Sync for incremental updates",
+      "Manual Refresh Data button"
+    ]
+  },
+  {
+    "version": "2.8.0",
+    "date": "2024-12-06",
+    "title": "Background Data Sync",
+    "changes": [
+      "Automatic data sync in background",
+      "Better sync progress feedback",
+      "Force clear option for corrupted data",
+      "Admin tools for league management"
+    ]
+  },
+  {
+    "version": "2.7.0",
+    "date": "2024-12-05",
+    "title": "Database-Powered Statistics",
+    "changes": [
+      "Captain Points from database",
+      "Chip Performance tracking",
+      "Season statistics improvements",
+      "Better data reliability"
+    ]
+  },
+  {
+    "version": "2.6.0",
+    "date": "2024-12-04",
+    "title": "H2H Fixtures & Match View",
+    "changes": [
+      "Head-to-head fixtures display",
+      "Live match tracking",
+      "Match result history",
+      "Fixture predictions"
+    ]
+  },
+  {
+    "version": "2.5.0",
+    "date": "2024-12-03",
+    "title": "Rivals Tab Enhancements",
+    "changes": [
+      "Improved standings view",
+      "Form indicators",
+      "Points trends",
+      "Better mobile layout"
+    ]
+  },
+  {
+    "version": "2.4.0",
+    "date": "2024-12-02",
+    "title": "My Team Performance Stats",
+    "changes": [
+      "Season performance overview",
+      "Points per gameweek chart",
+      "Rank progression tracking",
+      "Transfer history"
+    ]
+  },
+  {
+    "version": "2.3.0",
+    "date": "2024-12-01",
+    "title": "Multi-League Support",
+    "changes": [
+      "Switch between multiple leagues",
+      "League management interface",
+      "Recent leagues history",
+      "Better league selection"
+    ]
+  },
+  {
+    "version": "2.2.0",
+    "date": "2024-11-30",
+    "title": "Settings & Customization",
+    "changes": [
+      "Settings page with league info",
+      "Change team functionality",
+      "App version display",
+      "Contact information"
+    ]
+  },
+  {
+    "version": "2.1.0",
+    "date": "2024-11-29",
+    "title": "Data Sync Improvements",
+    "changes": [
+      "Faster data synchronization",
+      "Better error handling",
+      "Sync status indicators",
+      "Retry failed syncs"
+    ]
+  },
+  {
+    "version": "2.0.0",
+    "date": "2024-11-28",
+    "title": "Complete App Redesign",
+    "changes": [
+      "New dark purple theme",
+      "Bottom navigation on mobile",
+      "Improved dashboard layout",
+      "Better user experience"
     ]
   }
 ]

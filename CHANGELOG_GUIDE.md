@@ -33,49 +33,47 @@
 - Debug commits
 - Documentation-only updates
 
-### 3. Maximum One Entry Per Day
+### 3. Include Significant Versions
 
 **Rules:**
-- If multiple versions deployed same day, group them into ONE entry
-- Use the **highest version number** from that day
-- Combine all user-facing changes into one list
-- Order changes by importance (most impactful first)
+- Include each significant user-facing version
+- Skip micro-versions that are just bug fixes or internal changes
+- Each entry should have a clear, specific title
+- Keep entries focused on one main feature/improvement
 
 **Example:**
-
-❌ **Wrong:**
-```json
-{
-  "version": "4.0.3",
-  "date": "2024-12-24",
-  "title": "Feedback Banner",
-  "changes": ["Added feedback banner"]
-},
-{
-  "version": "4.0.2",
-  "date": "2024-12-24",
-  "title": "Bulk Sync",
-  "changes": ["Added bulk sync script"]
-},
-{
-  "version": "4.0.0",
-  "date": "2024-12-24",
-  "title": "Architecture Update",
-  "changes": ["Migrated to K-108c"]
-}
-```
 
 ✅ **Correct:**
 ```json
 {
-  "version": "4.0.3",
+  "version": "4.0.8",
+  "date": "2024-12-24",
+  "title": "Updates Page & Feedback",
+  "changes": [
+    "Added What's New page to see recent updates",
+    "Version toast notifications when app updates",
+    "Feedback modal for easy bug reporting"
+  ]
+},
+{
+  "version": "4.0.0",
   "date": "2024-12-24",
   "title": "Major Scoring Engine Update",
   "changes": [
-    "Complete rewrite of point calculations for better accuracy",
-    "Faster page loads with optimized queries",
-    "Improved data sync reliability"
+    "Complete rewrite of point calculations",
+    "Single source of truth for all scores",
+    "Faster page loads with optimized queries"
   ]
+}
+```
+
+❌ **Wrong:**
+```json
+{
+  "version": "4.0.8",
+  "date": "2024-12-24",
+  "title": "K-118 Implementation",
+  "changes": ["Added VersionToast component"]
 }
 ```
 
@@ -139,16 +137,17 @@ Update `changelog.json` whenever a version is deployed to **production** (merged
 
 1. **Check production commits:**
    ```bash
-   git log origin/main --oneline --since="2024-12-24" --until="2024-12-25"
+   git log origin/main --oneline --since="2024-12-01"
    ```
 
-2. **Identify highest version that day:**
-   - Example: v4.0.3, v4.0.2, v4.0.0 → Use **v4.0.3**
+2. **Identify significant versions:**
+   - Focus on versions with user-facing features
+   - Skip micro bug-fix versions unless critical
 
 3. **Review VERSION_HISTORY.md:**
-   - Read all entries for that day
+   - Read entries for that version
    - Extract user-facing changes
-   - Combine similar changes
+   - Focus on benefits, not implementation
 
 4. **Translate technical → user language:**
    - "K-108c architecture" → "Improved scoring engine"
@@ -183,17 +182,20 @@ Update `changelog.json` whenever a version is deployed to **production** (merged
 ## How Far Back to Go
 
 ### Ideal Depth
-- **8-12 entries** (about 1-2 weeks of changes)
-- Go back as far as helpful for context
-- Don't include ancient versions (>1 month old)
+- **Go back to v2.0 or further** if possible
+- Show the complete evolution of the app
+- Each major feature release gets an entry
 
-### Minimum Coverage
-- At least **3 entries** (last 3 production deployments)
-- Show progression of recent improvements
+### Coverage Guidelines
+- **Recent updates** (last 2 weeks): Most detailed
+- **v3.x releases**: Major features and improvements
+- **v2.x releases**: Foundation features
+- **v1.x or earlier**: Can be summarized if too granular
 
-### Maximum Coverage
-- No more than **15 entries** (page becomes too long)
-- Users don't read beyond recent updates
+### Practical Limit
+- **20-30 entries** is ideal
+- Covers ~1-2 months of development
+- Shows app's progression clearly
 
 ---
 
@@ -262,15 +264,15 @@ Update `changelog.json` whenever a version is deployed to **production** (merged
 Before updating `changelog.json`:
 
 - [ ] Checked `git log origin/main` for production commits
-- [ ] Identified highest version for the day
-- [ ] Read VERSION_HISTORY.md for that day's changes
+- [ ] Identified significant user-facing versions
+- [ ] Read VERSION_HISTORY.md for that version's changes
 - [ ] Translated technical changes to user language
-- [ ] Combined multiple versions into one entry (max 1 per day)
 - [ ] Verified JSON syntax with `jq`
 - [ ] Entry is user-focused (no K-codes, no file paths)
 - [ ] Changes are benefit-focused (not implementation)
 - [ ] Title is short and descriptive (3-6 words)
-- [ ] Array has 8-12 entries total (not too many)
+- [ ] Array has 20-30 entries going back to v2.0+
+- [ ] Each entry has a clear, specific title
 
 ---
 
@@ -293,13 +295,13 @@ Before updating `changelog.json`:
 ### Version Selection
 
 **Scenario:** Same day has v3.5.1, v3.5.2, v3.5.3
-**Action:** Use **v3.5.3** as the version number
+**Action:** Include significant ones - e.g., v3.5.1 (new feature) and v3.5.3 (important fix)
 
 **Scenario:** Staging has v3.5.4 but main only has v3.5.3
 **Action:** Use **v3.5.3** (production only)
 
-**Scenario:** Multiple days with many micro-versions
-**Action:** Group by day, max 1 entry per day
+**Scenario:** Multiple micro-versions (v3.5.12, v3.5.13, v3.5.14) with small CSS tweaks
+**Action:** Skip these, wait for next significant version (v3.6.0)
 
 ---
 
