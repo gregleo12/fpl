@@ -1367,7 +1367,8 @@ async function calculateLuckIndex(db: any, leagueId: number) {
         entry_1_id,
         entry_2_id,
         entry_1_points,
-        entry_2_points
+        entry_2_points,
+        event
       FROM h2h_matches
       WHERE league_id = $1
         AND entry_1_points IS NOT NULL
@@ -1375,7 +1376,14 @@ async function calculateLuckIndex(db: any, leagueId: number) {
     `, [leagueId]);
 
     console.log('[LUCK INDEX] H2H matches:', {
-      count: matchesResult.rows.length
+      count: matchesResult.rows.length,
+      sampleMatches: matchesResult.rows.slice(0, 3).map((m: any) => ({
+        gw: m.event,
+        entry1: m.entry_1_id,
+        entry2: m.entry_2_id,
+        pts1: m.entry_1_points,
+        pts2: m.entry_2_points
+      }))
     });
 
     // Step 3: Calculate luck for each manager
@@ -1387,7 +1395,7 @@ async function calculateLuckIndex(db: any, leagueId: number) {
     });
 
     // Process each match
-    matchesResult.rows.forEach((match: any) => {
+    matchesResult.rows.forEach((match: any, index: number) => {
       const entry1 = match.entry_1_id;
       const entry2 = match.entry_2_id;
 
@@ -1395,6 +1403,19 @@ async function calculateLuckIndex(db: any, leagueId: number) {
       // Positive deviation = opponent underperformed
       const opp_deviation_for_entry1 = (averages[entry2] || 0) - match.entry_2_points;
       const opp_deviation_for_entry2 = (averages[entry1] || 0) - match.entry_1_points;
+
+      if (index < 3) {
+        console.log(`[LUCK INDEX] Match ${index + 1} (GW${match.event}):`, {
+          entry1,
+          entry2,
+          entry1_pts: match.entry_1_points,
+          entry2_pts: match.entry_2_points,
+          entry1_avg: averages[entry1],
+          entry2_avg: averages[entry2],
+          opp_dev_for_entry1: opp_deviation_for_entry1,
+          opp_dev_for_entry2: opp_deviation_for_entry2
+        });
+      }
 
       luck[entry1] = (luck[entry1] || 0) + opp_deviation_for_entry1;
       luck[entry2] = (luck[entry2] || 0) + opp_deviation_for_entry2;
