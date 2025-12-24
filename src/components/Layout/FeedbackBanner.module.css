@@ -2,18 +2,29 @@
 
 .banner {
   position: fixed;
-  bottom: 70px; /* Above mobile nav */
+  top: 0; /* Top on mobile (opposite of bottom nav) */
   left: 0;
   right: 0;
   background: rgba(55, 0, 60, 0.95);
   backdrop-filter: blur(10px);
-  border-top: 2px solid #00ff87;
+  border-bottom: 2px solid #00ff87;
   padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 100;
-  animation: slideUp 0.3s ease-out;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -80,10 +91,14 @@
   color: white;
 }
 
-/* Desktop - no mobile nav, so bottom: 0 */
+/* Desktop - nav at top, so banner at bottom (opposite) */
 @media (min-width: 769px) {
   .banner {
+    top: auto;
     bottom: 0;
+    border-bottom: none;
+    border-top: 2px solid #00ff87;
+    animation: slideUp 0.3s ease-out;
   }
 }
 
