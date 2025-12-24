@@ -1362,11 +1362,12 @@ async function calculateLuckIndex(db: any, leagueId: number) {
     });
 
     // Step 2: Get all H2H matches
-    // CRITICAL: Only count each match ONCE per gameweek
-    // The h2h_matches table has entry_1_id and entry_2_id
-    // We need to ensure we don't double-count matches
+    // CRITICAL: Only count each match ONCE
+    // H2H matches table stores each match from both perspectives
+    // (A plays B appears as both entry_1=A,entry_2=B AND entry_1=B,entry_2=A)
+    // Solution: Only take matches where entry_1_id < entry_2_id
     const matchesResult = await db.query(`
-      SELECT DISTINCT ON (event, LEAST(entry_1_id, entry_2_id), GREATEST(entry_1_id, entry_2_id))
+      SELECT
         entry_1_id,
         entry_2_id,
         entry_1_points,
@@ -1374,9 +1375,10 @@ async function calculateLuckIndex(db: any, leagueId: number) {
         event
       FROM h2h_matches
       WHERE league_id = $1
+        AND entry_1_id < entry_2_id
         AND entry_1_points IS NOT NULL
         AND entry_2_points IS NOT NULL
-      ORDER BY event, LEAST(entry_1_id, entry_2_id), GREATEST(entry_1_id, entry_2_id)
+      ORDER BY event
     `, [leagueId]);
 
     console.log('[LUCK INDEX] H2H matches:', {
@@ -1449,8 +1451,16 @@ async function calculateLuckIndex(db: any, leagueId: number) {
       }))
       .sort((a, b) => b.luck_index - a.luck_index);
 
+    // Validation: Calculate sum and range
+    const luckValues = luckIndex.map((l: any) => l.luck_index);
+    const sumOfLuck = luckValues.reduce((sum: number, val: number) => sum + val, 0);
+    const minLuck = Math.min(...luckValues);
+    const maxLuck = Math.max(...luckValues);
+
     console.log('[LUCK INDEX] Calculated luck index:', {
       count: luckIndex.length,
+      sumOfLuck: Math.round(sumOfLuck * 10) / 10, // Should be close to 0
+      range: `${Math.round(minLuck)} to ${Math.round(maxLuck)}`,
       luckiest: luckIndex.slice(0, 3).map((l: any) => ({
         name: l.player_name,
         luck: l.luck_index
