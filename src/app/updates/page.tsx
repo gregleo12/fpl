@@ -1,11 +1,27 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import changelog from '@/data/changelog.json';
 import styles from './updates.module.css';
 
 export default function UpdatesPage() {
   const router = useRouter();
+
+  // Mark version as seen when user visits this page
+  useEffect(() => {
+    async function markVersionAsSeen() {
+      try {
+        const response = await fetch('/api/version');
+        const data = await response.json();
+        localStorage.setItem('lastSeenVersion', data.version);
+      } catch (error) {
+        console.error('Failed to mark version as seen:', error);
+      }
+    }
+
+    markVersionAsSeen();
+  }, []);
 
   return (
     <main className={styles.container}>

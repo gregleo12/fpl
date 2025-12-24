@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { RefreshCw, Repeat, User, LogOut } from 'lucide-react';
 import { loadState, clearState } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
+import { useNewVersionBadge } from '@/hooks/useNewVersionBadge';
+import { NotificationBadge } from '@/components/NotificationBadge/NotificationBadge';
 import MyLeagues from './MyLeagues';
 import { FeedbackModal } from './FeedbackModal';
 import styles from './SettingsTab.module.css';
@@ -20,6 +22,7 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   const router = useRouter();
   const state = loadState();
   const { currentVersion } = useVersionCheck();
+  const showNewVersionBadge = useNewVersionBadge();
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [lastSynced, setLastSynced] = useState<string | null>(null);
@@ -229,13 +232,16 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
 
       <div className={styles.section}>
         <div className={styles.buttonRow}>
-          <button
-            onClick={() => router.push('/updates')}
-            className={styles.primaryButton}
-          >
-            <span style={{ marginRight: '0.5rem' }}>✨</span>
-            <span>What's New</span>
-          </button>
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => router.push('/updates')}
+              className={styles.primaryButton}
+            >
+              <span style={{ marginRight: '0.5rem' }}>✨</span>
+              <span>What's New</span>
+            </button>
+            <NotificationBadge show={showNewVersionBadge} />
+          </div>
           <button
             onClick={() => setShowFeedbackModal(true)}
             className={styles.secondaryButton}

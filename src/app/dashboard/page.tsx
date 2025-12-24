@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Shirt, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
+import { useNewVersionBadge } from '@/hooks/useNewVersionBadge';
 import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
+import { NotificationBadge } from '@/components/NotificationBadge/NotificationBadge';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
@@ -23,6 +25,7 @@ export default function DashboardPage() {
   const [playerData, setPlayerData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const showNewVersionBadge = useNewVersionBadge();
 
   // State for viewing other players
   const [viewingPlayerId, setViewingPlayerId] = useState<string | null>(null);
@@ -248,11 +251,14 @@ export default function DashboardPage() {
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
             onClick={() => setActiveTab('settings')}
           >
-            <SettingsIcon
-              size={24}
-              color={activeTab === 'settings' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
-              className={styles.tabIcon}
-            />
+            <div style={{ position: 'relative' }}>
+              <SettingsIcon
+                size={24}
+                color={activeTab === 'settings' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
+                className={styles.tabIcon}
+              />
+              <NotificationBadge show={showNewVersionBadge} />
+            </div>
             <span className={styles.tabLabel}>Settings</span>
           </button>
         </nav>
