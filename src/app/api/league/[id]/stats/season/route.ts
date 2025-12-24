@@ -118,7 +118,8 @@ export async function GET(
       trendsData,
       valueRankings,
       benchPoints,
-      formRankings
+      formRankings,
+      consistency
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
@@ -128,6 +129,7 @@ export async function GET(
       getValueRankings(managers, lastFinishedGW),
       calculateBenchPoints(db, leagueId, managers),
       calculateFormRankings(db, leagueId, completedGameweeks, leagueStandings),
+      calculateConsistency(db, leagueId),
     ]);
 
     return NextResponse.json({
@@ -146,6 +148,7 @@ export async function GET(
       valueRankings,
       benchPoints,
       formRankings,
+      consistency,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -1218,6 +1221,49 @@ async function calculateFormRankings(
     return formRankings;
   } catch (error) {
     console.error('[FORM RANKINGS] Database error:', error);
+    return [];
+  }
+}
+
+// K-119c: Calculate consistency (weekly score variance)
+async function calculateConsistency(db: any, leagueId: number) {
+  try {
+    console.log('[CONSISTENCY] Calculating consistency for league:', leagueId);
+
+    const result = await db.query(`
+      SELECT
+        mgh.entry_id,
+        m.player_name,
+        m.team_name,
+        ROUND(AVG(mgh.points)::numeric, 1) as avg_points,
+        ROUND(STDDEV_POP(mgh.points)::numeric, 1) as std_dev
+      FROM manager_gw_history mgh
+      JOIN managers m ON m.entry_id = mgh.entry_id
+      WHERE mgh.league_id = $1
+      GROUP BY mgh.entry_id, m.player_name, m.team_name
+      ORDER BY std_dev ASC
+    `, [leagueId]);
+
+    const consistency = result.rows.map((row: any) => ({
+      entry_id: row.entry_id,
+      player_name: row.player_name,
+      team_name: row.team_name,
+      avg_points: parseFloat(row.avg_points) || 0,
+      std_dev: parseFloat(row.std_dev) || 0
+    }));
+
+    console.log('[CONSISTENCY] Calculated consistency:', {
+      count: consistency.length,
+      topThree: consistency.slice(0, 3).map((c: any) => ({
+        name: c.player_name,
+        avg: c.avg_points,
+        stdDev: c.std_dev
+      }))
+    });
+
+    return consistency;
+  } catch (error) {
+    console.error('[CONSISTENCY] Database error:', error);
     return [];
   }
 }

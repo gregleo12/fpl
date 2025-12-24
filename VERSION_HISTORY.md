@@ -1,8 +1,78 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 293+ versions
-**Current Version:** v4.1.2 (December 24, 2025)
+**Total Releases:** 294+ versions
+**Current Version:** v4.1.3 (December 24, 2025)
+
+---
+
+## v4.1.3 - K-119c: Season Stats - Consistency Card (Dec 24, 2025)
+
+**Feature:** Added Consistency season statistics card showing weekly score variance using standard deviation.
+
+### What's New
+
+Added new Season Stats leaderboard showing which managers are most consistent (reliable scorers) versus most variable (boom or bust). Consistency rankings reveal weekly score patterns using statistical variance to measure reliability.
+
+**Key Features:**
+- **Consistency Card:** Shows average points per GW ± standard deviation
+- **Consistent/Variable Toggle:** View most consistent (low variance) or most variable (high variance) managers
+- **Display Format:** Shows `avg ±std_dev` (e.g., "58 ±8")
+- **Top 5 Display:** Card shows top 5, click to view all 20 managers
+- **User Highlight:** User's row marked with ★ in full rankings
+- **Activity Icon:** Using Lucide React Activity icon for variance/fluctuation
+
+### Implementation
+
+**New Files:**
+- `/src/components/Stats/season/Consistency.tsx` - New season card component
+
+**Modified Files:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added `calculateConsistency()` function
+- `/src/components/Stats/SeasonView.tsx` - Added Consistency component to grid
+
+### Data Source
+
+Query calculates average and standard deviation from `manager_gw_history.points`:
+```sql
+SELECT
+  mgh.entry_id,
+  m.player_name,
+  m.team_name,
+  ROUND(AVG(mgh.points)::numeric, 1) as avg_points,
+  ROUND(STDDEV_POP(mgh.points)::numeric, 1) as std_dev
+FROM manager_gw_history mgh
+JOIN managers m ON m.entry_id = mgh.entry_id
+WHERE mgh.league_id = $1
+GROUP BY mgh.entry_id, m.player_name, m.team_name
+ORDER BY std_dev ASC
+```
+
+**Statistical Notes:**
+- Uses `STDDEV_POP` (population standard deviation) since we have all GW data
+- Lower std dev = more consistent (predictable scores)
+- Higher std dev = more variable (boom/bust manager)
+- Avg ± std dev shows typical score range (e.g., 58 ±8 means typically scores 50-66)
+
+### Design
+
+- Activity icon indicates fluctuation/variance
+- Display format: `{avg} ±{std_dev}` (both rounded to nearest integer)
+- Consistent toggle shows low std dev first (most reliable)
+- Variable toggle shows high std dev first (biggest swingers)
+- Follows existing Season Stats card pattern
+- Responsive grid layout
+
+### Edge Cases
+
+- **Single GW completed:** std dev will be 0 for all managers
+- **Few GWs completed:** std dev may not be statistically meaningful yet
+- **Null/zero points:** Treated as valid data points in calculation
+
+### Related
+
+**K-119a, K-119b, K-119d:** Other new Season Stats cards (Form Rankings, Transfer Activity, Bench Points)
+**Part of:** Overall Season Stats expansion initiative
 
 ---
 
