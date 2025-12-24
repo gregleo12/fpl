@@ -1194,11 +1194,33 @@ async function calculateFormRankings(
       ORDER BY last5_points DESC
     `, [leagueId, last5GWs]);
 
+    console.log('[FORM RANKINGS] League standings sample:', {
+      count: leagueStandings.length,
+      first3: leagueStandings.slice(0, 3),
+      types: leagueStandings.slice(0, 3).map((s: any) => ({
+        entry_id: s.entry_id,
+        entry_id_type: typeof s.entry_id,
+        rank: s.rank
+      }))
+    });
+
     const formRankings = result.rows.map((row: any, index: number) => {
       const formRank = index + 1;
-      const standing = leagueStandings.find((s: any) => s.entry_id === row.entry_id);
+      // Ensure type matching - convert both to integers
+      const rowEntryId = parseInt(row.entry_id);
+      const standing = leagueStandings.find((s: any) => parseInt(s.entry_id) === rowEntryId);
       const seasonRank = standing?.rank || 0;
       const trend = seasonRank - formRank; // Positive = improved, Negative = dropped
+
+      if (index < 3) {
+        console.log(`[FORM RANKINGS] Manager ${row.player_name}:`, {
+          entry_id: rowEntryId,
+          formRank,
+          standing,
+          seasonRank,
+          trend
+        });
+      }
 
       return {
         entry_id: row.entry_id,
