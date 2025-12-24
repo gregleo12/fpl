@@ -7,6 +7,7 @@ import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerforma
 import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
 import { ValueLeaderboard } from './season/ValueLeaderboard';
+import { BenchPoints, type BenchPointsData } from './season/BenchPoints';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -24,6 +25,7 @@ export interface SeasonStats {
     chips: ChipTrendData[];
   };
   valueRankings?: ValueData[];
+  benchPoints?: BenchPointsData[];
 }
 
 export interface CaptainLeaderboardData {
@@ -129,6 +131,9 @@ export function SeasonView({ leagueId }: Props) {
           />
           {data.valueRankings && (
             <ValueLeaderboard data={data.valueRankings} />
+          )}
+          {data.benchPoints && data.benchPoints.length > 0 && (
+            <BenchPoints data={data.benchPoints} />
           )}
         </div>
       </div>

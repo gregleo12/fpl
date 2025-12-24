@@ -107,7 +107,8 @@ export async function GET(
       streaksData,
       bestWorstGameweeks,
       trendsData,
-      valueRankings
+      valueRankings,
+      benchPoints
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
@@ -115,6 +116,7 @@ export async function GET(
       calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
       getValueRankings(managers, lastFinishedGW),
+      calculateBenchPoints(db, leagueId, managers),
     ]);
 
     return NextResponse.json({
@@ -131,6 +133,7 @@ export async function GET(
       },
       trends: trendsData,
       valueRankings,
+      benchPoints,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -1091,6 +1094,50 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
     return sorted;
   } catch (error) {
     console.error('Error calculating value rankings:', error);
+    return [];
+  }
+}
+
+// K-119d: Calculate total bench points from manager_gw_history
+async function calculateBenchPoints(
+  db: any,
+  leagueId: number,
+  managers: any[]
+) {
+  try {
+    console.log('[BENCH POINTS] Calculating bench points for league:', leagueId);
+
+    const result = await db.query(`
+      SELECT
+        mgh.entry_id,
+        m.player_name,
+        m.team_name,
+        SUM(mgh.points_on_bench) as total_bench_points
+      FROM manager_gw_history mgh
+      JOIN managers m ON m.entry_id = mgh.entry_id
+      WHERE mgh.league_id = $1
+      GROUP BY mgh.entry_id, m.player_name, m.team_name
+      ORDER BY total_bench_points DESC
+    `, [leagueId]);
+
+    const benchPoints = result.rows.map((row: any) => ({
+      entry_id: row.entry_id,
+      player_name: row.player_name,
+      team_name: row.team_name,
+      total_bench_points: parseInt(row.total_bench_points) || 0
+    }));
+
+    console.log('[BENCH POINTS] Calculated bench points:', {
+      count: benchPoints.length,
+      topThree: benchPoints.slice(0, 3).map((b: any) => ({
+        name: b.player_name,
+        points: b.total_bench_points
+      }))
+    });
+
+    return benchPoints;
+  } catch (error) {
+    console.error('[BENCH POINTS] Database error:', error);
     return [];
   }
 }

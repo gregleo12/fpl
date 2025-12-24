@@ -2,7 +2,64 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 293+ versions
-**Current Version:** v4.1.0 (December 24, 2025)
+**Current Version:** v4.1.1 (December 24, 2025)
+
+---
+
+## v4.1.1 - K-119d: Season Stats - Bench Points Card (Dec 24, 2025)
+
+**Feature:** Added Bench Points season statistics card showing total points left on bench.
+
+### What's New
+
+Added new Season Stats leaderboard showing total points wasted on the bench across all completed gameweeks. This helps identify which managers have the best bench management (least points wasted) versus those leaving the most points unused.
+
+**Key Features:**
+- **Bench Points Card:** Shows total bench points for all managers
+- **Most/Least Toggle:** View managers with most wasted points or best bench management
+- **Top 5 Display:** Card shows top 5, click to view all 20 managers
+- **User Highlight:** User's row marked with ★ in full rankings
+- **Armchair Icon:** Using Lucide React Armchair icon for consistency
+
+### Implementation
+
+**New Files:**
+- `/src/components/Stats/season/BenchPoints.tsx` - New season card component
+
+**Modified Files:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added `calculateBenchPoints()` function
+- `/src/components/Stats/SeasonView.tsx` - Added BenchPoints component to grid
+
+### Data Source
+
+Query pulls from `manager_gw_history.points_on_bench`:
+```sql
+SELECT
+  mgh.entry_id,
+  m.player_name,
+  m.team_name,
+  SUM(mgh.points_on_bench) as total_bench_points
+FROM manager_gw_history mgh
+JOIN managers m ON m.entry_id = mgh.entry_id
+WHERE mgh.league_id = $1
+GROUP BY mgh.entry_id, m.player_name, m.team_name
+ORDER BY total_bench_points DESC
+```
+
+**Note:** Auto-subs are already applied, so this is truly unused points (not including players who were automatically subbed in).
+
+### Design
+
+- Follows existing Season Stats card pattern
+- Dark card background with green accents
+- Toggle buttons: "Most" (highest bench points) vs "Least" (lowest bench points)
+- Click card to open full rankings modal
+- Responsive grid layout
+
+### Related
+
+**K-119a-c:** Other new Season Stats cards (Transfer Activity, Points Variance, Consistency)
+**Part of:** Overall Season Stats expansion initiative
 
 ---
 
