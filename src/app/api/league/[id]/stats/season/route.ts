@@ -1362,8 +1362,11 @@ async function calculateLuckIndex(db: any, leagueId: number) {
     });
 
     // Step 2: Get all H2H matches
+    // CRITICAL: Only count each match ONCE per gameweek
+    // The h2h_matches table has entry_1_id and entry_2_id
+    // We need to ensure we don't double-count matches
     const matchesResult = await db.query(`
-      SELECT
+      SELECT DISTINCT ON (event, LEAST(entry_1_id, entry_2_id), GREATEST(entry_1_id, entry_2_id))
         entry_1_id,
         entry_2_id,
         entry_1_points,
@@ -1373,6 +1376,7 @@ async function calculateLuckIndex(db: any, leagueId: number) {
       WHERE league_id = $1
         AND entry_1_points IS NOT NULL
         AND entry_2_points IS NOT NULL
+      ORDER BY event, LEAST(entry_1_id, entry_2_id), GREATEST(entry_1_id, entry_2_id)
     `, [leagueId]);
 
     console.log('[LUCK INDEX] H2H matches:', {
