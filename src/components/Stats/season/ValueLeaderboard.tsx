@@ -33,7 +33,7 @@ export function ValueLeaderboard({ data }: Props) {
           £{item.total_value.toFixed(1)}m
         </div>
         <div className={styles.meta} style={{ fontSize: '0.6875rem', marginTop: '2px' }}>
-          Team: £{item.team_value.toFixed(1)}m | ITB: £{item.bank.toFixed(1)}m
+          £{item.team_value.toFixed(1)}m + £{item.bank.toFixed(1)}m
         </div>
       </div>
     </div>
