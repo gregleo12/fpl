@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.1.4** (December 24, 2025)
+**v4.2.0** (December 24, 2025)
 
-Added What's New page with notification badges and comprehensive update history back to v2.0.
+Season Stats expansion with 4 new leaderboard cards: Bench Points, Form Rankings, Consistency tracker, and Luck Index.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

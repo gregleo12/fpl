@@ -1,8 +1,84 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 295+ versions
-**Current Version:** v4.1.4 (December 24, 2025)
+**Total Releases:** 296+ versions
+**Current Version:** v4.2.0 (December 24, 2025)
+
+---
+
+## v4.2.0 - Season Stats Expansion (Dec 24, 2025)
+
+**Feature:** Major expansion of Season Stats with 4 new leaderboard cards showing bench management, form trends, consistency, and luck analysis.
+
+### What's New
+
+Added four new Season Stats cards that provide deeper insights into manager performance across the season:
+
+1. **Bench Points** - Total points left on the bench across all gameweeks
+2. **Form Rankings** - Last 5 GWs performance with trend indicators comparing to previous 5 GWs
+3. **Consistency** - Weekly score variance using standard deviation (reliable vs boom/bust managers)
+4. **Luck Index** - Opponent performance vs their averages (work in progress)
+
+**Key Features:**
+- **All cards clickable:** Tap any card to view full rankings for all managers
+- **Toggle views:** Bench Points (Most/Least), Consistency (Consistent/Variable)
+- **Trend arrows:** Form Rankings shows ↑ green (improving), ↓ red (declining), — grey (same)
+- **Statistical analysis:** Consistency uses population standard deviation for accuracy
+- **User highlighting:** Your row marked with ★ in full rankings
+- **Responsive design:** Cards adapt to mobile and desktop layouts
+
+### Components Added
+
+**New Season Cards:**
+- `/src/components/Stats/season/BenchPoints.tsx` - Bench point tracking with Armchair icon
+- `/src/components/Stats/season/FormRankings.tsx` - Form trends with Flame icon
+- `/src/components/Stats/season/Consistency.tsx` - Score variance with Activity icon
+- `/src/components/Stats/season/LuckIndex.tsx` - Luck analysis with Sparkles icon
+
+**Modified Files:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added 4 new calculation functions
+- `/src/components/Stats/SeasonView.tsx` - Integrated all new cards into grid
+- `/src/data/changelog.json` - Updated What's New page
+
+### Implementation Details
+
+**K-119d - Bench Points:**
+- Sums `manager_gw_history.points_on_bench` across all completed gameweeks
+- Toggle between Most (highest wasted points) and Least (best bench management)
+- Display format: Total points (e.g., "142")
+
+**K-119a - Form Rankings:**
+- Calculates last 5 GWs total points
+- Compares to previous 5 GWs to show trend
+- Trend = Previous Rank - Current Rank (positive = improving, negative = declining)
+- Requires minimum 10 GWs for trend calculation
+- Display format: Points with trend arrow (e.g., "380 PTS ↑3")
+
+**K-119c - Consistency:**
+- Uses `STDDEV_POP(points)` to measure score variance
+- Lower std dev = more consistent (predictable scores)
+- Higher std dev = more variable (boom/bust manager)
+- Display format: `{avg} ±{std_dev}` (e.g., "58 ±8" means typically scores 50-66)
+
+**K-119b - Luck Index (In Progress):**
+- Measures opponent performance vs their season average
+- Positive = lucky (opponents underperformed against you)
+- Negative = unlucky (opponents overperformed against you)
+- Still debugging deduplication logic for h2h_matches table
+
+### Technical Notes
+
+All calculations run in parallel using `Promise.all()` for optimal performance. Cards use shared `FullRankingModal` component for consistent UX. Data queries optimize for PostgreSQL performance with proper indexing.
+
+### Known Issues
+
+- **Luck Index:** Currently showing inflated values (+1200+) due to h2h_matches table query issue. Fix in progress.
+- **Form Trends:** Requires 10+ completed gameweeks to show trends (need current + previous 5 GW periods)
+
+### Related
+
+**K-119a, K-119b, K-119c, K-119d:** Individual tickets for each new season stat card
+**Part of:** Overall Season Stats enhancement initiative
 
 ---
 

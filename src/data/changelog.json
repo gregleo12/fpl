@@ -1,5 +1,18 @@
 [
   {
+    "version": "4.2.0",
+    "date": "2024-12-24",
+    "title": "Season Stats Expansion",
+    "changes": [
+      "NEW: Bench Points leaderboard - see who's wasting points on the bench",
+      "NEW: Form Rankings - last 5 GWs performance with trend arrows",
+      "NEW: Consistency tracker - most reliable vs most variable managers",
+      "NEW: Luck Index - opponent performance vs their averages (in progress)",
+      "Form trends now compare current vs previous 5 GWs periods",
+      "All new cards click to expand for full rankings"
+    ]
+  },
+  {
     "version": "4.1.0",
     "date": "2024-12-24",
     "title": "What's New Page & Notifications",
