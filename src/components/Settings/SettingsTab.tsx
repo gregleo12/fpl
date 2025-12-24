@@ -393,6 +393,14 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
             📧 greg@rivalfpl.com
           </a>
           <a
+            href="https://chat.whatsapp.com/IDWsZR85kk49AaS1320Jrj"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.footerLink}
+          >
+            💬 WhatsApp Community
+          </a>
+          <a
             href="https://reddit.com/r/RivalFPL"
             target="_blank"
             rel="noopener noreferrer"
