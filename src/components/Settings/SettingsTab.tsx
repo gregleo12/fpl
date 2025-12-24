@@ -6,6 +6,7 @@ import { RefreshCw, Repeat, User, LogOut } from 'lucide-react';
 import { loadState, clearState } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 import MyLeagues from './MyLeagues';
+import { FeedbackModal } from './FeedbackModal';
 import styles from './SettingsTab.module.css';
 
 interface SettingsTabProps {
@@ -27,6 +28,7 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
   const [currentSyncStatus, setCurrentSyncStatus] = useState<string | null>(null);
   const [minutesSinceSync, setMinutesSinceSync] = useState<number | null>(null);
   const [lastSyncError, setLastSyncError] = useState<string | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   // Fetch last synced time on mount
   useEffect(() => {
@@ -226,6 +228,25 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
       <h2 className={styles.title}>Settings</h2>
 
       <div className={styles.section}>
+        <div className={styles.buttonRow}>
+          <button
+            onClick={() => router.push('/updates')}
+            className={styles.primaryButton}
+          >
+            <span style={{ marginRight: '0.5rem' }}>✨</span>
+            <span>What's New</span>
+          </button>
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className={styles.secondaryButton}
+          >
+            <span style={{ marginRight: '0.5rem' }}>💬</span>
+            <span>Feedback</span>
+          </button>
+        </div>
+      </div>
+
+      <div className={styles.section}>
         <MyLeagues />
       </div>
 
@@ -380,14 +401,6 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           RivalFPL - Your Head-to-Head league companion. Track performance,
           fixtures, and detailed statistics for your FPL H2H leagues.
         </p>
-        <button
-          onClick={() => router.push('/updates')}
-          className={styles.actionButton}
-          style={{ marginTop: '1rem' }}
-        >
-          <span style={{ marginRight: '0.5rem' }}>✨</span>
-          <span className={styles.buttonText}>What's New</span>
-        </button>
       </div>
 
       <div className={styles.footer}>
@@ -426,6 +439,11 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           </a>
         </div>
       </div>
+
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+      />
     </div>
   );
 }
