@@ -1,8 +1,74 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 292+ versions
-**Current Version:** v4.0.2 (December 24, 2025)
+**Total Releases:** 293+ versions
+**Current Version:** v4.0.3 (December 24, 2025)
+
+---
+
+## v4.0.3 - K-114: Temporary Feedback Banner (Dec 24, 2025)
+
+**Feature:** Added dismissable feedback banner for post-K-108c deployment user feedback.
+
+### What's New
+
+After deploying v4.0.0 K-108c architecture, added a temporary feedback banner to collect user reports of any issues during the transition period.
+
+**Banner Features:**
+- **Position:** Fixed at bottom of screen (above mobile nav)
+- **Content:** "🔧 We just shipped a big update! Notice anything off?"
+- **Report Action:** Opens mailto link to greg@rivalfpl.com with pre-filled subject and current page URL
+- **Dismissable:** ✕ button saves preference to localStorage
+- **Auto-expires:** January 7, 2025 (2 weeks after deployment)
+- **Responsive:** Adapts to mobile/desktop layouts
+
+### Implementation
+
+**Files Created:**
+- `src/components/Layout/FeedbackBanner.tsx` - Main component
+- `src/components/Layout/FeedbackBanner.module.css` - Styling with animations
+
+**Integration:**
+- Added to root layout (`src/app/layout.tsx`)
+- Renders globally across all pages
+- Uses `localStorage` for dismiss state
+- Includes slide-up animation on mount
+
+### Design Details
+
+**Styling:**
+- Purple background with neon green accent (`#00ff87`)
+- Backdrop blur effect for modern look
+- Smooth transitions on hover/active states
+- Mobile-optimized (smaller padding/font on <480px)
+- Desktop: bottom: 0 (no nav overlap)
+- Mobile: bottom: 70px (above mobile nav)
+
+**UX:**
+- Non-intrusive but visible
+- Single click to dismiss (persists across sessions)
+- Single click to report (opens email client)
+- Auto-hides after 2 weeks
+
+### K-113 Verification Results
+
+**Database Coverage:** ✅ 100% K-108 data populated
+
+| Metric | Result |
+|--------|--------|
+| Gameweeks Covered | 1-17 (all 100% populated) |
+| Total Records | 12,610 player-gameweek stats |
+| Calculated Points Match | 100% (all match FPL totals) |
+| Leagues Synced | 67/67 (all completed) |
+| Failed Syncs | 0 |
+
+**K-115 Bulk Sync Results:**
+- Total runtime: 245 minutes
+- Leagues processed: 67/67
+- Success rate: 100%
+- Failures: 0
+
+**Explanation of 67 vs 126 leagues:** Production database contains 67 actual leagues (not 126). All 67 have been synced successfully.
 
 ---
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import styles from './FeedbackBanner.module.css';
 
-const EXPIRY_DATE = new Date('2026-01-07');
+const EXPIRY_DATE = new Date('2025-01-07');
 const STORAGE_KEY = 'feedback-banner-dismissed-v1';
 
 export function FeedbackBanner() {
