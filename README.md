@@ -47,7 +47,7 @@ npm run build
 
 ## Current Version
 
-**v4.1.3** (December 24, 2025)
+**v4.1.4** (December 24, 2025)
 
 Added What's New page with notification badges and comprehensive update history back to v2.0.
 

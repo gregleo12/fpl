@@ -1,8 +1,93 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 294+ versions
-**Current Version:** v4.1.3 (December 24, 2025)
+**Total Releases:** 295+ versions
+**Current Version:** v4.1.4 (December 24, 2025)
+
+---
+
+## v4.1.4 - K-119b: Season Stats - Luck Index Card (Dec 24, 2025)
+
+**Feature:** Added Luck Index season statistics card measuring how lucky/unlucky managers have been based on opponent performance.
+
+### What's New
+
+Added new Season Stats leaderboard showing which managers have been lucky (opponents underperformed) versus unlucky (opponents overperformed). Luck Index measures opponent deviation from their season average across all H2H matches.
+
+**Key Features:**
+- **Luck Index Card:** Shows cumulative luck score across all H2H matches
+- **Unique Layout:** Displays top 5 luckiest AND bottom 2 unluckiest in card view
+- **Visual Indicators:** Positive = green 🍀, Negative = red 😤
+- **Opponent Deviation:** Measures how much each opponent scored vs their average
+- **Full Rankings:** Click to view all 20 managers sorted by luck
+- **User Highlight:** User's row marked with ★ in full rankings
+- **Sparkles Icon:** Using Lucide React Sparkles icon for luck/chance
+
+### Implementation
+
+**New Files:**
+- `/src/components/Stats/season/LuckIndex.tsx` - New season card component
+
+**Modified Files:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added `calculateLuckIndex()` function
+- `/src/components/Stats/SeasonView.tsx` - Added LuckIndex component to grid
+
+### Data Source & Calculation
+
+Query calculates opponent performance vs average from `h2h_matches` and `manager_gw_history`:
+
+**Step 1: Calculate each manager's season average**
+```sql
+SELECT entry_id, AVG(points) as avg_points
+FROM manager_gw_history
+WHERE league_id = $1
+GROUP BY entry_id
+```
+
+**Step 2: For each H2H match, calculate opponent deviation**
+```typescript
+// For each match
+const opp_deviation_for_entry1 = (avg_of_entry2) - (actual_pts_of_entry2);
+const opp_deviation_for_entry2 = (avg_of_entry1) - (actual_pts_of_entry1);
+
+luck[entry1] += opp_deviation_for_entry1;
+luck[entry2] += opp_deviation_for_entry2;
+```
+
+**Interpretation:**
+- **Positive deviation:** Opponent scored below their average → you got lucky
+- **Negative deviation:** Opponent scored above their average → you were unlucky
+- **Example:** Your opponent averages 60pts but only scored 45 against you → +15 luck (they had a bad week)
+
+### Design
+
+- Sparkles icon indicates luck/chance element
+- Green text + 🍀 for positive luck (luckiest managers)
+- Red text + 😤 for negative luck (unluckiest managers)
+- Plus sign (+) shown for positive numbers
+- Card shows top 5 + divider + bottom 2 (unique 7-item layout)
+- Follows existing Season Stats card pattern
+- Responsive grid layout
+
+### Edge Cases
+
+- **No matches played:** Returns empty array
+- **Manager with no H2H matches:** luck_index = 0
+- **New manager (joined mid-season):** Only counts matches they played
+- **Tied matches:** Both managers get opponent deviation added (no special handling)
+
+### Luck Interpretation Guide
+
+- **+50 or higher:** Very lucky - opponents consistently underperform
+- **+20 to +49:** Moderately lucky
+- **-19 to +19:** Average luck
+- **-20 to -49:** Moderately unlucky
+- **-50 or lower:** Very unlucky - opponents consistently overperform
+
+### Related
+
+**K-119a, K-119c, K-119d:** Other new Season Stats cards (Form Rankings, Consistency, Bench Points)
+**Part of:** Overall Season Stats expansion initiative
 
 ---
 

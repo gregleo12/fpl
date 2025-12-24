@@ -119,7 +119,8 @@ export async function GET(
       valueRankings,
       benchPoints,
       formRankings,
-      consistency
+      consistency,
+      luckIndex
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
@@ -130,6 +131,7 @@ export async function GET(
       calculateBenchPoints(db, leagueId, managers),
       calculateFormRankings(db, leagueId, completedGameweeks, leagueStandings),
       calculateConsistency(db, leagueId),
+      calculateLuckIndex(db, leagueId),
     ]);
 
     return NextResponse.json({
@@ -149,6 +151,7 @@ export async function GET(
       benchPoints,
       formRankings,
       consistency,
+      luckIndex,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -1264,6 +1267,113 @@ async function calculateConsistency(db: any, leagueId: number) {
     return consistency;
   } catch (error) {
     console.error('[CONSISTENCY] Database error:', error);
+    return [];
+  }
+}
+
+// K-119b: Calculate luck index (opponent performance vs their average)
+async function calculateLuckIndex(db: any, leagueId: number) {
+  try {
+    console.log('[LUCK INDEX] Calculating luck index for league:', leagueId);
+
+    // Step 1: Get each manager's average points
+    const avgResult = await db.query(`
+      SELECT
+        entry_id,
+        AVG(points) as avg_points
+      FROM manager_gw_history
+      WHERE league_id = $1
+      GROUP BY entry_id
+    `, [leagueId]);
+
+    const averages: Record<number, number> = {};
+    avgResult.rows.forEach((row: any) => {
+      averages[row.entry_id] = parseFloat(row.avg_points) || 0;
+    });
+
+    console.log('[LUCK INDEX] Manager averages:', {
+      count: Object.keys(averages).length,
+      sample: Object.entries(averages).slice(0, 3).map(([id, avg]) => ({ id, avg }))
+    });
+
+    // Step 2: Get all H2H matches
+    const matchesResult = await db.query(`
+      SELECT
+        entry_1_id,
+        entry_2_id,
+        entry_1_points,
+        entry_2_points
+      FROM h2h_matches
+      WHERE league_id = $1
+        AND entry_1_points IS NOT NULL
+        AND entry_2_points IS NOT NULL
+    `, [leagueId]);
+
+    console.log('[LUCK INDEX] H2H matches:', {
+      count: matchesResult.rows.length
+    });
+
+    // Step 3: Calculate luck for each manager
+    const luck: Record<number, number> = {};
+
+    // Initialize all managers with 0 luck
+    Object.keys(averages).forEach(entryId => {
+      luck[parseInt(entryId)] = 0;
+    });
+
+    // Process each match
+    matchesResult.rows.forEach((match: any) => {
+      const entry1 = match.entry_1_id;
+      const entry2 = match.entry_2_id;
+
+      // How much did opponent deviate from their average?
+      // Positive deviation = opponent underperformed
+      const opp_deviation_for_entry1 = (averages[entry2] || 0) - match.entry_2_points;
+      const opp_deviation_for_entry2 = (averages[entry1] || 0) - match.entry_1_points;
+
+      luck[entry1] = (luck[entry1] || 0) + opp_deviation_for_entry1;
+      luck[entry2] = (luck[entry2] || 0) + opp_deviation_for_entry2;
+    });
+
+    // Step 4: Get manager names and format response
+    const managersResult = await db.query(`
+      SELECT entry_id, player_name, team_name
+      FROM managers
+      WHERE entry_id = ANY($1)
+    `, [Object.keys(luck).map(Number)]);
+
+    const managerMap: Record<number, { player_name: string; team_name: string }> = {};
+    managersResult.rows.forEach((row: any) => {
+      managerMap[row.entry_id] = {
+        player_name: row.player_name,
+        team_name: row.team_name
+      };
+    });
+
+    const luckIndex = Object.entries(luck)
+      .map(([entryId, luckValue]) => ({
+        entry_id: parseInt(entryId),
+        player_name: managerMap[parseInt(entryId)]?.player_name || 'Unknown',
+        team_name: managerMap[parseInt(entryId)]?.team_name || 'Unknown',
+        luck_index: Math.round(luckValue * 10) / 10 // Round to 1 decimal
+      }))
+      .sort((a, b) => b.luck_index - a.luck_index);
+
+    console.log('[LUCK INDEX] Calculated luck index:', {
+      count: luckIndex.length,
+      luckiest: luckIndex.slice(0, 3).map((l: any) => ({
+        name: l.player_name,
+        luck: l.luck_index
+      })),
+      unluckiest: luckIndex.slice(-3).map((l: any) => ({
+        name: l.player_name,
+        luck: l.luck_index
+      }))
+    });
+
+    return luckIndex;
+  } catch (error) {
+    console.error('[LUCK INDEX] Database error:', error);
     return [];
   }
 }

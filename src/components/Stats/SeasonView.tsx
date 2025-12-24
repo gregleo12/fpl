@@ -10,6 +10,7 @@ import { ValueLeaderboard } from './season/ValueLeaderboard';
 import { BenchPoints, type BenchPointsData } from './season/BenchPoints';
 import { FormRankings, type FormRankingsData } from './season/FormRankings';
 import { Consistency, type ConsistencyData } from './season/Consistency';
+import { LuckIndex, type LuckIndexData } from './season/LuckIndex';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -30,6 +31,7 @@ export interface SeasonStats {
   benchPoints?: BenchPointsData[];
   formRankings?: FormRankingsData[];
   consistency?: ConsistencyData[];
+  luckIndex?: LuckIndexData[];
 }
 
 export interface CaptainLeaderboardData {
@@ -144,6 +146,9 @@ export function SeasonView({ leagueId }: Props) {
           )}
           {data.consistency && data.consistency.length > 0 && (
             <Consistency data={data.consistency} />
+          )}
+          {data.luckIndex && data.luckIndex.length > 0 && (
+            <LuckIndex data={data.luckIndex} />
           )}
         </div>
       </div>
