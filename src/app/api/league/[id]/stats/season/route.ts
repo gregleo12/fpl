@@ -83,6 +83,15 @@ export async function GET(
     `, [leagueId]);
     const managers = managersResult.rows;
 
+    // Fetch league standings for form rankings trend calculation
+    const standingsResult = await db.query(`
+      SELECT entry_id, rank
+      FROM league_standings
+      WHERE league_id = $1
+      ORDER BY rank ASC
+    `, [leagueId]);
+    const leagueStandings = standingsResult.rows;
+
     // Get last finished GW for value rankings (to fetch actual squad picks)
     let lastFinishedGW = maxStartedGW;
     try {
@@ -108,7 +117,8 @@ export async function GET(
       bestWorstGameweeks,
       trendsData,
       valueRankings,
-      benchPoints
+      benchPoints,
+      formRankings
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
       calculateChipPerformance(db, leagueId, completedGameweeks, managers),
@@ -117,6 +127,7 @@ export async function GET(
       calculateTrendsData(db, leagueId, completedGameweeks, managers),
       getValueRankings(managers, lastFinishedGW),
       calculateBenchPoints(db, leagueId, managers),
+      calculateFormRankings(db, leagueId, completedGameweeks, leagueStandings),
     ]);
 
     return NextResponse.json({
@@ -134,6 +145,7 @@ export async function GET(
       trends: trendsData,
       valueRankings,
       benchPoints,
+      formRankings,
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -1138,6 +1150,74 @@ async function calculateBenchPoints(
     return benchPoints;
   } catch (error) {
     console.error('[BENCH POINTS] Database error:', error);
+    return [];
+  }
+}
+
+// K-119a: Calculate form rankings (last 5 GWs performance)
+async function calculateFormRankings(
+  db: any,
+  leagueId: number,
+  completedGameweeks: number[],
+  leagueStandings: any[]
+) {
+  try {
+    console.log('[FORM RANKINGS] Calculating form rankings for league:', leagueId);
+
+    // Get last 5 completed gameweeks
+    const last5GWs = completedGameweeks.slice(-5);
+
+    if (last5GWs.length === 0) {
+      console.log('[FORM RANKINGS] No completed gameweeks available');
+      return [];
+    }
+
+    console.log('[FORM RANKINGS] Using last 5 GWs:', last5GWs);
+
+    const result = await db.query(`
+      SELECT
+        mgh.entry_id,
+        m.player_name,
+        m.team_name,
+        SUM(mgh.points) as last5_points
+      FROM manager_gw_history mgh
+      JOIN managers m ON m.entry_id = mgh.entry_id
+      WHERE mgh.league_id = $1
+        AND mgh.event = ANY($2)
+      GROUP BY mgh.entry_id, m.player_name, m.team_name
+      ORDER BY last5_points DESC
+    `, [leagueId, last5GWs]);
+
+    const formRankings = result.rows.map((row: any, index: number) => {
+      const formRank = index + 1;
+      const standing = leagueStandings.find((s: any) => s.entry_id === row.entry_id);
+      const seasonRank = standing?.rank || 0;
+      const trend = seasonRank - formRank; // Positive = improved, Negative = dropped
+
+      return {
+        entry_id: row.entry_id,
+        player_name: row.player_name,
+        team_name: row.team_name,
+        last5_points: parseInt(row.last5_points) || 0,
+        form_rank: formRank,
+        season_rank: seasonRank,
+        trend: trend
+      };
+    });
+
+    console.log('[FORM RANKINGS] Calculated form rankings:', {
+      count: formRankings.length,
+      gws: last5GWs,
+      topThree: formRankings.slice(0, 3).map((f: any) => ({
+        name: f.player_name,
+        points: f.last5_points,
+        trend: f.trend
+      }))
+    });
+
+    return formRankings;
+  } catch (error) {
+    console.error('[FORM RANKINGS] Database error:', error);
     return [];
   }
 }

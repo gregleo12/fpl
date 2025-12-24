@@ -8,6 +8,7 @@ import { Streaks, type StreakData } from './season/Streaks';
 import { BestWorstGW } from './season/BestWorstGW';
 import { ValueLeaderboard } from './season/ValueLeaderboard';
 import { BenchPoints, type BenchPointsData } from './season/BenchPoints';
+import { FormRankings, type FormRankingsData } from './season/FormRankings';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -26,6 +27,7 @@ export interface SeasonStats {
   };
   valueRankings?: ValueData[];
   benchPoints?: BenchPointsData[];
+  formRankings?: FormRankingsData[];
 }
 
 export interface CaptainLeaderboardData {
@@ -134,6 +136,9 @@ export function SeasonView({ leagueId }: Props) {
           )}
           {data.benchPoints && data.benchPoints.length > 0 && (
             <BenchPoints data={data.benchPoints} />
+          )}
+          {data.formRankings && data.formRankings.length > 0 && (
+            <FormRankings data={data.formRankings} />
           )}
         </div>
       </div>

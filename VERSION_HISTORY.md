@@ -2,7 +2,80 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 293+ versions
-**Current Version:** v4.1.1 (December 24, 2025)
+**Current Version:** v4.1.2 (December 24, 2025)
+
+---
+
+## v4.1.2 - K-119a: Season Stats - Form Rankings Card (Dec 24, 2025)
+
+**Feature:** Added Form Rankings season statistics card showing performance over last 5 gameweeks with trend indicators.
+
+### What's New
+
+Added new Season Stats leaderboard showing who's HOT right now versus who started strong but faded. Form rankings reveal recent performance (last 5 GWs) with trend arrows showing movement compared to overall season rank.
+
+**Key Features:**
+- **Form Rankings Card:** Shows total points from last 5 completed gameweeks
+- **Trend Indicators:** ↑ green (rising), ↓ red (falling), — grey (same position)
+- **Comparison:** Trend calculated as difference between form rank and season rank
+- **Top 5 Display:** Card shows top 5, click to view all 20 managers
+- **User Highlight:** User's row marked with ★ in full rankings
+- **Flame Icon:** Using Lucide React Flame icon for "hot form"
+
+### Implementation
+
+**New Files:**
+- `/src/components/Stats/season/FormRankings.tsx` - New season card component
+
+**Modified Files:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added `calculateFormRankings()` function and league standings fetch
+- `/src/components/Stats/SeasonView.tsx` - Added FormRankings component to grid
+
+### Data Source
+
+Query pulls last 5 GWs from `manager_gw_history.points`:
+```sql
+SELECT
+  mgh.entry_id,
+  m.player_name,
+  m.team_name,
+  SUM(mgh.points) as last5_points
+FROM manager_gw_history mgh
+JOIN managers m ON m.entry_id = mgh.entry_id
+WHERE mgh.league_id = $1
+  AND mgh.event = ANY($2)  -- last 5 completed GWs
+GROUP BY mgh.entry_id, m.player_name, m.team_name
+ORDER BY last5_points DESC
+```
+
+**Trend Calculation:**
+- `trend = season_rank - form_rank`
+- Positive number = improved (↑ green)
+- Negative number = dropped (↓ red)
+- Zero = same position (— grey)
+
+**Example:** If you're rank 5 for the season but rank 2 in form:
+- `trend = 5 - 2 = +3` → Shows `↑3` in green
+
+### Design
+
+- Flame icon indicates "hot form"
+- Green ↑ arrows for rising managers
+- Red ↓ arrows for falling managers
+- Points right-aligned with trend above
+- Follows existing Season Stats card pattern
+- Responsive grid layout
+
+### Edge Cases
+
+- **Less than 5 GWs completed:** Uses whatever GWs are available (e.g., 3 GWs if only 3 completed)
+- **New managers:** Only counts GWs they have data for
+- **Tied points:** No special handling in initial version
+
+### Related
+
+**K-119b-d:** Other new Season Stats cards (Transfer Activity, Points Variance, Bench Points)
+**Part of:** Overall Season Stats expansion initiative
 
 ---
 
