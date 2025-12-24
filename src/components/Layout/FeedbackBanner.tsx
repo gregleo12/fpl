@@ -23,11 +23,7 @@ export function FeedbackBanner() {
   };
 
   const handleReport = () => {
-    const subject = encodeURIComponent('RivalFPL Bug Report');
-    const body = encodeURIComponent(
-      `Page: ${window.location.pathname}\n\nWhat happened:\n\n`
-    );
-    window.location.href = `mailto:greg@rivalfpl.com?subject=${subject}&body=${body}`;
+    window.open('https://chat.whatsapp.com/IDWsZR85kk49AaS1320Jrj', '_blank', 'noopener,noreferrer');
   };
 
   if (!isVisible) return null;
@@ -40,7 +36,7 @@ export function FeedbackBanner() {
           We just shipped a big update! Notice anything off?
         </span>
         <button onClick={handleReport} className={styles.reportButton}>
-          Report Issue
+          Tell us on WhatsApp
         </button>
       </div>
       <button onClick={handleDismiss} className={styles.closeButton} aria-label="Dismiss banner">

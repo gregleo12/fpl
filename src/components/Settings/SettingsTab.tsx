@@ -380,6 +380,14 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           RivalFPL - Your Head-to-Head league companion. Track performance,
           fixtures, and detailed statistics for your FPL H2H leagues.
         </p>
+        <button
+          onClick={() => router.push('/updates')}
+          className={styles.actionButton}
+          style={{ marginTop: '1rem' }}
+        >
+          <span style={{ marginRight: '0.5rem' }}>✨</span>
+          <span className={styles.buttonText}>What's New</span>
+        </button>
       </div>
 
       <div className={styles.footer}>

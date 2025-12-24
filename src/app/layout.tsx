@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { UpdateBanner } from '@/components/UpdateBanner/UpdateBanner';
 import { FeedbackBanner } from '@/components/Layout/FeedbackBanner';
+import { VersionToast } from '@/components/Layout/VersionToast';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({
       </head>
       <body>
         <UpdateBanner />
+        <VersionToast />
         {children}
         <FeedbackBanner />
         <Script id="register-sw" strategy="afterInteractive">

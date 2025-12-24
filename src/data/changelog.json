@@ -1,0 +1,52 @@
+[
+  {
+    "version": "4.0.5",
+    "date": "2024-12-24",
+    "title": "Team Value Improvements",
+    "changes": [
+      "Fixed Team Value ranking to show total budget (squad + ITB)",
+      "Added breakdown showing team value and money in the bank",
+      "Updated PWA icons for better mobile installation"
+    ]
+  },
+  {
+    "version": "4.0.4",
+    "date": "2024-12-24",
+    "title": "PWA & Community",
+    "changes": [
+      "Added PWA icons for mobile installation",
+      "Added WhatsApp Community link to Settings",
+      "Improved app installation experience"
+    ]
+  },
+  {
+    "version": "4.0.3",
+    "date": "2024-12-24",
+    "title": "Stability & Cleanup",
+    "changes": [
+      "Fixed score calculations across all screens",
+      "Improved sync reliability for all leagues",
+      "Added feedback banner for bug reports"
+    ]
+  },
+  {
+    "version": "4.0.0",
+    "date": "2024-12-23",
+    "title": "Major Scoring Engine Update",
+    "changes": [
+      "Complete rewrite of point calculations",
+      "Single source of truth for all scores",
+      "Faster page loads with optimized queries"
+    ]
+  },
+  {
+    "version": "3.7.0",
+    "date": "2024-12-20",
+    "title": "Auto-Sync & Background Updates",
+    "changes": [
+      "Automatic data sync when viewing leagues",
+      "Background sync for returning users",
+      "Improved error handling"
+    ]
+  }
+]
