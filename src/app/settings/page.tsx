@@ -294,6 +294,22 @@ export default function SettingsPage() {
         </section>
 
         <section className={styles.section}>
+          <h2>Community</h2>
+          <p className={styles.aboutText}>
+            Join our WhatsApp community to connect with other FPL managers, share tips, and get support.
+          </p>
+          <a
+            href="https://chat.whatsapp.com/IDWsZR85kk49AaS1320Jrj"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.actionButton}
+            style={{ textDecoration: 'none', textAlign: 'center', display: 'inline-block', width: '100%' }}
+          >
+            💬 Join WhatsApp Community
+          </a>
+        </section>
+
+        <section className={styles.section}>
           <h2>About</h2>
           <p className={styles.aboutText}>
             FPL H2H Analytics helps you track your Fantasy Premier League
