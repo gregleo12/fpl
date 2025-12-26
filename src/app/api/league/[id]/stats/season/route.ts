@@ -1349,11 +1349,8 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
     });
 
     // Step 2: Get all H2H matches (only from completed GWs)
-    // CRITICAL: Only count each match ONCE
-    // H2H matches table stores each match from both perspectives
-    // (A plays B appears as both entry_1=A,entry_2=B AND entry_1=B,entry_2=A)
-    // Solution: Only take matches where entry_1_id < entry_2_id
-    // ALSO: Only include matches from the same GWs we calculated averages for
+    // Note: h2h_matches table stores each match ONCE (not duplicated)
+    // Entry positions alternate by gameweek, so we need ALL rows
     const matchesResult = await db.query(`
       SELECT
         entry_1_id,
@@ -1364,7 +1361,6 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       FROM h2h_matches
       WHERE league_id = $1
         AND event = ANY($2)
-        AND entry_1_id < entry_2_id
         AND entry_1_points IS NOT NULL
         AND entry_2_points IS NOT NULL
       ORDER BY event

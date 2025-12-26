@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.2** (December 26, 2025)
+**v4.3.3** (December 26, 2025)
 
-Monthly Awards luck calculation now uses season-wide averages for consistency with Season Stats.
+CRITICAL FIX: Season Stats Luck Index was only using half of each manager's matches - now fixed to use all matches.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

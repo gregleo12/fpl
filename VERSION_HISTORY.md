@@ -2,7 +2,33 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.2 (December 26, 2025)
+**Current Version:** v4.3.3 (December 26, 2025)
+
+---
+
+## v4.3.3 - CRITICAL FIX: Season Stats Luck Index Missing Half of Matches (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed Season Stats Luck Index calculation that was only using ~half of each manager's matches.
+
+### The Bug
+
+The season route assumed h2h_matches table had duplicate rows (match stored from both perspectives), so it used `entry_1_id < entry_2_id` filter to deduplicate. However, the table stores each match **only once**, with entry positions alternating by gameweek.
+
+**Result:** The filter excluded half the matches, making luck calculations completely inaccurate.
+
+**Example - Thomas (entry_id: 69171, lowest in league):**
+- **Before fix:** +72 pts (from only 9 matches - odd GWs where he was entry_1)
+- **After fix:** +24 pts (from all 17 matches)
+- **Missing:** 8 matches from even GWs where he was entry_2
+
+### What Changed
+
+Removed the incorrect deduplication filter. Season Stats Luck Index now uses all matches correctly.
+
+**Impact:** All managers' season luck values will change - this affects everyone in the league, not just one person.
+
+**Files Modified:**
+- `src/app/api/league/[id]/stats/season/route.ts`
 
 ---
 
