@@ -1,8 +1,39 @@
-## v4.2.1 Staging Deployment
+## v4.2.2 Staging Deployment
 
 **Date:** December 26, 2025
 **Environment:** Staging (fpl-staging-production.up.railway.app)
 **Status:** ✅ Deployed to Staging
+
+### Deployed Enhancements
+- K-122: Season Stats UI improvements across 3 cards
+- Bench Points: Added percentage calculation and Total/% toggle
+- Form Rankings: Added Last 5/Last 10 toggle with separate trend calculations
+- Consistency: Improved layout (variance primary, average secondary)
+
+### Files Modified
+- `/src/app/api/league/[id]/stats/season/route.ts` - Backend calculations for bench % and form 5/10
+- `/src/components/Stats/season/BenchPoints.tsx` - Total/% toggle implementation
+- `/src/components/Stats/season/FormRankings.tsx` - Last 5/10 toggle implementation
+- `/src/components/Stats/season/Consistency.tsx` - Layout restructure
+- VERSION_HISTORY.md - Added v4.2.2 entry
+- README.md - Updated version
+
+### Verification Required
+- [ ] Bench Points: Toggle between Total and % of Total works
+- [ ] Bench Points: Re-ranks correctly based on toggle
+- [ ] Form Rankings: Toggle between Last 5 and Last 10 works
+- [ ] Form Rankings: Trend arrows update for each toggle state
+- [ ] Consistency: Shows variance as primary (±11 PTS) and avg as secondary (avg 58)
+
+**Next Step:** After staging verification, deploy to production
+
+---
+
+## v4.2.1 Production Deployment
+
+**Date:** December 26, 2025
+**Environment:** Production (rivalfpl.com)
+**Status:** ⏳ Pending (v4.2.1 was deployed to staging)
 
 ### Deployed Fixes
 - K-121: Fixed Luck Index calculation bug (inflated values +1200+ → correct range -106 to +72)
