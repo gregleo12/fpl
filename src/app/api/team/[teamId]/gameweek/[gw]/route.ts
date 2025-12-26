@@ -60,6 +60,12 @@ export async function GET(
     if (status === 'in_progress' || status === 'upcoming') {
       console.log(`[K-136] Using FPL API for live/upcoming GW`);
       const liveResult = await calculateManagerLiveScore(entryId, gameweek, status);
+      console.log(`[K-136b DEBUG] liveResult:`, {
+        score: liveResult.score,
+        transferCost: liveResult.breakdown.transferCost,
+        captainPoints: liveResult.breakdown.captainPoints,
+        squadSize: liveResult.squad ? `${liveResult.squad.starting11?.length || 0}+${liveResult.squad.bench?.length || 0}` : 'null'
+      });
       teamScore = {
         points: {
           starting_xi_total: 0, // Not available from live calculator
