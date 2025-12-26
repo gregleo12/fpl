@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { detectFPLError } from '@/lib/fpl-errors';
 
 // Force dynamic rendering - prevent caching and static generation
@@ -414,15 +415,27 @@ export async function GET(
             // Default to in_progress if we can't determine
           }
 
-          // K-109 Phase 6: Use K-108c for accurate live scores
-          console.log(`[K-109 Phase 6] Calculating live GW${currentGW} scores for ${entryIds.length} teams using K-108c`);
+          // K-137: Use appropriate calculator based on GW status
+          const dataSource = status === 'completed' ? 'database (K-108c)' : 'FPL API (live)';
+          console.log(`[K-137] Calculating GW${currentGW} scores for ${entryIds.length} teams from ${dataSource}, status: ${status}`);
 
           const scoresPromises = entryIds.map(async (entryId: number) => {
             try {
-              const teamScore = await calculateTeamGameweekScore(entryId, currentGW);
-              return { entryId, score: teamScore.points.net_total };
+              let score: number;
+
+              if (status === 'in_progress' || status === 'upcoming') {
+                // K-137: Use FPL API for live/upcoming GWs
+                const liveResult = await calculateManagerLiveScore(entryId, currentGW, status);
+                score = liveResult.score;
+              } else {
+                // K-137: Use database for completed GWs
+                const teamScore = await calculateTeamGameweekScore(entryId, currentGW);
+                score = teamScore.points.net_total;
+              }
+
+              return { entryId, score };
             } catch (error: any) {
-              console.error(`[K-109 Phase 6] Error for ${entryId}:`, error.message);
+              console.error(`[K-137] Error for ${entryId}:`, error.message);
               return { entryId, score: 0 };
             }
           });
@@ -435,7 +448,7 @@ export async function GET(
             liveScores.set(entryId, score);
           });
 
-          console.log(`[K-109 Phase 6] Calculated ${liveScores.size} live scores`);
+          console.log(`[K-137] Calculated ${liveScores.size} scores from ${dataSource}`);
 
           // Update matches with live scores
           matchesWithLiveScores = allMatches.map((match: any) => {
@@ -463,7 +476,7 @@ export async function GET(
             return match;
           });
 
-          console.log(`Updated ${currentGWMatches.length} matches with live scores (including provisional bonus) for GW${currentGW}`);
+          console.log(`[K-137] Updated ${currentGWMatches.length} matches with scores from ${dataSource} for GW${currentGW}`);
         }
       } catch (error) {
         console.error('Error fetching live scores for rankings:', error);
