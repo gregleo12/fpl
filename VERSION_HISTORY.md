@@ -2,7 +2,56 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.11 (December 26, 2025)
+**Current Version:** v4.2.12 (December 26, 2025)
+
+---
+
+## v4.2.12 - K-131: Auto-Sync on New Gameweek (Dec 26, 2025)
+
+**Major UX Improvement:** Automatically detects when a new gameweek has started and triggers sync without user intervention. Eliminates "Failed to fetch team data" errors and wrong stats when new GW starts.
+
+### What Changed
+
+**New Endpoint:**
+- `/api/league/[id]/sync-status` - Checks if new GW has started by comparing FPL API current_event vs database max event
+
+**New Component:**
+- `SyncBanner` - Shows sync status ("Syncing GW18 data...") instead of error messages
+
+**Dashboard Changes:**
+- Auto-detects new gameweek on app load
+- Auto-triggers sync when new GW detected
+- Shows sync progress banner during sync
+- Polls sync completion (2s intervals, max 2 minutes)
+- Falls back to manual retry if sync fails
+
+### User Experience Improvements
+
+**Before:**
+- User opens app after GW18 starts
+- ❌ "Failed to fetch team data"
+- ❌ Wrong stats (TOTAL PTS = GW PTS)
+- ❌ Must manually go to Settings → Sync League
+
+**After:**
+- User opens app after GW18 starts
+- ✓ "Syncing GW18 data..." banner shows
+- ✓ Sync runs automatically in background
+- ✓ Data appears automatically once sync completes
+- ✓ No manual intervention needed
+
+### Technical Details:
+- Compares FPL API `current_event` with `MAX(event) FROM manager_gw_history`
+- Only triggers sync if `currentGW > lastSyncedGW` AND not already syncing
+- Prevents duplicate syncs with concurrent protection
+- Gracefully handles FPL API downtime (continues with normal flow)
+- 2-minute timeout with manual retry option
+
+### Files Modified: 3 new + 1 modified
+- `/src/app/api/league/[id]/sync-status/route.ts` - New endpoint
+- `/src/components/Dashboard/SyncBanner.tsx` - New component
+- `/src/components/Dashboard/SyncBanner.module.css` - New styles
+- `/src/app/dashboard/page.tsx` - Added auto-sync logic
 
 ---
 

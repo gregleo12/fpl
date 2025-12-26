@@ -8,6 +8,7 @@ import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useNewVersionBadge } from '@/hooks/useNewVersionBadge';
 import { PullToRefreshIndicator } from '@/components/PullToRefresh/PullToRefreshIndicator';
 import { NotificationBadge } from '@/components/NotificationBadge/NotificationBadge';
+import { SyncBanner } from '@/components/Dashboard/SyncBanner';
 import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
@@ -26,6 +27,12 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const showNewVersionBadge = useNewVersionBadge();
+
+  // K-131: Auto-sync state
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'failed'>('idle');
+  const [currentGW, setCurrentGW] = useState(0);
+  const [lastSyncedGW, setLastSyncedGW] = useState(0);
+  const [syncError, setSyncError] = useState('');
 
   // State for viewing other players
   const [viewingPlayerId, setViewingPlayerId] = useState<string | null>(null);
@@ -49,8 +56,106 @@ export default function DashboardPage() {
     }
 
     setState(savedState);
-    fetchAllData(savedState.leagueId, savedState.myTeamId);
+    // K-131: Check for new GW before fetching data
+    checkAndAutoSync(savedState.leagueId, savedState.myTeamId);
   }, [router]);
+
+  // K-131: Check for new gameweek and auto-trigger sync if needed
+  async function checkAndAutoSync(leagueId: string, playerId: string) {
+    try {
+      // Check sync status
+      const response = await fetch(`/api/league/${leagueId}/sync-status`);
+
+      if (!response.ok) {
+        console.warn('[K-131] Could not check sync status, continuing with normal flow');
+        fetchAllData(leagueId, playerId);
+        return;
+      }
+
+      const syncStatusData = await response.json();
+      const { needsSync, currentGW: gw, lastSyncedGW: lastGW, syncStatus: status } = syncStatusData;
+
+      setCurrentGW(gw);
+      setLastSyncedGW(lastGW);
+
+      if (needsSync && status !== 'syncing') {
+        console.log(`[K-131] New GW detected: ${gw} > ${lastGW}. Auto-triggering sync...`);
+        setSyncStatus('syncing');
+
+        // Trigger sync
+        const syncResponse = await fetch(`/api/league/${leagueId}/sync`, {
+          method: 'POST'
+        });
+
+        if (!syncResponse.ok) {
+          console.error('[K-131] Auto-sync failed');
+          setSyncStatus('failed');
+          setSyncError('Auto-sync failed. Please try manual sync in Settings.');
+          // Still try to fetch data
+          fetchAllData(leagueId, playerId);
+          return;
+        }
+
+        // Poll for sync completion
+        await pollSyncCompletion(leagueId);
+
+        setSyncStatus('idle');
+        fetchAllData(leagueId, playerId);
+      } else {
+        // No sync needed, proceed normally
+        fetchAllData(leagueId, playerId);
+      }
+    } catch (error) {
+      console.error('[K-131] Error in auto-sync check:', error);
+      // On error, proceed with normal flow
+      if (state) {
+        fetchAllData(state.leagueId, state.myTeamId);
+      }
+    }
+  }
+
+  // K-131: Poll sync endpoint until sync completes
+  async function pollSyncCompletion(leagueId: string, maxAttempts = 60) {
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+
+      try {
+        const response = await fetch(`/api/league/${leagueId}/sync`);
+        const data = await response.json();
+
+        if (data.status === 'completed' || data.status === 'idle') {
+          console.log('[K-131] Sync completed successfully');
+          return true;
+        }
+
+        if (data.status === 'failed') {
+          console.error('[K-131] Sync failed:', data.lastSyncError);
+          setSyncStatus('failed');
+          setSyncError(data.lastSyncError || 'Sync failed');
+          return false;
+        }
+
+        // Still syncing, continue polling
+      } catch (error) {
+        console.error('[K-131] Error polling sync status:', error);
+      }
+    }
+
+    // Timeout after maxAttempts
+    console.warn('[K-131] Sync polling timed out');
+    setSyncStatus('failed');
+    setSyncError('Sync timed out. Please refresh the page.');
+    return false;
+  }
+
+  // K-131: Manual retry function
+  function handleSyncRetry() {
+    if (state) {
+      setSyncStatus('idle');
+      setSyncError('');
+      checkAndAutoSync(state.leagueId, state.myTeamId);
+    }
+  }
 
   async function fetchAllData(leagueId: string, playerId: string, forceSync = false) {
     setIsLoading(true);
@@ -278,6 +383,17 @@ export default function DashboardPage() {
 
       <main className={styles.content}>
         {error && <div className={styles.error}>{error}</div>}
+
+        {/* K-131: Auto-sync banner */}
+        {syncStatus !== 'idle' && (
+          <SyncBanner
+            status={syncStatus}
+            currentGW={currentGW}
+            lastSyncedGW={lastSyncedGW}
+            errorMessage={syncError}
+            onRetry={syncStatus === 'failed' ? handleSyncRetry : undefined}
+          />
+        )}
 
         {activeTab === 'league' && (
           <LeagueTab
