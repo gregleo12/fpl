@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.0 (December 26, 2025)
+**Current Version:** v4.3.1 (December 26, 2025)
+
+---
+
+## v4.3.1 - K-127: Standardize Season Stats Card Headers (Dec 26, 2025)
+
+**UI Consistency:** Standardized all 9 Season Stats card headers to match the K-119 layout pattern.
+
+### What Changed
+
+**Goal:** All cards now have consistent header structure:
+- Row 1: Icon + Title on left, Toggle(s) on right
+- Row 2: Subtitle on its own line
+
+### Cards Updated
+
+**1. Captain Points**
+- ✅ Added toggle: `[Total]` | `[% of Total]`
+- ✅ Fixed header layout (subtitle on own line)
+- **Total view:** Ranked by raw captain points (primary), percentage shown secondary
+- **% view:** Ranked by percentage (primary), raw points shown secondary
+
+**2. Chips (renamed from "Chip Performance")**
+- ✅ Renamed title: "Chip Performance" → "Chips" (shorter, cleaner)
+- ✅ Fixed header layout (subtitle moved outside cardHeader div)
+- ✅ Toggle already correct: `[Played]` | `[Faced]`
+
+**3. GW Records**
+- ✅ Fixed header layout (subtitle moved outside cardHeader div)
+- ✅ Toggle already correct: `[Best]` | `[Worst]`
+- ✅ Dynamic subtitle based on view
+
+**4. Team Value**
+- ✅ Fixed header layout (subtitle uses .subtitle class)
+- ✅ Wrapped title in cardHeader div
+
+**5. Streaks** - Already correct ✅
+
+**6. Bench Points** - Already correct ✅ (K-119 reference card)
+
+**7. Form Rankings** - Already correct ✅ (K-119 reference card)
+
+**8. Consistency** - Already correct ✅ (K-119 reference card)
+
+**9. Luck Index** - Already correct ✅ (K-119 reference card)
+
+### Files Modified: 4
+- `/src/components/Stats/season/CaptainLeaderboard.tsx` - Added toggle, fixed layout
+- `/src/components/Stats/season/ChipPerformance.tsx` - Renamed to "Chips", fixed layout
+- `/src/components/Stats/season/BestWorstGW.tsx` - Fixed layout
+- `/src/components/Stats/season/ValueLeaderboard.tsx` - Fixed layout
+
+### Result
+All 9 Season Stats cards now have perfect header consistency.
 
 ---
 

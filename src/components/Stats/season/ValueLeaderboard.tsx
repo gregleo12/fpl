@@ -42,8 +42,10 @@ export function ValueLeaderboard({ data }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.card}>
-        <h4 className={styles.cardTitle}>📈 Team Value</h4>
-        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+        <div className={styles.cardHeader}>
+          <h4 className={styles.cardTitle}>📈 Team Value</h4>
+        </div>
+        <div className={styles.subtitle}>
           Total budget (squad + ITB)
         </div>
         <div className={styles.noData}>No data available</div>
@@ -57,8 +59,10 @@ export function ValueLeaderboard({ data }: Props) {
         className={`${styles.card} ${styles.clickable}`}
         onClick={() => setShowModal(true)}
       >
-        <h4 className={styles.cardTitle}>📈 Team Value</h4>
-        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+        <div className={styles.cardHeader}>
+          <h4 className={styles.cardTitle}>📈 Team Value</h4>
+        </div>
+        <div className={styles.subtitle}>
           Total budget (squad + ITB)
         </div>
 

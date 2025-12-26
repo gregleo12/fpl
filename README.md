@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.0** (December 26, 2025)
+**v4.3.1** (December 26, 2025)
 
-Data Integrity & Monthly Awards - Auto-sync, Season Stats accuracy, Team Value fix, and Awards improvements.
+Standardized Season Stats card headers - all 9 cards now have consistent layout with Captain Points toggle added.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

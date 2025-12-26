@@ -61,12 +61,7 @@ export function BestWorstGW({ bestData, worstData }: Props) {
     <>
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
-          <div>
-            <h4 className={styles.cardTitle}>{title}</h4>
-            <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '0.25rem' }}>
-              Best individual gameweek scores
-            </div>
-          </div>
+          <h4 className={styles.cardTitle}>{title}</h4>
           <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
             <button
               className={`${styles.toggleButton} ${view === 'best' ? styles.active : ''}`}
@@ -82,6 +77,10 @@ export function BestWorstGW({ bestData, worstData }: Props) {
             </button>
           </div>
         </div>
+        <div className={styles.subtitle}>
+          {view === 'best' ? 'Best individual gameweek scores' : 'Worst individual gameweek scores'}
+        </div>
+
         <div className={styles.list}>
           {data.slice(0, 3).map((item, index) => (
             <div key={`${item.entry_id}-${item.event}`}>

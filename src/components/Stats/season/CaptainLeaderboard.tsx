@@ -11,7 +11,13 @@ interface Props {
 }
 
 export function CaptainLeaderboard({ data }: Props) {
+  const [showTotal, setShowTotal] = useState(true); // K-127: Toggle for Total vs %
   const [showModal, setShowModal] = useState(false);
+
+  // K-127: Sort data based on toggle
+  const sortedData = showTotal
+    ? [...data].sort((a, b) => b.total_points - a.total_points)  // Rank by total captain points
+    : [...data].sort((a, b) => b.percentage - a.percentage);      // Rank by % of total
 
   // Render function for items (used by both card and modal)
   const renderItem = (item: CaptainLeaderboardData, index: number) => (
@@ -22,12 +28,27 @@ export function CaptainLeaderboard({ data }: Props) {
         <div className={styles.meta}>{item.team_name}</div>
       </div>
       <div className={styles.stats}>
-        <div className={styles.statValue}>
-          {item.total_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
-        </div>
-        <div className={styles.statLabel} style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-          {item.percentage}%
-        </div>
+        {showTotal ? (
+          // Show raw points (primary) + percentage (secondary)
+          <>
+            <div className={styles.statValue}>
+              {item.total_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+              {item.percentage}%
+            </div>
+          </>
+        ) : (
+          // Show percentage (primary) + raw points (secondary)
+          <>
+            <div className={styles.statValue}>
+              {item.percentage}%
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+              {item.total_points} PTS
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -35,10 +56,12 @@ export function CaptainLeaderboard({ data }: Props) {
   if (!data || data.length === 0) {
     return (
       <div className={styles.card}>
-        <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Star size={18} color="#00ff87" /> Captain Points
-        </h4>
-        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+        <div className={styles.cardHeader}>
+          <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Star size={18} color="#00ff87" /> Captain Points
+          </h4>
+        </div>
+        <div className={styles.subtitle}>
           Total points from captain picks
         </div>
         <div className={styles.noData}>No data available</div>
@@ -46,20 +69,41 @@ export function CaptainLeaderboard({ data }: Props) {
     );
   }
 
+  const title = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <Star size={18} color="#00ff87" /> Captain Points
+    </div>
+  );
+
   return (
     <>
       <div
         className={`${styles.card} ${styles.clickable}`}
         onClick={() => setShowModal(true)}
       >
-        <h4 className={styles.cardTitle} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Star size={18} color="#00ff87" /> Captain Points
-        </h4>
-        <div style={{ fontSize: '0.8125rem', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '1rem' }}>
+        <div className={styles.cardHeader}>
+          <h4 className={styles.cardTitle}>{title}</h4>
+          <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`${styles.toggleButton} ${showTotal ? styles.active : ''}`}
+              onClick={() => setShowTotal(true)}
+            >
+              Total
+            </button>
+            <button
+              className={`${styles.toggleButton} ${!showTotal ? styles.active : ''}`}
+              onClick={() => setShowTotal(false)}
+            >
+              % of Total
+            </button>
+          </div>
+        </div>
+        <div className={styles.subtitle}>
           Total points from captain picks
         </div>
+
         <div className={styles.list}>
-          {data.slice(0, 3).map((item, index) => (
+          {sortedData.slice(0, 3).map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>
@@ -73,7 +117,7 @@ export function CaptainLeaderboard({ data }: Props) {
         onClose={() => setShowModal(false)}
         title="Captain Points - Full Rankings"
         icon={<Star size={18} color="#00ff87" />}
-        data={data}
+        data={sortedData}
         renderItem={renderItem}
       />
     </>
