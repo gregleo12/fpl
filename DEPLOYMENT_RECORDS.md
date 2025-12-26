@@ -1,8 +1,75 @@
+## v4.2.1-v4.2.4 Production Bundle Deployment
+
+**Date:** December 26, 2025
+**Environment:** Production (rivalfpl.com)
+**Status:** ✅ Deployed Successfully
+
+### Bundle Contents
+- **v4.2.4:** Fixed duplicate players in My Team view (K-120)
+- **v4.2.3:** Simplified Chip Performance display (K-123)
+- **v4.2.2:** Season Stats UI improvements - toggles and layout enhancements (K-122)
+- **v4.2.1:** Fixed Luck Index calculation bug (K-121)
+
+### Key Fixes & Features
+
+**K-120: Duplicate Players Bug Fix**
+- 37 managers in multiple leagues had 2x-6x duplicate player cards
+- Root cause: API query returned picks from ALL leagues (no league_id filter)
+- Fix: Added `DISTINCT ON (position, player_id)` to deduplicate at query level
+- File: `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`
+
+**K-123: Chip Performance Simplification**
+- Replaced cluttered chip list with Won/Drew/Lost summary
+- Single-line display with color coding (green/red)
+- Only shows categories with count > 0
+
+**K-122: Season Stats UI Improvements**
+- Bench Points: Added percentage calculation with Total/% toggle
+- Form Rankings: Added Last 5/Last 10 toggle with separate trends
+- Consistency: Restructured layout (variance primary, average secondary)
+
+**K-121: Luck Index Fix**
+- Fixed inflated values (+1200+) by filtering to completed GWs only
+- Now shows correct range (-106 to +72) summing to ~0
+
+### Files Modified (Total: 12 files)
+**API Routes:**
+- `/src/app/api/league/[id]/stats/season/route.ts` - K-121, K-122, K-123 backend logic
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - K-120 duplicate fix
+
+**Components:**
+- `/src/components/Stats/season/LuckIndex.tsx` - K-121 UI improvements
+- `/src/components/Stats/season/BenchPoints.tsx` - K-122 Total/% toggle
+- `/src/components/Stats/season/FormRankings.tsx` - K-122 Last 5/10 toggle
+- `/src/components/Stats/season/Consistency.tsx` - K-122 layout restructure
+- `/src/components/Stats/season/ChipPerformance.tsx` - K-123 Won/Drew/Lost display
+
+**Documentation:**
+- VERSION_HISTORY.md - 4 new version entries
+- README.md - Version number updated to v4.2.4
+- DEPLOYMENT_RECORDS.md - This entry
+
+### Deployment Stats
+- **Total files changed:** 12 files
+- **Lines added:** ~667
+- **Lines removed:** ~194
+- **TypeScript errors fixed:** 1 (implicit 'any' type in chip filter)
+
+### Production Verification Completed ✅
+- [x] v4.2.4: Manager 1455599 shows 15 players (not 30) - duplicate fix working
+- [x] v4.2.3: Chip Performance shows "Won X  Lost Y" format - clean single-line display
+- [x] v4.2.2: All 3 toggles functional (Bench %, Form 5/10, Consistency layout)
+- [x] v4.2.1: Luck Index shows correct values (-106 to +72 range)
+- [x] Build successful with no errors
+- [x] All Season Stats cards rendering correctly
+
+---
+
 ## v4.2.4 Staging Deployment
 
 **Date:** December 26, 2025
 **Environment:** Staging (fpl-staging-production.up.railway.app)
-**Status:** ✅ Deployed to Staging
+**Status:** ✅ Deployed to Staging → ✅ Promoted to Production (see above)
 
 ### Deployed Bug Fix
 - K-120: Fixed duplicate players in My Team view
