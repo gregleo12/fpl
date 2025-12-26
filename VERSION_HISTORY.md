@@ -1,8 +1,57 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 298+ versions
-**Current Version:** v4.2.2 (December 26, 2025)
+**Total Releases:** 299+ versions
+**Current Version:** v4.2.3 (December 26, 2025)
+
+---
+
+## v4.2.3 - K-123: Simplify Chip Performance Display (Dec 26, 2025)
+
+**Enhancement:** Replaced cluttered chip list with clean Won/Drew/Lost summary for better readability as more chips get played.
+
+### Problem
+
+As managers play more chips throughout the season, the Chip Performance card becomes difficult to read:
+- Previous: `WC (GW6), BB (GW8), FH (GW13), TC (GW17)` → wraps to multiple lines
+- Hard to quickly scan win/loss record
+
+### Solution
+
+Replaced chip list with simple Won/Drew/Lost summary:
+- **New display**: `Won 3  Lost 1` (single line, easy to read)
+- Green (#00ff87) for Won
+- Grey/White (neutral) for Drew
+- Red (#ff4444) for Lost
+- Only shows categories with count > 0
+
+### Implementation
+
+**Backend Changes (`/src/app/api/league/[id]/stats/season/route.ts`):**
+- Added `chips_won`, `chips_drew`, `chips_lost` counts for chips played
+- Added `chips_faced_won`, `chips_faced_drew`, `chips_faced_lost` counts for chips faced
+- Calculates win/draw/loss by filtering chip results already stored in database
+- Updated both main function and fallback API function
+
+**Frontend Changes (`/src/components/Stats/season/ChipPerformance.tsx`):**
+- Replaced chip list rendering with Won/Drew/Lost summary
+- Conditional display: only show categories that are > 0
+- Color-coded: Won (green), Drew (neutral), Lost (red)
+- Works for both "Played" and "Faced" views
+
+### Display Logic
+
+Only shows non-zero categories:
+- Won 4 → `Won 4`
+- Lost 4 → `Lost 4`
+- Won 2, Lost 2 → `Won 2  Lost 2`
+- Won 2, Drew 1, Lost 1 → `Won 2  Drew 1  Lost 1`
+- Won 3, Drew 1 → `Won 3  Drew 1`
+
+### Related
+
+**K-123:** Simplify Chip Performance display ticket
+**Part of:** Season Stats improvements
 
 ---
 

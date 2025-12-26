@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.2** (December 26, 2025)
+**v4.2.3** (December 26, 2025)
 
-Season Stats UI improvements: Bench Points with percentage toggle, Form Rankings with Last 5/10 toggle, improved Consistency layout.
+Simplified Chip Performance display: Replaced chip list with clean Won/Drew/Lost summary for better readability.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

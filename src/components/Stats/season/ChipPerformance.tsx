@@ -10,6 +10,9 @@ export interface ChipPerformanceData {
     player_name: string;
     team_name: string;
     chip_count: number;
+    chips_won: number;
+    chips_drew: number;
+    chips_lost: number;
     chips_detail: string;
     chips_played_data?: Array<{chip: string, gw: number, result: string}>;
   }>;
@@ -18,6 +21,9 @@ export interface ChipPerformanceData {
     player_name: string;
     team_name: string;
     chips_faced_count: number;
+    chips_faced_won: number;
+    chips_faced_drew: number;
+    chips_faced_lost: number;
     chips_faced_detail: string;
     chips_faced_data?: Array<{chip: string, gw: number, result: string}>;
   }>;
@@ -36,34 +42,43 @@ export function ChipPerformance({ data }: Props) {
 
   // Render function for items (used by both card and modal)
   const renderItem = (manager: any, index: number) => {
-    // Render chips played with color coding
-    const renderChipsPlayed = () => {
-      if (!manager.chips_played_data || manager.chips_played_data.length === 0) {
-        return manager.chips_detail;
+    // Render Won/Drew/Lost summary
+    const renderWinLossSummary = () => {
+      const won = view === 'played' ? manager.chips_won : manager.chips_faced_won;
+      const drew = view === 'played' ? manager.chips_drew : manager.chips_faced_drew;
+      const lost = view === 'played' ? manager.chips_lost : manager.chips_faced_lost;
+
+      const parts: JSX.Element[] = [];
+
+      if (won > 0) {
+        parts.push(
+          <span key="won" style={{ color: '#00ff87', fontWeight: 600 }}>
+            Won {won}
+          </span>
+        );
       }
 
-      return manager.chips_played_data.map((chip: any, idx: number) => (
-        <span key={idx}>
-          <span className={chip.result === 'W' ? styles.chipWin : chip.result === 'L' ? styles.chipLoss : ''}>
-            {chip.chip} (GW{chip.gw})
+      if (drew > 0) {
+        parts.push(
+          <span key="drew" style={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600 }}>
+            Drew {drew}
           </span>
-          {idx < manager.chips_played_data.length - 1 && ', '}
-        </span>
-      ));
-    };
-
-    // Render chips faced with color coding
-    const renderChipsFaced = () => {
-      if (!manager.chips_faced_data || manager.chips_faced_data.length === 0) {
-        return manager.chips_faced_detail;
+        );
       }
 
-      return manager.chips_faced_data.map((chip: any, idx: number) => (
-        <span key={idx}>
-          <span className={chip.result === 'W' ? styles.chipWin : chip.result === 'L' ? styles.chipLoss : ''}>
-            {chip.chip} (GW{chip.gw})
+      if (lost > 0) {
+        parts.push(
+          <span key="lost" style={{ color: '#ff4444', fontWeight: 600 }}>
+            Lost {lost}
           </span>
-          {idx < manager.chips_faced_data.length - 1 && ', '}
+        );
+      }
+
+      // Join parts with spacing
+      return parts.map((part, idx) => (
+        <span key={idx}>
+          {part}
+          {idx < parts.length - 1 && '  '}
         </span>
       ));
     };
@@ -75,7 +90,7 @@ export function ChipPerformance({ data }: Props) {
           <div className={styles.name}>{manager.player_name}</div>
           <div className={styles.meta}>{manager.team_name}</div>
           <div className={styles.chips}>
-            {view === 'played' ? renderChipsPlayed() : renderChipsFaced()}
+            {renderWinLossSummary()}
           </div>
         </div>
         <div className={styles.stats}>

@@ -458,13 +458,21 @@ async function calculateChipPerformance(
       const chips = chipsByManager.get(Number(manager.entry_id)) || [];
       const sortedChips = [...chips].sort((a, b) => a.event - b.event);
 
+      // Calculate Won/Drew/Lost counts
+      const chips_won = chips.filter((c: any) => c.result === 'W').length;
+      const chips_drew = chips.filter((c: any) => c.result === 'D').length;
+      const chips_lost = chips.filter((c: any) => c.result === 'L').length;
+
       return {
         entry_id: manager.entry_id,
         player_name: manager.player_name,
         team_name: manager.team_name,
         chip_count: chips.length,
-        chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
-        chips_played_data: sortedChips.map(c => ({
+        chips_won,
+        chips_drew,
+        chips_lost,
+        chips_detail: sortedChips.map((c: any) => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
+        chips_played_data: sortedChips.map((c: any) => ({
           chip: CHIP_NAMES[c.name] || c.name,
           gw: c.event,
           result: c.result
@@ -546,12 +554,20 @@ async function calculateChipPerformance(
       const chips = chipsFacedByManager.get(manager.entry_id) || [];
       const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
 
+      // Calculate Won/Drew/Lost counts
+      const chips_faced_won = chips.filter((c: any) => c.result === 'W').length;
+      const chips_faced_drew = chips.filter((c: any) => c.result === 'D').length;
+      const chips_faced_lost = chips.filter((c: any) => c.result === 'L').length;
+
       return {
         entry_id: manager.entry_id,
         player_name: manager.player_name,
         team_name: manager.team_name,
         chips_faced_count: chips.length,
-        chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
+        chips_faced_won,
+        chips_faced_drew,
+        chips_faced_lost,
+        chips_faced_detail: sortedChips.map((c: any) => `${c.chip} (GW${c.gw})`).join(', '),
         chips_faced_data: sortedChips
       };
     });
@@ -666,11 +682,20 @@ async function calculateChipPerformanceFromAPI(
     const chipsPlayed = managerChips
       .map(({ manager, chips }) => {
         const sortedChips = [...chips].sort((a, b) => a.event - b.event);
+
+        // Calculate Won/Drew/Lost counts
+        const chips_won = chips.filter((c: any) => c.result === 'W').length;
+        const chips_drew = chips.filter((c: any) => c.result === 'D').length;
+        const chips_lost = chips.filter((c: any) => c.result === 'L').length;
+
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
           chip_count: chips.length,
+          chips_won,
+          chips_drew,
+          chips_lost,
           chips_detail: sortedChips.map(c => `${CHIP_NAMES[c.name] || c.name} (GW${c.event})`).join(', '),
           chips_played_data: sortedChips.map(c => ({
             chip: CHIP_NAMES[c.name] || c.name,
@@ -716,12 +741,20 @@ async function calculateChipPerformanceFromAPI(
         const chips = chipsFacedByManager.get(manager.entry_id) || [];
         const sortedChips = [...chips].sort((a, b) => a.gw - b.gw);
 
+        // Calculate Won/Drew/Lost counts
+        const chips_faced_won = chips.filter((c: any) => c.result === 'W').length;
+        const chips_faced_drew = chips.filter((c: any) => c.result === 'D').length;
+        const chips_faced_lost = chips.filter((c: any) => c.result === 'L').length;
+
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
           chips_faced_count: chips.length,
-          chips_faced_detail: sortedChips.map(c => `${c.chip} (GW${c.gw})`).join(', '),
+          chips_faced_won,
+          chips_faced_drew,
+          chips_faced_lost,
+          chips_faced_detail: sortedChips.map((c: any) => `${c.chip} (GW${c.gw})`).join(', '),
           chips_faced_data: sortedChips
         };
       })
