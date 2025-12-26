@@ -2,7 +2,31 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.13 (December 26, 2025)
+**Current Version:** v4.2.14 (December 26, 2025)
+
+---
+
+## v4.2.14 - HOTFIX: Fix Awards Month Year Bug (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed Monthly Awards showing "GW 0-0" for all months. Season year was hardcoded to 2024 but database has 2025 fixtures.
+
+### What Changed
+
+**Root Cause:**
+- Awards endpoint queried for December **2024** fixtures
+- Database has December **2025** fixtures (current season)
+- Query returned 0 rows → "GW 0-0" displayed
+
+**The Fix:**
+- Changed `seasonStartYear` from 2024 to 2025 in `/src/app/api/league/[id]/stats/awards/[month]/route.ts`
+- Updated comments to reflect 2025-2026 season
+
+**Result:**
+- December now correctly shows GW 14-17
+- All other months now query correct year
+
+### Files Modified: 1
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Updated season year to 2025
 
 ---
 

@@ -20,21 +20,21 @@ function getMonthName(monthIndex: number): string {
   return months[monthIndex] || months[0];
 }
 
-// Helper to get calendar month and year from month index (0 = August 2024, etc.)
+// Helper to get calendar month and year from month index (0 = August 2025, etc.)
 function getCalendarMonth(monthIndex: number): { month: number; year: number } {
-  // Assuming season starts August 2024
-  // Aug=8/2024, Sep=9/2024, Oct=10/2024, Nov=11/2024, Dec=12/2024,
-  // Jan=1/2025, Feb=2/2025, Mar=3/2025, Apr/May=4-5/2025
-  const seasonStartYear = 2024;
+  // Assuming season starts August 2025
+  // Aug=8/2025, Sep=9/2025, Oct=10/2025, Nov=11/2025, Dec=12/2025,
+  // Jan=1/2026, Feb=2/2026, Mar=3/2026, Apr/May=4-5/2026
+  const seasonStartYear = 2025;
 
   if (monthIndex <= 4) {
-    // August - December 2024
+    // August - December 2025
     return { month: monthIndex + 8, year: seasonStartYear };
   } else if (monthIndex === 8) {
     // April/May - use April
     return { month: 4, year: seasonStartYear + 1 };
   } else {
-    // January - March 2025
+    // January - March 2026
     return { month: monthIndex - 4, year: seasonStartYear + 1 };
   }
 }

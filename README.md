@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.13** (December 26, 2025)
+**v4.2.14** (December 26, 2025)
 
-Fixed Team Value calculation - was showing £105.3m (total value) instead of £103.3m (squad value only).
+HOTFIX: Fixed Monthly Awards showing "GW 0-0" - season year was hardcoded to 2024 but database has 2025 fixtures.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
