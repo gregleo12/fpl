@@ -1,3 +1,32 @@
+## v4.2.4 Staging Deployment
+
+**Date:** December 26, 2025
+**Environment:** Staging (fpl-staging-production.up.railway.app)
+**Status:** ✅ Deployed to Staging
+
+### Deployed Bug Fix
+- K-120: Fixed duplicate players in My Team view
+- Managers in multiple leagues had 2x-6x duplicate player cards
+- 37 managers affected across various leagues
+- Added DISTINCT ON (position, player_id) to deduplicate query
+
+### Root Cause
+- manager_picks table stores picks per league (league_id in unique constraint)
+- API query didn't filter by league_id → returned picks from ALL leagues
+- Manager in 2 leagues = 30 picks instead of 15 → each player shown twice
+
+### File Modified
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - Added DISTINCT ON to query
+
+### Verification Required
+- [ ] Manager 1455599 GW17 shows 15 players (not 30)
+- [ ] Other managers in multiple leagues show correct picks
+- [ ] Pitch layout displays correctly (no duplicates)
+
+**Next Step:** After staging verification, deploy to production
+
+---
+
 ## v4.2.3 Staging Deployment
 
 **Date:** December 26, 2025
