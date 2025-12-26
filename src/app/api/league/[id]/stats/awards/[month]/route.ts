@@ -63,25 +63,6 @@ export async function GET(
     const managers = managersResult.rows;
     console.log('Found managers:', managers.length);
 
-    // TEMPORARY: Return with all null awards to test endpoint
-    console.log('Returning response with null awards (test mode)');
-    return NextResponse.json({
-      month: monthIndex,
-      monthName,
-      startGW,
-      endGW,
-      awards: [
-        { category: 'top_scorer', winner: null },
-        { category: 'best_form', winner: null },
-        { category: 'most_consistent', winner: null },
-        { category: 'luckiest', winner: null },
-        { category: 'best_bench', winner: null },
-        { category: 'chip_master', winner: null },
-        { category: 'captain_king', winner: null },
-        { category: 'longest_streak', winner: null }
-      ]
-    });
-
     if (managers.length === 0) {
       return NextResponse.json({
         month: monthIndex,
