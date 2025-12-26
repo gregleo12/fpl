@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.3** (December 26, 2025)
+**v4.2.4** (December 26, 2025)
 
-Simplified Chip Performance display: Replaced chip list with clean Won/Drew/Lost summary for better readability.
+Fixed duplicate players bug in My Team view for managers in multiple leagues.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

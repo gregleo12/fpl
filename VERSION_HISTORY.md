@@ -1,8 +1,70 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 299+ versions
-**Current Version:** v4.2.3 (December 26, 2025)
+**Total Releases:** 300+ versions
+**Current Version:** v4.2.4 (December 26, 2025)
+
+---
+
+## v4.2.4 - K-120: Fix Duplicate Players in My Team View (Dec 26, 2025)
+
+**Bug Fix:** Fixed duplicate player cards appearing in My Team pitch view for managers in multiple leagues.
+
+### Problem
+
+Managers in multiple leagues saw every player appearing twice (or more) in My Team view:
+- Each player card rendered 2x, 3x, or even 6x depending on number of leagues
+- Affected 37 managers with duplicate picks in database
+- Example: Manager 1455599 had 30 picks instead of 15 (in 2 leagues)
+
+### Root Cause
+
+**Database Structure:**
+- `manager_picks` table stores picks with composite unique key: `(league_id, entry_id, event, player_id)`
+- When a manager is in multiple leagues, their picks are stored once per league
+- Manager 1455599 was in 2 leagues (804742 and 954350) → 15 picks × 2 = 30 rows
+
+**API Query Bug:**
+- `/api/team/[teamId]/gameweek/[gw]` query didn't filter by `league_id`
+- Query: `WHERE entry_id = $1 AND event = $2` → returned ALL picks across ALL leagues
+- Result: Duplicate player cards rendered on pitch
+
+### Fix Applied
+
+Added `DISTINCT ON (position, player_id)` to the query to deduplicate picks:
+
+```sql
+-- Before (returned 30 rows for manager in 2 leagues)
+SELECT player_id, position, multiplier, is_captain, is_vice_captain
+FROM manager_picks
+WHERE entry_id = $1 AND event = $2
+ORDER BY position
+
+-- After (returns 15 unique picks)
+SELECT DISTINCT ON (position, player_id)
+  player_id, position, multiplier, is_captain, is_vice_captain
+FROM manager_picks
+WHERE entry_id = $1 AND event = $2
+ORDER BY position, player_id
+```
+
+### Why This Works
+
+- Manager's picks are identical across all leagues (same team)
+- `DISTINCT ON (position, player_id)` returns only first occurrence of each player/position combo
+- Maintains correct pitch layout (ordered by position)
+- No data loss - picks are identical across leagues
+
+### Affected Scope
+
+- **37 managers** had duplicate picks in GW17
+- Duplication levels: 2x (30 picks), 3x (45 picks), 4x (60 picks), 6x (90 picks)
+- All automatically fixed by query change - no database cleanup needed
+
+### Related
+
+**K-120:** Duplicate players bug investigation ticket
+**Reported by:** User Sorivan (Manager ID: 1455599)
 
 ---
 

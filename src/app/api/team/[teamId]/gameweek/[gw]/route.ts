@@ -35,11 +35,14 @@ export async function GET(
     const db = await getDatabase();
 
     // Get manager picks from database
+    // K-120: Use DISTINCT ON to handle managers in multiple leagues
+    // (same picks stored multiple times with different league_ids)
     const picksResult = await db.query(
-      `SELECT player_id, position, multiplier, is_captain, is_vice_captain
+      `SELECT DISTINCT ON (position, player_id)
+         player_id, position, multiplier, is_captain, is_vice_captain
        FROM manager_picks
        WHERE entry_id = $1 AND event = $2
-       ORDER BY position`,
+       ORDER BY position, player_id`,
       [entryId, gameweek]
     );
 
