@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.6** (December 26, 2025)
+**v4.3.7** (December 26, 2025)
 
-Fix: Live Rankings toggle now shows real-time projected standings instead of 0-0 (same K-136 bug as other live views).
+Fix: Notification badges now only show when changelog has new entry, not for every patch version.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

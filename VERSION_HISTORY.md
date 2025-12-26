@@ -2,7 +2,82 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.6 (December 26, 2025)
+**Current Version:** v4.3.7 (December 26, 2025)
+
+---
+
+## v4.3.7 - Fix Notification Badges to Only Show for New Changelog Entries (Dec 26, 2025)
+
+**Bug Fix:** Fixed notification red dots showing for every version bump instead of only when changelog has new entry.
+
+### The Bug
+
+Red notification dots appeared on Settings tab for every patch version (4.3.5 → 4.3.6), but:
+- Changelog only has entries for minor versions (4.3.0, 4.2.0, etc.)
+- Users saw red dot but "What's New" showed nothing new
+- Confusing UX - badge for no new content
+
+### Root Cause
+
+The notification badge logic compared `package.json` version (4.3.6) with `lastSeenVersion` in localStorage. It showed the badge whenever the version changed, even for patch versions that don't have changelog entries.
+
+**Flow:**
+1. Deploy v4.3.6 (patch fix, no changelog entry)
+2. User's `lastSeenVersion` = "4.3.5"
+3. Badge appears because "4.3.5" !== "4.3.6"
+4. User clicks "What's New"
+5. Sees only 4.3.0 entry (no 4.3.6 entry)
+6. Badge dismissed but no new info shown
+
+### The Fix
+
+Changed notification logic to check changelog instead of package version:
+
+**1. useNewVersionBadge hook:**
+```typescript
+// Before: Fetched /api/version (package.json version)
+// After: Fetches /changelog.json and gets first entry version
+const latestChangelogVersion = changelog[0]?.version; // e.g., "4.3.0"
+```
+
+**2. Updates page:**
+```typescript
+// Marks lastSeenChangelog when visiting What's New
+localStorage.setItem('lastSeenChangelog', changelog[0]?.version);
+```
+
+**3. VersionToast:**
+```typescript
+// Toast only shows when new changelog entry exists
+// Displays changelog version (4.3.0) not package version (4.3.7)
+```
+
+### Files Modified
+
+1. `/src/hooks/useNewVersionBadge.ts`
+   - Fetches `/changelog.json` instead of `/api/version`
+   - Compares `lastSeenChangelog` instead of `lastSeenVersion`
+   - Only shows badge when changelog has new entry
+
+2. `/src/app/updates/page.tsx`
+   - Stores `lastSeenChangelog` from first changelog entry
+   - Maintains backwards compatibility with `lastSeenVersion`
+
+3. `/src/components/Layout/VersionToast.tsx`
+   - Updated to use changelog instead of package version
+   - Toast shows for new changelog entries only
+
+### Impact
+
+Notification badges now work correctly:
+- ✅ Red dot only shows when changelog has new entry (4.3.0 → 4.4.0)
+- ✅ No red dot for patch versions (4.3.1-4.3.7) without changelog
+- ✅ Settings and "What's New" dots always synchronized
+- ✅ Toast notification aligned with badge behavior
+- ✅ No misleading notifications
+
+**Before:** Badge on every patch → user sees no new content → confusion
+**After:** Badge only when real content → user sees new info → clear UX
 
 ---
 
