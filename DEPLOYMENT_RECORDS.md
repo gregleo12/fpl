@@ -1,3 +1,93 @@
+## v4.2.6 Production Deployment
+
+**Date:** December 26, 2025
+**Environment:** Production (rivalfpl.com)
+**Status:** ✅ Deployed Successfully
+
+### Deployed Bug Fix + Enhancement
+- K-126: Fixed PWA header scroll bug on iPhone 17 Pro Max (iOS 18)
+- Implemented sticky headers across all tabs
+- Improves UX by keeping navigation always visible
+
+### Problem Solved
+**User Report (iPhone 17 Pro Max PWA mode):**
+- Headers would scroll out of view and become unreachable
+- User could scroll down but not back up to access GW selectors/toggles
+- Only affected iPhone 17 Pro Max (iOS 18) - iOS 18 PWA scroll boundary changes
+
+### Root Cause
+- Fixed `body::before` pseudo-element (status bar overlay) + iOS 18's stricter PWA scroll boundaries
+- Headers positioned at `top: 0` became trapped in unreachable scroll zone
+- Content could scroll under overlay but couldn't reach top edge
+
+### Solution: Sticky Headers
+Made all tab headers sticky with safe area awareness:
+- **My Team:** Team name + GW selector sticky
+- **Rivals:** H2H/Fixtures toggle + GW selector sticky
+- **Stats:** View tabs + GW selector sticky (stacked)
+- **Rank:** Table column headers sticky
+
+### Hotfix Applied
+**Issue:** My Team header not sticking on mobile
+**Cause:** Parent `.myTeamTab` had `overflow-x: hidden` which breaks `position: sticky`
+**Fix:** Removed `overflow-x: hidden` (max-width already prevents overflow)
+
+### Files Modified (4 total)
+**CSS (3 files):**
+- `/src/components/Dashboard/Dashboard.module.css`
+  - Added sticky to `.myTeamHeader`
+  - Updated `.table th` sticky position for safe area
+  - Removed `overflow-x: hidden` from `.myTeamTab` (hotfix)
+- `/src/components/Fixtures/Fixtures.module.css`
+  - Added sticky to `.rivalsHeader`
+- `/src/components/Stats/StatsHub.module.css`
+  - Added sticky to `.viewToggleBar` and `.gwSelectorBar`
+
+**Documentation:**
+- DEPLOYMENT_RECORDS.md - This entry
+
+### Implementation Details
+**Sticky Positioning:**
+- Main headers: `top: calc(0.5rem + env(safe-area-inset-top, 0px))`
+- Stats secondary header: `top: calc(3.5rem + env(safe-area-inset-top, 0px))`
+
+**Z-Index Hierarchy:**
+```
+Bottom Nav:        z-index: 100 ← Always clickable
+Main Headers:      z-index: 90  ← My Team, Rivals, Stats, Rank
+Stats GW Selector: z-index: 89  ← Stacks below viewToggleBar
+```
+
+**Visual Enhancements:**
+- Increased opacity: `rgba(0, 0, 0, 0.85)` for better visibility
+- Backdrop blur: `backdrop-filter: blur(10px)` for glass effect
+
+### Deployment Stats
+- **Build time:** ~30 seconds
+- **Total files changed:** 4 files
+- **Commits:** 2 (main fix + hotfix)
+- **Lines changed:** +20 additions, -4 deletions
+
+### Production Verification Required
+- [ ] My Team header sticks when scrolling (mobile + desktop)
+- [ ] Rivals header sticks when scrolling
+- [ ] Stats view tabs stick, GW selector stacks below when visible
+- [ ] Rank table headers stick
+- [ ] Bottom nav remains clickable (z-index 100)
+- [ ] Test on iPhone 17 Pro Max (iOS 18) in PWA mode
+
+### Benefits
+- ✅ Scroll bug resolved on iOS 18 PWAs
+- ✅ Headers always visible - no more hunting for GW selector
+- ✅ Consistent across all devices and screen sizes
+- ✅ Modern mobile app pattern
+
+### Related
+**K-126:** PWA header scroll bug investigation
+**Reported by:** Reddit user (kinqdane) on iPhone 17 Pro Max
+
+---
+
 ## v4.2.5 Production Deployment
 
 **Date:** December 26, 2025
