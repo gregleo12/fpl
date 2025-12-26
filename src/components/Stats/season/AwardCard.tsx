@@ -76,6 +76,21 @@ function getAwardTitle(category: string): string {
 }
 
 export function AwardCard({ award }: Props) {
+  // K-134: Dynamic labels for consistency (High/Low instead of Best/Worst)
+  const getBestLabel = () => {
+    if (award.category === 'consistency') {
+      return '📊 HIGH';
+    }
+    return '👑 BEST';
+  };
+
+  const getWorstLabel = () => {
+    if (award.category === 'consistency') {
+      return '📈 LOW';
+    }
+    return '😅 WORST';
+  };
+
   return (
     <div className={styles.card}>
       {/* Icon and Title */}
@@ -91,7 +106,7 @@ export function AwardCard({ award }: Props) {
         {/* Best Winner */}
         <div className={styles.winnerColumn}>
           <div className={styles.winnerLabel}>
-            <span className={styles.bestLabel}>👑 BEST</span>
+            <span className={styles.bestLabel}>{getBestLabel()}</span>
           </div>
           {award.best ? (
             <div className={styles.winnerInfo}>
@@ -117,7 +132,7 @@ export function AwardCard({ award }: Props) {
         {/* Worst Winner */}
         <div className={styles.winnerColumn}>
           <div className={styles.winnerLabel}>
-            <span className={styles.worstLabel}>😅 WORST</span>
+            <span className={styles.worstLabel}>{getWorstLabel()}</span>
           </div>
           {award.worst ? (
             <div className={styles.winnerInfo}>

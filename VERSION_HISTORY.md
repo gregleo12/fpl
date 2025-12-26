@@ -2,7 +2,61 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.15 (December 26, 2025)
+**Current Version:** v4.2.16 (December 26, 2025)
+
+---
+
+## v4.2.16 - K-134: Monthly Awards Fixes (Dec 26, 2025)
+
+**Bug Fixes & UI Improvements:** Fixed Consistency labels, Luck Index calculation, Captain Points multiplier, and Bench Points display for Monthly Awards.
+
+### What Changed
+
+**1. Consistency Labels (UI Fix)**
+- **Before:** "👑 BEST" / "😅 WORST" (misleading - neither is inherently good/bad)
+- **After:** "📊 HIGH" / "📈 LOW" (neutral labels)
+- **Why:** High consistency = reliable, Low consistency = variable/differential potential
+
+**2. Luck Index (Bug Fix)**
+- **Before:** Showed "No data available" despite data existing
+- **Root Cause:** Only calculated luck for `entry_1` managers, missing `entry_2`
+- **Fix:** Added UNION to calculate luck for both sides of H2H matches
+- **Result:** Now shows luckiest/unluckiest managers correctly
+
+**3. Captain Points (Bug Fix)**
+- **Before:** Used raw points (`SUM(pgs.total_points)`)
+- **After:** Uses multiplied points (`SUM(pgs.total_points * mp.multiplier)`)
+- **Impact:** Properly accounts for 2x captain / 3x triple captain
+- **Example:** Salah 10pts as TC now correctly shows 30pts captain contribution
+
+**4. Bench Points (UI Improvement)**
+- **Before:** "8.7%" (only percentage)
+- **After:** "87 PTS (8.7%)" (raw points with percentage)
+- **Why:** Raw points more meaningful than percentage alone
+
+### SQL Changes
+
+**Luck Index (lines 308-365):**
+```sql
+-- Added UNION ALL to calculate for both entry_1 AND entry_2
+-- Then aggregated total luck across all matches
+```
+
+**Captain Points (line 391):**
+```sql
+-- Before: SUM(pgs.total_points)
+-- After:  SUM(pgs.total_points * mp.multiplier)
+```
+
+**Bench Points (line 447):**
+```sql
+-- Before: '8.7%'
+-- After:  '87 PTS (8.7%)'
+```
+
+### Files Modified: 2
+- `/src/components/Stats/season/AwardCard.tsx` - Dynamic labels for Consistency
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Luck, Captain, Bench fixes
 
 ---
 

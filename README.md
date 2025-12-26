@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.15** (December 26, 2025)
+**v4.2.16** (December 26, 2025)
 
-Season Stats now only use completed gameweeks - excludes live/in-progress GWs for stable rankings.
+Monthly Awards fixes - Consistency labels, Luck Index calculation, Captain multiplier, and Bench Points display.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -306,6 +306,7 @@ async function calculateLuck(
         GROUP BY entry_id
       ),
       luck_calc AS (
+        -- K-134: Calculate luck for entry_1 managers
         SELECT
           h.entry_1 as entry_id,
           m.player_name,
@@ -321,18 +322,47 @@ async function calculateLuck(
         WHERE h.league_id = $3
           AND h.event = ANY($2)
         GROUP BY h.entry_1, m.player_name, m.team_name
+
+        UNION ALL
+
+        -- K-134: Calculate luck for entry_2 managers
+        SELECT
+          h.entry_2 as entry_id,
+          m.player_name,
+          m.team_name,
+          ROUND(SUM(
+            (h.entry_2_points - ma2.avg_points) -
+            (h.entry_1_points - ma1.avg_points)
+          )::numeric, 0) as luck_index
+        FROM h2h_matches h
+        JOIN managers m ON m.entry_id = h.entry_2
+        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2
+        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1
+        WHERE h.league_id = $3
+          AND h.event = ANY($2)
+        GROUP BY h.entry_2, m.player_name, m.team_name
+      ),
+      -- K-134: Aggregate luck across both sides of matches
+      aggregated_luck AS (
+        SELECT
+          entry_id,
+          player_name,
+          team_name,
+          SUM(luck_index) as total_luck
+        FROM luck_calc
+        GROUP BY entry_id, player_name, team_name
       )
       SELECT
         entry_id,
         player_name,
         team_name,
-        luck_index as value,
+        total_luck as value,
         CASE
-          WHEN luck_index > 0 THEN '+' || luck_index || ' pts'
-          ELSE luck_index || ' pts'
+          WHEN total_luck > 0 THEN '+' || total_luck || ' pts'
+          ELSE total_luck || ' pts'
         END as formatted_value
-      FROM luck_calc
-      ORDER BY luck_index DESC
+      FROM aggregated_luck
+      ORDER BY total_luck DESC
     `, [managers.map(m => m.entry_id), gameweeks, leagueId]);
 
     return {
@@ -358,7 +388,7 @@ async function calculateCaptain(
           mp.entry_id,
           m.player_name,
           m.team_name,
-          SUM(pgs.total_points) as total_captain_points
+          SUM(pgs.total_points * mp.multiplier) as total_captain_points
         FROM manager_picks mp
         JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.event
         JOIN managers m ON m.entry_id = mp.entry_id
@@ -413,10 +443,10 @@ async function calculateBench(
         entry_id,
         player_name,
         team_name,
-        ROUND((total_bench_points::numeric / (total_points + total_bench_points) * 100), 1) as value,
-        ROUND((total_bench_points::numeric / (total_points + total_bench_points) * 100), 1) || '%' as formatted_value
+        total_bench_points as value,
+        total_bench_points || ' PTS (' || ROUND((total_bench_points::numeric / (total_points + total_bench_points) * 100), 1) || '%)' as formatted_value
       FROM bench_stats
-      ORDER BY value ASC
+      ORDER BY (total_bench_points::numeric / (total_points + total_bench_points) * 100) ASC
     `, [managers.map(m => m.entry_id), gameweeks]);
 
     return {
