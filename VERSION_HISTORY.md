@@ -2,7 +2,71 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.5 (December 26, 2025)
+**Current Version:** v4.3.6 (December 26, 2025)
+
+---
+
+## v4.3.6 - K-137: Fix Live Rankings to Show Real-Time Projected Standings (Dec 26, 2025)
+
+**Bug Fix:** Fixed Live Rankings toggle to show actual live scores and projected standings instead of 0-0.
+
+### The Bug
+
+The Live Rankings toggle existed and fetched different data (`mode=live`), but showed 0-0 for all H2H matches during live gameweeks. Rankings didn't change because all scores were 0.
+
+**Same root cause as K-136:** Using database-only calculator for live GWs.
+
+### Root Cause
+
+The `/api/league/[id]/stats` route had live mode logic, but line 422 used the wrong calculator:
+
+```typescript
+// WRONG - queries empty database for live GWs
+const teamScore = await calculateTeamGameweekScore(entryId, currentGW);
+```
+
+For live GW18:
+- `calculateTeamGameweekScore()` queries `player_gameweek_stats` table
+- That table is empty until GW completes
+- Returns 0 for all scores
+- Live rankings showed 0-0, no standings changes
+
+### The Fix
+
+Applied K-136/K-137 pattern - conditional calculator based on GW status:
+
+```typescript
+if (status === 'in_progress' || status === 'upcoming') {
+  // K-137: Use FPL API for live/upcoming GWs
+  const liveResult = await calculateManagerLiveScore(entryId, currentGW, status);
+  score = liveResult.score;
+} else {
+  // K-137: Use database for completed GWs
+  const teamScore = await calculateTeamGameweekScore(entryId, currentGW);
+  score = teamScore.points.net_total;
+}
+```
+
+### Files Modified
+
+1. `/src/app/api/league/[id]/stats/route.ts`
+   - Added import for `calculateManagerLiveScore`
+   - Changed score calculation (lines 422-440) to use conditional data source
+   - Live/upcoming GWs: Fetch from FPL API
+   - Completed GWs: Query database
+
+### Impact
+
+Live Rankings toggle now works correctly:
+- ✅ Shows actual live H2H scores (e.g., 39-2, 23-18) instead of 0-0
+- ✅ Calculates projected winners from live scores
+- ✅ Rebuilds standings with projected W/D/L
+- ✅ Rankings reflect "what if GW ended now"
+- ✅ Refreshes on toggle with cache busting
+- ✅ Official mode unchanged (database standings)
+
+**Before:** Live toggle showed 0-0 for all matches, no ranking changes
+**After:** Live toggle shows real-time scores and projected standings
 
 ---
 

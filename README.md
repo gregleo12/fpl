@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.5** (December 26, 2025)
+**v4.3.6** (December 26, 2025)
 
-CRITICAL FIX: My Team GW PTS header now shows live scores (v4.3.4 fixed pitch but missed header stats endpoint).
+Fix: Live Rankings toggle now shows real-time projected standings instead of 0-0 (same K-136 bug as other live views).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
