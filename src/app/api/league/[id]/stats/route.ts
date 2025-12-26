@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { detectFPLError } from '@/lib/fpl-errors';
 
 // Force dynamic rendering - prevent caching and static generation
 export const dynamic = 'force-dynamic';
@@ -540,9 +541,12 @@ export async function GET(
     return response;
   } catch (error: any) {
     console.error('Error fetching league stats:', error);
+    // K-130: Use K-61 FPL error detection for user-friendly messages
+    const statusCode = error.response?.status || error.status || 500;
+    const fplError = detectFPLError(error, statusCode);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch league stats' },
-      { status: 500 }
+      { error: fplError },
+      { status: statusCode }
     );
   }
 }

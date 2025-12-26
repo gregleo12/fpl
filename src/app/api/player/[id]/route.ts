@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
+import { detectFPLError } from '@/lib/fpl-errors';
 
 export async function GET(
   request: NextRequest,
@@ -181,9 +182,12 @@ export async function GET(
     });
   } catch (error: any) {
     console.error('Error fetching player profile:', error);
+    // K-130: Use K-61 FPL error detection for user-friendly messages
+    const statusCode = error.response?.status || error.status || 500;
+    const fplError = detectFPLError(error, statusCode);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch player profile' },
-      { status: 500 }
+      { error: fplError },
+      { status: statusCode }
     );
   }
 }

@@ -2,7 +2,28 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.10 (December 26, 2025)
+**Current Version:** v4.2.11 (December 26, 2025)
+
+---
+
+## v4.2.11 - K-130b: Fix Missing Endpoints (Dec 26, 2025)
+
+**Bug Fix (Critical):** v4.2.10 only fixed error messages on the sign-in page but not on the dashboard. Added K-61 FPL error detection to the dashboard API endpoints.
+
+### Root Cause:
+- v4.2.10 updated `/api/gw/[gw]/players` but dashboard uses different endpoints
+- `/api/player/[id]` and `/api/league/[id]/stats` were missing detectFPLError
+- Sign-in uses `/api/league/[id]` (already had K-61) ✓
+- Dashboard uses `/api/player/[id]` and `/api/league/[id]/stats` (missing K-61) ✗
+
+### Fixed:
+- `/api/player/[id]/route.ts` - Now uses detectFPLError for axios errors
+- `/api/league/[id]/stats/route.ts` - Now uses detectFPLError for fetch errors
+- Both endpoints now return FPLError structure with icon and user-friendly message
+
+### User Impact:
+- **Before:** Dashboard showed "Failed to fetch player data" during FPL downtime
+- **After:** Dashboard shows "⏳ FPL is updating. Please try again in a few minutes."
 
 ---
 
