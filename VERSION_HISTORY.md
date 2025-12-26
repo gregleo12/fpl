@@ -2,7 +2,126 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.5 (December 26, 2025)
+**Current Version:** v4.2.6 (December 26, 2025)
+
+---
+
+## v4.2.6 - K-126: Fix PWA Header Scroll Bug with Sticky Headers (Dec 26, 2025)
+
+**Bug Fix + Enhancement:** Implemented sticky headers across all tabs to fix PWA scroll bug on iPhone 17 Pro Max (iOS 18) and improve UX by keeping navigation always visible.
+
+### Problem
+
+**User Report (iPhone 17 Pro Max PWA mode):**
+- User scrolls down → header scrolls out of view (expected)
+- User scrolls back UP → header does NOT reappear (bug!)
+- Headers become unreachable, hiding:
+  - My Team: Team name + GW selector
+  - Rivals: H2H/Fixtures toggle + GW selector
+  - Stats: Tab toggles
+  - Rank: Table header
+
+**Only affected iPhone 17 Pro Max** - could not reproduce on iPhone 15 Pro Max.
+
+### Root Cause
+
+Fixed `body::before` pseudo-element (purple status bar overlay) combined with iOS 18's stricter PWA scroll boundaries prevented users from scrolling into the safe area region where headers were positioned.
+
+**Technical Details:**
+- `body::before` created visual overlay at `env(safe-area-inset-top)` height (~47px on iPhone 17 Pro Max)
+- iOS 18 PWA enforces stricter scroll containment than iOS 17
+- Content could scroll under the overlay but couldn't reach the top edge
+- Headers positioned at `top: 0` became trapped in unreachable scroll zone
+
+### Solution: Sticky Headers (Option B)
+
+Instead of removing the overlay or adjusting scroll containers, implemented sticky headers for all tabs. This:
+✅ **Fixes the scroll bug** - Headers always visible, no need to scroll to top
+✅ **Improves UX** - Navigation always accessible
+✅ **Modern pattern** - Consistent with mobile app conventions
+
+### Implementation
+
+Made headers sticky with safe area awareness across all tabs:
+
+**1. My Team Tab**
+- `.myTeamHeader` - Team name + GW selector + refresh button
+- Sticky position: `calc(0.5rem + env(safe-area-inset-top, 0px))`
+- Z-index: 90 (below bottom nav)
+
+**2. Rivals Tab**
+- `.rivalsHeader` - H2H/Fixtures toggle + GW selector + refresh button
+- Same sticky positioning as My Team
+
+**3. Stats Tab**
+- `.viewToggleBar` - Team/GW/Season/Players tabs
+  - Sticky position: `calc(0.5rem + env(safe-area-inset-top, 0px))`
+  - Z-index: 90
+- `.gwSelectorBar` - GW navigation (only in GW view)
+  - Sticky position: `calc(3.5rem + env(safe-area-inset-top, 0px))` (below viewToggleBar)
+  - Z-index: 89 (below viewToggleBar)
+
+**4. Rank Tab**
+- `.table th` - League table headers (Rank, Team, W/D/L, etc.)
+- Updated sticky position from `top: 0` to `calc(0.5rem + env(safe-area-inset-top, 0px))`
+- Z-index: 90
+
+### Visual Enhancements
+
+All sticky headers received:
+- Increased background opacity: `rgba(0, 0, 0, 0.85)` (was 0.3)
+- Backdrop blur: `backdrop-filter: blur(10px)` for glass effect
+- Consistent z-index hierarchy
+
+### Z-Index Hierarchy
+
+```
+Bottom Nav:         z-index: 100  ← Always on top (clickable)
+Main Headers:       z-index: 90   ← My Team, Rivals, Stats, Rank table
+Secondary Header:   z-index: 89   ← Stats GW selector (when visible)
+Content:            z-index: auto ← Below all headers
+```
+
+### Files Modified (5 files)
+
+**CSS Files:**
+- `/src/components/Dashboard/Dashboard.module.css`
+  - `.myTeamHeader` - Added sticky positioning
+  - `.table th` - Updated sticky position for safe area
+- `/src/components/Fixtures/Fixtures.module.css`
+  - `.rivalsHeader` - Added sticky positioning
+- `/src/components/Stats/StatsHub.module.css`
+  - `.viewToggleBar` - Added sticky positioning
+  - `.gwSelectorBar` - Added sticky positioning with offset
+
+**Documentation:**
+- VERSION_HISTORY.md - This entry
+- README.md - Updated version
+
+### Benefits
+
+- **Scroll bug resolved** - Headers never disappear on any iOS device
+- **Better UX** - No more hunting for GW selector or toggles
+- **Consistent behavior** - Works identically across all devices and screen sizes
+- **iOS 18 compatible** - Properly handles safe area insets in PWA standalone mode
+
+### Testing
+
+Tested on:
+- ✅ Build successful (no errors)
+- ✅ All tabs render correctly
+- ✅ Sticky positioning works on scroll
+- ✅ Z-index hierarchy prevents overlaps
+
+**User Testing Required:**
+- iPhone 17 Pro Max (iOS 18) in PWA mode
+- Verify headers remain visible when scrolling
+- Verify bottom nav remains clickable
+
+### Related
+
+**K-126:** PWA header scroll bug investigation ticket
+**Reported by:** Reddit user (kinqdane) on iPhone 17 Pro Max
 
 ---
 

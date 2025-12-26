@@ -34,11 +34,16 @@
 }
 
 /* K-75: Unified Rivals nav bar - single container with space-between layout */
+/* K-126: Made sticky to fix PWA scroll bug and improve UX */
 .rivalsHeader {
+  position: sticky;
+  top: calc(0.5rem + env(safe-area-inset-top, 0px)); /* Stick below status bar with small gap */
+  z-index: 90; /* Below bottom nav (100) but above content */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.85); /* Increased opacity for better visibility when sticky */
+  backdrop-filter: blur(10px); /* Add blur for glass effect */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 0.5rem 1rem;

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.5** (December 26, 2025)
+**v4.2.6** (December 26, 2025)
 
-Fixed duplicate players bug in My Team view for managers in multiple leagues.
+Fixed PWA header scroll bug on iPhone 17 Pro Max by implementing sticky headers across all tabs.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

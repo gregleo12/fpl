@@ -12,10 +12,15 @@
 }
 
 /* K-94: First bar - View toggle (always visible) */
+/* K-126: Made sticky to fix PWA scroll bug and improve UX */
 .viewToggleBar {
+  position: sticky;
+  top: calc(0.5rem + env(safe-area-inset-top, 0px)); /* Stick below status bar with small gap */
+  z-index: 90; /* Below bottom nav (100) but above content */
   display: flex;
   gap: 0.5rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.85); /* Increased opacity for better visibility when sticky */
+  backdrop-filter: blur(10px); /* Add blur for glass effect */
   padding: 0.5rem 1rem;  /* K-96: Match Rivals spacing (8px top/bottom, 16px left/right) */
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -55,11 +60,16 @@
 }
 
 /* K-94: Second bar - GW selector (only for GW view) - EXACT COPY from Rivals/My Team */
+/* K-126: Made sticky below viewToggleBar to fix PWA scroll bug and improve UX */
 .gwSelectorBar {
+  position: sticky;
+  top: calc(3.5rem + env(safe-area-inset-top, 0px)); /* Stick below viewToggleBar (~3rem height + 0.5rem gap) */
+  z-index: 89; /* Below viewToggleBar (90) but above content */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.85); /* Increased opacity for better visibility when sticky */
+  backdrop-filter: blur(10px); /* Add blur for glass effect */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 0.5rem 1rem;
