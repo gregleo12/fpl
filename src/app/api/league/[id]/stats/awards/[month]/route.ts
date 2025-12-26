@@ -30,8 +30,11 @@ export async function GET(
   { params }: { params: { id: string; month: string } }
 ) {
   try {
+    console.log('Awards API called - params:', params);
     const leagueId = parseInt(params.id);
     const monthIndex = parseInt(params.month);
+
+    console.log('Parsed IDs:', { leagueId, monthIndex });
 
     if (isNaN(leagueId)) {
       return NextResponse.json({ error: 'Invalid league ID' }, { status: 400 });
@@ -41,10 +44,15 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid month index' }, { status: 400 });
     }
 
+    console.log('Getting database...');
     const db = await getDatabase();
+    console.log('Database acquired');
+
     const { monthName, startGW, endGW } = getMonthInfo(monthIndex);
+    console.log('Month info:', { monthName, startGW, endGW });
 
     // Fetch all managers in this league
+    console.log('Fetching managers for league:', leagueId);
     const managersResult = await db.query(`
       SELECT m.entry_id, m.player_name, m.team_name
       FROM managers m
@@ -53,6 +61,26 @@ export async function GET(
       ORDER BY m.entry_id
     `, [leagueId]);
     const managers = managersResult.rows;
+    console.log('Found managers:', managers.length);
+
+    // TEMPORARY: Return with all null awards to test endpoint
+    console.log('Returning response with null awards (test mode)');
+    return NextResponse.json({
+      month: monthIndex,
+      monthName,
+      startGW,
+      endGW,
+      awards: [
+        { category: 'top_scorer', winner: null },
+        { category: 'best_form', winner: null },
+        { category: 'most_consistent', winner: null },
+        { category: 'luckiest', winner: null },
+        { category: 'best_bench', winner: null },
+        { category: 'chip_master', winner: null },
+        { category: 'captain_king', winner: null },
+        { category: 'longest_streak', winner: null }
+      ]
+    });
 
     if (managers.length === 0) {
       return NextResponse.json({
@@ -64,32 +92,72 @@ export async function GET(
       });
     }
 
-    // Calculate all awards in parallel with error handling
-    let topScorer, bestForm, mostConsistent, luckiest, bestBench, chipMaster, captainKing, longestStreak;
+    // Calculate all awards sequentially to catch specific errors
+    let topScorer = null, bestForm = null, mostConsistent = null, luckiest = null;
+    let bestBench = null, chipMaster = null, captainKing = null, longestStreak = null;
 
     try {
-      [
-        topScorer,
-        bestForm,
-        mostConsistent,
-        luckiest,
-        bestBench,
-        chipMaster,
-        captainKing,
-        longestStreak
-      ] = await Promise.all([
-        calculateTopScorer(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Top Scorer error:', e); return null; }),
-        calculateBestForm(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Best Form error:', e); return null; }),
-        calculateMostConsistent(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Most Consistent error:', e); return null; }),
-        calculateLuckiest(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Luckiest error:', e); return null; }),
-        calculateBestBench(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Best Bench error:', e); return null; }),
-        calculateChipMaster(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Chip Master error:', e); return null; }),
-        calculateCaptainKing(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Captain King error:', e); return null; }),
-        calculateLongestStreak(db, leagueId, startGW, endGW, managers).catch(e => { console.error('Longest Streak error:', e); return null; })
-      ]);
-    } catch (error) {
-      console.error('Awards calculation error:', error);
-      throw error;
+      console.log('Calculating Top Scorer...');
+      topScorer = await calculateTopScorer(db, leagueId, startGW, endGW, managers);
+      console.log('Top Scorer done');
+    } catch (e) {
+      console.error('Top Scorer error:', e);
+    }
+
+    try {
+      console.log('Calculating Best Form...');
+      bestForm = await calculateBestForm(db, leagueId, startGW, endGW, managers);
+      console.log('Best Form done');
+    } catch (e) {
+      console.error('Best Form error:', e);
+    }
+
+    try {
+      console.log('Calculating Most Consistent...');
+      mostConsistent = await calculateMostConsistent(db, leagueId, startGW, endGW, managers);
+      console.log('Most Consistent done');
+    } catch (e) {
+      console.error('Most Consistent error:', e);
+    }
+
+    try {
+      console.log('Calculating Luckiest...');
+      luckiest = await calculateLuckiest(db, leagueId, startGW, endGW, managers);
+      console.log('Luckiest done');
+    } catch (e) {
+      console.error('Luckiest error:', e);
+    }
+
+    try {
+      console.log('Calculating Best Bench...');
+      bestBench = await calculateBestBench(db, leagueId, startGW, endGW, managers);
+      console.log('Best Bench done');
+    } catch (e) {
+      console.error('Best Bench error:', e);
+    }
+
+    try {
+      console.log('Calculating Chip Master...');
+      chipMaster = await calculateChipMaster(db, leagueId, startGW, endGW, managers);
+      console.log('Chip Master done');
+    } catch (e) {
+      console.error('Chip Master error:', e);
+    }
+
+    try {
+      console.log('Calculating Captain King...');
+      captainKing = await calculateCaptainKing(db, leagueId, startGW, endGW, managers);
+      console.log('Captain King done');
+    } catch (e) {
+      console.error('Captain King error:', e);
+    }
+
+    try {
+      console.log('Calculating Longest Streak...');
+      longestStreak = await calculateLongestStreak(db, leagueId, startGW, endGW, managers);
+      console.log('Longest Streak done');
+    } catch (e) {
+      console.error('Longest Streak error:', e);
     }
 
     return NextResponse.json({
