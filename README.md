@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.12** (December 26, 2025)
+**v4.2.13** (December 26, 2025)
 
-Fixed Monthly Awards page - removed WhatsApp buttons, added best/worst for each category, fixed Luck Index, improved mobile layout.
+Fixed Team Value calculation - was showing £105.3m (total value) instead of £103.3m (squad value only).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -2,7 +2,41 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.12 (December 26, 2025)
+**Current Version:** v4.2.13 (December 26, 2025)
+
+---
+
+## v4.2.13 - K-132: Fix Team Value Calculation (Dec 26, 2025)
+
+**Bug Fix:** Fixed Team Value showing £105.3m instead of £103.3m. Was displaying total value (squad + bank) instead of squad value only.
+
+### What Changed
+
+**Bug Location:**
+- `/src/app/api/team/[teamId]/info/route.ts` lines 149-153
+
+**Root Cause:**
+- `gwHistory.value` from FPL API is **total value** (squad + bank), not squad value
+- `entryData.last_deadline_value` is in **tenths**, needs division by 10
+- Code was using these values directly without proper conversion
+
+**The Fix:**
+```typescript
+// BEFORE (wrong)
+const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
+const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
+
+// AFTER (correct)
+const bank = gwHistory?.bank || (entryData.last_deadline_bank || 0) / 10;
+const teamValue = gwHistory ? (gwHistory.value - bank) : (entryData.last_deadline_value || 0) / 10;
+```
+
+**Result:**
+- Team Value now correctly shows £103.3m (squad only)
+- IN BANK still shows £2.0m (unchanged, was already correct)
+
+### Files Modified: 1
+- `/src/app/api/team/[teamId]/info/route.ts` - Fixed value calculation logic
 
 ---
 

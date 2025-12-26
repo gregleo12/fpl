@@ -146,8 +146,11 @@ export async function GET(
       overallRank = entryData.summary_overall_rank || 0;
     }
 
-    const teamValue = gwHistory?.value || entryData.last_deadline_value || 0;
-    const bank = gwHistory?.bank || entryData.last_deadline_bank || 0;
+    // K-132: Fix Team Value calculation
+    // gwHistory.value is total_value (squad + bank) in pounds
+    // entryData.last_deadline_value is squad value in tenths
+    const bank = gwHistory?.bank || (entryData.last_deadline_bank || 0) / 10;
+    const teamValue = gwHistory ? (gwHistory.value - bank) : (entryData.last_deadline_value || 0) / 10;
 
     return NextResponse.json({
       overallPoints: overallPoints,
