@@ -30,6 +30,11 @@ function getBonusInfo(playerId: number, liveElement: any, officialBonus: number,
     return { bonusPoints: officialBonus };
   }
 
+  // K-138: If fixture hasn't started yet, return 0 bonus
+  if (!fixture.started) {
+    return { bonusPoints: 0 };
+  }
+
   // If fixture is finished, use official bonus
   if (fixture.finished) {
     return { bonusPoints: officialBonus };
