@@ -10,6 +10,8 @@ export interface BenchPointsData {
   player_name: string;
   team_name: string;
   total_bench_points: number;
+  total_points: number;
+  bench_percentage: number;
 }
 
 interface Props {
@@ -18,7 +20,7 @@ interface Props {
 }
 
 export function BenchPoints({ data, myTeamId }: Props) {
-  const [showMost, setShowMost] = useState(true);
+  const [showTotal, setShowTotal] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   if (!data || data.length === 0) {
@@ -38,17 +40,16 @@ export function BenchPoints({ data, myTeamId }: Props) {
   }
 
   // Sort data based on toggle
-  const sortedData = showMost
-    ? [...data].sort((a, b) => b.total_bench_points - a.total_bench_points)
-    : [...data].sort((a, b) => a.total_bench_points - b.total_bench_points);
+  const sortedData = showTotal
+    ? [...data].sort((a, b) => b.total_bench_points - a.total_bench_points)  // Rank by raw points
+    : [...data].sort((a, b) => b.bench_percentage - a.bench_percentage);    // Rank by percentage
 
   const top5 = sortedData.slice(0, 5);
 
   const IconComponent = Armchair;
-  const titleText = showMost ? 'Bench Points' : 'Bench Points';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-      <IconComponent size={18} color="#00ff87" /> {titleText}
+      <IconComponent size={18} color="#00ff87" /> Bench Points
     </div>
   );
 
@@ -66,9 +67,27 @@ export function BenchPoints({ data, myTeamId }: Props) {
           <div className={styles.meta}>{item.team_name}</div>
         </div>
         <div className={styles.stats}>
-          <div className={styles.statValue}>
-            {item.total_bench_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
-          </div>
+          {showTotal ? (
+            // Show raw points (primary) + percentage (secondary)
+            <>
+              <div className={styles.statValue}>
+                {item.total_bench_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+                {item.bench_percentage}%
+              </div>
+            </>
+          ) : (
+            // Show percentage (primary) + raw points (secondary)
+            <>
+              <div className={styles.statValue}>
+                {item.bench_percentage}%
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+                {item.total_bench_points} PTS
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
@@ -81,16 +100,16 @@ export function BenchPoints({ data, myTeamId }: Props) {
           <h4 className={styles.cardTitle}>{title}</h4>
           <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
             <button
-              className={`${styles.toggleButton} ${showMost ? styles.active : ''}`}
-              onClick={() => setShowMost(true)}
+              className={`${styles.toggleButton} ${showTotal ? styles.active : ''}`}
+              onClick={() => setShowTotal(true)}
             >
-              Most
+              Total
             </button>
             <button
-              className={`${styles.toggleButton} ${!showMost ? styles.active : ''}`}
-              onClick={() => setShowMost(false)}
+              className={`${styles.toggleButton} ${!showTotal ? styles.active : ''}`}
+              onClick={() => setShowTotal(false)}
             >
-              Least
+              % of Total
             </button>
           </div>
         </div>
@@ -112,7 +131,7 @@ export function BenchPoints({ data, myTeamId }: Props) {
       <FullRankingModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={`Bench Points - Full Rankings${showMost ? ' (Most)' : ' (Least)'}`}
+        title={`Bench Points - Full Rankings${showTotal ? ' (Total)' : ' (% of Total)'}`}
         icon={<IconComponent size={18} color="#00ff87" />}
         data={sortedData}
         renderItem={renderItem}

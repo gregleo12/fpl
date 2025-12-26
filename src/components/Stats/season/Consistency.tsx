@@ -68,7 +68,10 @@ export function Consistency({ data, myTeamId }: Props) {
         </div>
         <div className={styles.stats}>
           <div className={styles.statValue}>
-            {Math.round(item.avg_points)} <span style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 400 }}>±{Math.round(item.std_dev)}</span>
+            ±{Math.round(item.std_dev)} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+            (avg {Math.round(item.avg_points)})
           </div>
         </div>
       </div>

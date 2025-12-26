@@ -1,8 +1,74 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 297+ versions
-**Current Version:** v4.2.1 (December 26, 2025)
+**Total Releases:** 298+ versions
+**Current Version:** v4.2.2 (December 26, 2025)
+
+---
+
+## v4.2.2 - K-122: Season Stats UI Improvements (Dec 26, 2025)
+
+**Enhancement:** Improved data display and user controls for Season Stats cards with better toggles, clearer layouts, and additional metrics.
+
+### What Changed
+
+**Bench Points Card:**
+- Added percentage calculation: `(bench_points / total_points) × 100`
+- New toggle: "Total" (default) vs "% of Total"
+- "Total" view: Shows raw points (primary) + percentage (secondary)
+- "% of Total" view: Shows percentage (primary) + raw points (secondary)
+- Re-ranks based on toggle selection
+
+**Form Rankings Card:**
+- Added "Last 10" option alongside existing "Last 5"
+- New toggle: "Last 5" (default) vs "Last 10"
+- Backend now calculates both 5 and 10 GW windows with separate trends
+- Trend arrows update based on selection
+- Subtitle dynamically shows "Performance over last 5/10 GWs"
+
+**Consistency Card:**
+- Improved layout for better clarity
+- Primary stat: **±{variance} PTS** (large) - the consistency measure
+- Secondary stat: **(avg {average})** (small, grey, brackets)
+- Emphasizes variance as the key metric (lower = more consistent)
+
+### Implementation Details
+
+**Backend Changes (`/src/app/api/league/[id]/stats/season/route.ts`):**
+- `calculateBenchPoints()`: Now returns `total_points` and `bench_percentage`
+- `calculateFormRankings()`: Calculates both last 5 and last 10 GWs with respective trends
+- Returns: `form_points_5`, `form_points_10`, `trend_5`, `trend_10`
+
+**Frontend Changes:**
+- `/src/components/Stats/season/BenchPoints.tsx`: Added Total/% toggle with dynamic sorting
+- `/src/components/Stats/season/FormRankings.tsx`: Added Last 5/Last 10 toggle
+- `/src/components/Stats/season/Consistency.tsx`: Restructured to show variance as primary stat
+
+### Data Structure
+
+**Bench Points:**
+```typescript
+{
+  total_bench_points: number,
+  total_points: number,
+  bench_percentage: number  // Rounded to 1 decimal
+}
+```
+
+**Form Rankings:**
+```typescript
+{
+  form_points_5: number,   // Last 5 GWs total
+  form_points_10: number,  // Last 10 GWs total
+  trend_5: number,         // Rank change (5 GW window)
+  trend_10: number         // Rank change (10 GW window)
+}
+```
+
+### Related
+
+**K-122:** Season Stats UI improvements ticket
+**Part of:** v4.2.0 Season Stats Expansion
 
 ---
 

@@ -1130,7 +1130,8 @@ async function calculateBenchPoints(
         mgh.entry_id,
         m.player_name,
         m.team_name,
-        SUM(mgh.points_on_bench) as total_bench_points
+        SUM(mgh.points_on_bench) as total_bench_points,
+        SUM(mgh.points) as total_points
       FROM manager_gw_history mgh
       JOIN managers m ON m.entry_id = mgh.entry_id
       WHERE mgh.league_id = $1
@@ -1138,18 +1139,28 @@ async function calculateBenchPoints(
       ORDER BY total_bench_points DESC
     `, [leagueId]);
 
-    const benchPoints = result.rows.map((row: any) => ({
-      entry_id: row.entry_id,
-      player_name: row.player_name,
-      team_name: row.team_name,
-      total_bench_points: parseInt(row.total_bench_points) || 0
-    }));
+    const benchPoints = result.rows.map((row: any) => {
+      const benchPts = parseInt(row.total_bench_points) || 0;
+      const totalPts = parseInt(row.total_points) || 0;
+      const percentage = totalPts > 0 ? (benchPts / totalPts) * 100 : 0;
+
+      return {
+        entry_id: row.entry_id,
+        player_name: row.player_name,
+        team_name: row.team_name,
+        total_bench_points: benchPts,
+        total_points: totalPts,
+        bench_percentage: Math.round(percentage * 10) / 10 // Round to 1 decimal
+      };
+    });
 
     console.log('[BENCH POINTS] Calculated bench points:', {
       count: benchPoints.length,
       topThree: benchPoints.slice(0, 3).map((b: any) => ({
         name: b.player_name,
-        points: b.total_bench_points
+        benchPts: b.total_bench_points,
+        totalPts: b.total_points,
+        pct: b.bench_percentage
       }))
     });
 
@@ -1160,7 +1171,7 @@ async function calculateBenchPoints(
   }
 }
 
-// K-119a: Calculate form rankings (last 5 GWs performance)
+// K-119a: Calculate form rankings (last 5 and last 10 GWs performance)
 async function calculateFormRankings(
   db: any,
   leagueId: number,
@@ -1170,7 +1181,7 @@ async function calculateFormRankings(
   try {
     console.log('[FORM RANKINGS] Calculating form rankings for league:', leagueId);
 
-    // Need at least 6 GWs to calculate trend (5 current + 1 previous minimum)
+    // Need at least 6 GWs for last 5 trend, 11 for last 10 trend
     if (completedGameweeks.length < 6) {
       console.log('[FORM RANKINGS] Not enough gameweeks for trend calculation (need 6+), have:', completedGameweeks.length);
 
@@ -1181,108 +1192,137 @@ async function calculateFormRankings(
           mgh.entry_id,
           m.player_name,
           m.team_name,
-          SUM(mgh.points) as last5_points
+          SUM(mgh.points) as form_points
         FROM manager_gw_history mgh
         JOIN managers m ON m.entry_id = mgh.entry_id
         WHERE mgh.league_id = $1
           AND mgh.event = ANY($2)
         GROUP BY mgh.entry_id, m.player_name, m.team_name
-        ORDER BY last5_points DESC
+        ORDER BY form_points DESC
       `, [leagueId, last5GWs]);
 
       return result.rows.map((row: any, index: number) => ({
         entry_id: row.entry_id,
         player_name: row.player_name,
         team_name: row.team_name,
-        last5_points: parseInt(row.last5_points) || 0,
-        form_rank: index + 1,
-        season_rank: 0,
-        trend: 0 // No trend available yet
+        form_points_5: parseInt(row.form_points) || 0,
+        form_points_10: 0,
+        trend_5: 0,
+        trend_10: 0
       }));
     }
 
-    // Get last 5 completed gameweeks (current form period)
+    // Calculate Last 5 GWs with trend
     const last5GWs = completedGameweeks.slice(-5);
-
-    // Get previous 5 gameweeks (past form period for comparison)
     const previous5GWs = completedGameweeks.slice(-10, -5);
 
-    console.log('[FORM RANKINGS] Current form GWs:', last5GWs);
-    console.log('[FORM RANKINGS] Previous form GWs:', previous5GWs);
+    const [current5Result, previous5Result] = await Promise.all([
+      db.query(`
+        SELECT
+          mgh.entry_id,
+          m.player_name,
+          m.team_name,
+          SUM(mgh.points) as form_points
+        FROM manager_gw_history mgh
+        JOIN managers m ON m.entry_id = mgh.entry_id
+        WHERE mgh.league_id = $1
+          AND mgh.event = ANY($2)
+        GROUP BY mgh.entry_id, m.player_name, m.team_name
+        ORDER BY form_points DESC
+      `, [leagueId, last5GWs]),
+      db.query(`
+        SELECT
+          mgh.entry_id,
+          SUM(mgh.points) as form_points
+        FROM manager_gw_history mgh
+        WHERE mgh.league_id = $1
+          AND mgh.event = ANY($2)
+        GROUP BY mgh.entry_id
+        ORDER BY form_points DESC
+      `, [leagueId, previous5GWs])
+    ]);
 
-    // Calculate current form rankings (last 5 GWs)
-    const currentResult = await db.query(`
-      SELECT
-        mgh.entry_id,
-        m.player_name,
-        m.team_name,
-        SUM(mgh.points) as last5_points
-      FROM manager_gw_history mgh
-      JOIN managers m ON m.entry_id = mgh.entry_id
-      WHERE mgh.league_id = $1
-        AND mgh.event = ANY($2)
-      GROUP BY mgh.entry_id, m.player_name, m.team_name
-      ORDER BY last5_points DESC
-    `, [leagueId, last5GWs]);
-
-    // Calculate previous form rankings (5 GWs before that)
-    const previousResult = await db.query(`
-      SELECT
-        mgh.entry_id,
-        SUM(mgh.points) as prev5_points
-      FROM manager_gw_history mgh
-      WHERE mgh.league_id = $1
-        AND mgh.event = ANY($2)
-      GROUP BY mgh.entry_id
-      ORDER BY prev5_points DESC
-    `, [leagueId, previous5GWs]);
-
-    // Create a map of previous form ranks
-    const previousFormRanks: Record<number, number> = {};
-    previousResult.rows.forEach((row: any, index: number) => {
-      previousFormRanks[row.entry_id] = index + 1;
+    // Create map of previous 5 GW ranks
+    const previous5Ranks: Record<number, number> = {};
+    previous5Result.rows.forEach((row: any, index: number) => {
+      previous5Ranks[row.entry_id] = index + 1;
     });
 
-    // Build form rankings with trend comparison
-    const formRankings = currentResult.rows.map((row: any, index: number) => {
-      const currentFormRank = index + 1;
-      const previousFormRank = previousFormRanks[row.entry_id] || 0;
+    // Calculate Last 10 GWs with trend (if enough GWs)
+    let current10Data: Record<number, { points: number; rank: number }> = {};
+    let previous10Ranks: Record<number, number> = {};
 
-      // Trend = previous rank - current rank
-      // Positive = improved (was 5th, now 2nd = +3)
-      // Negative = declined (was 2nd, now 5th = -3)
-      const trend = previousFormRank > 0 ? previousFormRank - currentFormRank : 0;
+    if (completedGameweeks.length >= 11) {
+      const last10GWs = completedGameweeks.slice(-10);
+      const previous10GWs = completedGameweeks.slice(-20, -10);
 
-      if (index < 3) {
-        console.log(`[FORM RANKINGS] Manager ${row.player_name}:`, {
-          entry_id: row.entry_id,
-          currentFormRank,
-          previousFormRank,
-          trend
-        });
-      }
+      const [current10Result, previous10Result] = await Promise.all([
+        db.query(`
+          SELECT
+            mgh.entry_id,
+            SUM(mgh.points) as form_points
+          FROM manager_gw_history mgh
+          WHERE mgh.league_id = $1
+            AND mgh.event = ANY($2)
+          GROUP BY mgh.entry_id
+          ORDER BY form_points DESC
+        `, [leagueId, last10GWs]),
+        db.query(`
+          SELECT
+            mgh.entry_id,
+            SUM(mgh.points) as form_points
+          FROM manager_gw_history mgh
+          WHERE mgh.league_id = $1
+            AND mgh.event = ANY($2)
+          GROUP BY mgh.entry_id
+          ORDER BY form_points DESC
+        `, [leagueId, previous10GWs])
+      ]);
+
+      current10Result.rows.forEach((row: any, index: number) => {
+        current10Data[row.entry_id] = {
+          points: parseInt(row.form_points) || 0,
+          rank: index + 1
+        };
+      });
+
+      previous10Result.rows.forEach((row: any, index: number) => {
+        previous10Ranks[row.entry_id] = index + 1;
+      });
+    }
+
+    // Build combined form rankings
+    const formRankings = current5Result.rows.map((row: any, index: number) => {
+      const current5Rank = index + 1;
+      const previous5Rank = previous5Ranks[row.entry_id] || 0;
+      const trend5 = previous5Rank > 0 ? previous5Rank - current5Rank : 0;
+
+      const form10 = current10Data[row.entry_id];
+      const trend10 = form10 && previous10Ranks[row.entry_id]
+        ? previous10Ranks[row.entry_id] - form10.rank
+        : 0;
 
       return {
         entry_id: row.entry_id,
         player_name: row.player_name,
         team_name: row.team_name,
-        last5_points: parseInt(row.last5_points) || 0,
-        form_rank: currentFormRank,
-        season_rank: previousFormRank, // Store previous rank here for reference
-        trend: trend
+        form_points_5: parseInt(row.form_points) || 0,
+        form_points_10: form10?.points || 0,
+        trend_5: trend5,
+        trend_10: trend10
       };
     });
 
     console.log('[FORM RANKINGS] Calculated form rankings:', {
       count: formRankings.length,
-      currentGWs: last5GWs,
-      previousGWs: previous5GWs,
+      last5GWs,
+      last10Available: completedGameweeks.length >= 11,
       topThree: formRankings.slice(0, 3).map((f: any) => ({
         name: f.player_name,
-        points: f.last5_points,
-        currentRank: f.form_rank,
-        previousRank: f.season_rank,
-        trend: f.trend
+        pts5: f.form_points_5,
+        pts10: f.form_points_10,
+        trend5: f.trend_5,
+        trend10: f.trend_10
       }))
     });
 

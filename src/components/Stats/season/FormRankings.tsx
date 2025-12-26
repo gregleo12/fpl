@@ -9,10 +9,10 @@ export interface FormRankingsData {
   entry_id: number;
   player_name: string;
   team_name: string;
-  last5_points: number;
-  form_rank: number;
-  season_rank: number;
-  trend: number;
+  form_points_5: number;
+  form_points_10: number;
+  trend_5: number;
+  trend_10: number;
 }
 
 interface Props {
@@ -21,6 +21,7 @@ interface Props {
 }
 
 export function FormRankings({ data, myTeamId }: Props) {
+  const [showLast5, setShowLast5] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   if (!data || data.length === 0) {
@@ -39,7 +40,12 @@ export function FormRankings({ data, myTeamId }: Props) {
     );
   }
 
-  const top5 = data.slice(0, 5);
+  // Sort data based on toggle
+  const sortedData = showLast5
+    ? [...data].sort((a, b) => b.form_points_5 - a.form_points_5)
+    : [...data].sort((a, b) => b.form_points_10 - a.form_points_10);
+
+  const top5 = sortedData.slice(0, 5);
 
   const getTrendDisplay = (trend: number) => {
     if (trend > 0) return { arrow: '↑', value: trend, color: '#00ff87' }; // green - rising
@@ -56,7 +62,9 @@ export function FormRankings({ data, myTeamId }: Props) {
   // Render function for items (used by both card and modal)
   const renderItem = (item: FormRankingsData, index: number) => {
     const isMyTeam = myTeamId && item.entry_id.toString() === myTeamId;
-    const trendInfo = getTrendDisplay(item.trend);
+    const points = showLast5 ? item.form_points_5 : item.form_points_10;
+    const trend = showLast5 ? item.trend_5 : item.trend_10;
+    const trendInfo = getTrendDisplay(trend);
 
     return (
       <div className={styles.listItem}>
@@ -68,7 +76,7 @@ export function FormRankings({ data, myTeamId }: Props) {
           <div className={styles.meta}>{item.team_name}</div>
         </div>
         <div className={styles.stats}>
-          {item.trend !== 0 && (
+          {trend !== 0 && (
             <div
               style={{
                 fontSize: '0.875rem',
@@ -81,7 +89,7 @@ export function FormRankings({ data, myTeamId }: Props) {
             </div>
           )}
           <div className={styles.statValue}>
-            {item.last5_points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+            {points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
           </div>
         </div>
       </div>
@@ -93,9 +101,23 @@ export function FormRankings({ data, myTeamId }: Props) {
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
           <h4 className={styles.cardTitle}>{title}</h4>
+          <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`${styles.toggleButton} ${showLast5 ? styles.active : ''}`}
+              onClick={() => setShowLast5(true)}
+            >
+              Last 5
+            </button>
+            <button
+              className={`${styles.toggleButton} ${!showLast5 ? styles.active : ''}`}
+              onClick={() => setShowLast5(false)}
+            >
+              Last 10
+            </button>
+          </div>
         </div>
         <div className={styles.subtitle}>
-          Performance over last 5 GWs
+          Performance over last {showLast5 ? '5' : '10'} GWs
         </div>
 
         <div className={styles.list}>
@@ -112,9 +134,9 @@ export function FormRankings({ data, myTeamId }: Props) {
       <FullRankingModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title="Form Rankings - Full Rankings"
+        title={`Form Rankings - Full Rankings${showLast5 ? ' (Last 5)' : ' (Last 10)'}`}
         icon={<Flame size={18} color="#00ff87" />}
-        data={data}
+        data={sortedData}
         renderItem={renderItem}
       />
     </>
