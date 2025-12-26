@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 // Force dynamic rendering and disable caching for live scores
 export const dynamic = 'force-dynamic';
@@ -86,19 +87,19 @@ export async function GET(
       }
     }
 
-    // K-109 Phase 2: Use K-108c for all score calculations
+    // K-109 Phase 2 + K-136: Use appropriate calculator based on status
     let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null; captain: string | null }> | null = null;
     if (status === 'in_progress' || status === 'completed') {
       try {
-        console.log(`[K-109 Phase 2] GW${gw} is ${status.toUpperCase()} - calculating scores via K-108c...`);
-        liveScoresMap = await calculateScoresViaK108c(matches, gw);
-        console.log(`[K-109 Phase 2] Calculated ${liveScoresMap.size} scores using K-108c`);
+        console.log(`[K-136] GW${gw} is ${status.toUpperCase()} - calculating scores...`);
+        liveScoresMap = await calculateScoresViaK108c(matches, gw, status);
+        console.log(`[K-136] Calculated ${liveScoresMap.size} scores`);
       } catch (error) {
-        console.error('[K-109 Phase 2] Error calculating scores via K-108c:', error);
-        // Fall back to database scores if K-108c fails
+        console.error('[K-136] Error calculating scores:', error);
+        // Fall back to database scores if calculation fails
       }
     } else {
-      console.log(`[K-109 Phase 2] GW${gw} status: ${status} - using database scores`);
+      console.log(`[K-136] GW${gw} status: ${status} - using database scores`);
     }
 
     // Format matches for response
@@ -179,13 +180,14 @@ export async function GET(
 }
 
 /**
- * K-109 Phase 2: Calculate scores using K-108c single source of truth
- *
- * Replaces the old fetchLiveScoresFromPicks() function with K-108c logic
+ * K-136: Calculate scores using appropriate source based on GW status
+ * - For live/upcoming GWs: Use FPL API (scoreCalculator)
+ * - For completed GWs: Use database (teamCalculator/K-108c)
  */
 async function calculateScoresViaK108c(
   matches: any[],
-  gw: number
+  gw: number,
+  status: 'upcoming' | 'in_progress' | 'completed'
 ): Promise<Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>> {
   const scoresMap = new Map<number, { score: number; hit: number; chip: string | null; captain: string | null }>();
 
@@ -194,15 +196,36 @@ async function calculateScoresViaK108c(
     matches.flatMap((match: any) => [match.entry_1_id, match.entry_2_id])
   ));
 
-  console.log(`[K-109 Phase 2] Calculating scores for ${entryIds.length} entries in GW${gw} using K-108c...`);
+  const dataSource = status === 'completed' ? 'database (K-108c)' : 'FPL API (live)';
+  console.log(`[K-136] Calculating scores for ${entryIds.length} entries in GW${gw} from ${dataSource}...`);
 
-  // Calculate all scores in parallel using K-108c
+  // K-136 Fix: Use appropriate calculator based on GW status
   const scorePromises = entryIds.map(async (entryId) => {
     try {
-      const result = await calculateTeamGameweekScore(entryId, gw);
-      return { entryId, result };
+      if (status === 'in_progress' || status === 'upcoming') {
+        // Use FPL API for live/upcoming GWs
+        const liveResult = await calculateManagerLiveScore(entryId, gw, status);
+        // Convert to TeamGameweekScore format
+        const grossTotal = liveResult.score + liveResult.breakdown.transferCost;
+        const result = {
+          points: {
+            gross_total: grossTotal,
+            transfer_cost: liveResult.breakdown.transferCost,
+            net_total: liveResult.score
+          },
+          active_chip: liveResult.chip,
+          captain_name: liveResult.captain?.name || null,
+          auto_subs: [],
+          status: status as 'in_progress'
+        };
+        return { entryId, result };
+      } else {
+        // Use database for completed GWs
+        const result = await calculateTeamGameweekScore(entryId, gw);
+        return { entryId, result };
+      }
     } catch (error: any) {
-      console.error(`[K-109 Phase 2] Error calculating score for entry ${entryId}:`, error.message);
+      console.error(`[K-136] Error calculating score for entry ${entryId}:`, error.message);
       return { entryId, result: null };
     }
   });
@@ -224,7 +247,7 @@ async function calculateScoresViaK108c(
     });
 
     // Log score details
-    const logParts = [`[K-109 Phase 2] Entry ${entryId}: ${result.points.net_total} pts`];
+    const logParts = [`[K-136] Entry ${entryId}: ${result.points.net_total} pts`];
     if (transferCost > 0) {
       logParts.push(`(${result.points.gross_total} gross - ${transferCost} hits)`);
     }
@@ -236,15 +259,15 @@ async function calculateScoresViaK108c(
     }
     console.log(logParts.join(' '));
 
-    // Log auto-subs if any
-    if (result.auto_subs.length > 0) {
-      console.log(`[K-109 Phase 2] Entry ${entryId}: Auto-subs - ${result.auto_subs.map(s =>
+    // Log auto-subs if any (only for completed GWs from database)
+    if (result.auto_subs && result.auto_subs.length > 0) {
+      console.log(`[K-136] Entry ${entryId}: Auto-subs - ${result.auto_subs.map(s =>
         `${s.out_name} → ${s.in_name} (+${s.points_gained} pts)`
       ).join(', ')}`);
     }
   });
 
-  console.log(`[K-109 Phase 2] Successfully calculated ${scoresMap.size}/${entryIds.length} scores using K-108c`);
+  console.log(`[K-136] Successfully calculated ${scoresMap.size}/${entryIds.length} scores from ${dataSource}`);
 
   return scoresMap;
 }

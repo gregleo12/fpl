@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.3 (December 26, 2025)
+**Current Version:** v4.3.4 (December 26, 2025)
+
+---
+
+## v4.3.4 - K-136: CRITICAL FIX - Live Data Not Displaying in H2H Fixtures & My Team (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed live GW data not displaying in main views (H2H Fixtures list and My Team pitch).
+
+### The Bug
+
+During live gameweeks, modals showed correct live scores but main views showed 0-0 or 0 points:
+- **H2H Fixtures list:** All matches showing 0-0 ❌
+- **My Team pitch:** GW PTS showing 0, players showing opponents instead of points ❌
+- **Modals:** Working correctly (2-0, live player points) ✅
+
+### Root Cause
+
+Both routes used `calculateTeamGameweekScore()` which queries the database for player stats. For live GWs:
+- `manager_picks` exists in database (synced before GW starts) ✅
+- `player_gameweek_stats` has NO data until GW completes ❌
+- Database query returns 0 for all player points → displayed as 0-0
+
+### The Fix
+
+**H2H Fixtures Route:**
+- Added GW status detection from FPL API
+- For live/upcoming GWs: Use `calculateManagerLiveScore()` (fetches from FPL API)
+- For completed GWs: Use `calculateTeamGameweekScore()` (queries database)
+
+**My Team Route:**
+- Added GW status detection from FPL API
+- For live/upcoming GWs: Use `calculateManagerLiveScore()` which returns full squad data with live points
+- For completed GWs: Continue using database queries
+- Unified data format handling for both sources
+
+### Files Modified
+
+1. `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
+   - Added import for `calculateManagerLiveScore`
+   - Added status parameter to `calculateScoresViaK108c()`
+   - Conditional calculator based on GW status
+
+2. `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`
+   - Added import for `calculateManagerLiveScore`
+   - Detect GW status from bootstrap data BEFORE calculating scores
+   - Build player data from live squad for live GWs
+   - Build player data from database for completed GWs
+
+### Impact
+
+Live gameweeks now display correctly:
+- H2H Fixtures show actual live scores (e.g., 2-0, not 0-0)
+- My Team shows live GW points and player points
+- Completed gameweeks continue using database (K-27 cache) for performance
 
 ---
 

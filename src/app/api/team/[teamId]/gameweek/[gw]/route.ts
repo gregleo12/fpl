@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { getDatabase } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -26,62 +27,138 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
-    console.log(`[K-109 Phase 2] Fetching team data for entry ${entryId}, GW${gameweek}...`);
+    console.log(`[K-136] Fetching team data for entry ${entryId}, GW${gameweek}...`);
 
-    // K-109 Phase 2: Use K-108c for accurate score calculation
-    const teamScore = await calculateTeamGameweekScore(entryId, gameweek);
-    console.log(`[K-109 Phase 2] K-108c score: ${teamScore.points.net_total} pts, status: ${teamScore.status}`);
+    // K-136: Determine GW status from FPL API FIRST
+    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+    if (!bootstrapResponse.ok) {
+      return NextResponse.json({ error: 'Failed to fetch gameweek status' }, { status: 500 });
+    }
+
+    const bootstrapData = await bootstrapResponse.json();
+    const currentEvent = bootstrapData.events.find((e: any) => e.id === gameweek);
+
+    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    if (currentEvent) {
+      if (currentEvent.finished) {
+        status = 'completed';
+      } else if (currentEvent.is_current || currentEvent.data_checked) {
+        status = 'in_progress';
+      }
+    }
+
+    console.log(`[K-136] GW${gameweek} status: ${status}`);
+
+    // Fetch entry data for overall stats
+    const entryResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`);
+    const entryData = entryResponse.ok ? await entryResponse.json() : null;
+
+    // K-136: Use appropriate calculator based on status
+    let teamScore: any;
+    let liveSquadData: any = null;
+
+    if (status === 'in_progress' || status === 'upcoming') {
+      console.log(`[K-136] Using FPL API for live/upcoming GW`);
+      const liveResult = await calculateManagerLiveScore(entryId, gameweek, status);
+      teamScore = {
+        points: {
+          starting_xi_total: 0, // Not available from live calculator
+          captain_bonus: liveResult.breakdown.captainPoints,
+          bench_boost_total: 0, // Not available from live calculator
+          auto_sub_total: 0, // Not available from live calculator
+          gross_total: liveResult.score + liveResult.breakdown.transferCost,
+          transfer_cost: liveResult.breakdown.transferCost,
+          net_total: liveResult.score
+        },
+        auto_subs: liveResult.autoSubs?.substitutions || [],
+        status: status as 'in_progress'
+      };
+      liveSquadData = liveResult.squad;  // Use squad data from live calculation
+    } else {
+      console.log(`[K-136] Using database for completed GW`);
+      teamScore = await calculateTeamGameweekScore(entryId, gameweek);
+    }
+
+    console.log(`[K-136] Score: ${teamScore.points.net_total} pts`);
 
     const db = await getDatabase();
 
-    // Get manager picks from database
-    // K-120: Use DISTINCT ON to handle managers in multiple leagues
-    // (same picks stored multiple times with different league_ids)
-    const picksResult = await db.query(
-      `SELECT DISTINCT ON (position, player_id)
-         player_id, position, multiplier, is_captain, is_vice_captain
-       FROM manager_picks
-       WHERE entry_id = $1 AND event = $2
-       ORDER BY position, player_id`,
-      [entryId, gameweek]
-    );
+    // K-136: For live GWs, we already have squad data from calculateManagerLiveScore
+    // For completed GWs, we need to query database
+    let picks: any[];
+    let playersResult: any;
+    let fixturesData: any[];
 
-    if (picksResult.rows.length === 0) {
-      return NextResponse.json({ error: 'No picks found' }, { status: 404 });
+    if (liveSquadData) {
+      // Use live data from calculateManagerLiveScore
+      console.log(`[K-136] Building picks from live squad data`);
+      const allPlayers = [...liveSquadData.starting11, ...liveSquadData.bench];
+      picks = allPlayers.map((player: any, index: number) => ({
+        player_id: player.id,
+        position: index + 1,
+        multiplier: player.multiplier,
+        is_captain: player.isCaptain || false,
+        is_vice_captain: player.isViceCaptain || false
+      }));
+
+      // For live GWs, player data comes from the squad
+      playersResult = {
+        rows: allPlayers.map((player: any) => ({
+          id: player.id,
+          web_name: player.name,
+          team: player.team,
+          team_code: player.teamCode || 0,
+          element_type: player.position,
+          event_points: player.points,
+          minutes: player.minutes || 0,
+          bps: player.bps || 0,
+          bonus: player.bonus || 0
+        }))
+      };
+
+      // Fetch fixtures for opponent info
+      const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
+      fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
+    } else {
+      // Use database for completed GWs
+      console.log(`[K-136] Querying database for completed GW`);
+      const picksResult = await db.query(
+        `SELECT DISTINCT ON (position, player_id)
+           player_id, position, multiplier, is_captain, is_vice_captain
+         FROM manager_picks
+         WHERE entry_id = $1 AND event = $2
+         ORDER BY position, player_id`,
+        [entryId, gameweek]
+      );
+
+      if (picksResult.rows.length === 0) {
+        return NextResponse.json({ error: 'No picks found' }, { status: 404 });
+      }
+
+      picks = picksResult.rows;
+      const playerIds = picks.map((p: any) => p.player_id);
+
+      playersResult = await db.query(
+        `SELECT
+          p.id,
+          p.web_name,
+          p.team_id as team,
+          p.team_code,
+          p.element_type,
+          COALESCE(pgs.calculated_points, 0) as event_points,
+          COALESCE(pgs.minutes, 0) as minutes,
+          COALESCE(pgs.bps, 0) as bps,
+          COALESCE(pgs.bonus, 0) as bonus
+         FROM players p
+         LEFT JOIN player_gameweek_stats pgs
+           ON pgs.player_id = p.id AND pgs.gameweek = $1
+         WHERE p.id = ANY($2)`,
+        [gameweek, playerIds]
+      );
+
+      const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
+      fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
     }
-
-    const picks = picksResult.rows;
-    const playerIds = picks.map((p: any) => p.player_id);
-
-    // Get player data from database (K-108 calculated points)
-    const playersResult = await db.query(
-      `SELECT
-        p.id,
-        p.web_name,
-        p.team_id as team,
-        p.team_code,
-        p.element_type,
-        COALESCE(pgs.calculated_points, 0) as event_points,
-        COALESCE(pgs.minutes, 0) as minutes,
-        COALESCE(pgs.bps, 0) as bps,
-        COALESCE(pgs.bonus, 0) as bonus
-       FROM players p
-       LEFT JOIN player_gameweek_stats pgs
-         ON pgs.player_id = p.id AND pgs.gameweek = $1
-       WHERE p.id = ANY($2)`,
-      [gameweek, playerIds]
-    );
-
-    // Fetch FPL API data for fixtures and teams
-    const [bootstrapResponse, entryResponse, fixturesResponse] = await Promise.all([
-      fetch('https://fantasy.premierleague.com/api/bootstrap-static/'),
-      fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`),
-      fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`)
-    ]);
-
-    const bootstrapData = bootstrapResponse.ok ? await bootstrapResponse.json() : null;
-    const entryData = entryResponse.ok ? await entryResponse.json() : null;
-    const fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
 
     // Create team lookup
     const teamLookup: { [key: number]: any } = {};
@@ -116,14 +193,23 @@ export async function GET(
       };
     });
 
-    // K-109 Phase 3: Create auto-sub lookup from K-108c data
+    // K-136: Create auto-sub lookup (handles both database and live format)
     const autoSubLookup: { [key: number]: { is_sub_in?: boolean; is_sub_out?: boolean } } = {};
-    teamScore.auto_subs.forEach(sub => {
-      autoSubLookup[sub.in] = { is_sub_in: true };
-      autoSubLookup[sub.out] = { is_sub_out: true };
-    });
+    if (teamScore.auto_subs && teamScore.auto_subs.length > 0) {
+      teamScore.auto_subs.forEach((sub: any) => {
+        if (liveSquadData) {
+          // Live format: { playerOut: {...}, playerIn: {...} }
+          autoSubLookup[sub.playerIn.id] = { is_sub_in: true };
+          autoSubLookup[sub.playerOut.id] = { is_sub_out: true };
+        } else {
+          // Database format: { in: id, out: id }
+          autoSubLookup[sub.in] = { is_sub_in: true };
+          autoSubLookup[sub.out] = { is_sub_out: true };
+        }
+      });
+    }
 
-    console.log(`[K-109 Phase 3] Auto-subs: ${teamScore.auto_subs.length} substitutions`);
+    console.log(`[K-136] Auto-subs: ${teamScore.auto_subs?.length || 0} substitutions`);
 
     // Build player data lookup
     const playerLookup: { [key: number]: any } = {};
@@ -182,17 +268,25 @@ export async function GET(
         transfer_cost: teamScore.points.transfer_cost,
         net_total: teamScore.points.net_total
       },
-      autoSubs: teamScore.auto_subs.map(sub => ({
-        playerOut: {
-          id: sub.out,
-          name: sub.out_name
-        },
-        playerIn: {
-          id: sub.in,
-          name: sub.in_name,
-          points: sub.points_gained
+      autoSubs: (teamScore.auto_subs || []).map((sub: any) => {
+        if (liveSquadData) {
+          // Live format already matches frontend expectation
+          return sub;
+        } else {
+          // Database format needs transformation
+          return {
+            playerOut: {
+              id: sub.out,
+              name: sub.out_name
+            },
+            playerIn: {
+              id: sub.in,
+              name: sub.in_name,
+              points: sub.points_gained
+            }
+          };
         }
-      })),
+      }),
       chip: teamScore.active_chip,
       captain: {
         name: teamScore.captain_name
