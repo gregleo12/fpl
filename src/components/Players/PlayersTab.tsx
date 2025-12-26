@@ -118,6 +118,11 @@ export function PlayersTab() {
       });
 
       if (!response.ok) {
+        const data = await response.json();
+        // Check if response contains FPLError structure
+        if (data.error && data.error.message) {
+          throw new Error(`${data.error.icon} ${data.error.message}`);
+        }
         throw new Error(`Failed to fetch player data (Status: ${response.status})`);
       }
 

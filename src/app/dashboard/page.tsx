@@ -102,10 +102,18 @@ export default function DashboardPage() {
       ]);
 
       if (!leagueResponse.ok) {
+        const data = await leagueResponse.json();
+        if (data.error && data.error.message) {
+          throw new Error(`${data.error.icon} ${data.error.message}`);
+        }
         throw new Error('Failed to fetch league data');
       }
 
       if (!playerResponse.ok) {
+        const data = await playerResponse.json();
+        if (data.error && data.error.message) {
+          throw new Error(`${data.error.icon} ${data.error.message}`);
+        }
         throw new Error('Failed to fetch player data');
       }
 
@@ -154,6 +162,10 @@ export default function DashboardPage() {
       });
 
       if (!response.ok) {
+        const data = await response.json();
+        if (data.error && data.error.message) {
+          throw new Error(`${data.error.icon} ${data.error.message}`);
+        }
         throw new Error('Failed to fetch player data');
       }
 

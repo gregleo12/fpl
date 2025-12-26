@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculatePoints, calculateProvisionalBonus, type Position, type PlayerLiveData } from '@/lib/pointsCalculator';
+import { detectFPLError } from '@/lib/fpl-errors';
 
 // Force dynamic rendering for fresh data
 export const dynamic = 'force-dynamic';
@@ -76,9 +77,10 @@ export async function GET(
 
   } catch (error: any) {
     console.error('[K-108] Error fetching player data:', error);
+    const fplError = detectFPLError(error, error.response?.status || error.status);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch player data' },
-      { status: 500 }
+      { error: fplError },
+      { status: error.response?.status || error.status || 500 }
     );
   }
 }
@@ -90,7 +92,9 @@ async function getGameweekStatus(gameweek: number): Promise<GWStatus> {
   try {
     const response = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     if (!response.ok) {
-      throw new Error('Failed to fetch bootstrap data');
+      const error = new Error('Failed to fetch bootstrap data');
+      (error as any).status = response.status;
+      throw error;
     }
 
     const bootstrapData = await response.json();
@@ -292,7 +296,10 @@ async function fetchFromAPI(
   ]);
 
   if (!bootstrapResponse.ok || !liveResponse.ok || !fixturesResponse.ok) {
-    throw new Error('Failed to fetch FPL API data');
+    const failedResponse = !bootstrapResponse.ok ? bootstrapResponse : !liveResponse.ok ? liveResponse : fixturesResponse;
+    const error = new Error('Failed to fetch FPL API data');
+    (error as any).status = failedResponse.status;
+    throw error;
   }
 
   const bootstrapData = await bootstrapResponse.json();

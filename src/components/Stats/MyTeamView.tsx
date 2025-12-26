@@ -63,6 +63,12 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
       ]);
 
       if (!leagueResponse.ok || !playerResponse.ok) {
+        const failedResponse = !leagueResponse.ok ? leagueResponse : playerResponse;
+        const data = await failedResponse.json();
+        // Check if response contains FPLError structure
+        if (data.error && data.error.message) {
+          throw new Error(`${data.error.icon} ${data.error.message}`);
+        }
         throw new Error('Failed to fetch data');
       }
 

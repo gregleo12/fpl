@@ -47,7 +47,7 @@ npm run build
 
 ## Current Version
 
-**v4.2.9** (December 26, 2025)
+**v4.2.10** (December 26, 2025)
 
 Fixed Monthly Awards page - removed WhatsApp buttons, added best/worst for each category, fixed Luck Index, improved mobile layout.
 

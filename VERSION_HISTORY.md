@@ -2,7 +2,35 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.9 (December 26, 2025)
+**Current Version:** v4.2.10 (December 26, 2025)
+
+---
+
+## v4.2.10 - K-130: Fix FPL Update Error Messages (Dec 26, 2025)
+
+**Bug Fix:** Replaced generic error messages with user-friendly K-61 FPL error detection. Now shows "⏳ FPL is updating. Please try again in a few minutes." during API downtime instead of "Failed to fetch data".
+
+### What Changed
+
+**Fixed:**
+- API endpoints now use `detectFPLError()` to detect HTTP 503 (FPL updating) and other specific errors
+- Frontend components now display FPLError messages with icon and user-friendly text
+- Players Tab shows FPL-specific error messages instead of "Failed to fetch player data"
+- Dashboard shows FPL-specific error messages instead of generic errors
+- Stats components show FPL-specific error messages
+
+### Files Modified:
+- `/src/app/api/gw/[gw]/players/route.ts` - Added detectFPLError import and error handling
+- `/src/components/Players/PlayersTab.tsx` - Parse and display FPLError messages
+- `/src/components/Stats/MyTeamView.tsx` - Parse and display FPLError messages
+- `/src/app/dashboard/page.tsx` - Parse and display FPLError messages (2 locations)
+
+### K-61 Integration:
+- HTTP 503 → "⏳ FPL is updating. Please try again in a few minutes."
+- HTTP 429 → "⏱️ Too many requests. Please wait a moment."
+- HTTP 404 → "❌ League not found. Please check the ID."
+- Network errors → "🌐 Network error. Please check your connection."
+- All errors include icon and clear user guidance
 
 ---
 
