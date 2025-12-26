@@ -98,6 +98,15 @@ export async function GET(
     const startGW = gameweeks[0];
     const endGW = gameweeks[gameweeks.length - 1];
 
+    // Get ALL completed gameweeks for season-wide averages in luck calculation
+    const allCompletedGWs = await db.query(`
+      SELECT DISTINCT event
+      FROM pl_fixtures
+      WHERE finished = true
+      ORDER BY event
+    `);
+    const seasonGameweeks = allCompletedGWs.rows.map((row: any) => row.event);
+
     // Fetch all managers in this league
     const managersResult = await db.query(`
       SELECT m.entry_id, m.player_name, m.team_name
@@ -130,7 +139,7 @@ export async function GET(
       calculateBestGameweek(db, gameweeks, managers),
       calculateForm(db, gameweeks, managers),
       calculateConsistency(db, gameweeks, managers),
-      calculateLuck(db, leagueId, gameweeks, managers),
+      calculateLuck(db, leagueId, gameweeks, seasonGameweeks, managers),
       calculateCaptain(db, leagueId, gameweeks, managers),
       calculateBench(db, gameweeks, managers)
     ]);
@@ -292,11 +301,13 @@ async function calculateLuck(
   db: any,
   leagueId: number,
   gameweeks: number[],
+  seasonGameweeks: number[],
   managers: any[]
 ) {
   try {
     const result = await db.query(`
       WITH manager_avg AS (
+        -- Use season-wide average for consistent baseline
         SELECT
           entry_id,
           AVG(points - COALESCE(event_transfers_cost, 0)) as avg_points
@@ -319,8 +330,8 @@ async function calculateLuck(
         JOIN managers m ON m.entry_id = h.entry_1_id
         JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
         JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
-        WHERE h.league_id = $3
-          AND h.event = ANY($2)
+        WHERE h.league_id = $4
+          AND h.event = ANY($3)
         GROUP BY h.entry_1_id, m.player_name, m.team_name
 
         UNION ALL
@@ -338,8 +349,8 @@ async function calculateLuck(
         JOIN managers m ON m.entry_id = h.entry_2_id
         JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
         JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
-        WHERE h.league_id = $3
-          AND h.event = ANY($2)
+        WHERE h.league_id = $4
+          AND h.event = ANY($3)
         GROUP BY h.entry_2_id, m.player_name, m.team_name
       ),
       -- K-134: Aggregate luck across both sides of matches
@@ -363,7 +374,7 @@ async function calculateLuck(
         END as formatted_value
       FROM aggregated_luck
       ORDER BY total_luck DESC
-    `, [managers.map(m => m.entry_id), gameweeks, leagueId]);
+    `, [managers.map(m => m.entry_id), seasonGameweeks, gameweeks, leagueId]);
 
     return {
       best: result.rows[0] || null,  // Luckiest (highest luck)

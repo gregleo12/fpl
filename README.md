@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.1** (December 26, 2025)
+**v4.3.2** (December 26, 2025)
 
-Standardized Season Stats card headers - all 9 cards now have consistent layout with Captain Points toggle added.
+Monthly Awards luck calculation now uses season-wide averages for consistency with Season Stats.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

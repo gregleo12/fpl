@@ -2,7 +2,38 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.1 (December 26, 2025)
+**Current Version:** v4.3.2 (December 26, 2025)
+
+---
+
+## v4.3.2 - Monthly Awards Luck Calculation Consistency (Dec 26, 2025)
+
+**Data Accuracy:** Changed Monthly Awards luck calculation to use season-wide averages for consistency with Season Stats.
+
+### What Changed
+
+**Before:**
+- Monthly Awards luck used monthly averages only
+- Formula: `(your_pts - your_monthly_avg) - (opponent_pts - opponent_monthly_avg)`
+- Problem: You could be "unlucky" in a month you dominated if opponents dominated even more
+- Inconsistent with season-long Luck Index calculation
+
+**After:**
+- Monthly Awards luck now uses season-wide averages
+- Formula: `(your_pts - your_season_avg) - (opponent_pts - opponent_season_avg)`
+- Measures: "Did I face opponents on hot/cold streaks relative to their normal level?"
+- Consistent with Season Stats Luck Index
+
+### Why This Matters
+
+**Example:** If Thomas averaged 70pts in December but his season average is 65pts:
+- **Old method:** Compares Thomas's December performance to everyone's December average
+- **New method:** Shows if Thomas faced opponents playing above/below their season baseline in December
+
+This makes luck awards more intuitive - they now measure whether you faced opponents during their hot or cold streaks, regardless of your own form that month.
+
+**Files Modified:**
+- `src/app/api/league/[id]/stats/awards/[month]/route.ts`
 
 ---
 
