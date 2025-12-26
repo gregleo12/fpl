@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamTotal, type ManagerPick, type PlayerData, type ChipType } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 // Force dynamic rendering for fresh data
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * K-108c: Team Totals Calculation
+ * K-108c + K-136: Team Totals Calculation
  *
  * GET /api/gw/[gw]/team/[teamId]
  *
@@ -18,6 +19,8 @@ export const revalidate = 0;
  * - Auto-subs
  * - Transfer cost
  * - Verification against FPL official total
+ *
+ * K-136: Uses FPL API for live/upcoming GWs, database for completed GWs
  */
 export async function GET(
   request: NextRequest,
@@ -35,6 +38,75 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid team ID' }, { status: 400 });
     }
 
+    // K-136: Determine GW status from FPL API FIRST
+    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+    if (!bootstrapResponse.ok) {
+      return NextResponse.json({ error: 'Failed to fetch gameweek status' }, { status: 500 });
+    }
+
+    const bootstrapData = await bootstrapResponse.json();
+    const currentEvent = bootstrapData.events.find((e: any) => e.id === gameweek);
+
+    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    if (currentEvent) {
+      if (currentEvent.finished) {
+        status = 'completed';
+      } else if (currentEvent.is_current || currentEvent.data_checked) {
+        status = 'in_progress';
+      }
+    }
+
+    console.log(`[K-136] /api/gw/${gameweek}/team/${entry_id} - GW status: ${status}`);
+
+    // K-136: For live/upcoming GWs, use FPL API
+    if (status === 'in_progress' || status === 'upcoming') {
+      console.log(`[K-136] Using FPL API for live/upcoming GW`);
+      const liveResult = await calculateManagerLiveScore(entry_id, gameweek, status);
+
+      console.log(`[K-136] Live score: ${liveResult.score} pts`);
+
+      return NextResponse.json({
+        gameweek,
+        entry_id,
+        status: status as 'in_progress',
+        active_chip: liveResult.chip || null,
+        picks: {
+          starting_xi: liveResult.squad.starting11.map((p: any) => ({
+            player_id: p.id,
+            web_name: p.name,
+            position: p.position,
+            is_captain: p.multiplier > 1,
+            is_vice_captain: false,
+            multiplier: p.multiplier,
+            points: p.points || 0,
+            minutes: p.minutes || 0,
+          })),
+          bench: liveResult.squad.bench.map((p: any) => ({
+            player_id: p.id,
+            web_name: p.name,
+            position: p.position,
+            points: p.points || 0,
+            minutes: p.minutes || 0,
+            auto_subbed: false,
+          })),
+        },
+        auto_subs: liveResult.autoSubs?.substitutions || [],
+        points: {
+          starting_xi_total: 0,
+          captain_bonus: liveResult.breakdown.captainPoints,
+          bench_boost_total: 0,
+          auto_sub_total: 0,
+          gross_total: liveResult.score + liveResult.breakdown.transferCost,
+          transfer_cost: liveResult.breakdown.transferCost,
+          net_total: liveResult.score,
+          fpl_total: null,
+          match: null,
+        },
+      });
+    }
+
+    // For completed GWs, use database (original K-108c logic)
+    console.log(`[K-136] Using database for completed GW`);
     const db = await getDatabase();
 
     // 1. Get manager picks
