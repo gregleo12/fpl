@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.17** (December 26, 2025)
+**v4.3.0** (December 26, 2025)
 
-HOTFIX: Fixed Luck Index Monthly Awards - wrong column names (entry_1 vs entry_1_id).
+Data Integrity & Monthly Awards - Auto-sync, Season Stats accuracy, Team Value fix, and Awards improvements.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

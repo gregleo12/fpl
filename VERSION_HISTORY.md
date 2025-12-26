@@ -2,11 +2,59 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.17 (December 26, 2025)
+**Current Version:** v4.3.0 (December 26, 2025)
 
 ---
 
-## v4.2.17 - HOTFIX: Fix Luck Index Column Names (Dec 26, 2025)
+## v4.3.0 - Data Integrity & Monthly Awards (Dec 26, 2025)
+
+**Major Release:** Comprehensive data integrity improvements, Monthly Awards fixes, and auto-sync functionality.
+
+### Summary
+This release consolidates 7 major improvements (K-131 through K-134) focused on data accuracy, user experience, and eliminating common pain points.
+
+### Key Changes
+
+**🔄 Auto-Sync on New Gameweek (K-131)**
+- Automatically detects when new gameweek starts
+- Triggers sync without user intervention
+- Shows "Syncing GW18 data..." banner
+- Eliminates errors like "Failed to fetch team data"
+
+**💰 Team Value Fix (K-132)**
+- Fixed showing £105.3m (total) instead of £103.3m (squad only)
+- Now correctly separates squad value from bank
+
+**📊 Season Stats Data Integrity (K-133)**
+- **Major Fix:** No more fluctuating rankings during live matches
+- All Season Stats now use ONLY completed gameweeks (`finished === true`)
+- During live GW: Shows completed GWs only (stable data)
+- After GW finishes: Automatically includes new GW
+- Affects all 9 stat cards: Captain Points, Form, Consistency, GW Records, Luck, Streaks, Bench, Chips, Value
+
+**🏆 Monthly Awards Fixes (K-134)**
+1. **Consistency Labels** - "High/Low" instead of "Best/Worst" (more neutral)
+2. **Captain Points** - Now uses multiplied points (2x captain, 3x TC)
+3. **Bench Points** - Shows "87 PTS (8.7%)" instead of just "8.7%"
+4. **Luck Index** - Fixed to include all managers (was missing entry_2 managers)
+
+### Files Modified: 6
+- `/src/app/dashboard/page.tsx` - Auto-sync logic
+- `/src/components/Dashboard/SyncBanner.tsx` - NEW: Sync status banner
+- `/src/components/Dashboard/SyncBanner.module.css` - NEW: Banner styles
+- `/src/app/api/league/[id]/sync-status/route.ts` - NEW: Sync status endpoint
+- `/src/app/api/league/[id]/stats/season/route.ts` - Finished GWs filter
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Awards fixes
+- `/src/components/Stats/season/AwardCard.tsx` - Dynamic labels
+
+### Previous Versions Included
+- v4.2.15 - K-133: Season Stats Only Use Completed Gameweeks
+- v4.2.16 - K-134: Monthly Awards Fixes
+- v4.2.17 - HOTFIX: Luck Index Column Names
+
+---
+
+## v4.2.17 - INCLUDED IN v4.3.0
 
 **Critical Bug Fix:** Fixed Luck Index still showing "No data" in Monthly Awards.
 
