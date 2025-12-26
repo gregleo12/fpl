@@ -77,6 +77,8 @@ export async function GET(
           net_total: liveResult.score
         },
         auto_subs: liveResult.autoSubs?.substitutions || [],
+        active_chip: liveResult.chip || null,
+        captain_name: liveResult.captain?.name || null,
         status: status as 'in_progress'
       };
       liveSquadData = liveResult.squad;  // Use squad data from live calculation
@@ -285,6 +287,7 @@ export async function GET(
     }));
 
     console.log(`[K-109 Phase 2] Returning ${transformedPicks.length} picks with K-108c data`);
+    console.log(`[K-136b DEBUG] Response gwPoints: ${teamScore.points.net_total}`);
 
     // Return enriched data
     return NextResponse.json({
