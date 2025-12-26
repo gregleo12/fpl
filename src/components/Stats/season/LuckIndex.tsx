@@ -18,6 +18,7 @@ interface Props {
 }
 
 export function LuckIndex({ data, myTeamId }: Props) {
+  const [showLucky, setShowLucky] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   if (!data || data.length === 0) {
@@ -36,30 +37,26 @@ export function LuckIndex({ data, myTeamId }: Props) {
     );
   }
 
-  // Sort by luck_index descending (luckiest first)
-  const sortedData = [...data].sort((a, b) => b.luck_index - a.luck_index);
+  // Sort data based on toggle
+  const sortedData = showLucky
+    ? [...data].sort((a, b) => b.luck_index - a.luck_index)  // High luck first (lucky)
+    : [...data].sort((a, b) => a.luck_index - b.luck_index); // Low luck first (unlucky)
 
-  // Show top 5 + bottom 2 in card view
   const top5 = sortedData.slice(0, 5);
-  const bottom2 = sortedData.slice(-2);
 
-  const formatLuck = (luck: number) => {
-    const sign = luck >= 0 ? '+' : '';
-    const emoji = luck >= 0 ? '🍀' : '😤';
-    const color = luck >= 0 ? '#00ff87' : '#ff4444';
-    return { display: `${sign}${Math.round(luck)}`, emoji, color };
-  };
-
+  const IconComponent = Sparkles;
+  const titleText = 'Luck Index';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-      <Sparkles size={18} color="#00ff87" /> Luck Index
+      <IconComponent size={18} color="#00ff87" /> {titleText}
     </div>
   );
 
   // Render function for items (used by both card and modal)
   const renderItem = (item: LuckIndexData, index: number) => {
     const isMyTeam = myTeamId && item.entry_id.toString() === myTeamId;
-    const luckInfo = formatLuck(item.luck_index);
+    const sign = item.luck_index >= 0 ? '+' : '';
+    const color = item.luck_index >= 0 ? '#00ff87' : '#ff4444';
 
     return (
       <div className={styles.listItem}>
@@ -71,11 +68,8 @@ export function LuckIndex({ data, myTeamId }: Props) {
           <div className={styles.meta}>{item.team_name}</div>
         </div>
         <div className={styles.stats}>
-          <div
-            className={styles.statValue}
-            style={{ color: luckInfo.color }}
-          >
-            {luckInfo.display} <span style={{ fontSize: '1rem' }}>{luckInfo.emoji}</span>
+          <div className={styles.statValue} style={{ color }}>
+            {sign}{Math.round(item.luck_index)}
           </div>
         </div>
       </div>
@@ -87,37 +81,31 @@ export function LuckIndex({ data, myTeamId }: Props) {
       <div className={`${styles.card} ${styles.clickable}`} onClick={() => setShowModal(true)}>
         <div className={styles.cardHeader}>
           <h4 className={styles.cardTitle}>{title}</h4>
+          <div className={styles.toggle} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`${styles.toggleButton} ${showLucky ? styles.active : ''}`}
+              onClick={() => setShowLucky(true)}
+            >
+              Lucky
+            </button>
+            <button
+              className={`${styles.toggleButton} ${!showLucky ? styles.active : ''}`}
+              onClick={() => setShowLucky(false)}
+            >
+              Unlucky
+            </button>
+          </div>
         </div>
         <div className={styles.subtitle}>
           Opponent performance vs their average
         </div>
 
         <div className={styles.list}>
-          {/* Top 5 luckiest */}
           {top5.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>
           ))}
-
-          {/* Divider before unluckiest */}
-          {bottom2.length > 0 && (
-            <div style={{
-              margin: '0.75rem 0',
-              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-              paddingTop: '0.75rem'
-            }} />
-          )}
-
-          {/* Bottom 2 unluckiest */}
-          {bottom2.map((item) => {
-            const index = sortedData.findIndex(d => d.entry_id === item.entry_id);
-            return (
-              <div key={item.entry_id}>
-                {renderItem(item, index)}
-              </div>
-            );
-          })}
         </div>
 
         <div className={styles.clickHint}>Click to view full rankings</div>
@@ -126,8 +114,8 @@ export function LuckIndex({ data, myTeamId }: Props) {
       <FullRankingModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title="Luck Index - Full Rankings"
-        icon={<Sparkles size={18} color="#00ff87" />}
+        title={`Luck Index - Full Rankings${showLucky ? ' (Luckiest)' : ' (Unluckiest)'}`}
+        icon={<IconComponent size={18} color="#00ff87" />}
         data={sortedData}
         renderItem={renderItem}
       />

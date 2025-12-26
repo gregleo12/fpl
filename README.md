@@ -47,7 +47,7 @@ npm run build
 
 ## Current Version
 
-**v4.2.0** (December 24, 2025)
+**v4.2.1** (December 26, 2025)
 
 Season Stats expansion with 4 new leaderboard cards: Bench Points, Form Rankings, Consistency tracker, and Luck Index.
 

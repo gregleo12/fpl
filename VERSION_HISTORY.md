@@ -1,8 +1,51 @@
 # FPL H2H Analytics - Version History
 
 **Project Start:** October 23, 2024
-**Total Releases:** 296+ versions
-**Current Version:** v4.2.0 (December 24, 2025)
+**Total Releases:** 297+ versions
+**Current Version:** v4.2.1 (December 26, 2025)
+
+---
+
+## v4.2.1 - K-121: Fix Luck Index Calculation (Dec 26, 2025)
+
+**Bug Fix:** Fixed critical Luck Index calculation bug causing inflated values and added UI improvements for better user experience.
+
+### Problem
+
+Luck Index was showing impossible values with all managers having large positive scores (+1130 to +1293). In a zero-sum H2H game, luck should distribute with mix of positive/negative values summing to approximately 0.
+
+### Root Cause
+
+The `h2h_matches` table contained matches for GWs 1-38, but `manager_gw_history` only had data for completed GWs 1-17. The calculation was:
+- Computing manager averages from 17 GWs (correct)
+- Comparing against 38 GWs of H2H matches (incorrect)
+- Result: Each manager had 22-30 matches instead of expected 17, causing ~2.2x inflation
+
+### Fix Applied
+
+**Backend Changes (`/src/app/api/league/[id]/stats/season/route.ts`):**
+- Added `completedGameweeks` parameter to `calculateLuckIndex()` function
+- Filtered manager average query: `AND event = ANY($2)` to only include completed GWs
+- Filtered H2H matches query: `AND event = ANY($2)` to only include completed GWs
+- Result: Correct luck values ranging from -106 to +72 (reasonable distribution)
+
+**Frontend Changes (`/src/components/Stats/season/LuckIndex.tsx`):**
+- Removed emoji display (🍀 and 😤) - now shows colored numbers only
+- Added Lucky/Unlucky toggle (similar to Bench Points Most/Least pattern)
+- Changed from showing top 5 + bottom 2 to showing only top 5 based on toggle state
+- Modal title updates to show "(Luckiest)" or "(Unluckiest)" based on toggle
+
+### Verification
+
+Manual SQL calculation confirmed expected values:
+- Before fix: All managers +223 to +998 (statistically impossible)
+- After fix: Range from -106 to +72 with mix of positive/negative
+- Sum of luck across all managers: Close to 0 (expected for zero-sum game)
+
+### Related
+
+**K-121:** Luck Index calculation bug ticket
+**Part of:** v4.2.0 Season Stats Expansion
 
 ---
 
