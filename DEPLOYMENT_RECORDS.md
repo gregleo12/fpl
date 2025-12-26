@@ -1,3 +1,32 @@
+## v4.2.3 Staging Deployment
+
+**Date:** December 26, 2025
+**Environment:** Staging (fpl-staging-production.up.railway.app)
+**Status:** ✅ Deployed to Staging
+
+### Deployed Enhancements
+- K-123: Simplified Chip Performance display
+- Replaced chip list (WC (GW6), BB (GW8)...) with Won/Drew/Lost summary
+- Single line display: "Won 3  Lost 1" (green/red color-coded)
+- Only shows categories with count > 0
+
+### Files Modified
+- `/src/app/api/league/[id]/stats/season/route.ts` - Added win/draw/loss counts
+- `/src/components/Stats/season/ChipPerformance.tsx` - Updated display logic
+- VERSION_HISTORY.md - Added v4.2.3 entry
+- README.md - Updated version
+
+### Verification Required
+- [ ] Chip Performance shows "Won X  Lost Y" instead of chip list
+- [ ] Won is green (#00ff87), Lost is red (#ff4444)
+- [ ] Only non-zero categories are displayed
+- [ ] Works for both "Played" and "Faced" views
+- [ ] Single line (no wrapping)
+
+**Next Step:** After staging verification, deploy to production
+
+---
+
 ## v4.2.2 Staging Deployment
 
 **Date:** December 26, 2025
