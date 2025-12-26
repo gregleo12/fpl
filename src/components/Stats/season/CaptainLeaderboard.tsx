@@ -59,7 +59,7 @@ export function CaptainLeaderboard({ data }: Props) {
           Total points from captain picks
         </div>
         <div className={styles.list}>
-          {data.slice(0, 5).map((item, index) => (
+          {data.slice(0, 3).map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>

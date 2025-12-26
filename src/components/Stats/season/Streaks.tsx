@@ -83,7 +83,7 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
         ) : (
           <>
             <div className={styles.list}>
-              {currentData.slice(0, 5).map((manager, index) => (
+              {currentData.slice(0, 3).map((manager, index) => (
                 <div key={manager.entry_id}>
                   {renderItem(manager, index)}
                 </div>

@@ -2,7 +2,89 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.4 (December 26, 2025)
+**Current Version:** v4.2.5 (December 26, 2025)
+
+---
+
+## v4.2.5 - K-124: Reduce Season Stats Cards to Top 3 (Dec 26, 2025)
+
+**Enhancement:** Reduced all Season Stats leaderboard cards from Top 5 to Top 3 for cleaner mobile experience and less scrolling.
+
+### Rationale
+
+- **Podium mentality**: Top 3 (🥇🥈🥉) is universally understood and more meaningful
+- **Less scrolling**: With 9 Season Stats cards, reducing each from 5 to 3 entries saves significant vertical space
+- **Mobile-friendly**: Better experience on smaller screens
+- **Full rankings in modal**: Users can still tap any card to see all 20 managers
+
+### Changes
+
+Updated 9 Season Stats components to display Top 3 instead of Top 5:
+
+**Cards Updated:**
+1. **Captain Points** - Top 3 highest captain scorers
+2. **Chip Performance** - Top 3 chips played/faced
+3. **Streaks** - Top 3 winning/losing streaks
+4. **GW Records** - Top 3 best/worst gameweeks
+5. **Team Value** - Top 3 highest team values
+6. **Bench Points** - Top 3 most bench points (total/percentage)
+7. **Form Rankings** - Top 3 in form (Last 5/Last 10)
+8. **Consistency** - Top 3 most consistent/variable
+9. **Luck Index** - Top 3 luckiest/unluckiest
+
+### Implementation
+
+Changed `slice(0, 5)` to `slice(0, 3)` in all components:
+- Components using inline slice: Direct update
+- Components using `top5` variable: Renamed to `top3` for clarity
+
+**Files Modified:**
+- `/src/components/Stats/season/CaptainLeaderboard.tsx`
+- `/src/components/Stats/season/ChipPerformance.tsx`
+- `/src/components/Stats/season/Streaks.tsx`
+- `/src/components/Stats/season/BestWorstGW.tsx`
+- `/src/components/Stats/season/ValueLeaderboard.tsx`
+- `/src/components/Stats/season/BenchPoints.tsx`
+- `/src/components/Stats/season/FormRankings.tsx`
+- `/src/components/Stats/season/Consistency.tsx`
+- `/src/components/Stats/season/LuckIndex.tsx`
+
+### Visual Impact
+
+**Before (Top 5):**
+```
+┌─────────────────────┐
+│ 🏆 Captain Points   │
+│ 1  Player A  274 PTS│
+│ 2  Player B  250 PTS│
+│ 3  Player C  245 PTS│
+│ 4  Player D  240 PTS│
+│ 5  Player E  235 PTS│
+│ Click to view...    │
+└─────────────────────┘
+```
+
+**After (Top 3):**
+```
+┌─────────────────────┐
+│ 🏆 Captain Points   │
+│ 1  Player A  274 PTS│
+│ 2  Player B  250 PTS│
+│ 3  Player C  245 PTS│
+│ Click to view...    │
+└─────────────────────┘
+```
+
+### Result
+
+- 40% reduction in vertical space per card (5 entries → 3 entries)
+- Cleaner, more focused leaderboards
+- Maintains full functionality via modal view
+- Better mobile user experience
+
+### Related
+
+**K-124:** UI enhancement ticket for Top 3 reduction
 
 ---
 

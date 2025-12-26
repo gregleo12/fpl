@@ -140,7 +140,7 @@ export function ChipPerformance({ data }: Props) {
         ) : (
           <>
             <div className={styles.list}>
-              {currentData.slice(0, 5).map((manager: any, index) => (
+              {currentData.slice(0, 3).map((manager: any, index) => (
                 <div key={manager.entry_id}>
                   {renderItem(manager, index)}
                 </div>

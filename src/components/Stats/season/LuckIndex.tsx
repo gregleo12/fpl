@@ -42,7 +42,7 @@ export function LuckIndex({ data, myTeamId }: Props) {
     ? [...data].sort((a, b) => b.luck_index - a.luck_index)  // High luck first (lucky)
     : [...data].sort((a, b) => a.luck_index - b.luck_index); // Low luck first (unlucky)
 
-  const top5 = sortedData.slice(0, 5);
+  const top3 = sortedData.slice(0, 3);
 
   const IconComponent = Sparkles;
   const titleText = 'Luck Index';
@@ -101,7 +101,7 @@ export function LuckIndex({ data, myTeamId }: Props) {
         </div>
 
         <div className={styles.list}>
-          {top5.map((item, index) => (
+          {top3.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>

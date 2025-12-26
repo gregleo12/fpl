@@ -47,7 +47,7 @@ npm run build
 
 ## Current Version
 
-**v4.2.4** (December 26, 2025)
+**v4.2.5** (December 26, 2025)
 
 Fixed duplicate players bug in My Team view for managers in multiple leagues.
 

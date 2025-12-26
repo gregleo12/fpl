@@ -44,7 +44,7 @@ export function BenchPoints({ data, myTeamId }: Props) {
     ? [...data].sort((a, b) => b.total_bench_points - a.total_bench_points)  // Rank by raw points
     : [...data].sort((a, b) => b.bench_percentage - a.bench_percentage);    // Rank by percentage
 
-  const top5 = sortedData.slice(0, 5);
+  const top3 = sortedData.slice(0, 3);
 
   const IconComponent = Armchair;
   const title = (
@@ -118,7 +118,7 @@ export function BenchPoints({ data, myTeamId }: Props) {
         </div>
 
         <div className={styles.list}>
-          {top5.map((item, index) => (
+          {top3.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>

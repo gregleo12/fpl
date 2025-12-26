@@ -45,7 +45,7 @@ export function FormRankings({ data, myTeamId }: Props) {
     ? [...data].sort((a, b) => b.form_points_5 - a.form_points_5)
     : [...data].sort((a, b) => b.form_points_10 - a.form_points_10);
 
-  const top5 = sortedData.slice(0, 5);
+  const top3 = sortedData.slice(0, 3);
 
   const getTrendDisplay = (trend: number) => {
     if (trend > 0) return { arrow: '↑', value: trend, color: '#00ff87' }; // green - rising
@@ -121,7 +121,7 @@ export function FormRankings({ data, myTeamId }: Props) {
         </div>
 
         <div className={styles.list}>
-          {top5.map((item, index) => (
+          {top3.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>

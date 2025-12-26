@@ -83,7 +83,7 @@ export function BestWorstGW({ bestData, worstData }: Props) {
           </div>
         </div>
         <div className={styles.list}>
-          {data.slice(0, 5).map((item, index) => (
+          {data.slice(0, 3).map((item, index) => (
             <div key={`${item.entry_id}-${item.event}`}>
               {renderItem(item, index)}
             </div>

@@ -63,7 +63,7 @@ export function ValueLeaderboard({ data }: Props) {
         </div>
 
         <div className={styles.list}>
-          {data.slice(0, 5).map((item, index) => renderItem(item, index))}
+          {data.slice(0, 3).map((item, index) => renderItem(item, index))}
         </div>
 
         <div className={styles.clickHint}>Click to view full rankings</div>

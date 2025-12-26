@@ -43,7 +43,7 @@ export function Consistency({ data, myTeamId }: Props) {
     ? [...data].sort((a, b) => a.std_dev - b.std_dev)  // Low std dev first (most consistent)
     : [...data].sort((a, b) => b.std_dev - a.std_dev); // High std dev first (most variable)
 
-  const top5 = sortedData.slice(0, 5);
+  const top3 = sortedData.slice(0, 3);
 
   const IconComponent = Activity;
   const titleText = 'Consistency';
@@ -103,7 +103,7 @@ export function Consistency({ data, myTeamId }: Props) {
         </div>
 
         <div className={styles.list}>
-          {top5.map((item, index) => (
+          {top3.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>
