@@ -131,7 +131,7 @@ export async function GET(
       calculateBenchPoints(db, leagueId, managers),
       calculateFormRankings(db, leagueId, completedGameweeks, leagueStandings),
       calculateConsistency(db, leagueId),
-      calculateLuckIndex(db, leagueId),
+      calculateLuckIndex(db, leagueId, completedGameweeks),
     ]);
 
     return NextResponse.json({
@@ -1337,19 +1337,20 @@ async function calculateConsistency(db: any, leagueId: number) {
 }
 
 // K-119b: Calculate luck index (opponent performance vs their average)
-async function calculateLuckIndex(db: any, leagueId: number) {
+async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks: number[]) {
   try {
-    console.log('[LUCK INDEX] Calculating luck index for league:', leagueId);
+    console.log('[LUCK INDEX] Calculating luck index for league:', leagueId, 'GWs:', completedGameweeks);
 
-    // Step 1: Get each manager's average points
+    // Step 1: Get each manager's average points (only from completed GWs)
     const avgResult = await db.query(`
       SELECT
         entry_id,
         AVG(points) as avg_points
       FROM manager_gw_history
       WHERE league_id = $1
+        AND event = ANY($2)
       GROUP BY entry_id
-    `, [leagueId]);
+    `, [leagueId, completedGameweeks]);
 
     const averages: Record<number, number> = {};
     avgResult.rows.forEach((row: any) => {
@@ -1361,11 +1362,12 @@ async function calculateLuckIndex(db: any, leagueId: number) {
       sample: Object.entries(averages).slice(0, 3).map(([id, avg]) => ({ id, avg }))
     });
 
-    // Step 2: Get all H2H matches
+    // Step 2: Get all H2H matches (only from completed GWs)
     // CRITICAL: Only count each match ONCE
     // H2H matches table stores each match from both perspectives
     // (A plays B appears as both entry_1=A,entry_2=B AND entry_1=B,entry_2=A)
     // Solution: Only take matches where entry_1_id < entry_2_id
+    // ALSO: Only include matches from the same GWs we calculated averages for
     const matchesResult = await db.query(`
       SELECT
         entry_1_id,
@@ -1375,11 +1377,12 @@ async function calculateLuckIndex(db: any, leagueId: number) {
         event
       FROM h2h_matches
       WHERE league_id = $1
+        AND event = ANY($2)
         AND entry_1_id < entry_2_id
         AND entry_1_points IS NOT NULL
         AND entry_2_points IS NOT NULL
       ORDER BY event
-    `, [leagueId]);
+    `, [leagueId, completedGameweeks]);
 
     console.log('[LUCK INDEX] H2H matches:', {
       count: matchesResult.rows.length,
