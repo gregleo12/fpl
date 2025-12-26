@@ -2,15 +2,12 @@
   {
     "version": "4.3.0",
     "date": "2024-12-26",
-    "title": "Data Integrity & Monthly Awards",
+    "title": "Monthly Awards",
     "changes": [
-      "FIXED: Season Stats now only use completed gameweeks (no more fluctuating rankings during live matches)",
-      "FIXED: Monthly Awards - Luck Index now displays correctly",
-      "IMPROVED: Consistency labels changed to 'High/Low' (more neutral than Best/Worst)",
-      "IMPROVED: Captain Points now use multiplied points (2x/3x for TC)",
-      "IMPROVED: Bench Points show raw points + percentage (e.g., '87 PTS (8.7%)')",
-      "FIXED: Team Value calculation (was showing total instead of squad value)",
-      "NEW: Auto-sync on new gameweek - detects and syncs automatically"
+      "Monthly Awards now working correctly across all categories",
+      "All Season Stats now use completed gameweeks only for more stable rankings",
+      "Captain Points accurately reflect Triple Captain multipliers (3x)",
+      "Auto-sync detects new gameweeks and updates data automatically"
     ]
   },
   {
