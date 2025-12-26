@@ -1,4 +1,4 @@
-/* K-125: Award Card - Celebratory styling with gold accents */
+/* K-128: Award Card - Combined Best/Worst layout */
 .card {
   background: linear-gradient(
     135deg,
@@ -9,11 +9,7 @@
   border: 2px solid rgba(255, 215, 0, 0.3);
   border-radius: 16px;
   padding: 1.5rem;
-  text-align: center;
   transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .card:hover {
@@ -22,11 +18,20 @@
   box-shadow: 0 8px 24px rgba(255, 215, 0, 0.2);
 }
 
-/* Icon Container */
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
 .iconContainer {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto;
+  width: 56px;
+  height: 56px;
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
   border-radius: 50%;
   display: flex;
@@ -36,14 +41,70 @@
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
-/* Award Name */
-.awardName {
+.awardTitle {
   font-size: 1.125rem;
   font-weight: 700;
   color: #ffd700;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-align: center;
+}
+
+/* Winners Container */
+.winners {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.winnerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.winnerLabel {
+  text-align: center;
+}
+
+.bestLabel {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 255, 135, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 255, 135, 0.3);
+}
+
+.worstLabel {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ff4444;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+/* Divider */
+.divider {
+  width: 1px;
+  min-height: 100px;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 215, 0, 0) 0%,
+    rgba(255, 215, 0, 0.3) 50%,
+    rgba(255, 215, 0, 0) 100%
+  );
 }
 
 /* Winner Info */
@@ -51,95 +112,105 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 1rem 0;
-  border-top: 1px solid rgba(255, 215, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+  align-items: center;
+  text-align: center;
 }
 
 .teamName {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: white;
   margin: 0;
+  line-height: 1.3;
 }
 
 .managerName {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
+  line-height: 1.3;
 }
 
 .value {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #00ff87;
   margin: 0.5rem 0 0 0;
 }
 
-/* Share Button */
-.shareButton {
-  background: linear-gradient(135deg, #25D366 0%, #1DA851 100%);
-  border: none;
-  color: white;
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+.bestValue {
+  color: #00ff87;
+}
+
+.worstValue {
+  color: #ff4444;
+}
+
+.gameweek {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0.25rem 0 0 0;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.shareButton:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
-}
-
-.shareButton:active {
-  transform: scale(0.98);
-}
-
 /* No Winner State */
 .noWinner {
-  padding: 2rem 1rem;
-  color: rgba(255, 255, 255, 0.5);
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
 }
 
-.noWinner p:first-child {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-}
-
-.noWinnerSubtext {
+.noWinner p {
   font-size: 0.875rem;
   margin: 0;
   font-style: italic;
 }
 
 /* Mobile Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .card {
     padding: 1.25rem;
   }
 
   .iconContainer {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
   }
 
   .iconContainer svg {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
   }
 
-  .awardName {
+  .awardTitle {
     font-size: 1rem;
   }
 
+  .winners {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 1rem;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    min-height: 0;
+    background: linear-gradient(
+      to right,
+      rgba(255, 215, 0, 0) 0%,
+      rgba(255, 215, 0, 0.3) 50%,
+      rgba(255, 215, 0, 0) 100%
+    );
+  }
+
   .teamName {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
+  }
+
+  .managerName {
+    font-size: 0.75rem;
   }
 
   .value {

@@ -2,7 +2,41 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.7 (December 26, 2025)
+**Current Version:** v4.2.8 (December 26, 2025)
+
+---
+
+## v4.2.8 - K-128: Fix Monthly Awards Page (Dec 26, 2025)
+
+**Feature Fix:** Completely redesigned Monthly Awards page - removed WhatsApp buttons, added best/worst for each category, fixed Luck Index, improved mobile layout.
+
+### What Changed
+
+**Removed:**
+- WhatsApp share buttons
+- Chip Master award (not meaningful monthly)
+- Longest Streak award (not enough GWs)
+
+**Added:**
+- Best AND Worst winner for every award
+- Best/Worst GW award (new)
+- Mobile-first CSS layout
+- Combined card layout (best/worst side by side)
+
+### Final Awards (7 categories, each with best/worst):
+1. Top Scorer - Highest/lowest total points
+2. Best/Worst GW - Highest/lowest single GW (includes GW number)
+3. Form - Best/worst form (last 5 GWs)
+4. Consistency - Most consistent/most variable
+5. Luck - Luckiest/unluckiest (fixed calculation)
+6. Captain - Most/least captain points
+7. Bench - Lowest/highest bench %
+
+### Mobile Layout:
+- Mobile: 1 column, best/worst stacked vertically
+- Tablet/Desktop: 2 columns, best/worst side by side
+
+### Files Modified: 5 components + API
 
 ---
 

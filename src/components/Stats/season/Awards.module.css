@@ -60,11 +60,27 @@
   margin: 0;
 }
 
-/* Awards Grid */
+/* K-128: Awards Grid - Mobile-first layout */
 .awardsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;  /* Mobile: 1 column */
   gap: 1.5rem;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .awardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+/* Desktop: 2 columns */
+@media (min-width: 1025px) {
+  .awardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
 }
 
 /* Loading & Error States */
@@ -87,7 +103,7 @@
 }
 
 /* Mobile Responsive */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .monthSelector {
     gap: 1rem;
     padding: 0.75rem;
@@ -107,7 +123,6 @@
   }
 
   .awardsGrid {
-    grid-template-columns: 1fr;
     gap: 1rem;
   }
 }

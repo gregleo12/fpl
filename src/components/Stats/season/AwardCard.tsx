@@ -4,19 +4,31 @@ import styles from './AwardCard.module.css';
 import {
   Trophy,
   TrendingUp,
+  TrendingDown,
   Target,
   Clover,
   Users,
-  Zap,
   Star,
-  Flame
+  Award
 } from 'lucide-react';
-import type { AwardData } from './Awards';
+
+export interface AwardWinner {
+  entry_id: number;
+  player_name: string;
+  team_name: string;
+  value: number;
+  formatted_value: string;
+  gameweek?: number;
+}
+
+export interface AwardData {
+  category: string;
+  best: AwardWinner | null;
+  worst: AwardWinner | null;
+}
 
 interface Props {
   award: AwardData;
-  leagueId: string;
-  monthName: string;
 }
 
 // Map award categories to icons
@@ -24,128 +36,107 @@ function getAwardIcon(category: string) {
   switch (category) {
     case 'top_scorer':
       return <Trophy size={32} />;
-    case 'best_form':
+    case 'best_gameweek':
+      return <Award size={32} />;
+    case 'form':
       return <TrendingUp size={32} />;
-    case 'most_consistent':
+    case 'consistency':
       return <Target size={32} />;
-    case 'luckiest':
+    case 'luck':
       return <Clover size={32} />;
-    case 'best_bench':
-      return <Users size={32} />;
-    case 'chip_master':
-      return <Zap size={32} />;
-    case 'captain_king':
+    case 'captain':
       return <Star size={32} />;
-    case 'longest_streak':
-      return <Flame size={32} />;
+    case 'bench':
+      return <Users size={32} />;
     default:
       return <Trophy size={32} />;
   }
 }
 
 // Map award categories to display names
-function getAwardName(category: string): string {
+function getAwardTitle(category: string): string {
   switch (category) {
     case 'top_scorer':
-      return 'Top Scorer';
-    case 'best_form':
-      return 'Best Form';
-    case 'most_consistent':
-      return 'Most Consistent';
-    case 'luckiest':
-      return 'Luckiest';
-    case 'best_bench':
-      return 'Best Bench Manager';
-    case 'chip_master':
-      return 'Chip Master';
-    case 'captain_king':
-      return 'Captain King';
-    case 'longest_streak':
-      return 'Longest Streak';
+      return 'Scorer';
+    case 'best_gameweek':
+      return 'Gameweek';
+    case 'form':
+      return 'Form';
+    case 'consistency':
+      return 'Consistency';
+    case 'luck':
+      return 'Luck';
+    case 'captain':
+      return 'Captain';
+    case 'bench':
+      return 'Bench';
     default:
       return category;
   }
 }
 
-// Format value based on award type
-function formatValue(category: string, value: number | string): string {
-  if (typeof value === 'string') return value;
-
-  switch (category) {
-    case 'top_scorer':
-    case 'captain_king':
-      return `${value} pts`;
-    case 'best_form':
-      return `${value} pts (Last 5)`;
-    case 'most_consistent':
-      return `±${value} pts`;
-    case 'luckiest':
-      return value > 0 ? `+${value} pts` : `${value} pts`;
-    case 'best_bench':
-      return `${value}%`;
-    case 'longest_streak':
-      return `${value} wins`;
-    default:
-      return String(value);
-  }
-}
-
-export function AwardCard({ award, leagueId, monthName }: Props) {
-  const handleShare = () => {
-    if (!award.winner) return;
-
-    const awardName = getAwardName(award.category);
-    const value = formatValue(award.category, award.winner.value);
-
-    const message = `🏆 ${monthName} Award: ${awardName}\n\n` +
-      `Winner: ${award.winner.team_name}\n` +
-      `Manager: ${award.winner.player_name}\n` +
-      `${value}\n\n` +
-      `#RivalFPL`;
-
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  // Handle empty state (no winner)
-  if (!award.winner) {
-    return (
-      <div className={styles.card}>
+export function AwardCard({ award }: Props) {
+  return (
+    <div className={styles.card}>
+      {/* Icon and Title */}
+      <div className={styles.header}>
         <div className={styles.iconContainer}>
           {getAwardIcon(award.category)}
         </div>
-        <h3 className={styles.awardName}>{getAwardName(award.category)}</h3>
-        <div className={styles.noWinner}>
-          <p>No award winner</p>
-          <p className={styles.noWinnerSubtext}>Insufficient data</p>
+        <h3 className={styles.awardTitle}>{getAwardTitle(award.category)}</h3>
+      </div>
+
+      {/* Best and Worst Winners Side by Side */}
+      <div className={styles.winners}>
+        {/* Best Winner */}
+        <div className={styles.winnerColumn}>
+          <div className={styles.winnerLabel}>
+            <span className={styles.bestLabel}>👑 BEST</span>
+          </div>
+          {award.best ? (
+            <div className={styles.winnerInfo}>
+              <p className={styles.teamName}>{award.best.team_name}</p>
+              <p className={styles.managerName}>{award.best.player_name}</p>
+              <p className={`${styles.value} ${styles.bestValue}`}>
+                {award.best.formatted_value}
+              </p>
+              {award.best.gameweek && (
+                <p className={styles.gameweek}>GW {award.best.gameweek}</p>
+              )}
+            </div>
+          ) : (
+            <div className={styles.noWinner}>
+              <p>No data</p>
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className={styles.divider}></div>
+
+        {/* Worst Winner */}
+        <div className={styles.winnerColumn}>
+          <div className={styles.winnerLabel}>
+            <span className={styles.worstLabel}>😅 WORST</span>
+          </div>
+          {award.worst ? (
+            <div className={styles.winnerInfo}>
+              <p className={styles.teamName}>{award.worst.team_name}</p>
+              <p className={styles.managerName}>{award.worst.player_name}</p>
+              <p className={`${styles.value} ${styles.worstValue}`}>
+                {award.worst.formatted_value}
+              </p>
+              {award.worst.gameweek && (
+                <p className={styles.gameweek}>GW {award.worst.gameweek}</p>
+              )}
+            </div>
+          ) : (
+            <div className={styles.noWinner}>
+              <p>No data</p>
+            </div>
+          )}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className={styles.card}>
-      {/* Icon */}
-      <div className={styles.iconContainer}>
-        {getAwardIcon(award.category)}
-      </div>
-
-      {/* Award Name */}
-      <h3 className={styles.awardName}>{getAwardName(award.category)}</h3>
-
-      {/* Winner Info */}
-      <div className={styles.winnerInfo}>
-        <p className={styles.teamName}>{award.winner.team_name}</p>
-        <p className={styles.managerName}>{award.winner.player_name}</p>
-        <p className={styles.value}>
-          {formatValue(award.category, award.winner.value)}
-        </p>
-      </div>
-
-      {/* Share Button */}
-      <button className={styles.shareButton} onClick={handleShare}>
-        Share on WhatsApp
-      </button>
     </div>
   );
 }

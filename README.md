@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.7** (December 26, 2025)
+**v4.2.8** (December 26, 2025)
 
-Created Monthly Awards page within Season Stats section with 8 award categories, month navigation, and WhatsApp sharing.
+Fixed Monthly Awards page - removed WhatsApp buttons, added best/worst for each category, fixed Luck Index, improved mobile layout.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

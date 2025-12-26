@@ -3,17 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './Awards.module.css';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { AwardCard } from './AwardCard';
-
-export interface AwardData {
-  category: string;
-  winner: {
-    entry_id: number;
-    player_name: string;
-    team_name: string;
-    value: number | string;
-  } | null;
-}
+import { AwardCard, type AwardData } from './AwardCard';
 
 export interface MonthAwardsData {
   month: number;
@@ -30,16 +20,6 @@ interface Props {
 
 // Helper to get month info from GW number
 function getMonthFromGW(gw: number): number {
-  // GW1-4 = August (month 0)
-  // GW5-8 = September (month 1)
-  // GW9-12 = October (month 2)
-  // GW13-16 = November (month 3)
-  // GW17-21 = December (month 4)
-  // GW22-25 = January (month 5)
-  // GW26-29 = February (month 6)
-  // GW30-33 = March (month 7)
-  // GW34-38 = April/May (month 8)
-
   if (gw <= 4) return 0;  // August
   if (gw <= 8) return 1;  // September
   if (gw <= 12) return 2; // October
@@ -49,36 +29,6 @@ function getMonthFromGW(gw: number): number {
   if (gw <= 29) return 6; // February
   if (gw <= 33) return 7; // March
   return 8;               // April/May
-}
-
-function getMonthName(monthIndex: number): string {
-  const months = [
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-    'January',
-    'February',
-    'March',
-    'April/May'
-  ];
-  return months[monthIndex];
-}
-
-function getMonthRange(monthIndex: number): { startGW: number; endGW: number } {
-  const ranges = [
-    { startGW: 1, endGW: 4 },    // August
-    { startGW: 5, endGW: 8 },    // September
-    { startGW: 9, endGW: 12 },   // October
-    { startGW: 13, endGW: 16 },  // November
-    { startGW: 17, endGW: 21 },  // December
-    { startGW: 22, endGW: 25 },  // January
-    { startGW: 26, endGW: 29 },  // February
-    { startGW: 30, endGW: 33 },  // March
-    { startGW: 34, endGW: 38 },  // April/May
-  ];
-  return ranges[monthIndex];
 }
 
 export function Awards({ leagueId, completedGameweeks }: Props) {
@@ -177,8 +127,6 @@ export function Awards({ leagueId, completedGameweeks }: Props) {
           <AwardCard
             key={award.category}
             award={award}
-            leagueId={leagueId}
-            monthName={data.monthName}
           />
         ))}
       </div>
