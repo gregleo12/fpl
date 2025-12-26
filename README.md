@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.16** (December 26, 2025)
+**v4.2.17** (December 26, 2025)
 
-Monthly Awards fixes - Consistency labels, Luck Index calculation, Captain multiplier, and Bench Points display.
+HOTFIX: Fixed Luck Index Monthly Awards - wrong column names (entry_1 vs entry_1_id).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -2,7 +2,32 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.16 (December 26, 2025)
+**Current Version:** v4.2.17 (December 26, 2025)
+
+---
+
+## v4.2.17 - HOTFIX: Fix Luck Index Column Names (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed Luck Index still showing "No data" in Monthly Awards.
+
+### Root Cause
+- K-134 used wrong column names: `entry_1` and `entry_2`
+- h2h_matches table actually uses: `entry_1_id` and `entry_2_id`
+- SQL query failed silently, returning no rows
+
+### The Fix
+Changed all references:
+- `h.entry_1` → `h.entry_1_id`
+- `h.entry_2` → `h.entry_2_id`
+- `ma1.entry_id = h.entry_1` → `ma1.entry_id = h.entry_1_id`
+- `ma2.entry_id = h.entry_2` → `ma2.entry_id = h.entry_2_id`
+
+### Result
+- Luck Index now displays correctly
+- Shows luckiest/unluckiest managers per month
+
+### Files Modified: 1
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Fixed column names in Luck query
 
 ---
 

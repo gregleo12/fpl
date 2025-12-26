@@ -306,9 +306,9 @@ async function calculateLuck(
         GROUP BY entry_id
       ),
       luck_calc AS (
-        -- K-134: Calculate luck for entry_1 managers
+        -- K-134b: Calculate luck for entry_1 managers (fixed column names)
         SELECT
-          h.entry_1 as entry_id,
+          h.entry_1_id as entry_id,
           m.player_name,
           m.team_name,
           ROUND(SUM(
@@ -316,18 +316,18 @@ async function calculateLuck(
             (h.entry_2_points - ma2.avg_points)
           )::numeric, 0) as luck_index
         FROM h2h_matches h
-        JOIN managers m ON m.entry_id = h.entry_1
-        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1
-        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2
+        JOIN managers m ON m.entry_id = h.entry_1_id
+        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
+        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
         WHERE h.league_id = $3
           AND h.event = ANY($2)
-        GROUP BY h.entry_1, m.player_name, m.team_name
+        GROUP BY h.entry_1_id, m.player_name, m.team_name
 
         UNION ALL
 
-        -- K-134: Calculate luck for entry_2 managers
+        -- K-134b: Calculate luck for entry_2 managers (fixed column names)
         SELECT
-          h.entry_2 as entry_id,
+          h.entry_2_id as entry_id,
           m.player_name,
           m.team_name,
           ROUND(SUM(
@@ -335,12 +335,12 @@ async function calculateLuck(
             (h.entry_1_points - ma1.avg_points)
           )::numeric, 0) as luck_index
         FROM h2h_matches h
-        JOIN managers m ON m.entry_id = h.entry_2
-        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2
-        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1
+        JOIN managers m ON m.entry_id = h.entry_2_id
+        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
+        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
         WHERE h.league_id = $3
           AND h.event = ANY($2)
-        GROUP BY h.entry_2, m.player_name, m.team_name
+        GROUP BY h.entry_2_id, m.player_name, m.team_name
       ),
       -- K-134: Aggregate luck across both sides of matches
       aggregated_luck AS (
