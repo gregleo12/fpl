@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
-    console.log(`[K-136] Fetching team data for entry ${entryId}, GW${gameweek}...`);
+    console.log(`[K-136b] Fetching team data for entry ${entryId}, GW${gameweek}...`);
 
     // K-136: Determine GW status from FPL API FIRST
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
@@ -91,30 +91,57 @@ export async function GET(
 
     if (liveSquadData) {
       // Use live data from calculateManagerLiveScore
-      console.log(`[K-136] Building picks from live squad data`);
+      console.log(`[K-136b] Building picks from live squad data`);
       const allPlayers = [...liveSquadData.starting11, ...liveSquadData.bench];
+
+      // K-136b: Create player lookup from bootstrap for team/team_code info
+      const bootstrapPlayerLookup: { [key: number]: any } = {};
+      if (bootstrapData && bootstrapData.elements) {
+        bootstrapData.elements.forEach((element: any) => {
+          bootstrapPlayerLookup[element.id] = {
+            team: element.team,
+            team_code: element.team_code,
+            web_name: element.web_name,
+            element_type: element.element_type
+          };
+        });
+      }
+
+      console.log(`[K-136b DEBUG] First player in squad:`, {
+        id: allPlayers[0]?.id,
+        name: allPlayers[0]?.name,
+        position: allPlayers[0]?.position,
+        points: allPlayers[0]?.points,
+        hasTeamInBootstrap: !!bootstrapPlayerLookup[allPlayers[0]?.id]
+      });
+
       picks = allPlayers.map((player: any, index: number) => ({
         player_id: player.id,
         position: index + 1,
         multiplier: player.multiplier,
-        is_captain: player.isCaptain || false,
-        is_vice_captain: player.isViceCaptain || false
+        is_captain: player.multiplier > 1,  // Captain has multiplier 2 or 3
+        is_vice_captain: false  // Not available in live data
       }));
 
-      // For live GWs, player data comes from the squad
+      // K-136b: Enrich live player data with team info from bootstrap
       playersResult = {
-        rows: allPlayers.map((player: any) => ({
-          id: player.id,
-          web_name: player.name,
-          team: player.team,
-          team_code: player.teamCode || 0,
-          element_type: player.position,
-          event_points: player.points,
-          minutes: player.minutes || 0,
-          bps: player.bps || 0,
-          bonus: player.bonus || 0
-        }))
+        rows: allPlayers.map((player: any) => {
+          const bootstrapInfo = bootstrapPlayerLookup[player.id] || {};
+          return {
+            id: player.id,
+            web_name: bootstrapInfo.web_name || player.name,
+            team: bootstrapInfo.team || 0,
+            team_code: bootstrapInfo.team_code || 0,
+            element_type: bootstrapInfo.element_type || player.position,
+            event_points: player.points || 0,
+            minutes: player.minutes || 0,
+            bps: player.bps || 0,
+            bonus: player.bonus || 0
+          };
+        })
       };
+
+      console.log(`[K-136b] Built ${playersResult.rows.length} players with team data`);
 
       // Fetch fixtures for opponent info
       const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
