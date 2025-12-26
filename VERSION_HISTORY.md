@@ -2,7 +2,46 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.8 (December 26, 2025)
+**Current Version:** v4.2.9 (December 26, 2025)
+
+---
+
+## v4.2.9 - K-129: Fix Monthly Awards Data Issues (Dec 26, 2025)
+
+**Bug Fix:** Fixed Monthly Awards showing "No data" for Consistency and Luck by using actual fixture dates from pl_fixtures table. Removed redundant Scorer award.
+
+### What Changed
+
+**Removed:**
+- SCORER award (redundant with FORM)
+
+**Fixed:**
+- GW-to-month mapping now uses `pl_fixtures.kickoff_time` instead of hardcoded ranges
+- CONSISTENCY calculation now uses correct GWs (e.g., December 2024 = GW 14-17, not 17-21)
+- LUCK calculation now uses correct GWs from actual fixture dates
+- All award calculations changed from range-based (`event >= $2 AND event <= $3`) to array-based (`event = ANY($2)`)
+
+### Root Cause:
+- Hardcoded month mapping incorrectly assumed GWs are evenly distributed
+- December 2024 actually had GW 14, 15, 16, 17 based on fixture kickoff times
+- Old code mapped December to GW 17-21, missing the actual completed GWs
+
+### Final Awards (6 categories, each with best/worst):
+1. Best/Worst GW - Highest/lowest single GW (includes GW number)
+2. Form - Best/worst form (last 5 GWs)
+3. Consistency - Most consistent/most variable
+4. Luck - Luckiest/unluckiest
+5. Captain - Most/least captain points
+6. Bench - Lowest/highest bench %
+
+### Files Modified: 1 API route
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Complete rewrite
+
+### Technical Details:
+- Added `getCalendarMonth()` to convert month index to calendar month/year
+- Added `getCompletedGWsForMonth()` to query pl_fixtures by kickoff_time
+- Updated all calculation functions to accept `gameweeks: number[]` instead of `startGW, endGW`
+- Query: `SELECT DISTINCT event FROM pl_fixtures WHERE EXTRACT(MONTH FROM kickoff_time) = $1 AND EXTRACT(YEAR FROM kickoff_time) = $2 AND finished = true`
 
 ---
 

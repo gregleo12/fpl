@@ -4,25 +4,62 @@ import { getDatabase } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// Helper to get month info from month index
-function getMonthInfo(monthIndex: number): {
-  monthName: string;
-  startGW: number;
-  endGW: number;
-} {
-  const monthData = [
-    { monthName: 'August', startGW: 1, endGW: 4 },
-    { monthName: 'September', startGW: 5, endGW: 8 },
-    { monthName: 'October', startGW: 9, endGW: 12 },
-    { monthName: 'November', startGW: 13, endGW: 16 },
-    { monthName: 'December', startGW: 17, endGW: 21 },
-    { monthName: 'January', startGW: 22, endGW: 25 },
-    { monthName: 'February', startGW: 26, endGW: 29 },
-    { monthName: 'March', startGW: 30, endGW: 33 },
-    { monthName: 'April/May', startGW: 34, endGW: 38 },
+// Helper to get month name from month index
+function getMonthName(monthIndex: number): string {
+  const months = [
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+    'January',
+    'February',
+    'March',
+    'April/May'
   ];
+  return months[monthIndex] || months[0];
+}
 
-  return monthData[monthIndex] || monthData[0];
+// Helper to get calendar month and year from month index (0 = August 2024, etc.)
+function getCalendarMonth(monthIndex: number): { month: number; year: number } {
+  // Assuming season starts August 2024
+  // Aug=8/2024, Sep=9/2024, Oct=10/2024, Nov=11/2024, Dec=12/2024,
+  // Jan=1/2025, Feb=2/2025, Mar=3/2025, Apr/May=4-5/2025
+  const seasonStartYear = 2024;
+
+  if (monthIndex <= 4) {
+    // August - December 2024
+    return { month: monthIndex + 8, year: seasonStartYear };
+  } else if (monthIndex === 8) {
+    // April/May - use April
+    return { month: 4, year: seasonStartYear + 1 };
+  } else {
+    // January - March 2025
+    return { month: monthIndex - 4, year: seasonStartYear + 1 };
+  }
+}
+
+// Get completed GWs for a specific calendar month from pl_fixtures
+async function getCompletedGWsForMonth(
+  db: any,
+  month: number,
+  year: number
+): Promise<number[]> {
+  try {
+    const result = await db.query(`
+      SELECT DISTINCT event
+      FROM pl_fixtures
+      WHERE EXTRACT(MONTH FROM kickoff_time) = $1
+        AND EXTRACT(YEAR FROM kickoff_time) = $2
+        AND finished = true
+      ORDER BY event
+    `, [month, year]);
+
+    return result.rows.map((row: any) => row.event);
+  } catch (e) {
+    console.error('Error fetching GWs for month:', e);
+    return [];
+  }
 }
 
 export async function GET(
@@ -42,7 +79,24 @@ export async function GET(
     }
 
     const db = await getDatabase();
-    const { monthName, startGW, endGW } = getMonthInfo(monthIndex);
+    const monthName = getMonthName(monthIndex);
+    const { month, year } = getCalendarMonth(monthIndex);
+
+    // Get actual completed GWs for this calendar month from pl_fixtures
+    const gameweeks = await getCompletedGWsForMonth(db, month, year);
+
+    if (gameweeks.length === 0) {
+      return NextResponse.json({
+        month: monthIndex,
+        monthName,
+        startGW: 0,
+        endGW: 0,
+        awards: []
+      });
+    }
+
+    const startGW = gameweeks[0];
+    const endGW = gameweeks[gameweeks.length - 1];
 
     // Fetch all managers in this league
     const managersResult = await db.query(`
@@ -64,9 +118,8 @@ export async function GET(
       });
     }
 
-    // Calculate all awards
+    // Calculate all awards using actual GWs from pl_fixtures
     const [
-      topScorer,
       bestGameweek,
       form,
       consistency,
@@ -74,13 +127,12 @@ export async function GET(
       captain,
       bench
     ] = await Promise.all([
-      calculateTopScorer(db, startGW, endGW, managers),
-      calculateBestGameweek(db, startGW, endGW, managers),
-      calculateForm(db, startGW, endGW, managers),
-      calculateConsistency(db, startGW, endGW, managers),
-      calculateLuck(db, leagueId, startGW, endGW, managers),
-      calculateCaptain(db, leagueId, startGW, endGW, managers),
-      calculateBench(db, startGW, endGW, managers)
+      calculateBestGameweek(db, gameweeks, managers),
+      calculateForm(db, gameweeks, managers),
+      calculateConsistency(db, gameweeks, managers),
+      calculateLuck(db, leagueId, gameweeks, managers),
+      calculateCaptain(db, leagueId, gameweeks, managers),
+      calculateBench(db, gameweeks, managers)
     ]);
 
     return NextResponse.json({
@@ -89,7 +141,6 @@ export async function GET(
       startGW,
       endGW,
       awards: [
-        { category: 'top_scorer', ...topScorer },
         { category: 'best_gameweek', ...bestGameweek },
         { category: 'form', ...form },
         { category: 'consistency', ...consistency },
@@ -109,51 +160,9 @@ export async function GET(
 }
 
 // Award calculation functions
-async function calculateTopScorer(
-  db: any,
-  startGW: number,
-  endGW: number,
-  managers: any[]
-) {
-  try {
-    const result = await db.query(`
-      WITH scores AS (
-        SELECT
-          mgh.entry_id,
-          m.player_name,
-          m.team_name,
-          SUM(mgh.points - COALESCE(mgh.event_transfers_cost, 0)) as total_points
-        FROM manager_gw_history mgh
-        JOIN managers m ON m.entry_id = mgh.entry_id
-        WHERE mgh.entry_id = ANY($1)
-          AND mgh.event >= $2
-          AND mgh.event <= $3
-        GROUP BY mgh.entry_id, m.player_name, m.team_name
-      )
-      SELECT
-        entry_id,
-        player_name,
-        team_name,
-        total_points,
-        total_points || ' pts' as formatted_value
-      FROM scores
-      ORDER BY total_points DESC
-    `, [managers.map(m => m.entry_id), startGW, endGW]);
-
-    return {
-      best: result.rows[0] || null,
-      worst: result.rows[result.rows.length - 1] || null
-    };
-  } catch (e) {
-    console.error('Top Scorer error:', e);
-    return { best: null, worst: null };
-  }
-}
-
 async function calculateBestGameweek(
   db: any,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
@@ -168,8 +177,7 @@ async function calculateBestGameweek(
         FROM manager_gw_history mgh
         JOIN managers m ON m.entry_id = mgh.entry_id
         WHERE mgh.entry_id = ANY($1)
-          AND mgh.event >= $2
-          AND mgh.event <= $3
+          AND mgh.event = ANY($2)
       )
       SELECT
         entry_id,
@@ -180,7 +188,7 @@ async function calculateBestGameweek(
         net_points || ' pts' as formatted_value
       FROM gw_scores
       ORDER BY net_points DESC
-    `, [managers.map(m => m.entry_id), startGW, endGW]);
+    `, [managers.map(m => m.entry_id), gameweeks]);
 
     return {
       best: result.rows[0] || null,
@@ -194,13 +202,12 @@ async function calculateBestGameweek(
 
 async function calculateForm(
   db: any,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
     // Form = Last 5 GWs or all GWs in month if less than 5
-    const last5Start = Math.max(startGW, endGW - 4);
+    const last5GWs = gameweeks.slice(-5);
 
     const result = await db.query(`
       WITH form_scores AS (
@@ -212,8 +219,7 @@ async function calculateForm(
         FROM manager_gw_history mgh
         JOIN managers m ON m.entry_id = mgh.entry_id
         WHERE mgh.entry_id = ANY($1)
-          AND mgh.event >= $2
-          AND mgh.event <= $3
+          AND mgh.event = ANY($2)
         GROUP BY mgh.entry_id, m.player_name, m.team_name
       )
       SELECT
@@ -224,7 +230,7 @@ async function calculateForm(
         form_points || ' pts' as formatted_value
       FROM form_scores
       ORDER BY form_points DESC
-    `, [managers.map(m => m.entry_id), last5Start, endGW]);
+    `, [managers.map(m => m.entry_id), last5GWs]);
 
     return {
       best: result.rows[0] || null,
@@ -238,8 +244,7 @@ async function calculateForm(
 
 async function calculateConsistency(
   db: any,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
@@ -250,8 +255,7 @@ async function calculateConsistency(
           points - COALESCE(event_transfers_cost, 0) as net_points
         FROM manager_gw_history
         WHERE entry_id = ANY($1)
-          AND event >= $2
-          AND event <= $3
+          AND event = ANY($2)
       ),
       variance_calc AS (
         SELECT
@@ -272,7 +276,7 @@ async function calculateConsistency(
         '±' || variance || ' pts' as formatted_value
       FROM variance_calc
       ORDER BY variance ASC
-    `, [managers.map(m => m.entry_id), startGW, endGW]);
+    `, [managers.map(m => m.entry_id), gameweeks]);
 
     return {
       best: result.rows[0] || null,  // Most consistent (lowest variance)
@@ -287,8 +291,7 @@ async function calculateConsistency(
 async function calculateLuck(
   db: any,
   leagueId: number,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
@@ -299,8 +302,7 @@ async function calculateLuck(
           AVG(points - COALESCE(event_transfers_cost, 0)) as avg_points
         FROM manager_gw_history
         WHERE entry_id = ANY($1)
-          AND event >= $2
-          AND event <= $3
+          AND event = ANY($2)
         GROUP BY entry_id
       ),
       luck_calc AS (
@@ -316,9 +318,8 @@ async function calculateLuck(
         JOIN managers m ON m.entry_id = h.entry_1
         JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1
         JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2
-        WHERE h.league_id = $4
-          AND h.event >= $2
-          AND h.event <= $3
+        WHERE h.league_id = $3
+          AND h.event = ANY($2)
         GROUP BY h.entry_1, m.player_name, m.team_name
       )
       SELECT
@@ -332,7 +333,7 @@ async function calculateLuck(
         END as formatted_value
       FROM luck_calc
       ORDER BY luck_index DESC
-    `, [managers.map(m => m.entry_id), startGW, endGW, leagueId]);
+    `, [managers.map(m => m.entry_id), gameweeks, leagueId]);
 
     return {
       best: result.rows[0] || null,  // Luckiest (highest luck)
@@ -347,8 +348,7 @@ async function calculateLuck(
 async function calculateCaptain(
   db: any,
   leagueId: number,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
@@ -362,10 +362,9 @@ async function calculateCaptain(
         FROM manager_picks mp
         JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.event
         JOIN managers m ON m.entry_id = mp.entry_id
-        WHERE mp.league_id = $4
+        WHERE mp.league_id = $3
           AND mp.entry_id = ANY($1)
-          AND mp.event >= $2
-          AND mp.event <= $3
+          AND mp.event = ANY($2)
           AND mp.is_captain = true
         GROUP BY mp.entry_id, m.player_name, m.team_name
       )
@@ -377,7 +376,7 @@ async function calculateCaptain(
         total_captain_points || ' pts' as formatted_value
       FROM captain_points
       ORDER BY total_captain_points DESC
-    `, [managers.map(m => m.entry_id), startGW, endGW, leagueId]);
+    `, [managers.map(m => m.entry_id), gameweeks, leagueId]);
 
     return {
       best: result.rows[0] || null,
@@ -391,8 +390,7 @@ async function calculateCaptain(
 
 async function calculateBench(
   db: any,
-  startGW: number,
-  endGW: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
@@ -407,8 +405,7 @@ async function calculateBench(
         FROM manager_gw_history mgh
         JOIN managers m ON m.entry_id = mgh.entry_id
         WHERE mgh.entry_id = ANY($1)
-          AND mgh.event >= $2
-          AND mgh.event <= $3
+          AND mgh.event = ANY($2)
         GROUP BY mgh.entry_id, m.player_name, m.team_name
         HAVING SUM(mgh.points - COALESCE(mgh.event_transfers_cost, 0)) > 0
       )
@@ -420,7 +417,7 @@ async function calculateBench(
         ROUND((total_bench_points::numeric / (total_points + total_bench_points) * 100), 1) || '%' as formatted_value
       FROM bench_stats
       ORDER BY value ASC
-    `, [managers.map(m => m.entry_id), startGW, endGW]);
+    `, [managers.map(m => m.entry_id), gameweeks]);
 
     return {
       best: result.rows[0] || null,  // Best bench (lowest %)
