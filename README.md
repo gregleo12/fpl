@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.14** (December 26, 2025)
+**v4.2.15** (December 26, 2025)
 
-HOTFIX: Fixed Monthly Awards showing "GW 0-0" - season year was hardcoded to 2024 but database has 2025 fixtures.
+Season Stats now only use completed gameweeks - excludes live/in-progress GWs for stable rankings.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

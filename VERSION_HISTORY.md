@@ -2,7 +2,50 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.14 (December 26, 2025)
+**Current Version:** v4.2.15 (December 26, 2025)
+
+---
+
+## v4.2.15 - K-133: Season Stats Only Use Completed Gameweeks (Dec 26, 2025)
+
+**Data Integrity Fix:** Season Stats now only includes data from FINISHED gameweeks, excluding live/in-progress GWs. Prevents misleading rankings and changing numbers during live matches.
+
+### What Changed
+
+**Problem:**
+- Season Stats included live/in-progress gameweeks
+- Rankings changed as matches completed during live GWs
+- Partial GW data affected calculations (Form, Consistency, Luck Index, etc.)
+- Users saw different values during vs after GW completion
+
+**Solution:**
+- All Season Stats now filter to `finished === true` gameweeks only
+- During live GW18: Stats show GW1-17 only (stable until GW18 completes)
+- After GW18 finishes: Stats include GW1-18
+
+**Functions Updated:**
+1. **Main Handler:** Uses `finishedGWs` array from bootstrap instead of h2h_matches
+2. **calculateBenchPoints:** Added gameweeks filter (`event = ANY($2)`)
+3. **calculateConsistency:** Added gameweeks filter (`event = ANY($2)`)
+4. **calculateBestWorstGameweeks:** Removed live GW logic, only uses finished GWs
+
+**Cards Affected:**
+- ✅ Captain Points - Only finished GWs
+- ✅ Form Rankings (Last 5/10) - Only finished GWs
+- ✅ Consistency - Only finished GWs
+- ✅ GW Records (Best/Worst) - Only finished GWs
+- ✅ Luck Index - Only finished GWs
+- ✅ Streaks - Only finished GWs
+- ✅ Bench Points - Only finished GWs
+- ✅ Chip Performance - Only finished GWs
+- ✅ Team Value - Uses last finished GW (already correct)
+
+**User Experience:**
+- **Before:** Form Rankings during live GW18 showed partial GW18 data
+- **After:** Form Rankings during live GW18 shows GW1-17 only, stable until GW18 finishes
+
+### Files Modified: 1
+- `/src/app/api/league/[id]/stats/season/route.ts` - Complete rewrite of GW filtering logic
 
 ---
 

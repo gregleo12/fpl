@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -18,9 +17,8 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // K-97: Get bootstrap data to check which gameweeks have FINISHED (not just started)
-    // Fallback to 38 if bootstrap fetch fails (include all GWs)
-    let maxStartedGW = 38;
+    // K-133: Get bootstrap data to get ONLY FINISHED gameweeks
+    let finishedGWs: number[] = [];
     let completedGameweeksCount = 0;
     try {
       const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
@@ -28,33 +26,19 @@ export async function GET(
         const bootstrapData = await bootstrapResponse.json();
         const events = bootstrapData?.events || [];
 
-        // K-97: Count only FINISHED gameweeks (exclude current/live GW)
+        // K-133: Only include FINISHED gameweeks (exclude live/in-progress GWs)
         const finishedGameweeks = events.filter((e: any) => e.finished);
-        completedGameweeksCount = finishedGameweeks.length;
+        finishedGWs = finishedGameweeks.map((e: any) => e.id);
+        completedGameweeksCount = finishedGWs.length;
 
-        // Find the highest gameweek that has started (is_current or finished)
-        const startedGameweeks = events.filter((e: any) => e.is_current || e.finished);
-        if (startedGameweeks.length > 0) {
-          maxStartedGW = Math.max(...startedGameweeks.map((e: any) => e.id));
-        }
+        console.log('[K-133] Finished GWs only:', finishedGWs);
       }
     } catch (error) {
-      console.log('Could not fetch bootstrap data, including all gameweeks');
+      console.log('[K-133] Could not fetch bootstrap data, returning empty stats');
     }
 
-    // Fetch all matches for the league to determine completed gameweeks
-    // Include matches from gameweeks that have started (even if 0-0)
-    const matchesResult = await db.query(`
-      SELECT DISTINCT event
-      FROM h2h_matches
-      WHERE league_id = $1
-      AND event <= $2
-      ORDER BY event
-    `, [leagueId, maxStartedGW]);
-
-    const completedGameweeks = matchesResult.rows.map(r => r.event);
-
-    if (completedGameweeks.length === 0) {
+    // K-133: If no finished GWs, return empty data
+    if (finishedGWs.length === 0) {
       return NextResponse.json({
         completedGameweeks: 0,
         leaderboards: {
@@ -92,24 +76,10 @@ export async function GET(
     `, [leagueId]);
     const leagueStandings = standingsResult.rows;
 
-    // Get last finished GW for value rankings (to fetch actual squad picks)
-    let lastFinishedGW = maxStartedGW;
-    try {
-      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-      if (bootstrapResponse.ok) {
-        const bootstrapData = await bootstrapResponse.json();
-        const events = bootstrapData?.events || [];
-        // Find the last finished gameweek (not current_event which points to upcoming GW)
-        const lastFinished = [...events].reverse().find((e: any) => e.finished);
-        if (lastFinished) {
-          lastFinishedGW = lastFinished.id;
-        }
-      }
-    } catch (error) {
-      console.log('Could not fetch last finished GW for value rankings, using maxStartedGW');
-    }
+    // K-133: Get last finished GW for value rankings (from finishedGWs array)
+    const lastFinishedGW = finishedGWs.length > 0 ? finishedGWs[finishedGWs.length - 1] : 1;
 
-    // Calculate season statistics
+    // K-133: Calculate season statistics using ONLY finished GWs
     const [
       captainLeaderboard,
       chipPerformance,
@@ -122,20 +92,20 @@ export async function GET(
       consistency,
       luckIndex
     ] = await Promise.all([
-      calculateCaptainLeaderboard(db, leagueId, completedGameweeks, managers),
-      calculateChipPerformance(db, leagueId, completedGameweeks, managers),
-      calculateStreaks(db, leagueId, completedGameweeks, managers),
-      calculateBestWorstGameweeks(db, leagueId, completedGameweeks, managers),
-      calculateTrendsData(db, leagueId, completedGameweeks, managers),
+      calculateCaptainLeaderboard(db, leagueId, finishedGWs, managers),
+      calculateChipPerformance(db, leagueId, finishedGWs, managers),
+      calculateStreaks(db, leagueId, finishedGWs, managers),
+      calculateBestWorstGameweeks(db, leagueId, finishedGWs, managers),
+      calculateTrendsData(db, leagueId, finishedGWs, managers),
       getValueRankings(managers, lastFinishedGW),
-      calculateBenchPoints(db, leagueId, managers),
-      calculateFormRankings(db, leagueId, completedGameweeks, leagueStandings),
-      calculateConsistency(db, leagueId),
-      calculateLuckIndex(db, leagueId, completedGameweeks),
+      calculateBenchPoints(db, leagueId, finishedGWs, managers),
+      calculateFormRankings(db, leagueId, finishedGWs, leagueStandings),
+      calculateConsistency(db, leagueId, finishedGWs),
+      calculateLuckIndex(db, leagueId, finishedGWs),
     ]);
 
     return NextResponse.json({
-      completedGameweeks: completedGameweeksCount || completedGameweeks.length, // K-97: Use finished GWs count
+      completedGameweeks: completedGameweeksCount, // K-133: Use finished GWs count only
       leaderboards: {
         captainPoints: captainLeaderboard,
         chipPerformance: {
@@ -930,109 +900,49 @@ async function calculateStreaks(
   };
 }
 
-// Calculate best and worst gameweeks from database (K-109 Phase 4: Hybrid approach)
+// K-133: Calculate best and worst gameweeks from COMPLETED GWs only
 async function calculateBestWorstGameweeks(
   db: any,
   leagueId: number,
   gameweeks: number[],
   managers: any[]
 ) {
-  console.log('[K-109 Phase 4] Calculating Best/Worst Gameweeks');
+  console.log('[K-133] Calculating Best/Worst Gameweeks for finished GWs:', gameweeks);
 
-  // K-67 + K-109: Determine completed vs live gameweeks
-  let completedGameweeks = gameweeks;
-  let currentGW: number | null = null;
-  let currentGWStatus: 'completed' | 'in_progress' | 'upcoming' = 'completed';
-
-  try {
-    const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-    if (bootstrapResponse.ok) {
-      const bootstrapData = await bootstrapResponse.json();
-      const events = bootstrapData?.events || [];
-
-      // Find current gameweek
-      const currentEvent = events.find((e: any) => e.is_current);
-      if (currentEvent) {
-        currentGW = currentEvent.id;
-        currentGWStatus = currentEvent.finished ? 'completed' :
-                         currentEvent.is_current ? 'in_progress' : 'upcoming';
-        console.log(`[K-109 Phase 4] Current GW: ${currentGW}, Status: ${currentGWStatus}`);
-      }
-
-      // Only include finished gameweeks in DB query
-      const finishedGWs = events
-        .filter((e: any) => e.finished)
-        .map((e: any) => e.id);
-
-      // Filter gameweeks to only include finished ones
-      completedGameweeks = gameweeks.filter(gw => finishedGWs.includes(gw));
-
-      console.log(`[K-109 Phase 4] Gameweeks: ${gameweeks.length} total, ${completedGameweeks.length} completed`);
-    }
-  } catch (error) {
-    console.error('[K-109 Phase 4] Error fetching bootstrap:', error);
+  // K-133: Get scores ONLY from finished GWs (no live GW scores)
+  if (gameweeks.length === 0) {
+    console.log('[K-133] No finished GWs available');
+    return {
+      best: [],
+      worst: []
+    };
   }
 
-  // Get completed GW scores from database
-  let allScores: any[] = [];
+  const scoresResult = await db.query(`
+    SELECT
+      mgh.entry_id,
+      mgh.event,
+      mgh.points,
+      m.player_name,
+      m.team_name
+    FROM manager_gw_history mgh
+    JOIN managers m ON mgh.entry_id = m.entry_id
+    WHERE mgh.league_id = $1
+      AND mgh.event = ANY($2)
+    ORDER BY mgh.points DESC
+  `, [leagueId, gameweeks]);
 
-  if (completedGameweeks.length > 0) {
-    const scoresResult = await db.query(`
-      SELECT
-        mgh.entry_id,
-        mgh.event,
-        mgh.points,
-        m.player_name,
-        m.team_name
-      FROM manager_gw_history mgh
-      JOIN managers m ON mgh.entry_id = m.entry_id
-      WHERE mgh.league_id = $1
-        AND mgh.event = ANY($2)
-      ORDER BY mgh.points DESC
-    `, [leagueId, completedGameweeks]);
+  const allScores = scoresResult.rows.map((row: any) => ({
+    entry_id: row.entry_id,
+    player_name: row.player_name,
+    team_name: row.team_name,
+    event: row.event,
+    points: row.points || 0,
+  }));
 
-    allScores = scoresResult.rows.map((row: any) => ({
-      entry_id: row.entry_id,
-      player_name: row.player_name,
-      team_name: row.team_name,
-      event: row.event,
-      points: row.points || 0,
-    }));
+  console.log(`[K-133] Fetched ${allScores.length} scores from DB for finished GWs`);
 
-    console.log(`[K-109 Phase 4] Fetched ${allScores.length} scores from DB for completed GWs`);
-  }
-
-  // K-109 Phase 4: If current GW is live, add K-108c scores
-  if (currentGW && currentGWStatus !== 'completed') {
-    console.log(`[K-109 Phase 4] Adding live GW${currentGW} scores via K-108c...`);
-
-    const liveScoresPromises = managers.map(async (manager) => {
-      try {
-        const result = await calculateTeamGameweekScore(manager.entry_id, currentGW);
-        return {
-          entry_id: manager.entry_id,
-          player_name: manager.player_name,
-          team_name: manager.team_name,
-          event: currentGW,
-          points: result.points.net_total
-        };
-      } catch (error: any) {
-        console.error(`[K-109 Phase 4] Error calculating score for ${manager.entry_id}:`, error.message);
-        return null;
-      }
-    });
-
-    const liveScores = (await Promise.all(liveScoresPromises)).filter(Boolean);
-    console.log(`[K-109 Phase 4] Calculated ${liveScores.length} live scores for GW${currentGW}`);
-
-    // Merge with completed scores
-    allScores = [...allScores, ...liveScores];
-    console.log(`[K-109 Phase 4] Total scores (DB + live): ${allScores.length}`);
-  }
-
-  // If no scores at all, return empty
   if (allScores.length === 0) {
-    console.log('[K-109 Phase 4] No scores available');
     return {
       best: [],
       worst: []
@@ -1043,7 +953,7 @@ async function calculateBestWorstGameweeks(
   const sortedBest = [...allScores].sort((a, b) => b.points - a.points);
   const sortedWorst = [...allScores].sort((a, b) => a.points - b.points);
 
-  console.log('[K-109 Phase 4] Best/Worst calculated:', {
+  console.log('[K-133] Best/Worst calculated:', {
     bestTopThree: sortedBest.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points })),
     worstTopThree: sortedWorst.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points }))
   });
@@ -1153,10 +1063,11 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
 async function calculateBenchPoints(
   db: any,
   leagueId: number,
+  gameweeks: number[],
   managers: any[]
 ) {
   try {
-    console.log('[BENCH POINTS] Calculating bench points for league:', leagueId);
+    console.log('[BENCH POINTS] Calculating bench points for league:', leagueId, 'GWs:', gameweeks);
 
     const result = await db.query(`
       SELECT
@@ -1168,9 +1079,10 @@ async function calculateBenchPoints(
       FROM manager_gw_history mgh
       JOIN managers m ON m.entry_id = mgh.entry_id
       WHERE mgh.league_id = $1
+        AND mgh.event = ANY($2)
       GROUP BY mgh.entry_id, m.player_name, m.team_name
       ORDER BY total_bench_points DESC
-    `, [leagueId]);
+    `, [leagueId, gameweeks]);
 
     const benchPoints = result.rows.map((row: any) => {
       const benchPts = parseInt(row.total_bench_points) || 0;
@@ -1367,9 +1279,9 @@ async function calculateFormRankings(
 }
 
 // K-119c: Calculate consistency (weekly score variance)
-async function calculateConsistency(db: any, leagueId: number) {
+async function calculateConsistency(db: any, leagueId: number, gameweeks: number[]) {
   try {
-    console.log('[CONSISTENCY] Calculating consistency for league:', leagueId);
+    console.log('[CONSISTENCY] Calculating consistency for league:', leagueId, 'GWs:', gameweeks);
 
     const result = await db.query(`
       SELECT
@@ -1381,9 +1293,10 @@ async function calculateConsistency(db: any, leagueId: number) {
       FROM manager_gw_history mgh
       JOIN managers m ON m.entry_id = mgh.entry_id
       WHERE mgh.league_id = $1
+        AND mgh.event = ANY($2)
       GROUP BY mgh.entry_id, m.player_name, m.team_name
       ORDER BY std_dev ASC
-    `, [leagueId]);
+    `, [leagueId, gameweeks]);
 
     const consistency = result.rows.map((row: any) => ({
       entry_id: row.entry_id,
