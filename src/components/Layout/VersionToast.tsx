@@ -8,55 +8,63 @@ import styles from './VersionToast.module.css';
 export function VersionToast() {
   const router = useRouter();
   const [showToast, setShowToast] = useState(false);
-  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+  const [latestChangelogVersion, setLatestChangelogVersion] = useState<string | null>(null);
 
   useEffect(() => {
-    async function checkVersion() {
+    async function checkForNewChangelog() {
       try {
-        const response = await fetch('/api/version');
-        const data = await response.json();
-        const version = data.version;
+        // Fetch changelog to get the latest entry
+        const changelogResponse = await fetch('/changelog.json');
+        const changelog = await changelogResponse.json();
+        const latestVersion = changelog[0]?.version;
 
-        setCurrentVersion(version);
+        if (!latestVersion) {
+          return;
+        }
 
-        // Check if this is a new version
-        const lastSeenVersion = localStorage.getItem('lastSeenVersion');
+        setLatestChangelogVersion(latestVersion);
 
-        if (lastSeenVersion && lastSeenVersion !== version) {
+        // Check if this is a new changelog entry
+        const lastSeenChangelog = localStorage.getItem('lastSeenChangelog');
+
+        if (lastSeenChangelog && lastSeenChangelog !== latestVersion) {
           setShowToast(true);
 
           // Auto-hide after 10 seconds
           setTimeout(() => {
             setShowToast(false);
           }, 10000);
-        } else if (!lastSeenVersion) {
+        } else if (!lastSeenChangelog) {
           // First time user - set version without showing toast
-          localStorage.setItem('lastSeenVersion', version);
+          localStorage.setItem('lastSeenChangelog', latestVersion);
+          localStorage.setItem('lastSeenVersion', latestVersion);
         }
       } catch (error) {
-        console.error('Failed to check version:', error);
+        console.error('Failed to check changelog:', error);
       }
     }
 
-    checkVersion();
+    checkForNewChangelog();
   }, []);
 
   const handleDismiss = () => {
-    if (currentVersion) {
-      localStorage.setItem('lastSeenVersion', currentVersion);
+    if (latestChangelogVersion) {
+      localStorage.setItem('lastSeenChangelog', latestChangelogVersion);
+      localStorage.setItem('lastSeenVersion', latestChangelogVersion);
     }
     setShowToast(false);
   };
 
   const handleViewUpdates = () => {
-    if (currentVersion) {
-      localStorage.setItem('lastSeenVersion', currentVersion);
+    if (latestChangelogVersion) {
+      localStorage.setItem('lastSeenChangelog', latestChangelogVersion);
+      localStorage.setItem('lastSeenVersion', latestChangelogVersion);
     }
     setShowToast(false);
     router.push('/updates');
   };
 
-  if (!showToast || !currentVersion) {
+  if (!showToast || !latestChangelogVersion) {
     return null;
   }
 
@@ -65,7 +73,7 @@ export function VersionToast() {
       <div className={styles.content}>
         <span className={styles.icon}>✨</span>
         <span className={styles.text}>
-          Updated to v{currentVersion} —{' '}
+          Updated to v{latestChangelogVersion} —{' '}
           <button onClick={handleViewUpdates} className={styles.link}>
             See what's new
           </button>

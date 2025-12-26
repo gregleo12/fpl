@@ -4,29 +4,38 @@ export function useNewVersionBadge() {
   const [showBadge, setShowBadge] = useState(false);
 
   useEffect(() => {
-    async function checkVersion() {
+    async function checkForNewChangelog() {
       try {
-        const response = await fetch('/api/version');
-        const data = await response.json();
-        const currentVersion = data.version;
+        // Fetch the changelog to get the latest entry
+        const changelogResponse = await fetch('/changelog.json');
+        const changelog = await changelogResponse.json();
 
-        const lastSeenVersion = localStorage.getItem('lastSeenVersion');
+        // Get the latest changelog version (first entry)
+        const latestChangelogVersion = changelog[0]?.version;
 
-        // Show badge if user hasn't seen this version yet
-        if (lastSeenVersion && lastSeenVersion !== currentVersion) {
+        if (!latestChangelogVersion) {
+          return;
+        }
+
+        // Check what changelog version the user last saw
+        const lastSeenChangelog = localStorage.getItem('lastSeenChangelog');
+
+        // Show badge if user hasn't seen this changelog version yet
+        // Only show if there's a previous version (don't show on first visit)
+        if (lastSeenChangelog && lastSeenChangelog !== latestChangelogVersion) {
           setShowBadge(true);
         }
       } catch (error) {
-        console.error('Failed to check version for badge:', error);
+        console.error('Failed to check changelog for badge:', error);
       }
     }
 
-    checkVersion();
+    checkForNewChangelog();
 
     // Listen for storage changes (when user visits /updates in another tab)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'lastSeenVersion') {
-        checkVersion();
+      if (e.key === 'lastSeenChangelog') {
+        checkForNewChangelog();
       }
     };
 

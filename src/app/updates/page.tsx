@@ -8,19 +8,15 @@ import styles from './updates.module.css';
 export default function UpdatesPage() {
   const router = useRouter();
 
-  // Mark version as seen when user visits this page
+  // Mark changelog as seen when user visits this page
   useEffect(() => {
-    async function markVersionAsSeen() {
-      try {
-        const response = await fetch('/api/version');
-        const data = await response.json();
-        localStorage.setItem('lastSeenVersion', data.version);
-      } catch (error) {
-        console.error('Failed to mark version as seen:', error);
-      }
+    // Get the latest changelog version (first entry) and mark it as seen
+    const latestChangelogVersion = changelog[0]?.version;
+    if (latestChangelogVersion) {
+      localStorage.setItem('lastSeenChangelog', latestChangelogVersion);
+      // Also update lastSeenVersion for backwards compatibility
+      localStorage.setItem('lastSeenVersion', latestChangelogVersion);
     }
-
-    markVersionAsSeen();
   }, []);
 
   return (
