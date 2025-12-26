@@ -773,7 +773,7 @@
      Since StatsHub .container uses negative margins, .myTeamTab should not */
   .myTeamTab {
     gap: 10px;
-    overflow-x: hidden;
+    /* K-126: Removed overflow-x: hidden - it breaks position: sticky for child elements */
     max-width: 100vw;
   }
 
