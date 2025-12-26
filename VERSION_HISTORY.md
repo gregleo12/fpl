@@ -2,7 +2,86 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.7 (December 26, 2025)
+**Current Version:** v4.3.8 (December 26, 2025)
+
+---
+
+## v4.3.8 - K-138: CRITICAL FIX - Players Showing Bonus Points Before Match Starts (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed players showing bonus points before their Premier League fixture has started.
+
+### The Bug
+
+Players were displaying bonus points (with underline indicator) BEFORE their matches kicked off.
+
+**Example from GW18 (Boxing Day):**
+- **Raya (Arsenal GK):** Showing 3 pts with bonus underline
+- **Arsenal vs West Ham:** Match NOT started yet
+- **Expected:** 0 pts until kickoff
+- **Actual:** 3 pts (provisional bonus calculated prematurely)
+
+This bug persisted despite K-63a fix attempt in GW17.
+
+### Root Cause
+
+The `getBonusInfo()` function in `/src/lib/liveMatch.ts` had incomplete fixture status checks:
+
+**Flow:**
+1. ✅ Check if fixture exists
+2. ✅ Check if `fixture.finished` → return official bonus
+3. ❌ **Missing check for `fixture.started`**
+4. ❌ Immediately calculate provisional bonus from BPS
+
+**Why K-63a didn't fix it:**
+- K-63a added `fixture.started` checks that zeroed out `totalPoints` and `officialBonus` ✅
+- But `getBonusInfo()` was called AFTER those checks ❌
+- `getBonusInfo()` independently calculated provisional bonus without verifying fixture status ❌
+- Result: 0 (base points) + 3 (provisional bonus) = 3 pts shown
+
+### The Fix
+
+Added `fixture.started` check to `getBonusInfo()` function:
+
+```typescript
+// K-138: If fixture hasn't started yet, return 0 bonus
+if (!fixture.started) {
+  return { bonusPoints: 0 };
+}
+
+// If fixture is finished, use official bonus
+if (fixture.finished) {
+  return { bonusPoints: officialBonus };
+}
+
+// Calculate provisional bonus from BPS ranking (only for started, unfinished fixtures)
+```
+
+Now bonus calculation follows proper fixture status:
+1. **Not started:** Return 0 bonus (no provisional calculation)
+2. **Started but not finished:** Calculate provisional bonus from BPS
+3. **Finished:** Return official bonus
+
+### Files Modified
+
+1. `/src/lib/liveMatch.ts`
+   - Added `fixture.started` check at line 33-36 in `getBonusInfo()` function
+   - Prevents provisional bonus calculation for unstarted fixtures
+
+### Impact
+
+Players now show correct points based on fixture status:
+- ✅ **Not started:** 0 points, 0 bonus, no underline
+- ✅ **In progress:** Live points + provisional bonus with underline
+- ✅ **Finished:** Final points + official bonus with underline (if earned)
+
+**Affected views:**
+- Live Match Modal differentials ✅
+- H2H Fixtures player points ✅
+- My Team player cards ✅
+- All differential calculations (pure, captain, position) ✅
+
+**Before:** Raya showing 3 pts before Arsenal match started
+**After:** Raya showing 0 pts until Arsenal vs West Ham kicks off
 
 ---
 

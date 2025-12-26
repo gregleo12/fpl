@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.7** (December 26, 2025)
+**v4.3.8** (December 26, 2025)
 
-Fix: Notification badges now only show when changelog has new entry, not for every patch version.
+CRITICAL FIX: Players no longer show bonus points before their match starts (K-138 - fixed getBonusInfo fixture.started check).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
