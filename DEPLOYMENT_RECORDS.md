@@ -1,3 +1,66 @@
+## v4.2.5 Production Deployment
+
+**Date:** December 26, 2025
+**Environment:** Production (rivalfpl.com)
+**Status:** ✅ Deployed Successfully
+
+### Deployed Enhancement
+- K-124: Reduced all Season Stats leaderboard cards from Top 5 to Top 3
+- Cleaner mobile experience with 40% less vertical space per card
+- Podium mentality (🥇🥈🥉) - more meaningful and focused leaderboards
+- Full rankings still accessible via modal (tap any card to see all 20)
+
+### Cards Updated (9 total)
+1. Captain Points - Top 3 highest captain scorers
+2. Chip Performance - Top 3 chips played/faced
+3. Streaks - Top 3 winning/losing streaks
+4. GW Records - Top 3 best/worst gameweeks
+5. Team Value - Top 3 highest team values
+6. Bench Points - Top 3 most bench points (total/percentage)
+7. Form Rankings - Top 3 in form (Last 5/Last 10)
+8. Consistency - Top 3 most consistent/variable
+9. Luck Index - Top 3 luckiest/unluckiest
+
+### Files Modified (13 total)
+**Components (9):**
+- `/src/components/Stats/season/CaptainLeaderboard.tsx` - slice(0, 5) → slice(0, 3)
+- `/src/components/Stats/season/ChipPerformance.tsx` - slice(0, 5) → slice(0, 3)
+- `/src/components/Stats/season/Streaks.tsx` - slice(0, 5) → slice(0, 3)
+- `/src/components/Stats/season/BestWorstGW.tsx` - slice(0, 5) → slice(0, 3)
+- `/src/components/Stats/season/ValueLeaderboard.tsx` - slice(0, 5) → slice(0, 3)
+- `/src/components/Stats/season/BenchPoints.tsx` - top5 → top3
+- `/src/components/Stats/season/FormRankings.tsx` - top5 → top3
+- `/src/components/Stats/season/Consistency.tsx` - top5 → top3
+- `/src/components/Stats/season/LuckIndex.tsx` - top5 → top3
+
+**Documentation (4):**
+- VERSION_HISTORY.md - Added v4.2.5 entry
+- README.md - Updated version to v4.2.5
+- package.json - Bumped to v4.2.5
+- DEPLOYMENT_RECORDS.md - This entry
+
+### Deployment Stats
+- **Build time:** ~30 seconds
+- **Total files changed:** 13 files
+- **Lines added:** 100
+- **Lines removed:** 18
+- **Components updated:** 9
+
+### Production Verification Required
+- [ ] All Season Stats cards show exactly 3 entries (not 5)
+- [ ] Toggle states work correctly (Best/Worst, Lucky/Unlucky, etc.)
+- [ ] Modals still display full 20 manager rankings
+- [ ] No layout issues on mobile devices
+- [ ] Cards render cleanly with reduced vertical space
+
+### Visual Result
+- 40% reduction in vertical space per card
+- Cleaner, more focused leaderboards
+- Better mobile user experience
+- Less scrolling through Season Stats section
+
+---
+
 ## v4.2.1-v4.2.4 Production Bundle Deployment
 
 **Date:** December 26, 2025
