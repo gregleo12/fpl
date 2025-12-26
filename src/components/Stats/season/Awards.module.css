@@ -1,0 +1,113 @@
+.container {
+  width: 100%;
+}
+
+/* Month Selector */
+.monthSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navButton:hover:not(:disabled) {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.monthInfo {
+  text-align: center;
+  min-width: 200px;
+}
+
+.monthName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffd700;
+  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.monthRange {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* Awards Grid */
+.awardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Loading & Error States */
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-size: 1rem;
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .monthSelector {
+    gap: 1rem;
+    padding: 0.75rem;
+  }
+
+  .monthName {
+    font-size: 1.25rem;
+  }
+
+  .monthRange {
+    font-size: 0.8125rem;
+  }
+
+  .navButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .awardsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

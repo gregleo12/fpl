@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './SeasonView.module.css';
+import { BarChart3, Award } from 'lucide-react';
 import { CaptainLeaderboard } from './season/CaptainLeaderboard';
 import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerformance';
 import { Streaks, type StreakData } from './season/Streaks';
@@ -11,6 +12,7 @@ import { BenchPoints, type BenchPointsData } from './season/BenchPoints';
 import { FormRankings, type FormRankingsData } from './season/FormRankings';
 import { Consistency, type ConsistencyData } from './season/Consistency';
 import { LuckIndex, type LuckIndexData } from './season/LuckIndex';
+import { Awards } from './season/Awards';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -74,7 +76,10 @@ interface Props {
   leagueId: string;
 }
 
+type SeasonViewType = 'leaderboards' | 'awards';
+
 export function SeasonView({ leagueId }: Props) {
+  const [view, setView] = useState<SeasonViewType>('leaderboards');
   const [data, setData] = useState<SeasonStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -122,36 +127,58 @@ export function SeasonView({ leagueId }: Props) {
         {data.completedGameweeks} GWs Completed
       </div>
 
-      {/* Leaderboards Section */}
-      <div className={styles.section}>
-        <div className={styles.leaderboards}>
-          <CaptainLeaderboard data={data.leaderboards.captainPoints} />
-          <ChipPerformance data={data.leaderboards.chipPerformance} />
-          <Streaks
-            winningStreaks={data.leaderboards.streaks.winning}
-            losingStreaks={data.leaderboards.streaks.losing}
-          />
-          <BestWorstGW
-            bestData={data.leaderboards.bestGameweeks}
-            worstData={data.leaderboards.worstGameweeks}
-          />
-          {data.valueRankings && (
-            <ValueLeaderboard data={data.valueRankings} />
-          )}
-          {data.benchPoints && data.benchPoints.length > 0 && (
-            <BenchPoints data={data.benchPoints} />
-          )}
-          {data.formRankings && data.formRankings.length > 0 && (
-            <FormRankings data={data.formRankings} />
-          )}
-          {data.consistency && data.consistency.length > 0 && (
-            <Consistency data={data.consistency} />
-          )}
-          {data.luckIndex && data.luckIndex.length > 0 && (
-            <LuckIndex data={data.luckIndex} />
-          )}
-        </div>
+      {/* K-125: Leaderboards/Awards toggle */}
+      <div className={styles.viewToggleBar}>
+        <button
+          className={`${styles.toggleButton} ${view === 'leaderboards' ? styles.toggleButtonActive : ''}`}
+          onClick={() => setView('leaderboards')}
+        >
+          <BarChart3 size={16} />
+          Leaderboards
+        </button>
+        <button
+          className={`${styles.toggleButton} ${view === 'awards' ? styles.toggleButtonActive : ''}`}
+          onClick={() => setView('awards')}
+        >
+          <Award size={16} />
+          Awards
+        </button>
       </div>
+
+      {/* K-125: Conditional rendering based on view */}
+      {view === 'leaderboards' ? (
+        <div className={styles.section}>
+          <div className={styles.leaderboards}>
+            <CaptainLeaderboard data={data.leaderboards.captainPoints} />
+            <ChipPerformance data={data.leaderboards.chipPerformance} />
+            <Streaks
+              winningStreaks={data.leaderboards.streaks.winning}
+              losingStreaks={data.leaderboards.streaks.losing}
+            />
+            <BestWorstGW
+              bestData={data.leaderboards.bestGameweeks}
+              worstData={data.leaderboards.worstGameweeks}
+            />
+            {data.valueRankings && (
+              <ValueLeaderboard data={data.valueRankings} />
+            )}
+            {data.benchPoints && data.benchPoints.length > 0 && (
+              <BenchPoints data={data.benchPoints} />
+            )}
+            {data.formRankings && data.formRankings.length > 0 && (
+              <FormRankings data={data.formRankings} />
+            )}
+            {data.consistency && data.consistency.length > 0 && (
+              <Consistency data={data.consistency} />
+            )}
+            {data.luckIndex && data.luckIndex.length > 0 && (
+              <LuckIndex data={data.luckIndex} />
+            )}
+          </div>
+        </div>
+      ) : (
+        <Awards leagueId={leagueId} completedGameweeks={data.completedGameweeks} />
+      )}
     </div>
   );
 }

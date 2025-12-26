@@ -11,6 +11,46 @@
   margin-bottom: 1rem;
 }
 
+/* K-125: View toggle bar - Leaderboards/Awards toggle */
+.viewToggleBar {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* K-125: Toggle buttons - matching StatsHub pattern */
+.toggleButton {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggleButton svg {
+  flex-shrink: 0;
+}
+
+.toggleButton:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggleButtonActive {
+  background: rgba(0, 255, 135, 0.2) !important;
+  color: #00ff87 !important;
+  border: 1px solid rgba(0, 255, 135, 0.3) !important;
+}
+
 /* K-97: Removed .seasonLabel (no longer used) */
 /* K-101: Removed .seasonGW (no longer used - text is now in .seasonInfo) */
 

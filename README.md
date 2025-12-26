@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.2.6** (December 26, 2025)
+**v4.2.7** (December 26, 2025)
 
-Fixed PWA header scroll bug on iPhone 17 Pro Max by implementing sticky headers across all tabs.
+Created Monthly Awards page within Season Stats section with 8 award categories, month navigation, and WhatsApp sharing.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

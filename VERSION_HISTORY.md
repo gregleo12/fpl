@@ -2,7 +2,139 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.2.6 (December 26, 2025)
+**Current Version:** v4.2.7 (December 26, 2025)
+
+---
+
+## v4.2.7 - K-125: Monthly Awards Page (Dec 26, 2025)
+
+**New Feature:** Created Monthly Awards page within Season Stats section to celebrate monthly achievements with 8 award categories, month navigation, and WhatsApp sharing.
+
+### What's New
+
+**Navigation Structure:**
+- Added Leaderboards/Awards toggle in Season Stats view
+- Leaderboards: Existing season-long stats cards
+- Awards: New monthly awards page with celebratory styling
+
+**Monthly Awards Page:**
+- Month selector with navigation (August through April/May)
+- Only completed months accessible (prevents viewing future months)
+- 8 award categories per month with gold accent styling
+- WhatsApp sharing for each award
+
+### Award Categories
+
+1. **Top Scorer** (🏆) - Highest total points in the month
+2. **Best Form** (📈) - Highest points in last 5 GWs of the month
+3. **Most Consistent** (🎯) - Lowest variance in points
+4. **Luckiest** (🍀) - Highest luck index (H2H opponents effect)
+5. **Best Bench Manager** (👥) - Lowest bench points percentage
+6. **Chip Master** (⚡) - Best chip win/loss record
+7. **Captain King** (⭐) - Most captain points
+8. **Longest Streak** (🔥) - Longest consecutive H2H wins
+
+### Month Definitions
+
+```
+August:     GW 1-4
+September:  GW 5-8
+October:    GW 9-12
+November:   GW 13-16
+December:   GW 17-21
+January:    GW 22-25
+February:   GW 26-29
+March:      GW 30-33
+April/May:  GW 34-38
+```
+
+### Implementation Details
+
+**Frontend Components:**
+- `SeasonView.tsx` - Added Leaderboards/Awards toggle
+- `Awards.tsx` - Main awards page with month selector
+- `AwardCard.tsx` - Individual award card component
+- Award-specific icons from lucide-react
+- Celebratory styling with gold gradients and accents
+
+**API Endpoint:**
+- `/api/league/[id]/stats/awards/[month]` - Monthly awards data
+- Month index parameter (0-8 for Aug-Apr/May)
+- Returns 8 award categories with winner info
+- Handles empty states (no winner if insufficient data)
+
+**Award Calculations:**
+- All calculations use database queries within month GW range
+- Handles edge cases (no chips played = no Chip Master award)
+- Luck Index uses H2H opponent comparison method
+- Consistency uses standard deviation of points
+- Streak calculation tracks consecutive wins only
+
+**WhatsApp Sharing:**
+- Share button on each award card
+- Formatted message with award name, winner, and value
+- Opens WhatsApp web/app with pre-filled message
+
+### Visual Design
+
+**Award Cards:**
+- Gold gradient backgrounds with purple accents
+- 64px circular icon containers with gold gradient
+- Hover effects: lift animation + gold border glow
+- Winner info: Team name, manager name, formatted value
+- Green WhatsApp share button at bottom
+
+**Month Selector:**
+- Centered layout with prev/next navigation
+- Large gold month name with GW range below
+- Navigation buttons disabled for unavailable months
+- Dark glass background with border
+
+### Files Created (6 files)
+
+**Components:**
+- `/src/components/Stats/season/Awards.tsx` - Awards page component
+- `/src/components/Stats/season/Awards.module.css` - Awards styling
+- `/src/components/Stats/season/AwardCard.tsx` - Award card component
+- `/src/components/Stats/season/AwardCard.module.css` - Card styling
+
+**API:**
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts` - Awards endpoint with 8 calculation functions
+
+**Documentation:**
+- VERSION_HISTORY.md - This entry
+
+### Files Modified (3 files)
+
+**Components:**
+- `/src/components/Stats/SeasonView.tsx` - Added toggle and Awards integration
+- `/src/components/Stats/SeasonView.module.css` - Added toggle button styles
+
+**Documentation:**
+- README.md - Updated version
+
+### Example Award Card
+
+```
+┌─────────────────────────────┐
+│          🏆 Icon            │
+│    TOP SCORER               │
+│                             │
+│  Team: Thunder Buddies      │
+│  Manager: Greg Matos        │
+│         275 pts             │
+│                             │
+│  [ Share on WhatsApp ]      │
+└─────────────────────────────┘
+```
+
+### Benefits
+
+✅ **Celebrates achievements** - Recognize monthly standouts, not just season leaders
+✅ **Increased engagement** - Monthly milestones keep league active
+✅ **Shareable moments** - WhatsApp integration for league banter
+✅ **Granular insights** - See who dominated each month
+✅ **Podium mentality** - Focus on winners (no participation trophies)
 
 ---
 
