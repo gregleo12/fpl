@@ -2,7 +2,63 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.4 (December 26, 2025)
+**Current Version:** v4.3.5 (December 26, 2025)
+
+---
+
+## v4.3.5 - K-136b: CRITICAL FIX - My Team GW Points Header Still Showing 0 (Dec 26, 2025)
+
+**Critical Bug Fix:** Fixed My Team GW PTS header showing 0 during live gameweeks (v4.3.4 fixed pitch view but missed header stats).
+
+### The Bug
+
+v4.3.4 fixed the My Team pitch view (players showing correctly with jerseys and points), but the **GW PTS header still showed 0** instead of the actual live score.
+
+### Root Cause
+
+My Team has two separate API calls:
+1. **Pitch view data:** `/api/team/[teamId]/gameweek/[gw]` - Fixed in v4.3.4 ✅
+2. **Header stats data:** `/api/gw/[gw]/team/[teamId]` - Still broken in v4.3.4 ❌
+
+The frontend component (`MyTeamTab.tsx`) calls **both** endpoints:
+```typescript
+// Line 85-86: Two separate fetches
+fetch(`/api/gw/${selectedGW}/team/${myTeamId}`),        // For header stats
+fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}`)    // For other info
+```
+
+Line 92 reads GW points from the first endpoint:
+```typescript
+setGwPoints(teamData.points.net_total || 0);  // teamData from /api/gw/[gw]/team/[teamId]
+```
+
+We fixed `/api/team/[teamId]/gameweek/[gw]` in v4.3.4, but **the frontend doesn't use that endpoint for GW points**. It uses `/api/gw/[gw]/team/[teamId]`, which still only queried the database.
+
+### The Fix
+
+Applied K-136 live data logic to `/api/gw/[gw]/team/[teamId]/route.ts`:
+- Added GW status detection from FPL API
+- For live/upcoming GWs: Use `calculateManagerLiveScore()` (fetches from FPL API)
+- For completed GWs: Use database (original K-108c logic)
+- Returns `points.net_total` populated from correct data source
+
+### Files Modified
+
+1. `/src/app/api/gw/[gw]/team/[teamId]/route.ts`
+   - Added import for `calculateManagerLiveScore`
+   - Added GW status detection from bootstrap-static API
+   - Conditional data source: FPL API for live, database for completed
+   - Early return for live GWs with transformed squad data
+
+### Impact
+
+My Team now **fully works** during live gameweeks:
+- ✅ GW PTS header shows correct live score (was 0)
+- ✅ Player jerseys display correctly (fixed in v4.3.4)
+- ✅ Player points display correctly (fixed in v4.3.4)
+- ✅ All 15 players visible (fixed in v4.3.4)
+- ✅ H2H Fixtures work (fixed in v4.3.4)
+- ✅ Completed GWs continue using database for performance
 
 ---
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.4** (December 26, 2025)
+**v4.3.5** (December 26, 2025)
 
-CRITICAL FIX: Live GW data now displays correctly in H2H Fixtures and My Team (was showing 0-0 and 0 points).
+CRITICAL FIX: My Team GW PTS header now shows live scores (v4.3.4 fixed pitch but missed header stats endpoint).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
