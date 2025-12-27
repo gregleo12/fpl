@@ -2,7 +2,83 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.13 (December 27, 2025)
+**Current Version:** v4.3.14 (December 27, 2025)
+
+---
+
+## v4.3.14 - K-27 Fix: Stats/GW Section Now Shows Live Data During In-Progress Gameweeks (Dec 27, 2025)
+
+**BUG FIX:** Fixed Stats/GW section showing 0 points for all managers during live gameweeks.
+
+### The Problem
+
+During live GW18, the Stats/GW section was showing:
+- ❌ "GW PTS Leaders" displaying 0 pts for all 20 managers
+- ❌ "GAMEWEEK WINNERS" showing no data
+- ❌ Refresh button not helping
+- ❌ Data stuck despite matches being live for 24+ hours
+
+**Root Cause:** K-27 data source violation in `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts`
+
+The `fetchScores()` function was using `calculateTeamGameweekScore()` for ALL gameweeks, which only queries database tables like `player_gameweek_stats`. These tables are empty (0 points) during live GWs because they're only populated when sync scripts run after gameweek completion.
+
+### The Solution
+
+Modified `fetchScores()` function to implement K-27 data source rules:
+- **Live/Upcoming GWs:** Use `calculateManagerLiveScore()` (pulls from FPL API)
+- **Completed GWs:** Use `calculateTeamGameweekScore()` (pulls from database)
+
+### Technical Implementation
+
+**File Modified:**
+- `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` (lines 4, 310-351)
+
+**Changes:**
+1. Added import: `import { calculateManagerLiveScore } from '@/lib/scoreCalculator';`
+2. Modified `fetchScores()` to conditionally use live calculator:
+
+```typescript
+// K-27: For in-progress or upcoming gameweeks, use FPL API
+if (status === 'in_progress' || status === 'upcoming') {
+  console.log(`[Stats/GW K-27] GW${gw} is ${status} - calculating scores using FPL API (live calculator)`);
+
+  const scoresPromises = managersData.map(async (manager: any) => {
+    const liveResult = await calculateManagerLiveScore(manager.entry_id, gw, status);
+    return {
+      entry_id: manager.entry_id,
+      player_name: manager.player_name,
+      team_name: manager.team_name,
+      score: liveResult.score,  // From FPL API
+    };
+  });
+
+  const scoresData = await Promise.all(scoresPromises);
+  return scoresData;
+}
+
+// For completed gameweeks, use database scores (unchanged)
+```
+
+### Impact
+
+**Before:**
+- Stats/GW showed 0 points for all managers during live GWs
+- Users couldn't track gameweek leaders as matches progressed
+
+**After:**
+- ✅ Stats/GW shows real-time points during live GWs
+- ✅ GW PTS Leaders updates as matches progress
+- ✅ GAMEWEEK WINNERS shows live standings
+- ✅ Refresh button fetches latest FPL data
+- ✅ Database still used efficiently for completed GWs
+
+### Files Changed
+- `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts`
+
+### Related Issues
+- Similar to K-66 (v3.4.19) which fixed GW Rankings
+- Similar to K-59 (v3.4.5) which fixed Transfers tab
+- All were K-27 violations (using database for live GWs)
 
 ---
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.13** (December 27, 2025)
+**v4.3.14** (December 27, 2025)
 
-UX IMPROVEMENT: Live GW indicator now glows pink instead of showing separate dot - saves space and looks cleaner (updated MyTeam, Fixtures, Stats GW selectors).
+BUG FIX: Stats/GW section now shows real-time data during live gameweeks. Fixed K-27 violation where it was querying empty database tables instead of FPL API for in-progress GWs (GW PTS Leaders, GAMEWEEK WINNERS now update correctly).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -306,7 +307,7 @@ async function fetchChipsPlayed(
   return managersWithChips;
 }
 
-// Fetch scores - uses K-108c for in-progress GWs, database for completed (K-109 Phase 6)
+// Fetch scores - uses FPL API for in-progress GWs, database for completed (K-27)
 async function fetchScores(
   db: any,
   leagueId: number,
@@ -314,23 +315,23 @@ async function fetchScores(
   managersData: any[],
   status: 'completed' | 'in_progress' | 'upcoming'
 ) {
-  // K-109 Phase 6: For in-progress or upcoming gameweeks, use K-108c
+  // K-27: For in-progress or upcoming gameweeks, use FPL API
   if (status === 'in_progress' || status === 'upcoming') {
-    console.log(`[K-109 Phase 6] GW${gw} is ${status} - calculating scores using K-108c`);
+    console.log(`[Stats/GW K-27] GW${gw} is ${status} - calculating scores using FPL API (live calculator)`);
 
     try {
-      // Calculate scores for all managers in parallel using K-108c
+      // Calculate scores for all managers in parallel using live calculator
       const scoresPromises = managersData.map(async (manager: any) => {
         try {
-          const teamScore = await calculateTeamGameweekScore(manager.entry_id, gw);
+          const liveResult = await calculateManagerLiveScore(manager.entry_id, gw, status);
           return {
             entry_id: manager.entry_id,
             player_name: manager.player_name,
             team_name: manager.team_name,
-            score: teamScore.points.net_total,
+            score: liveResult.score,
           };
         } catch (error: any) {
-          console.error(`[K-109 Phase 6] Error for ${manager.entry_id}:`, error.message);
+          console.error(`[Stats/GW K-27] Error for ${manager.entry_id}:`, error.message);
           return {
             entry_id: manager.entry_id,
             player_name: manager.player_name,
@@ -341,10 +342,10 @@ async function fetchScores(
       });
 
       const scoresData = await Promise.all(scoresPromises);
-      console.log(`[K-109 Phase 6] Calculated ${scoresData.length} scores using K-108c`);
+      console.log(`[Stats/GW K-27] Calculated ${scoresData.length} scores using FPL API`);
       return scoresData;
     } catch (error) {
-      console.error('[K-109 Phase 6] Error calculating live scores:', error);
+      console.error('[Stats/GW K-27] Error calculating live scores:', error);
       // Fallback to database on error
     }
   }
