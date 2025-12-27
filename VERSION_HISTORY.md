@@ -2,7 +2,56 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.8 (December 26, 2025)
+**Current Version:** v4.3.9 (December 27, 2025)
+
+---
+
+## v4.3.9 - K-139: Fix Sub-Navigation Backgrounds to Match App Theme (Dec 27, 2025)
+
+**UI Consistency Fix:** Changed sub-navigation bars from solid black to dark purple semi-transparent to match app theme.
+
+### The Issue
+
+Sub-navigation bars across the app used solid/near-solid black backgrounds (`rgba(0, 0, 0, 0.85)`) that created harsh contrast against the purple page gradient. This inconsistency affected:
+
+- **My Team:** GW selector bar (black instead of purple)
+- **Rivals:** H2H/Fixtures tabs + GW selector (black instead of purple)
+- **Stats:** Team/GW/Season/Players tabs (black instead of purple)
+- **Reference:** Awards section already used dark purple (correct)
+
+### The Fix
+
+Replaced all black backgrounds with dark purple semi-transparent to match the app's brand colors:
+
+**Color Mappings:**
+- `rgba(0, 0, 0, 0.85)` → `rgba(26, 26, 46, 0.85)` (main sub-nav bars)
+- `rgba(0, 0, 0, 0.3)` → `rgba(26, 26, 46, 0.6)` (GW selector backgrounds)
+- `rgba(0, 0, 0, 0.7-0.8)` → `rgba(14, 10, 31, 0.7-0.8)` (modal overlays)
+
+### Files Modified
+
+1. `/src/components/Fixtures/Fixtures.module.css`
+   - Line 45: Header background → dark purple
+   - Line 1140: GW number background → dark purple
+   - Line 1577: Modal overlay → deep purple
+   - Line 1745: Another overlay → deep purple
+
+2. `/src/components/Stats/StatsHub.module.css`
+   - Lines 22 & 71: View toggle bar backgrounds → dark purple (2 occurrences)
+
+3. `/src/components/PitchView/GWSelector.module.css`
+   - Line 6: GW selector background → dark purple
+
+### Impact
+
+All sub-navigation bars now blend naturally with the purple gradient background:
+- ✅ **My Team:** GW selector matches purple theme
+- ✅ **Rivals:** H2H/Fixtures tabs blend with page gradient
+- ✅ **Stats:** All view toggle tabs use purple backgrounds
+- ✅ **Consistent:** No more harsh black/purple contrast
+
+**Before:** Jarring black bars disrupting purple gradient flow
+**After:** Cohesive purple theme throughout navigation elements
 
 ---
 

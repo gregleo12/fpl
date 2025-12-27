@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.8** (December 26, 2025)
+**v4.3.9** (December 27, 2025)
 
-CRITICAL FIX: Players no longer show bonus points before their match starts (K-138 - fixed getBonusInfo fixture.started check).
+UI FIX: Sub-navigation bars now use dark purple backgrounds instead of black to match app theme (K-139 - updated Fixtures, StatsHub, GWSelector CSS).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
