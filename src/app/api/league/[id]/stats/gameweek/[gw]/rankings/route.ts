@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,8 +20,26 @@ export async function GET(
 
     const db = await getDatabase();
 
-    // K-109 Phase 3: Use K-108c for all managers (single source of truth)
-    console.log(`[K-109 Phase 3] Calculating GW${gw} rankings using K-108c...`);
+    // K-27: Determine gameweek status from FPL API
+    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    try {
+      const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
+      if (bootstrapResponse.ok) {
+        const bootstrapData = await bootstrapResponse.json();
+        const currentEvent = bootstrapData.events?.find((e: any) => e.id === gw);
+        if (currentEvent) {
+          if (currentEvent.finished) {
+            status = 'completed';
+          } else if (currentEvent.is_current || currentEvent.data_checked) {
+            status = 'in_progress';
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[Rankings K-27] Error fetching bootstrap data:', error);
+    }
+
+    console.log(`[Rankings K-27] GW${gw} status: ${status}`);
 
     // Get all managers in the league
     const managersResult = await db.query(`
@@ -31,21 +50,34 @@ export async function GET(
       ORDER BY m.player_name ASC
     `, [leagueId]);
 
-    console.log(`[K-109 Phase 3] Calculating scores for ${managersResult.rows.length} managers`);
+    console.log(`[Rankings K-27] Calculating scores for ${managersResult.rows.length} managers`);
 
-    // Calculate scores for all managers using K-108c in parallel
+    // Calculate scores for all managers in parallel - K-27: use appropriate calculator based on GW status
     const managerScoresPromises = managersResult.rows.map(async (manager: any) => {
       try {
-        const result = await calculateTeamGameweekScore(manager.entry_id, gw);
-        console.log(`[K-109 Phase 3] ${manager.player_name}: ${result.points.net_total} pts`);
+        let points = 0;
+
+        if (status === 'in_progress' || status === 'upcoming') {
+          // K-27: Use FPL API for live/upcoming gameweeks
+          console.log(`[Rankings K-27] ${manager.player_name}: using live calculator`);
+          const liveResult = await calculateManagerLiveScore(manager.entry_id, gw, status);
+          points = liveResult.score;
+        } else {
+          // K-27: Use database for completed gameweeks
+          console.log(`[Rankings K-27] ${manager.player_name}: using database calculator`);
+          const result = await calculateTeamGameweekScore(manager.entry_id, gw);
+          points = result.points.net_total;
+        }
+
+        console.log(`[Rankings K-27] ${manager.player_name}: ${points} pts`);
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
           team_name: manager.team_name,
-          points: result.points.net_total
+          points: points
         };
       } catch (error: any) {
-        console.error(`[K-109 Phase 3] Error for ${manager.entry_id}:`, error.message);
+        console.error(`[Rankings K-27] Error for ${manager.entry_id}:`, error.message);
         return {
           entry_id: manager.entry_id,
           player_name: manager.player_name,
@@ -84,7 +116,7 @@ export async function GET(
       previousPoints = manager.points;
     }
 
-    console.log(`[K-109 Phase 3] Rankings calculated: ${rankings.length} managers`);
+    console.log(`[Rankings K-27] Rankings calculated: ${rankings.length} managers`);
 
     return NextResponse.json({
       event: gw,

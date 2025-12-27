@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.14** (December 27, 2025)
+**v4.3.15** (December 27, 2025)
 
-BUG FIX: Stats/GW section now shows real-time data during live gameweeks. Fixed K-27 violation where it was querying empty database tables instead of FPL API for in-progress GWs (GW PTS Leaders, GAMEWEEK WINNERS now update correctly).
+BUG FIX: GW Points Leaders section now shows real-time data during live gameweeks. Fixed rankings endpoint K-27 violation - both GW Points Leaders and Gameweek Winners now display live scores correctly.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
