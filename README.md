@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.15** (December 27, 2025)
+**v4.3.16** (December 27, 2025)
 
-BUG FIX: GW Points Leaders section now shows real-time data during live gameweeks. Fixed rankings endpoint K-27 violation - both GW Points Leaders and Gameweek Winners now display live scores correctly.
+CRITICAL BUG FIX: Auto-subs now trigger immediately when matches finish (finished_provisional: true) instead of waiting until end of gameweek. Users see real-time auto-substitutions as each match completes.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -2,7 +2,96 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.15 (December 27, 2025)
+**Current Version:** v4.3.16 (December 27, 2025)
+
+---
+
+## v4.3.16 - CRITICAL: Live Auto-Subs Now Trigger When Matches Finish (Dec 27, 2025)
+
+**BUG FIX:** Auto-substitutions now trigger immediately when matches finish, instead of waiting until end of gameweek.
+
+### The Problem
+
+User reported J. Timber (0 minutes played) wasn't being auto-subbed despite:
+- ✅ Arsenal vs Wolves match finished (90 minutes completed)
+- ✅ Senesi on bench with 90 minutes played (ready to sub in)
+- ❌ No auto-sub happening
+
+**Root Cause Investigation:**
+
+The auto-sub logic was waiting for FPL's official `finished: true` flag, which only gets set at the END of the gameweek (Sunday night), not when individual matches finish.
+
+**Code Issue (3 locations):**
+```typescript
+// BEFORE - Checks finished FIRST, then falls back to finished_provisional
+fixtureFinished = fixture.finished ?? fixture.finished_provisional ?? false;
+```
+
+When Arsenal vs Wolves showed:
+- `finished: false` (not officially finalized yet)
+- `finished_provisional: true` (match reached full time)
+
+The code used `finished: false` and wouldn't trigger auto-subs.
+
+### The Solution
+
+**Prioritize `finished_provisional` for live auto-subs:**
+
+```typescript
+// AFTER - Use finished_provisional FIRST (triggers when match ends)
+fixtureFinished = fixture.finished_provisional ?? fixture.finished ?? false;
+```
+
+**Impact:** Auto-subs now trigger as soon as each match finishes (when `finished_provisional: true`), giving users real-time auto-sub visibility instead of waiting hours until gameweek ends.
+
+### Technical Implementation
+
+**Files Modified (3):**
+1. `/src/lib/fpl-calculations.ts` (line 89) - Main auto-sub logic
+2. `/src/lib/scoreCalculator.ts` (line 67) - Live score calculator
+3. `/src/app/api/league/[id]/fixtures/[gw]/live/route.ts` (line 65) - H2H live matches
+
+**All 3 locations changed from:**
+```typescript
+finished: fixture.finished ?? fixture.finished_provisional ?? false
+```
+
+**To:**
+```typescript
+finished: fixture.finished_provisional ?? fixture.finished ?? false
+```
+
+### User Experience Change
+
+**Before v4.3.16:**
+- Match finishes at 4:45pm (finished_provisional: true)
+- Auto-subs don't trigger
+- User refreshes at 5:00pm - still no auto-subs
+- User waits until 11:00pm Sunday when GW finalizes (finished: true)
+- Auto-subs finally appear
+
+**After v4.3.16:**
+- Match finishes at 4:45pm (finished_provisional: true) ✅
+- Auto-subs trigger immediately ✅
+- User refreshes at 4:50pm - sees Timber subbed for Senesi ✅
+- Live tracking experience matches FPL's own app ✅
+
+### Testing
+
+**Your Specific Case (Team 2511225, GW18):**
+- J. Timber: DEF, 0 minutes, 0 pts
+- First bench: Senesi (DEF, 90 mins, 2 pts)
+- Formation: Valid (3+ DEF maintained)
+
+After this fix, when you refresh My Team view:
+- ✅ J. Timber will show as auto-subbed out
+- ✅ Senesi will show as auto-subbed in
+- ✅ +2 points gained from substitution
+
+### Files Changed
+- `/src/lib/fpl-calculations.ts`
+- `/src/lib/scoreCalculator.ts`
+- `/src/app/api/league/[id]/fixtures/[gw]/live/route.ts`
 
 ---
 

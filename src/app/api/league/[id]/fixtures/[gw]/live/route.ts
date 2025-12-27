@@ -61,7 +61,8 @@ export async function GET(
         return {
           id: fixture.id,
           started: fixture.started ?? false,
-          finished: fixture.finished ?? fixture.finished_provisional ?? false,
+          // Use finished_provisional for live auto-subs (triggers when match ends, not when GW ends)
+          finished: fixture.finished_provisional ?? fixture.finished ?? false,
           player_stats: playerStats,
         };
       });

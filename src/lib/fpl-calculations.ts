@@ -85,7 +85,8 @@ export function createSquadFromPicks(
       const fixture = fixturesData.find((f: any) => f.id === fixtureId);
       if (fixture) {
         fixtureStarted = fixture.started ?? false;
-        fixtureFinished = fixture.finished ?? fixture.finished_provisional ?? false;
+        // Use finished_provisional for live auto-subs (triggers when match ends, not when GW ends)
+        fixtureFinished = fixture.finished_provisional ?? fixture.finished ?? false;
       }
     }
 
