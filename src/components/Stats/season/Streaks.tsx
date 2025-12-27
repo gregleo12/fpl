@@ -25,7 +25,8 @@ export function Streaks({ winningStreaks, losingStreaks }: StreaksProps) {
   const isEmpty = !currentData || currentData.length === 0;
 
   const IconComponent = view === 'best' ? Flame : Skull;
-  const titleText = view === 'best' ? 'Streaks' : 'Worst Streaks';
+  // K-135: Keep title static - toggle button shows Best/Worst
+  const titleText = 'Streaks';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <IconComponent size={18} color="#00ff87" /> {titleText}

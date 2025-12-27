@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.10** (December 27, 2025)
+**v4.3.11** (December 27, 2025)
 
-UX IMPROVEMENT: Awards page mobile layout optimized - icons inline with titles, Best/Worst always side-by-side, ~50% less scrolling (K-140 - updated AwardCard CSS).
+UI FIXES: GW Records now shows team names, titles stay static when toggling Best/Worst (K-135 - updated BestWorstGW & Streaks components).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

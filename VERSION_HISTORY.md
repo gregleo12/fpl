@@ -2,7 +2,73 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.10 (December 27, 2025)
+**Current Version:** v4.3.11 (December 27, 2025)
+
+---
+
+## v4.3.11 - K-135: GW Records Team Names & Static Titles (Dec 27, 2025)
+
+**UI Fixes:** Fixed three issues with Season Stats leaderboard cards for better consistency and clarity.
+
+### Issue 1: GW Records Missing Team Names
+
+GW Records card didn't show team names, unlike all other leaderboard cards.
+
+**Before:**
+```
+👑 BEST
+Guillaume de Posson  ← Only player name
+111 pts
+GW 16
+```
+
+**After:**
+```
+👑 BEST
+FC SCORPIO           ← Team name added (prominent)
+Guillaume de Posson  ← Player name (secondary)
+111 pts
+GW 16
+```
+
+### Issue 2 & 3: Titles Changed with Toggle
+
+When toggling to "Worst" view, card titles incorrectly changed:
+- Streaks: "STREAKS" → "WORST STREAKS" ❌
+- GW Records: "GW RECORDS" → "WORST GAMEWEEKS" ❌
+
+This was redundant since the toggle button already indicates Best/Worst mode.
+
+**Fixed:** Titles now remain static while icons change:
+- **Best mode:** 🔥 STREAKS / 🔥 GW RECORDS
+- **Worst mode:** 💀 STREAKS / 💀 GW RECORDS
+
+Icons provide visual feedback, titles stay consistent.
+
+### Files Modified
+
+1. `/src/components/Stats/season/BestWorstGW.tsx`
+   - Line 29: Changed `titleText` to always be "GW Records" (removed conditional)
+   - Lines 41-43: Added `team_name` display above `player_name` in renderItem
+   - Used `.name` class for team (prominent) and `.meta` for player (secondary)
+
+2. `/src/components/Stats/season/Streaks.tsx`
+   - Line 29: Changed `titleText` to always be "Streaks" (removed conditional)
+
+### Impact
+
+**GW Records:**
+- ✅ Team names now display (matches other leaderboard cards)
+- ✅ Visual hierarchy: Team name prominent, player name secondary
+- ✅ Title stays "GW RECORDS" in both modes
+- ✅ Icon changes: 🔥 (best) / 💀 (worst)
+
+**Streaks:**
+- ✅ Title stays "STREAKS" in both modes
+- ✅ Icon changes: 🔥 (best) / 💀 (worst)
+
+**Before:** Inconsistent display, confusing "WORST" title prefix
+**After:** Consistent card structure, static titles with dynamic icons
 
 ---
 

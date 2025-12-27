@@ -25,7 +25,8 @@ export function BestWorstGW({ bestData, worstData }: Props) {
 
   const data = view === 'best' ? bestData : worstData;
   const IconComponent = view === 'best' ? Flame : Skull;
-  const titleText = view === 'best' ? 'GW Records' : 'Worst Gameweeks';
+  // K-135: Keep title static - toggle button shows Best/Worst
+  const titleText = 'GW Records';
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       <IconComponent size={18} color="#00ff87" /> {titleText}
@@ -33,11 +34,13 @@ export function BestWorstGW({ bestData, worstData }: Props) {
   );
 
   // Render function for items (used by both card and modal)
+  // K-135: Added team_name display above player_name
   const renderItem = (item: BestGameweekData, index: number) => (
     <div className={styles.listItem}>
       <div className={styles.rank}>{index + 1}</div>
       <div className={styles.info}>
-        <div className={styles.name}>{item.player_name}</div>
+        <div className={styles.name}>{item.team_name}</div>
+        <div className={styles.meta}>{item.player_name}</div>
         <div className={styles.meta}>GW{item.event}</div>
       </div>
       <div className={styles.stats}>
