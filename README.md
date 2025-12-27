@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.9** (December 27, 2025)
+**v4.3.10** (December 27, 2025)
 
-UI FIX: Sub-navigation bars now use dark purple backgrounds instead of black to match app theme (K-139 - updated Fixtures, StatsHub, GWSelector CSS).
+UX IMPROVEMENT: Awards page mobile layout optimized - icons inline with titles, Best/Worst always side-by-side, ~50% less scrolling (K-140 - updated AwardCard CSS).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

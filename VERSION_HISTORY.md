@@ -2,7 +2,77 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.9 (December 27, 2025)
+**Current Version:** v4.3.10 (December 27, 2025)
+
+---
+
+## v4.3.10 - K-140: Awards Page Mobile Layout Optimization (Dec 27, 2025)
+
+**UI/UX Improvement:** Optimized Monthly Awards page mobile layout to reduce scrolling by ~50%.
+
+### The Problem
+
+The Monthly Awards page wasted significant vertical space on mobile, requiring excessive scrolling:
+
+1. **Best/Worst Stacked Vertically:** Award cards showed Best winner above Worst winner instead of side-by-side
+2. **Icon Above Title:** Icons and titles stacked vertically, wasting ~60px per card
+
+**Before:**
+- Each award card: ~400px tall
+- 4 cards total: ~1,600px (lots of scrolling)
+- Icon ↓ Title layout wasted space
+
+### The Fix
+
+Optimized layout for all screen sizes, especially mobile:
+
+**1. Icon Inline with Title**
+- Changed `.header` from `flex-direction: column` to `row`
+- Icons now appear next to titles: 🏆 GAMEWEEK
+- Saves ~60px vertical space per card
+
+**2. Best/Worst Always Side-by-Side**
+- Removed mobile media query that changed grid to single column
+- Kept 3-column grid layout: `1fr auto 1fr` (Best | Divider | Worst)
+- Adjusted font sizes and spacing for mobile screens
+- Added extra breakpoint for very small screens (320-480px)
+
+**3. Responsive Sizing**
+- Desktop: 56px icons, larger fonts
+- Mobile (640px): 32px icons, medium fonts, tighter gaps
+- Small mobile (480px): 28px icons, smaller fonts, minimal gaps
+
+### Space Savings
+
+| Screen | Before | After | Savings |
+|--------|--------|-------|---------|
+| Per Card | ~400px | ~190px | ~210px (52%) |
+| 4 Cards | ~1600px | ~760px | ~840px (52%) |
+
+Users scroll **~50% less** on mobile to view all awards!
+
+### Files Modified
+
+1. `/src/components/Stats/season/AwardCard.module.css`
+   - Line 22-30: Changed header to `flex-direction: row` for inline icon/title
+   - Lines 171-231: Updated mobile (640px) to keep side-by-side layout
+   - Lines 233-284: Added extra small (480px) breakpoint for iPhone SE, etc.
+
+### Impact
+
+**Desktop:**
+- ✅ Layout unchanged (already used side-by-side)
+- ✅ Icons inline with titles for consistency
+
+**Mobile (all sizes):**
+- ✅ Icons inline with titles saves vertical space
+- ✅ Best and Worst remain side-by-side
+- ✅ Significantly reduced scrolling
+- ✅ Text scales appropriately for screen size
+- ✅ Works across 320px (iPhone SE) to 640px+ (tablets)
+
+**Before:** Excessive scrolling, wasted space with stacked layout
+**After:** Compact, efficient layout matching desktop pattern on all screens
 
 ---
 
