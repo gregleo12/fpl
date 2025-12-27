@@ -2,7 +2,99 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.12 (December 27, 2025)
+**Current Version:** v4.3.13 (December 27, 2025)
+
+---
+
+## v4.3.13 - Live GW Indicator UX Improvement: Glowing Number Instead of Dot (Dec 27, 2025)
+
+**UX Improvement:** Replaced live gameweek dot indicator with glowing GW number to save horizontal space and improve clarity.
+
+### The Problem
+
+Live gameweeks showed a pink pulsing dot next to the GW number, which:
+- ❌ Consumed valuable horizontal space (8px dot + 16px margins = 24px)
+- ❌ Required extra visual processing (dot separate from number)
+- ❌ Especially problematic on mobile where space is tight
+
+**Before:**
+```
+[◄] GW 18 ● [►]  ← Dot takes extra space
+```
+
+**After:**
+```
+[◄] GW 18 [►]    ← Number glows pink when live
+```
+
+### The Solution
+
+Made the GW number itself glow pink when live, removing the need for a separate dot indicator:
+
+**Visual changes:**
+- **Normal state:** White "GW 18" text
+- **Live state:** Pink/red "GW 18" with pulsing glow effect
+- **Animation:** Smooth text-shadow pulsing (same timing as old dot)
+- **Color:** Same `#ff2882` pink as the dot
+- **Space saved:** ~24px horizontal space per nav bar
+
+### Technical Implementation
+
+**TSX Files Modified (4 files):**
+1. `/src/components/Dashboard/MyTeamTab.tsx` - My Team GW selector
+2. `/src/components/Fixtures/FixturesTab.tsx` - Rivals GW selector
+3. `/src/components/Stats/StatsHub.tsx` - Stats GW selector
+4. `/src/components/PitchView/GWSelector.tsx` - Standalone GW selector component
+
+**Changes:**
+- Removed `<span className={styles.liveDot}>` element
+- Added conditional class to `.gwNumber`: `className={styles.gwNumberLive}` when live
+- Added `title` tooltip for accessibility
+
+**CSS Files Modified (4 files):**
+1. `/src/components/Dashboard/Dashboard.module.css`
+2. `/src/components/Fixtures/Fixtures.module.css`
+3. `/src/components/Stats/StatsHub.module.css`
+4. `/src/components/PitchView/GWSelector.module.css`
+
+**CSS Changes:**
+- Added `.gwNumberLive` class with pink color and glow animation
+- Added `@keyframes gwGlow` for pulsing text-shadow effect
+- Removed `.liveDot` class and `@keyframes livePulse` (no longer needed)
+- Added `transition: all 0.3s ease` to `.gwNumber` for smooth color change
+
+### Animation Details
+
+```css
+@keyframes gwGlow {
+  0%, 100% {
+    text-shadow: 0 0 8px #ff2882, 0 0 12px rgba(255, 40, 130, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 12px #ff2882, 0 0 20px rgba(255, 40, 130, 0.8);
+  }
+}
+```
+
+**Timing:** 1.5s ease-in-out infinite (matches old dot animation)
+
+### Impact
+
+✅ **Space efficiency:** Saves ~24px horizontal space in nav bars
+✅ **Mobile optimization:** More breathing room on small screens
+✅ **Visual clarity:** Live indicator directly on the relevant element
+✅ **Accessibility:** Maintains tooltip "Live match" on hover
+✅ **Consistency:** Same pink color and pulsing effect as before
+✅ **Performance:** Fewer DOM elements to render
+
+**Locations updated:**
+- ✅ My Team header bar (team name + GW controls)
+- ✅ Rivals header bar (H2H/Fixtures tabs + GW controls)
+- ✅ Stats/GW header bar (view toggle + GW controls)
+- ✅ Standalone GW selector component
+
+**Before:** "GW 18 ●" with separate pink dot (takes extra space)
+**After:** "GW 18" glows pink when live (more compact, clearer)
 
 ---
 

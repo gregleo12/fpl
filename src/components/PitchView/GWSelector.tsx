@@ -38,9 +38,12 @@ export function GWSelector({ selectedGW, maxGW, onGWChange, isLive = false, onRe
 
       <div className={styles.gwDisplay}>
         <span className={styles.gwLabel}>GW</span>
-        <span className={styles.gwNumber}>{selectedGW}</span>
-        {/* K-89: Use pink pulsing dot like Rivals tab */}
-        {isLive && <span className={styles.liveDot} title="Live match"></span>}
+        <span
+          className={`${styles.gwNumber} ${isLive ? styles.gwNumberLive : ''}`}
+          title={isLive ? "Live match" : undefined}
+        >
+          {selectedGW}
+        </span>
       </div>
 
       <button

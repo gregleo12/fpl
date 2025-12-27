@@ -256,15 +256,14 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               ◄
             </button>
 
-            {/* Gameweek display with live dot */}
+            {/* Gameweek display - glowing when live */}
             <div className={styles.gwInfo}>
-              <span className={styles.gwNumber}>
+              <span
+                className={`${styles.gwNumber} ${isLiveGW && selectedGW === liveGWNumber ? styles.gwNumberLive : ''}`}
+                title={isLiveGW && selectedGW === liveGWNumber ? "Live match" : undefined}
+              >
                 GW {selectedGW}
               </span>
-
-              {isLiveGW && selectedGW === liveGWNumber && (
-                <span className={styles.liveDot} title="Live match"></span>
-              )}
             </div>
 
             {/* Next button */}

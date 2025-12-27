@@ -222,6 +222,23 @@
   color: white;
   min-width: 2ch;
   text-align: center;
+  transition: all 0.3s ease;
+}
+
+/* Glowing GW number when live - replaces dot to save space */
+.gwNumberLive {
+  color: #ff2882;
+  animation: gwGlow 1.5s ease-in-out infinite;
+}
+
+/* Glow animation for live GW number */
+@keyframes gwGlow {
+  0%, 100% {
+    text-shadow: 0 0 8px #ff2882, 0 0 12px rgba(255, 40, 130, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 12px #ff2882, 0 0 20px rgba(255, 40, 130, 0.8);
+  }
 }
 
 .dropdownButton {
@@ -242,31 +259,6 @@
 .dropdownButton:hover {
   color: rgba(255, 255, 255, 0.8);
   transform: translateY(1px);
-}
-
-/* K-72: Pulsing live dot - replaces text badge to save horizontal space */
-.liveDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #ff2882;
-  border-radius: 50%;
-  animation: livePulse 1.5s ease-in-out infinite;
-  /* K-88: Equal margins to center dot between GW number and right arrow */
-  margin-left: 8px;
-  margin-right: 8px;
-}
-
-/* K-72: Live dot pulse animation with glow */
-@keyframes livePulse {
-  0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
-  }
-  50% {
-    opacity: 0.6;
-    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
-  }
 }
 
 @keyframes pulse {

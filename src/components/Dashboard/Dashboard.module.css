@@ -1245,28 +1245,22 @@
   color: white;
   min-width: 2ch;
   text-align: center;
+  transition: all 0.3s ease;
 }
 
-/* K-91: Live dot - EXACT COPY from Rivals */
-.liveDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: #ff2882;
-  border-radius: 50%;
-  animation: livePulse 1.5s ease-in-out infinite;
-  margin-left: 8px;
-  margin-right: 8px;
+/* Glowing GW number when live - replaces dot to save space */
+.gwNumberLive {
+  color: #ff2882;
+  animation: gwGlow 1.5s ease-in-out infinite;
 }
 
-@keyframes livePulse {
+/* Glow animation for live GW number */
+@keyframes gwGlow {
   0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 4px #ff2882, 0 0 8px rgba(255, 40, 130, 0.5);
+    text-shadow: 0 0 8px #ff2882, 0 0 12px rgba(255, 40, 130, 0.6);
   }
   50% {
-    opacity: 0.6;
-    box-shadow: 0 0 8px #ff2882, 0 0 16px rgba(255, 40, 130, 0.7);
+    text-shadow: 0 0 12px #ff2882, 0 0 20px rgba(255, 40, 130, 0.8);
   }
 }
 

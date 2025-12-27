@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.12** (December 27, 2025)
+**v4.3.13** (December 27, 2025)
 
-UI FIX: Completed K-139 - My Team nav bar now uses dark purple background to match app theme (fixed Dashboard & PitchView CSS).
+UX IMPROVEMENT: Live GW indicator now glows pink instead of showing separate dot - saves space and looks cleaner (updated MyTeam, Fixtures, Stats GW selectors).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -537,10 +537,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
             ◄
           </button>
 
-          {/* Gameweek display with inline status - clickable */}
+          {/* Gameweek display - glowing when live */}
           <div className={styles.gwInfo}>
             <span
-              className={styles.gwNumber}
+              className={`${styles.gwNumber} ${fixturesData.status === 'in_progress' ? styles.gwNumberLive : ''}`}
               onClick={handleGWInfoPress}
               onMouseDown={handleGWInfoMouseDown}
               onMouseUp={handleGWInfoMouseUp}
@@ -549,13 +549,10 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               onTouchEnd={handleGWInfoMouseUp}
               style={{ cursor: 'pointer' }}
               aria-label="Select gameweek"
+              title={fixturesData.status === 'in_progress' ? "Live match" : undefined}
             >
               GW {currentGW}
             </span>
-
-            {fixturesData.status === 'in_progress' && (
-              <span className={styles.liveDot} title="Live match"></span>
-            )}
           </div>
 
           {/* Next button */}

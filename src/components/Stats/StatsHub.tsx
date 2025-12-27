@@ -200,12 +200,14 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
             ◄
           </button>
 
-          {/* Gameweek display with live dot */}
+          {/* Gameweek display - glowing when live */}
           <div className={styles.gwInfo}>
-            <span className={styles.gwNumber}>GW {selectedGW}</span>
-            {selectedGW === currentGW && isCurrentGWLive && (
-              <span className={styles.liveDot} title="Live match"></span>
-            )}
+            <span
+              className={`${styles.gwNumber} ${selectedGW === currentGW && isCurrentGWLive ? styles.gwNumberLive : ''}`}
+              title={selectedGW === currentGW && isCurrentGWLive ? "Live match" : undefined}
+            >
+              GW {selectedGW}
+            </span>
           </div>
 
           {/* Next button */}
