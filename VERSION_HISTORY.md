@@ -2,7 +2,64 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.11 (December 27, 2025)
+**Current Version:** v4.3.12 (December 27, 2025)
+
+---
+
+## v4.3.12 - K-139 Completion: Fix My Team Nav Bar Background (Dec 27, 2025)
+
+**UI Fix:** Completed K-139 by fixing My Team nav bar background that was missed in initial implementation.
+
+### The Issue
+
+K-139 (v4.3.9) successfully changed nav bars in Rivals and Stats tabs from black to dark purple, but missed the My Team tab nav bar which still showed solid black background.
+
+**Location:** The unified header bar containing team name and GW selector controls:
+```
+┌──────────────────────────────────────┐
+│ FC Matos ★    [↻] [◄] GW 18 ● [►]  │ ← This was still black
+└──────────────────────────────────────┘
+```
+
+### Root Cause
+
+K-139 modified three CSS files but missed a fourth location:
+
+**Fixed in K-139 (v4.3.9):**
+- `/src/components/Fixtures/Fixtures.module.css` ✅
+- `/src/components/Stats/StatsHub.module.css` ✅
+- `/src/components/PitchView/GWSelector.module.css` ✅
+
+**Missed in K-139 (fixed now):**
+- `/src/components/Dashboard/Dashboard.module.css` `.myTeamHeader` ❌
+- `/src/components/PitchView/PitchView.module.css` `.gwSelector` ❌
+
+### The Fix
+
+Updated two CSS files to match K-139 purple theme:
+
+1. **Dashboard.module.css** (line 1134)
+   - Changed `.myTeamHeader` background: `rgba(0, 0, 0, 0.85)` → `rgba(26, 26, 46, 0.85)`
+
+2. **PitchView.module.css** (line 56)
+   - Changed `.gwSelector` background: `rgba(0, 0, 0, 0.3)` → `rgba(26, 26, 46, 0.6)`
+
+### Files Modified
+
+1. `/src/components/Dashboard/Dashboard.module.css`
+   - Line 1134: My Team header bar background → dark purple
+
+2. `/src/components/PitchView/PitchView.module.css`
+   - Line 56: GW selector background → dark purple
+
+### Impact
+
+✅ **My Team:** Nav bar now uses dark purple background matching app theme
+✅ **Consistency:** All nav bars across My Team, Rivals, and Stats tabs now use dark purple
+✅ **K-139 Complete:** All sub-navigation backgrounds now match the purple gradient theme
+
+**Before:** My Team nav bar had jarring black background while others were purple
+**After:** Cohesive dark purple theme across all navigation elements
 
 ---
 

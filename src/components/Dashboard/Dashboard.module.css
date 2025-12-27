@@ -1131,7 +1131,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.85); /* Increased opacity for better visibility when sticky */
+  background: rgba(26, 26, 46, 0.85); /* K-139: Dark purple semi-transparent to match app theme */
   backdrop-filter: blur(10px); /* Add blur for glass effect */
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;

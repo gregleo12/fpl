@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.11** (December 27, 2025)
+**v4.3.12** (December 27, 2025)
 
-UI FIXES: GW Records now shows team names, titles stay static when toggling Best/Worst (K-135 - updated BestWorstGW & Streaks components).
+UI FIX: Completed K-139 - My Team nav bar now uses dark purple background to match app theme (fixed Dashboard & PitchView CSS).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
