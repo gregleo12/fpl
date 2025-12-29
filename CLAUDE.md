@@ -1,7 +1,7 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v4.0.3
-**Last Updated:** December 24, 2025
+**Current Version:** v4.3.44
+**Last Updated:** December 29, 2025
 **Project:** FPL H2H Analytics Web App
 
 ---
@@ -114,6 +114,30 @@ git push origin main
 ---
 
 ## 🐛 Recent Bugs (Don't Repeat These)
+
+### v4.3.44 - Sticky Header Pulled Element Out of Table Flow (Dec 29, 2025 - K-158)
+- **Problem:** League Rankings table header floating in middle of rows (appearing between rows 2 and 3 instead of at top)
+- **Root Cause:** `position: sticky` with large `top` values (6.5rem = 104px) pulled header OUT of normal table flow
+- **What Happened:** K-153 and K-157 tried to "fix" with different `top` values, but fundamentally misunderstood how sticky positioning works
+- **Why It Failed:**
+  - `position: sticky; top: 104px` means "stick 104px from viewport top"
+  - This pulls element away from natural position in document flow
+  - Table `<thead>` should naturally appear FIRST, then `<tbody>` rows
+  - Large `top` values caused header to float at absolute position in middle of visible content
+- **Fix:** Removed `position: sticky` entirely - header now part of normal table flow
+- **Never Do:** Use `position: sticky` with large `top` values to "push" elements into position
+- **Always Do:** Let table headers stay in natural document flow (first row of table)
+- **Lesson:** `position: sticky` is for scroll behavior, NOT layout positioning. If element appears in wrong place, sticky won't fix it - fix the HTML structure instead.
+- **Trade-off:** Header now scrolls off screen (no sticky behavior), but at least it's in the CORRECT POSITION
+
+### v4.3.42 - Production Crash: toLocaleString on Null (Dec 29, 2025 - P0-CRITICAL)
+- **Problem:** `TypeError: Cannot read properties of null (reading 'toLocaleString')` crashed stats/rankings components
+- **Root Cause:** 17 instances across 5 components called `.toLocaleString()` on null/undefined values without null checks
+- **Fix:** Added null coalescing: `(value ?? 0).toLocaleString()` to ALL instances
+- **Never Do:** Call `.toLocaleString()` without null safety checks
+- **Always Do:** Use `(value ?? 0).toLocaleString()` pattern for all number formatting
+- **Pattern:** Defensive programming - assume all data can be null until proven otherwise
+- **Files Fixed:** RankProgressModal, GWRankModal, PointsAnalysisModal, MyTeamTab, PlayerDetailModal
 
 ### v3.6.1 - Provisional Bonus Added to Completed Gameweeks (Dec 23, 2025 - K-106a)
 - **Problem:** Player scores inflated for completed GWs (Haaland TC showed 57pts instead of 48pts)
