@@ -23,6 +23,7 @@ export function ManualSyncTool() {
   const [syncing, setSyncing] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showOnlyInvalid, setShowOnlyInvalid] = useState(false); // K-155: Filter for invalid leagues
 
   // Fetch status on mount
   useEffect(() => {
@@ -57,6 +58,22 @@ export function ManualSyncTool() {
 
     return status.gwStatus[selectedLeague]?.[gw] || 'unknown';
   };
+
+  // K-155: Filter leagues based on showOnlyInvalid flag
+  const getFilteredLeagues = (): League[] => {
+    if (!status || !showOnlyInvalid) return status?.leagues || [];
+
+    // Filter to leagues that have at least one invalid/missing GW
+    return status.leagues.filter(league => {
+      // Check all finished GWs for this league
+      return status.finishedGWs.some(gw => {
+        const gwStatus = status.gwStatus[league.id]?.[gw];
+        return gwStatus === 'invalid' || gwStatus === 'missing';
+      });
+    });
+  };
+
+  const filteredLeagues = getFilteredLeagues();
 
   const toggleGW = (gw: number) => {
     setSelectedGWs(prev =>
@@ -131,14 +148,35 @@ export function ManualSyncTool() {
 
       {/* League Selector */}
       <div className={styles.section}>
-        <label className={styles.label}>League:</label>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <label className={styles.label}>League:</label>
+          {/* K-155: Filter checkbox */}
+          <label style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              type="checkbox"
+              checked={showOnlyInvalid}
+              onChange={(e) => {
+                setShowOnlyInvalid(e.target.checked);
+                // Reset to "all" when toggling filter
+                setSelectedLeague('all');
+              }}
+              style={{ cursor: 'pointer' }}
+            />
+            Show Only Invalid/Missing
+          </label>
+        </div>
         <select
           className={styles.select}
           value={selectedLeague}
           onChange={(e) => setSelectedLeague(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
         >
-          <option value="all">All Leagues ({status.leagues.length})</option>
-          {status.leagues.map(league => (
+          <option value="all">
+            {showOnlyInvalid
+              ? `Invalid Leagues (${filteredLeagues.length})`
+              : `All Leagues (${status.leagues.length})`
+            }
+          </option>
+          {filteredLeagues.map(league => (
             <option key={league.id} value={league.id}>
               {league.id} - {league.name} ({league.managerCount} managers)
             </option>

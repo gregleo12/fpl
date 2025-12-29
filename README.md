@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.39** (December 29, 2025)
+**v4.3.40** (December 29, 2025)
 
-BUG FIX (K-154): Fixed batch sync timeout causing last 5-6 leagues to fail when syncing all 69 leagues. Root cause: API timeout set to 5 minutes but 69 leagues takes ~6-12 minutes (request timed out before completion). Fix: Increased `maxDuration` from 300s to 600s (10 minutes), added detailed progress logging with league counts and error tracking. Now all 69 leagues complete successfully within timeout window.
+FEATURE (K-155): Added "Show Only Invalid/Missing" filter checkbox to admin manual sync tool. When checked, league dropdown filters to show only leagues with sync issues (⚠ Invalid or ○ Missing gameweeks), making it easier to identify and re-sync problematic leagues without scrolling through all 69. Dropdown label updates dynamically: "Invalid Leagues (6)" vs "All Leagues (69)".
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

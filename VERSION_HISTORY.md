@@ -2,7 +2,82 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.39 (December 29, 2025)
+**Current Version:** v4.3.40 (December 29, 2025)
+
+---
+
+## v4.3.40 - K-155: Add "Show Only Invalid" Filter to Manual Sync Tool (Dec 29, 2025)
+
+**FEATURE:** Added checkbox filter to show only leagues with sync issues in the admin manual sync tool, making it easier to re-sync problematic leagues without scrolling through all 69.
+
+### The Feature
+
+**New UI Element:**
+```
+League: [All Leagues (69) ▼]    ☑ Show Only Invalid/Missing
+
+When checked:
+League: [Invalid Leagues (6) ▼]
+```
+
+**How It Works:**
+1. Checkbox appears next to "League:" label
+2. When unchecked: Dropdown shows all 69 leagues
+3. When checked: Dropdown filters to only leagues that have ⚠ Invalid or ○ Missing gameweeks
+4. Dropdown label updates to show count: "Invalid Leagues (6)" vs "All Leagues (69)"
+5. Selecting the checkbox resets league selection to "all" to avoid confusion
+
+### Implementation
+
+**Filter Logic:**
+```typescript
+// K-155: Filter leagues based on showOnlyInvalid flag
+const getFilteredLeagues = (): League[] => {
+  if (!status || !showOnlyInvalid) return status?.leagues || [];
+
+  // Filter to leagues that have at least one invalid/missing GW
+  return status.leagues.filter(league => {
+    return status.finishedGWs.some(gw => {
+      const gwStatus = status.gwStatus[league.id]?.[gw];
+      return gwStatus === 'invalid' || gwStatus === 'missing';
+    });
+  });
+};
+```
+
+For each league, checks all finished gameweeks. If any gameweek has status 'invalid' or 'missing', the league is included in the filtered list.
+
+### Use Cases
+
+**Scenario 1: After All Leagues Batch Sync**
+1. Sync all 69 leagues for GW18
+2. Most succeed (✓) but 5 show ⚠
+3. Check "Show Only Invalid"
+4. Dropdown now shows only those 5 leagues
+5. Select individual league and re-sync
+
+**Scenario 2: Quick Fix for Problematic Leagues**
+1. Open admin sync tool
+2. Check "Show Only Invalid" immediately
+3. See which leagues have issues
+4. Sync them one by one or select their GWs
+
+**Scenario 3: Monitoring Sync Health**
+1. Check "Show Only Invalid"
+2. If dropdown shows "Invalid Leagues (0)" → All good!
+3. If dropdown shows "Invalid Leagues (12)" → Need attention
+
+### Files Changed
+
+- `/src/components/Admin/ManualSyncTool.tsx` - Added filter state, logic, and UI
+
+### Future Enhancements
+
+Considered but not implemented (can be added later):
+- "Sync All Invalid" quick action button
+- Dropdown categories (All / Invalid / Missing)
+- Smart default (auto-check if invalid leagues exist)
+- Show invalid count per league in dropdown
 
 ---
 
