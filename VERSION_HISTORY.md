@@ -2,7 +2,143 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.32 (December 29, 2025)
+**Current Version:** v4.3.33 (December 29, 2025)
+
+---
+
+## v4.3.33 - K-152: Fix iOS PWA Header & Sticky Table Issues (Dec 29, 2025)
+
+**BUG FIX:** Fixed content being cut off behind fixed header in PWA mode and sticky table headers appearing mid-table on desktop/iPhone landscape.
+
+### The Bug
+
+**Reported by:** kinqdane (iPhone 17 Pro Max user)
+
+**Issue 1: Content Behind Fixed Header in PWA Mode**
+- In Safari browser: Works fine ✓
+- As installed PWA (Web App): First row of content cut off by fixed header
+- Affected tabs: Rivals (first fixture hidden), Rank (first team partially obscured)
+- Cause: Different `safe-area-inset-top` values between browser and PWA standalone mode
+- iPhone 17 Pro Max has larger Dynamic Island area than iPhone 15 Pro Max
+
+**Issue 2: Sticky Table Header Stuck Mid-Table**
+- Table header row (RANK, TEAM, W, D, L, etc.) appeared stuck in middle of table
+- Overlapped with row 2 data instead of staying at top
+- Only occurred on desktop/landscape mode when tabs are positioned at top
+- Mobile (tabs at bottom) worked fine
+
+### Root Cause Analysis
+
+**Problem 1: Fixed Tabs Wrapper Not Accounting for Safe Area**
+- **File:** `/src/app/dashboard/dashboard.module.css`
+- **Line 188:** `top: 0;` on desktop (should be `top: env(safe-area-inset-top)`)
+- PWA standalone mode has status bar area (Dynamic Island + status) that browser mode handles automatically
+- Without accounting for safe area, tabs started at screen edge, behind Dynamic Island
+
+**Problem 2: Sticky Headers Using Mobile Values on Desktop**
+- **Files:** Multiple component CSS files
+- Sticky `top` position only accounted for safe area, not fixed tabs bar height
+- Mobile: `top: calc(0.5rem + safe-area)` ✓ (tabs at bottom)
+- Desktop: `top: calc(0.5rem + safe-area)` ✗ (should be `calc(5rem + safe-area)` to account for tabs at top)
+
+### The Fix
+
+**1. Fixed Tabs Wrapper Position**
+
+File: `/src/app/dashboard/dashboard.module.css`
+
+```css
+/* Before (broken) */
+@media (min-width: 769px) {
+  .tabsWrapper {
+    top: 0; /* ✗ Doesn't account for Dynamic Island */
+  }
+}
+
+/* After (fixed) */
+@media (min-width: 769px) {
+  .tabsWrapper {
+    top: env(safe-area-inset-top, 0px); /* ✓ Pushes down from status bar */
+  }
+}
+```
+
+**2. Fixed Sticky Headers for Desktop**
+
+Added desktop media queries to all sticky headers to account for tabs bar height:
+
+**Files Updated:**
+1. `/src/components/Dashboard/Dashboard.module.css` - Rank table headers
+2. `/src/components/Fixtures/Fixtures.module.css` - Rivals header
+3. `/src/components/Stats/StatsHub.module.css` - Stats view toggle & GW selector
+
+```css
+/* Mobile (base) - tabs at bottom */
+.stickyHeader {
+  top: calc(0.5rem + env(safe-area-inset-top, 0px));
+}
+
+/* Desktop - tabs at top */
+@media (min-width: 769px) {
+  .stickyHeader {
+    top: calc(5rem + env(safe-area-inset-top, 0px)); /* 5rem = tabs bar height */
+  }
+}
+```
+
+### Changes Summary
+
+| File | Change | Why |
+|------|--------|-----|
+| `dashboard.module.css` | Desktop `.tabsWrapper` top position | Account for Dynamic Island in PWA |
+| `Dashboard.module.css` | Desktop `.table th` sticky position | Stick below tabs bar on desktop |
+| `Fixtures.module.css` | Desktop `.rivalsHeader` sticky position | Stick below tabs bar on desktop |
+| `StatsHub.module.css` | Desktop `.viewToggleBar` sticky position | Stick below tabs bar on desktop |
+| `StatsHub.module.css` | Desktop `.gwSelectorBar` sticky position | Stick below tabs bar + toggle bar on desktop |
+
+### Technical Details
+
+**Safe Area Values:**
+- iPhone 15 Pro Max: ~59px (Dynamic Island + status)
+- iPhone 17 Pro Max: ~59-65px (may vary)
+- Regular iPhones: ~47px (notch + status)
+- Desktop: 0px (no safe area)
+
+**Tabs Bar Height:**
+- Padding: 0.75rem top + 0.5rem bottom = 1.25rem (~20px)
+- Tabs content: ~60px (icons + labels + padding)
+- Total: ~5rem (~80px)
+
+**Why It Worked in Safari but Not PWA:**
+- Safari browser: iOS system handles status bar, content auto-adjusts
+- PWA standalone: App is full-screen, must handle safe areas manually
+- `viewport-fit: cover` in layout.tsx enables full-screen PWA mode
+- `env(safe-area-inset-top)` provides safe area value to CSS
+
+### Testing Recommendations
+
+**Must Test On:**
+- [ ] Safari browser (iPhone) - ensure no regression
+- [ ] PWA standalone mode (iPhone 14 Pro+) - verify header positioning
+- [ ] PWA standalone mode (iPhone 17 Pro Max) - verify Dynamic Island clearance
+- [ ] Desktop browser - verify sticky headers stay below tabs
+- [ ] Mobile portrait - verify tabs at bottom, headers work correctly
+
+**Test Cases:**
+- [ ] Rivals tab - first fixture fully visible, header sticks correctly
+- [ ] Rank tab - first team fully visible, table header sticks below tabs
+- [ ] Stats tab - toggle bar sticks below tabs, GW selector sticks below toggle
+- [ ] Scroll behavior - sticky headers stay in correct position during scroll
+- [ ] Tab switching - no visual glitches or jumps
+
+### Device Compatibility
+
+| Device | Safari | PWA | Status |
+|--------|--------|-----|--------|
+| iPhone 15 Pro Max | ✓ (worked before) | ✓ (fixed) | Ready for test |
+| iPhone 17 Pro Max | ✓ | ✓ (fixed) | Ready for test |
+| iPhone without DI | ✓ | ✓ | Should work |
+| Desktop/Laptop | ✓ | N/A | Fixed sticky headers |
 
 ---
 

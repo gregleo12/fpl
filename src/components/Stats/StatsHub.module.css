@@ -15,7 +15,8 @@
 /* K-126: Made sticky to fix PWA scroll bug and improve UX */
 .viewToggleBar {
   position: sticky;
-  top: calc(0.5rem + env(safe-area-inset-top, 0px)); /* Stick below status bar with small gap */
+  /* K-152: Mobile - tabs at bottom, only need safe area padding */
+  top: calc(0.5rem + env(safe-area-inset-top, 0px));
   z-index: 90; /* Below bottom nav (100) but above content */
   display: flex;
   gap: 0.5rem;
@@ -25,6 +26,13 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 1rem;
+}
+
+/* K-152: Desktop - tabs at top, need tabs bar height + safe area */
+@media (min-width: 769px) {
+  .viewToggleBar {
+    top: calc(5rem + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* K-94: Sub-tab buttons - EXACT COPY from Rivals */
@@ -63,6 +71,7 @@
 /* K-126: Made sticky below viewToggleBar to fix PWA scroll bug and improve UX */
 .gwSelectorBar {
   position: sticky;
+  /* K-152: Mobile - tabs at bottom, stick below viewToggleBar */
   top: calc(3.5rem + env(safe-area-inset-top, 0px)); /* Stick below viewToggleBar (~3rem height + 0.5rem gap) */
   z-index: 89; /* Below viewToggleBar (90) but above content */
   display: flex;
@@ -75,6 +84,13 @@
   padding: 0.5rem 1rem;
   margin-bottom: 1rem;
   gap: 0.5rem;
+}
+
+/* K-152: Desktop - tabs at top, stick below tabs bar + viewToggleBar */
+@media (min-width: 769px) {
+  .gwSelectorBar {
+    top: calc(8.5rem + env(safe-area-inset-top, 0px)); /* 5rem tabs + 3.5rem viewToggleBar */
+  }
 }
 
 /* K-94: Navigation buttons - EXACT COPY from Rivals */

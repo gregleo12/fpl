@@ -37,7 +37,8 @@
 /* K-126: Made sticky to fix PWA scroll bug and improve UX */
 .rivalsHeader {
   position: sticky;
-  top: calc(0.5rem + env(safe-area-inset-top, 0px)); /* Stick below status bar with small gap */
+  /* K-152: Mobile - tabs at bottom, only need safe area padding */
+  top: calc(0.5rem + env(safe-area-inset-top, 0px));
   z-index: 90; /* Below bottom nav (100) but above content */
   display: flex;
   align-items: center;
@@ -49,6 +50,13 @@
   padding: 0.5rem 1rem;
   margin-bottom: 1rem;
   gap: 1rem;
+}
+
+/* K-152: Desktop - tabs at top, need tabs bar height + safe area */
+@media (min-width: 769px) {
+  .rivalsHeader {
+    top: calc(5rem + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* K-75: Left group - H2H/Fixtures toggle */

@@ -89,8 +89,16 @@
   font-size: 0.75rem;
   letter-spacing: 0.5px;
   position: sticky;
-  top: calc(0.5rem + env(safe-area-inset-top, 0px)); /* K-126: Account for safe area to fix PWA scroll bug */
+  /* K-152: Mobile - tabs at bottom, only need safe area padding */
+  top: calc(0.5rem + env(safe-area-inset-top, 0px));
   z-index: 90; /* K-126: Match other sticky headers (below nav) */
+}
+
+/* K-152: Desktop - tabs at top, need tabs bar height + safe area */
+@media (min-width: 769px) {
+  .table th {
+    top: calc(5rem + env(safe-area-inset-top, 0px));
+  }
 }
 
 .table tbody tr {

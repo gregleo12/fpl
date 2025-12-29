@@ -185,7 +185,8 @@
 /* Desktop: Override to top position */
 @media (min-width: 769px) {
   .tabsWrapper {
-    top: 0;
+    /* K-152: Account for safe area (Dynamic Island/status bar) in PWA mode */
+    top: env(safe-area-inset-top, 0px);
     bottom: auto;
     padding: 0.75rem 2rem 0.5rem 2rem;
     padding-bottom: 0.5rem; /* Override iPhone padding */

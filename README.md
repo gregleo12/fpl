@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.32** (December 29, 2025)
+**v4.3.33** (December 29, 2025)
 
-UI ENHANCEMENT (K-150): Replaced +/- (differential) column with Luck in both Rank Tab and GW Rankings Modal. Shows season-cumulative luck (sum of opponent deviations from average) in league standings, and GW-specific luck (opponent season avg - opponent GW score) in gameweek rankings. Color-coded: green (positive luck), red (negative luck), gray (neutral). No database changes, calculated on-demand from existing H2H match data.
+BUG FIX (K-152): Fixed iOS PWA header and sticky table issues. Content no longer cut off behind fixed header in PWA standalone mode (iPhone Dynamic Island area now properly accounted for). Sticky table headers now position correctly below tabs bar on desktop/landscape mode instead of appearing mid-table. Affects all tabs: Rank, Rivals, Stats. CSS-only fix using `env(safe-area-inset-top)` and desktop media queries for sticky positioning.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
