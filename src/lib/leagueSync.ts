@@ -62,8 +62,9 @@ async function getGameweeksMissingK108Data(
 /**
  * K-112: Sync K-108 calculated_points for specified gameweeks
  * This is a GLOBAL operation (affects all 760 players, benefits all leagues)
+ * K-146b: Exported so K-142 sync can call it
  */
-async function syncK108PlayerStats(
+export async function syncK108PlayerStats(
   db: any,
   gameweeks: number[],
   bootstrap: any

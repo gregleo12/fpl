@@ -2,7 +2,150 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.33 (December 29, 2025)
+**Current Version:** v4.3.34 (December 29, 2025)
+
+---
+
+## v4.3.34 - K-146b: Fix Sync Success Not Reflecting in Validation Grid (Dec 29, 2025)
+
+**CRITICAL BUG FIX:** K-146 admin sync tool reported success but validation grid didn't update because player stats weren't being synced.
+
+### The Bug
+
+**Reported behavior:**
+1. User clicks "SYNC" for specific league/GW
+2. Toast shows: "✅ Sync completed: GW18 for league 3537 (2.3s)"
+3. User clicks "REFRESH NOW"
+4. Grid still shows ○ (empty) or ⚠ (invalid)
+5. Even after full page refresh, status doesn't change
+
+**Impact:** Made K-146 admin sync tool appear broken even when manager data was successfully synced.
+
+### Root Cause Investigation
+
+**What Sync Wrote:**
+- `manager_gw_history` ✓ (manager points, ranks, transfers)
+- `manager_picks` ✓ (team selections)
+- `manager_chips` ✓ (chips used)
+- `manager_transfers` ✓ (transfer history)
+- `player_gameweek_stats` ✗ **NOT SYNCED**
+
+**What Validation Checked:**
+- `hasValidManagerHistory()` - checks `manager_gw_history` for non-zero points ✓
+- `hasValidPlayerStats()` - checks `player_gameweek_stats.calculated_points` > 0 ✗
+
+**Mismatch:**
+The `syncCompletedGW()` function (K-142) synced all manager data but **never synced player gameweek stats**. Validation required both tables to have valid data, so validation always failed even when sync "succeeded".
+
+### The Fix
+
+**1. Added Player Stats Sync to `syncCompletedGW()`**
+
+File: `/src/lib/k142-auto-sync.ts`
+
+```typescript
+// K-146b: Sync player gameweek stats with calculated_points
+// This is required for validation to pass (hasValidPlayerStats checks calculated_points)
+console.log(`[K-142/K-146b] Syncing player gameweek stats with K-108 calculated_points...`);
+try {
+  const result = await syncK108PlayerStats(db, [gw], bootstrap);
+  console.log(`[K-142/K-146b] Player stats sync complete: ${result.synced} players, ${result.errors} errors`);
+} catch (error) {
+  console.error(`[K-142/K-146b] Error syncing player stats:`, error);
+  // Don't throw - manager data is already synced, player stats can be retried
+}
+```
+
+**2. Exported `syncK108PlayerStats()` for Reuse**
+
+File: `/src/lib/leagueSync.ts`
+
+Made the K-108 player stats sync function public so K-142 sync can call it.
+
+**3. Added Post-Sync Validation**
+
+File: `/src/lib/forceSyncGW.ts`
+
+```typescript
+// K-146b: VERIFY sync actually worked by running validation
+console.log(`[K-146b] Verifying sync results...`);
+const hasManagers = await hasValidManagerHistory(db, leagueId, gameweek);
+const hasPlayers = await hasValidPlayerStats(db, gameweek);
+
+if (!hasManagers) {
+  throw new Error(`Sync completed but validation failed: manager data is invalid or missing`);
+}
+
+if (!hasPlayers) {
+  throw new Error(`Sync completed but validation failed: player stats data is invalid or missing`);
+}
+
+console.log(`[K-146b] ✓ Validation passed: data is valid`);
+```
+
+Now if sync completes but validation still fails, an error is thrown immediately instead of showing a false success message.
+
+### Changes Summary
+
+| File | Change | Why |
+|------|--------|-----|
+| `k142-auto-sync.ts` | Import `syncK108PlayerStats` | Need to call player stats sync |
+| `k142-auto-sync.ts` | Call `syncK108PlayerStats()` after manager sync | Populate `player_gameweek_stats.calculated_points` |
+| `leagueSync.ts` | Export `syncK108PlayerStats()` | Make it reusable from K-142 sync |
+| `forceSyncGW.ts` | Import validation functions | Verify sync results |
+| `forceSyncGW.ts` | Add post-sync validation | Catch sync failures immediately |
+
+### Tables Now Synced
+
+After this fix, `syncCompletedGW()` now syncs:
+1. ✅ `manager_gw_history` - manager points, ranks, bank, value, transfers
+2. ✅ `manager_picks` - team selections with captain/vice
+3. ✅ `manager_chips` - active chips used
+4. ✅ `manager_transfers` - transfer history
+5. ✅ `player_gameweek_stats` - **NOW SYNCED** with `calculated_points` using K-108 formula
+
+### Expected Behavior (After Fix)
+
+1. User clicks "SYNC" for specific league/GW
+2. Backend syncs manager data + player stats
+3. Backend runs validation to verify data is valid
+4. If validation passes: "✅ Sync completed"
+5. If validation fails: "❌ Error: Sync completed but validation failed"
+6. User clicks "REFRESH NOW"
+7. Grid shows ✓ (green) for successfully synced GW
+
+### Technical Details
+
+**Validation Requirements:**
+- `manager_gw_history`: Must have rows with `SUM(points) > 0`
+- `player_gameweek_stats`: Must have rows with `SUM(calculated_points) > 0`
+
+**Player Stats Sync Process:**
+1. Fetch bootstrap data (player list, teams)
+2. Fetch fixtures for gameweek
+3. Fetch live data for gameweek
+4. For each player who played:
+   - Calculate `calculated_points` using K-108 formula
+   - Insert/update `player_gameweek_stats` with both `total_points` (FPL) and `calculated_points` (K-108)
+
+**Why Both `total_points` and `calculated_points`?**
+- `total_points`: Direct from FPL API (may include provisional bonus)
+- `calculated_points`: K-108 formula (deterministic, no provisional bonus, used for K-108c score calculation)
+
+### Testing Instructions
+
+1. Go to `/admin` on staging
+2. Find a league with invalid/missing GW data
+3. Click "SYNC" for that GW
+4. Wait for success toast
+5. Click "REFRESH NOW"
+6. Verify grid shows ✓ (green) for that GW
+
+### Migration Notes
+
+- No database migration required
+- Existing sync processes will now populate player stats automatically
+- Historical data may still be missing player stats - admin can manually sync to fix
 
 ---
 

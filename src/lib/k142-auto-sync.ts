@@ -9,6 +9,7 @@
 
 import { getDatabase } from '@/lib/db';
 import { hasValidPlayerStats, hasValidTeamHistory, hasValidManagerHistory } from '@/lib/dataValidation';
+import { syncK108PlayerStats } from '@/lib/leagueSync';
 
 const SYNC_BUFFER_HOURS = 10;
 
@@ -270,6 +271,17 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
       } catch (error) {
         console.error(`[K-142] Error syncing transfers for manager ${manager.entry_id}:`, error);
       }
+    }
+
+    // K-146b: Sync player gameweek stats with calculated_points
+    // This is required for validation to pass (hasValidPlayerStats checks calculated_points)
+    console.log(`[K-142/K-146b] Syncing player gameweek stats with K-108 calculated_points...`);
+    try {
+      const result = await syncK108PlayerStats(db, [gw], bootstrap);
+      console.log(`[K-142/K-146b] Player stats sync complete: ${result.synced} players, ${result.errors} errors`);
+    } catch (error) {
+      console.error(`[K-142/K-146b] Error syncing player stats:`, error);
+      // Don't throw - manager data is already synced, player stats can be retried
     }
 
     console.log(`[K-142] ===== Successfully synced GW${gw} for league ${leagueId} =====`);

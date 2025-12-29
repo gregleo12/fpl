@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.33** (December 29, 2025)
+**v4.3.34** (December 29, 2025)
 
-BUG FIX (K-152): Fixed iOS PWA header and sticky table issues. Content no longer cut off behind fixed header in PWA standalone mode (iPhone Dynamic Island area now properly accounted for). Sticky table headers now position correctly below tabs bar on desktop/landscape mode instead of appearing mid-table. Affects all tabs: Rank, Rivals, Stats. CSS-only fix using `env(safe-area-inset-top)` and desktop media queries for sticky positioning.
+CRITICAL BUG FIX (K-146b): Fixed K-146 admin sync tool reporting success but validation grid not updating. Root cause: `syncCompletedGW()` synced manager data but never synced player stats. Validation checked both tables, so it always failed even when manager sync succeeded. Fix: Added `syncK108PlayerStats()` call to sync player gameweek stats with calculated_points after manager sync. Added post-sync validation to catch failures immediately. Grid now updates correctly after successful sync.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

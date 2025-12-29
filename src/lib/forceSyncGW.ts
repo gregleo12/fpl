@@ -3,10 +3,12 @@
  *
  * Manual sync logic for admin panel to sync specific gameweeks for specific leagues.
  * Reuses K-142's syncCompletedGW function for the actual sync work.
+ * K-146b: Added post-sync validation to ensure data is actually valid
  */
 
 import { syncCompletedGW } from '@/lib/k142-auto-sync';
 import { getDatabase } from '@/lib/db';
+import { hasValidManagerHistory, hasValidPlayerStats } from '@/lib/dataValidation';
 
 interface SyncResult {
   managersCount: number;
@@ -65,6 +67,22 @@ export async function syncGameweekForLeague(
 
   const playersCount = parseInt(playersResult.rows[0]?.count || '0');
 
+  // K-146b: VERIFY sync actually worked by running validation
+  console.log(`[K-146b] Verifying sync results...`);
+  const hasManagers = await hasValidManagerHistory(db, leagueId, gameweek);
+  const hasPlayers = await hasValidPlayerStats(db, gameweek);
+
+  if (!hasManagers) {
+    console.error(`[K-146b] ✗ Validation failed: manager_gw_history has invalid/zero data`);
+    throw new Error(`Sync completed but validation failed: manager data is invalid or missing`);
+  }
+
+  if (!hasPlayers) {
+    console.error(`[K-146b] ✗ Validation failed: player_gameweek_stats has invalid/zero calculated_points`);
+    throw new Error(`Sync completed but validation failed: player stats data is invalid or missing`);
+  }
+
+  console.log(`[K-146b] ✓ Validation passed: data is valid`);
   console.log(`[K-146] Force sync complete: ${managersCount} managers, ${playersCount} players`);
 
   return {
