@@ -47,7 +47,7 @@ export function RankProgressModal({ isOpen, onClose, data }: Props) {
       return (
         <div className={styles.chartTooltip}>
           <div className={styles.tooltipLabel}>GW{gw.event}</div>
-          <div className={styles.tooltipValue}>Rank: {gw.overall_rank.toLocaleString()}</div>
+          <div className={styles.tooltipValue}>Rank: {(gw.overall_rank ?? 0).toLocaleString()}</div>
           <div className={styles.tooltipValue}>{gw.points} pts</div>
         </div>
       );
@@ -60,17 +60,17 @@ export function RankProgressModal({ isOpen, onClose, data }: Props) {
       {/* Summary Stats */}
       <div className={styles.summaryRow}>
         <div className={styles.summaryItem}>
-          <span className={styles.summaryValue}>{current.overall_rank.toLocaleString()}</span>
+          <span className={styles.summaryValue}>{(current.overall_rank ?? 0).toLocaleString()}</span>
           <span className={styles.topPercent}>TOP {getTopPercent(current.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Current</span>
         </div>
         <div className={styles.summaryItem}>
-          <span className={`${styles.summaryValue} ${styles.best}`}>{best.overall_rank.toLocaleString()}</span>
+          <span className={`${styles.summaryValue} ${styles.best}`}>{(best.overall_rank ?? 0).toLocaleString()}</span>
           <span className={styles.topPercent}>TOP {getTopPercent(best.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Best (GW{best.event})</span>
         </div>
         <div className={styles.summaryItem}>
-          <span className={`${styles.summaryValue} ${styles.worst}`}>{worst.overall_rank.toLocaleString()}</span>
+          <span className={`${styles.summaryValue} ${styles.worst}`}>{(worst.overall_rank ?? 0).toLocaleString()}</span>
           <span className={styles.topPercent}>TOP {getTopPercent(worst.overall_rank)}%</span>
           <span className={styles.summaryLabel}>Worst (GW{worst.event})</span>
         </div>
@@ -118,9 +118,9 @@ export function RankProgressModal({ isOpen, onClose, data }: Props) {
           return (
             <div key={gw.event} className={styles.tableRow}>
               <span className={styles.colGW}>GW{gw.event}</span>
-              <span className={styles.colRank}>{gw.overall_rank.toLocaleString()}</span>
+              <span className={styles.colRank}>{(gw.overall_rank ?? 0).toLocaleString()}</span>
               <span className={`${styles.colChange} ${change > 0 ? styles.up : change < 0 ? styles.down : ''}`}>
-                {change > 0 ? `↑ ${change.toLocaleString()}` : change < 0 ? `↓ ${Math.abs(change).toLocaleString()}` : '—'}
+                {change > 0 ? `↑ ${(change ?? 0).toLocaleString()}` : change < 0 ? `↓ ${(Math.abs(change) ?? 0).toLocaleString()}` : '—'}
               </span>
               <span className={styles.colPts}>{gw.points}</span>
             </div>

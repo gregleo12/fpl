@@ -23,27 +23,29 @@ interface GWRankData {
 
 // Helper to format large numbers (1,234,567 or 1.2M)
 function formatRank(rank: number): string {
-  if (rank >= 1000000) {
-    return `${(rank / 1000000).toFixed(1)}M`;
+  const safeRank = rank ?? 0;
+  if (safeRank >= 1000000) {
+    return `${(safeRank / 1000000).toFixed(1)}M`;
   }
-  return rank.toLocaleString();
+  return safeRank.toLocaleString();
 }
 
 // Helper to get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
 function getOrdinalSuffix(num: number): string {
-  const j = num % 10;
-  const k = num % 100;
+  const safeNum = num ?? 0;
+  const j = safeNum % 10;
+  const k = safeNum % 100;
 
   if (j === 1 && k !== 11) {
-    return num.toLocaleString() + 'st';
+    return safeNum.toLocaleString() + 'st';
   }
   if (j === 2 && k !== 12) {
-    return num.toLocaleString() + 'nd';
+    return safeNum.toLocaleString() + 'nd';
   }
   if (j === 3 && k !== 13) {
-    return num.toLocaleString() + 'rd';
+    return safeNum.toLocaleString() + 'rd';
   }
-  return num.toLocaleString() + 'th';
+  return safeNum.toLocaleString() + 'th';
 }
 
 export function GWRankModal({ isOpen, onClose, gameweek, leagueId, myTeamId }: Props) {

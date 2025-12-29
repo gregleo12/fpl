@@ -2,7 +2,87 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.41 (December 29, 2025)
+**Current Version:** v4.3.42 (December 29, 2025)
+
+---
+
+## v4.3.42 - P0-CRITICAL: Fix Production Crash with toLocaleString on Null (Dec 29, 2025)
+
+**BUG FIX:** Production crash causing `TypeError: Cannot read properties of null (reading 'toLocaleString')` in stats and rankings components when data values are null/undefined.
+
+### The Bug
+
+**Error:**
+```
+TypeError: Cannot read properties of null (reading 'toLocaleString')
+```
+
+**User Logs:**
+```
+topFive: Array(0)  // Empty array in GWRankingsModal
+```
+
+**Symptoms:**
+1. Stats tiles or modals crash when rendering null data
+2. Specifically occurs in rankings/points components
+3. Empty or incomplete data triggers the crash
+4. Affects user-facing dashboard and stats views
+
+### Root Cause
+
+**Missing Null Checks:**
+- Multiple components called `.toLocaleString()` directly on values without null safety
+- When data is null/undefined (empty leagues, incomplete GWs, etc.), calling `.toLocaleString()` crashes
+- TypeScript number types don't enforce runtime null checks
+
+**Affected Components:**
+1. **RankProgressModal** - 6 calls on `gw.overall_rank` and `change` values
+2. **GWRankModal** - 5 calls in `formatRank()` and `getOrdinalSuffix()` helpers
+3. **PointsAnalysisModal** - 2 calls on `totalPoints` and `t.points`
+4. **MyTeamTab** - 1 call on `overallPoints`
+5. **PlayerDetailModal** - 3 calls on `numValue` (already had some checks, added more)
+
+### The Fix
+
+**Added Null Coalescing:**
+Changed all `.toLocaleString()` calls from:
+```typescript
+{value.toLocaleString()}
+```
+
+To null-safe pattern:
+```typescript
+{(value ?? 0).toLocaleString()}
+```
+
+**Fixed Components:**
+- `/src/components/Dashboard/RankProgressModal.tsx` - 6 fixes
+- `/src/components/Dashboard/GWRankModal.tsx` - 5 fixes in helper functions
+- `/src/components/Dashboard/PointsAnalysisModal.tsx` - 2 fixes
+- `/src/components/Dashboard/MyTeamTab.tsx` - 1 fix
+- `/src/components/Players/PlayerDetailModal.tsx` - 3 fixes (extra defensive)
+
+**Why This Works:**
+- `??` null coalescing operator returns `0` if value is `null` or `undefined`
+- `0.toLocaleString()` safely returns `"0"` instead of crashing
+- Empty/null data now displays as "0" instead of crashing the app
+
+### Testing
+- ✅ Build passes locally
+- ✅ All toLocaleString calls now null-safe
+- ✅ Ready for immediate production deployment
+
+### Deployment
+- **Priority:** P0 - Production down
+- **Target:** Direct to `main` branch for immediate production fix
+- **Approval:** Critical bug fix, no review delay
+
+### Files Changed
+- `src/components/Dashboard/RankProgressModal.tsx`
+- `src/components/Dashboard/GWRankModal.tsx`
+- `src/components/Dashboard/PointsAnalysisModal.tsx`
+- `src/components/Dashboard/MyTeamTab.tsx`
+- `src/components/Players/PlayerDetailModal.tsx`
 
 ---
 

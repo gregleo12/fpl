@@ -321,7 +321,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               onClick={() => setShowPointsModal(true)}
               title="Click to view points analysis"
             >
-              <div className={styles.statBoxValue}>{overallPoints.toLocaleString()}</div>
+              <div className={styles.statBoxValue}>{(overallPoints ?? 0).toLocaleString()}</div>
               <div className={styles.statBoxLabel}>TOTAL PTS</div>
             </div>
             <div

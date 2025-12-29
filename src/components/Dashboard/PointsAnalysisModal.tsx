@@ -123,7 +123,7 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
       {/* Summary Stats - 4 columns */}
       <div className={styles.summaryRowFour}>
         <div className={styles.summaryItem}>
-          <span className={styles.summaryValue}>{totalPoints.toLocaleString()}</span>
+          <span className={styles.summaryValue}>{(totalPoints ?? 0).toLocaleString()}</span>
           <span className={styles.summaryLabel}>Total</span>
         </div>
         <div className={styles.summaryItem}>
@@ -159,7 +159,7 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
               <div key={t.rank} className={styles.gapTableRow}>
                 <span className={styles.gapColRank}>{formatRank(t.rank)}</span>
                 <span className={styles.gapColTop}>{t.topPercent}</span>
-                <span className={styles.gapColPoints}>{t.points.toLocaleString()}</span>
+                <span className={styles.gapColPoints}>{(t.points ?? 0).toLocaleString()}</span>
                 <span className={`${styles.gapColGap} ${t.gap > 0 ? styles.behind : t.gap < 0 ? styles.ahead : ''}`}>
                   {t.gap > 0 ? `+${t.gap}` : t.gap < 0 ? Math.abs(t.gap) : '—'}
                 </span>

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.41** (December 29, 2025)
+**v4.3.42** (December 29, 2025)
 
-BUG FIX (K-156): Fixed batch sync hanging when syncing multiple leagues. Root cause: Browser fetch() timeout after 60-120s but backend processing takes 5-10 minutes for large batches, causing connection to close before response received. Fix: Added AbortController with 11-minute explicit timeout, batch size warning dialog (>20 tasks), better error messaging, and improved results display with failed leagues highlighted. Single league sync unaffected, batch sync now completes successfully.
+P0-CRITICAL BUG FIX: Fixed production crash causing `TypeError: Cannot read properties of null (reading 'toLocaleString')` in stats/rankings components. Root cause: Multiple components called `.toLocaleString()` on null/undefined values without null checks. Fix: Added null coalescing operator (`value ?? 0`) to ALL toLocaleString calls in RankProgressModal, GWRankModal, PointsAnalysisModal, MyTeamTab, and PlayerDetailModal. Empty/null data now safely displays "0" instead of crashing. Ready for immediate production deployment.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

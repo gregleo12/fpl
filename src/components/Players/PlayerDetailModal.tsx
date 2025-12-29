@@ -364,11 +364,11 @@ export function PlayerDetailModal({ isOpen, onClose, player, team, teams }: Play
       if (isNaN(numValue)) {
         displayValue = '-';
       } else if (decimal) {
-        displayValue = numValue.toFixed(2);
+        displayValue = (numValue ?? 0).toFixed(2);
       } else if (format === 'number') {
-        displayValue = numValue.toLocaleString();
+        displayValue = (numValue ?? 0).toLocaleString();
       } else {
-        displayValue = numValue.toString();
+        displayValue = (numValue ?? 0).toString();
       }
     }
 
