@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.19** (December 29, 2025)
+**v4.3.20** (December 29, 2025)
 
-HOTFIX (K-142b): Enhanced database validation logging and added player stats verification. Improves diagnosis of validation decisions in production. Team routes now check both manager data AND player_gameweek_stats for comprehensive validation. Prevents using stale player data.
+BUG FIX: Fixed Team Value Rankings modal showing incorrect breakdown. FPL API's `value` field contains total value (team + bank), not team value alone. Was displaying "Total Value + ITB" instead of "Team Value + ITB". Now correctly calculates: Team Value = Total - ITB.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

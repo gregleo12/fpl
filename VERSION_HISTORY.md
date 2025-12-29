@@ -2,7 +2,63 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.19 (December 29, 2025)
+**Current Version:** v4.3.20 (December 29, 2025)
+
+---
+
+## v4.3.20 - BUG FIX: Team Value Rankings Double-Counting ITB (Dec 29, 2025)
+
+**BUG FIX:** Fixed Team Value Rankings modal showing incorrect breakdown (ITB was being added twice).
+
+### The Problem
+
+User's actual values: Team Value £103.3m, ITB £2.0m, Total £105.3m
+
+App was showing:
+- ❌ £107.3m (£105.3m + £2.0m)
+- The £105.3m was being treated as team value when it's actually the **total value**
+- ITB was being counted twice: once in the £105.3m, then added again
+
+### Root Cause
+
+In `/src/app/api/league/[id]/stats/season/route.ts`, line 1030:
+
+```typescript
+// WRONG:
+const teamValue = (picksData.entry_history?.value || 1000) / 10;  // £105.3m (actually total!)
+const bank = (picksData.entry_history?.bank || 0) / 10;           // £2.0m
+const totalValue = teamValue + bank;                               // £107.3m ❌
+```
+
+**FPL API Structure:**
+- `entry_history.value` = **Total value (team + bank)** in tenths (e.g., 1053 = £105.3m total)
+- `entry_history.bank` = **In The Bank** in tenths (e.g., 20 = £2.0m)
+
+The bug: Code incorrectly used `value` (which is already the total) as team value, then added bank again, double-counting ITB.
+
+### The Fix
+
+```typescript
+// CORRECT:
+const totalValue = (picksData.entry_history?.value || 1000) / 10;  // £105.3m (from API)
+const bank = (picksData.entry_history?.bank || 0) / 10;            // £2.0m (from API)
+const teamValue = totalValue - bank;                                // £103.3m (calculated)
+```
+
+Now correctly calculates:
+- Total Value = £105.3m (from FPL API)
+- ITB = £2.0m (from FPL API)
+- Team Value = £105.3m - £2.0m = £103.3m ✓
+
+### Impact
+
+**Before v4.3.20:**
+- Display: £107.3m (£105.3m + £2.0m) ❌
+- ITB counted twice
+
+**After v4.3.20:**
+- Display: £105.3m (£103.3m + £2.0m) ✓
+- Correct breakdown: £103.3m team value + £2.0m ITB = £105.3m total
 
 ---
 

@@ -1026,12 +1026,13 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
 
         const picksData = await picksRes.json();
 
-        // Team value from entry_history (actual squad value)
-        const teamValue = (picksData.entry_history?.value || 1000) / 10;
-        // In The Bank (ITB)
+        // FPL API returns:
+        // - entry_history.value = TOTAL value (team + bank) in tenths
+        // - entry_history.bank = In The Bank in tenths
+        // So we need to calculate team value by subtracting bank from total
+        const totalValue = (picksData.entry_history?.value || 1000) / 10;
         const bank = (picksData.entry_history?.bank || 0) / 10;
-        // Total budget = squad value + ITB
-        const totalValue = teamValue + bank;
+        const teamValue = totalValue - bank;
 
         return {
           entry_id: manager.entry_id,
