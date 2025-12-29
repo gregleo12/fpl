@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.35** (December 29, 2025)
+**v4.3.36** (December 29, 2025)
 
-BUG FIX (K-146c): Fixed manual sync database connection issue causing false validation failures. Root cause: validation used stale database connection A while sync wrote data using connection B. Connection A couldn't see uncommitted/newly-committed data from B. Fix: Get fresh database connection after sync completes before running validation. Added detailed debug logging showing actual row counts and point totals. Manual sync tool now works correctly.
+BUG FIX (K-146d): Simplified admin manual sync to use proven working sync path. Root cause: custom forceSyncGW() had validation bugs, while Settings force sync (using syncCompletedGW) worked perfectly. Fix: Removed all custom validation logic, just call syncCompletedGW() - the battle-tested function used by Settings force sync, K-148 auto-sync (129 leagues), and first-time setup. Admin manual sync now uses exact same code path as working force sync.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

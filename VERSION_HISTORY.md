@@ -2,7 +2,116 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.35 (December 29, 2025)
+**Current Version:** v4.3.36 (December 29, 2025)
+
+---
+
+## v4.3.36 - K-146d: Use Working Sync Path in Admin Tool (Dec 29, 2025)
+
+**BUG FIX:** Simplified admin manual sync to use the proven working sync path instead of custom logic with bugs.
+
+### The Problem
+
+K-146 admin manual sync kept failing with validation errors, but the Settings force sync feature worked perfectly:
+- **Admin manual sync (K-146):** ❌ Custom `forceSyncGW()` function with validation bugs
+- **Settings force sync:** ✅ Uses proven `syncCompletedGW()` function (works perfectly)
+- **K-148 auto-sync:** ✅ Uses proven `syncCompletedGW()` function (working across 129 leagues)
+
+User testing confirmed:
+- League 7381 GW18: Admin manual sync ❌ → In-league force sync ✅
+
+### Root Cause
+
+The custom `forceSyncGW()` implementation had accumulated bugs through K-146b (missing player stats) and K-146c (connection isolation). Meanwhile, `syncCompletedGW()` was battle-tested and proven working:
+- Used by Settings force sync (confirmed working)
+- Used by K-148 auto-sync (129 leagues synced successfully)
+- Used by first-time league setup (no issues)
+
+The solution: Stop using custom buggy logic, just call the proven function.
+
+### The Fix
+
+**Drastically simplified `/src/lib/forceSyncGW.ts` to use proven sync path:**
+
+```typescript
+/**
+ * K-146d: Simplified to use the exact same sync path as regular force sync (which works perfectly).
+ * Just calls syncCompletedGW() which is proven working across 129 leagues.
+ */
+export async function syncGameweekForLeague(
+  leagueId: number,
+  gameweek: number
+): Promise<SyncResult> {
+  console.log(`[K-146d] Force sync GW${gameweek} for league ${leagueId} using proven sync path...`);
+
+  const db = await getDatabase();
+
+  // Step 1: Get manager count (for reporting)
+  const managersResult = await db.query(`...`);
+
+  // Step 2: Clear existing data (force clean slate for manual sync)
+  await db.query('DELETE FROM manager_gw_history WHERE league_id = $1 AND event = $2', [leagueId, gameweek]);
+  await db.query('DELETE FROM manager_picks WHERE league_id = $1 AND event = $2', [leagueId, gameweek]);
+  await db.query('DELETE FROM manager_chips WHERE league_id = $1 AND event = $2', [leagueId, gameweek]);
+
+  // Step 3: Call the proven working sync function
+  // This is the exact same function used by:
+  // - K-148 auto-sync (proven working)
+  // - Settings force sync (just confirmed working)
+  // - First-time league setup
+  console.log(`[K-146d] Calling syncCompletedGW (proven working sync path)...`);
+  await syncCompletedGW(leagueId, gameweek);
+
+  // Step 4: Get player stats count (for reporting)
+  const playersResult = await db.query('SELECT COUNT(*) as count FROM player_gameweek_stats WHERE gameweek = $1', [gameweek]);
+
+  return { managersCount, playersCount };
+}
+```
+
+**Removed:**
+- ❌ Custom validation logic (`hasValidManagerHistory`, `hasValidPlayerStats`)
+- ❌ Fresh database connection workaround
+- ❌ Debug queries for row counts and point totals
+- ❌ Complex error handling for validation failures
+- ❌ ~120 lines of custom logic
+
+**Kept:**
+- ✅ Manager count query (for UI reporting)
+- ✅ DELETE operations (clean slate for manual re-sync)
+- ✅ Call to `syncCompletedGW()` (the proven working function)
+- ✅ Player count query (for UI reporting)
+
+### Why This Works
+
+`syncCompletedGW()` already handles:
+1. Fetching manager IDs from league
+2. Fetching FPL data for each manager (history, picks, chips)
+3. Writing to all 3 manager tables (history, picks, chips)
+4. Syncing player gameweek stats with K-108 calculated_points (K-146b fix)
+5. Proper error handling and logging
+6. Transaction management
+
+No need to re-implement, validate, or debug. Just use what works.
+
+### Changes Made
+
+**File: `/src/lib/forceSyncGW.ts`**
+- Removed custom validation logic (lines 65-110)
+- Removed fresh connection workaround (K-146c)
+- Removed debug queries
+- Changed to simple: DELETE → syncCompletedGW() → return counts
+
+### Expected Behavior
+
+1. Admin clicks "SYNC" for specific league/GW
+2. Backend deletes existing data for that league/GW
+3. Backend calls `syncCompletedGW()` (same as Settings force sync)
+4. Sync populates manager_gw_history, manager_picks, manager_chips, player_gameweek_stats
+5. Returns manager and player counts for UI display
+6. Grid automatically updates to show ✓ (validation happens in frontend via existing queries)
+
+No custom validation needed - if sync succeeds, data is valid (proven across 129 leagues).
 
 ---
 
