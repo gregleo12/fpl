@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -1356,41 +1357,54 @@ async function calculateConsistency(db: any, leagueId: number, gameweeks: number
   }
 }
 
-// K-119b: Calculate luck index (opponent performance vs their average)
+// K-163: Calculate luck index using CORRECT formula (Actual - Expected)
 async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks: number[]) {
   try {
-    console.log('[LUCK INDEX] Calculating luck index for league:', leagueId, 'GWs:', completedGameweeks);
+    console.log('[K-163 LUCK INDEX] Calculating luck index for league:', leagueId, 'GWs:', completedGameweeks);
 
-    // Step 1: Get each manager's average points (only from completed GWs)
-    const avgResult = await db.query(`
+    // Step 1: Get all manager points for each GW
+    const pointsResult = await db.query(`
       SELECT
         entry_id,
-        AVG(points) as avg_points
+        event,
+        points
       FROM manager_gw_history
       WHERE league_id = $1
         AND event = ANY($2)
-      GROUP BY entry_id
+      ORDER BY event, entry_id
     `, [leagueId, completedGameweeks]);
 
-    const averages: Record<number, number> = {};
-    avgResult.rows.forEach((row: any) => {
-      averages[row.entry_id] = parseFloat(row.avg_points) || 0;
+    // Group points by gameweek
+    const pointsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> points }
+    const managerIds = new Set<number>();
+
+    pointsResult.rows.forEach((row: any) => {
+      const gw = row.event;
+      const entryId = row.entry_id;
+      const points = row.points;
+
+      if (!pointsByGW[gw]) pointsByGW[gw] = {};
+      pointsByGW[gw][entryId] = points;
+      managerIds.add(entryId);
     });
 
-    console.log('[LUCK INDEX] Manager averages:', {
-      count: Object.keys(averages).length,
-      sample: Object.entries(averages).slice(0, 3).map(([id, avg]) => ({ id, avg }))
+    console.log('[K-163 LUCK INDEX] Manager points:', {
+      managerCount: managerIds.size,
+      gwCount: Object.keys(pointsByGW).length,
+      sampleGW: completedGameweeks[0] ? {
+        gw: completedGameweeks[0],
+        pointsCount: Object.keys(pointsByGW[completedGameweeks[0]] || {}).length
+      } : null
     });
 
-    // Step 2: Get all H2H matches (only from completed GWs)
-    // Note: h2h_matches table stores each match ONCE (not duplicated)
-    // Entry positions alternate by gameweek, so we need ALL rows
+    // Step 2: Get all H2H matches with results
     const matchesResult = await db.query(`
       SELECT
         entry_1_id,
         entry_2_id,
         entry_1_points,
         entry_2_points,
+        winner,
         event
       FROM h2h_matches
       WHERE league_id = $1
@@ -1400,50 +1414,53 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       ORDER BY event
     `, [leagueId, completedGameweeks]);
 
-    console.log('[LUCK INDEX] H2H matches:', {
-      count: matchesResult.rows.length,
-      sampleMatches: matchesResult.rows.slice(0, 3).map((m: any) => ({
-        gw: m.event,
-        entry1: m.entry_1_id,
-        entry2: m.entry_2_id,
-        pts1: m.entry_1_points,
-        pts2: m.entry_2_points
-      }))
+    console.log('[K-163 LUCK INDEX] H2H matches:', {
+      count: matchesResult.rows.length
     });
 
     // Step 3: Calculate luck for each manager
     const luck: Record<number, number> = {};
 
     // Initialize all managers with 0 luck
-    Object.keys(averages).forEach(entryId => {
-      luck[parseInt(entryId)] = 0;
+    managerIds.forEach(entryId => {
+      luck[entryId] = 0;
     });
 
     // Process each match
-    matchesResult.rows.forEach((match: any, index: number) => {
+    matchesResult.rows.forEach((match: any) => {
+      const gw = match.event;
       const entry1 = match.entry_1_id;
       const entry2 = match.entry_2_id;
+      const entry1Points = match.entry_1_points;
+      const entry2Points = match.entry_2_points;
+      const winner = match.winner;
 
-      // How much did opponent deviate from their average?
-      // Positive deviation = opponent underperformed
-      const opp_deviation_for_entry1 = (averages[entry2] || 0) - match.entry_2_points;
-      const opp_deviation_for_entry2 = (averages[entry1] || 0) - match.entry_1_points;
+      // Get all teams' points for this GW
+      const allGWPoints = pointsByGW[gw];
+      if (!allGWPoints) return;
 
-      if (index < 3) {
-        console.log(`[LUCK INDEX] Match ${index + 1} (GW${match.event}):`, {
-          entry1,
-          entry2,
-          entry1_pts: match.entry_1_points,
-          entry2_pts: match.entry_2_points,
-          entry1_avg: averages[entry1],
-          entry2_avg: averages[entry2],
-          opp_dev_for_entry1: opp_deviation_for_entry1,
-          opp_dev_for_entry2: opp_deviation_for_entry2
-        });
-      }
+      // For entry1: get all OTHER teams' points
+      const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
+        .filter(([id]) => Number(id) !== entry1)
+        .map(([, pts]) => Number(pts));
 
-      luck[entry1] = (luck[entry1] || 0) + opp_deviation_for_entry1;
-      luck[entry2] = (luck[entry2] || 0) + opp_deviation_for_entry2;
+      // For entry2: get all OTHER teams' points
+      const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
+        .filter(([id]) => Number(id) !== entry2)
+        .map(([, pts]) => Number(pts));
+
+      // Determine match result from each manager's perspective
+      const entry1Result: 'win' | 'draw' | 'loss' =
+        winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
+      const entry2Result: 'win' | 'draw' | 'loss' =
+        winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
+
+      // K-163: Calculate luck using correct formula (Actual - Expected)
+      const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
+      const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+
+      luck[entry1] = (luck[entry1] || 0) + entry1Luck;
+      luck[entry2] = (luck[entry2] || 0) + entry2Luck;
     });
 
     // Step 4: Get manager names and format response
@@ -1451,7 +1468,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       SELECT entry_id, player_name, team_name
       FROM managers
       WHERE entry_id = ANY($1)
-    `, [Object.keys(luck).map(Number)]);
+    `, [Array.from(managerIds)]);
 
     const managerMap: Record<number, { player_name: string; team_name: string }> = {};
     managersResult.rows.forEach((row: any) => {
@@ -1476,10 +1493,10 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
     const minLuck = Math.min(...luckValues);
     const maxLuck = Math.max(...luckValues);
 
-    console.log('[LUCK INDEX] Calculated luck index:', {
+    console.log('[K-163 LUCK INDEX] Calculated luck index:', {
       count: luckIndex.length,
-      sumOfLuck: Math.round(sumOfLuck * 10) / 10, // Should be close to 0
-      range: `${Math.round(minLuck)} to ${Math.round(maxLuck)}`,
+      sumOfLuck: Math.round(sumOfLuck * 10) / 10,
+      range: `${minLuck.toFixed(1)} to ${maxLuck.toFixed(1)}`,
       luckiest: luckIndex.slice(0, 3).map((l: any) => ({
         name: l.player_name,
         luck: l.luck_index
@@ -1492,7 +1509,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
 
     return luckIndex;
   } catch (error) {
-    console.error('[LUCK INDEX] Database error:', error);
+    console.error('[K-163 LUCK INDEX] Database error:', error);
     return [];
   }
 }

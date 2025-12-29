@@ -3,6 +3,7 @@ import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { checkDatabaseHasGWData } from '@/lib/k142-auto-sync';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -91,29 +92,22 @@ export async function GET(
 
     const managerScores = await Promise.all(managerScoresPromises);
 
-    // K-150: Calculate GW-specific luck
+    // K-163: Calculate GW-specific luck using CORRECT formula
     const luckMap: Record<number, number> = {};
 
     try {
-      // Get H2H match for this specific GW
+      // Get all teams' points for this specific GW
+      const pointsMap: Record<number, number> = {};
+      managerScores.forEach(manager => {
+        pointsMap[manager.entry_id] = manager.points;
+      });
+
+      // Get H2H matches for this specific GW with results
       const matchesResult = await db.query(`
-        SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points
+        SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, winner
         FROM h2h_matches
         WHERE league_id = $1 AND event = $2
       `, [leagueId, gw]);
-
-      // Calculate each manager's season average (up to this GW)
-      const averagesResult = await db.query(`
-        SELECT entry_id, AVG(points) as avg_points
-        FROM manager_gw_history
-        WHERE league_id = $1 AND event <= $2
-        GROUP BY entry_id
-      `, [leagueId, gw]);
-
-      const averages: Record<number, number> = {};
-      averagesResult.rows.forEach((row: any) => {
-        averages[row.entry_id] = parseFloat(row.avg_points) || 0;
-      });
 
       // Calculate luck for each manager in this GW
       matchesResult.rows.forEach((match: any) => {
@@ -121,16 +115,33 @@ export async function GET(
         const entry2 = parseInt(match.entry_2_id);
         const entry1Points = parseInt(match.entry_1_points);
         const entry2Points = parseInt(match.entry_2_points);
+        const winner = match.winner ? parseInt(match.winner) : null;
 
-        // Opponent deviation from average = luck
-        const luck1 = (averages[entry2] || 0) - entry2Points;
-        const luck2 = (averages[entry1] || 0) - entry1Points;
+        // Get all OTHER teams' points for entry1
+        const otherTeamsPointsForEntry1 = Object.entries(pointsMap)
+          .filter(([id]) => parseInt(id) !== entry1)
+          .map(([, pts]) => pts);
 
-        luckMap[entry1] = Math.round(luck1);
-        luckMap[entry2] = Math.round(luck2);
+        // Get all OTHER teams' points for entry2
+        const otherTeamsPointsForEntry2 = Object.entries(pointsMap)
+          .filter(([id]) => parseInt(id) !== entry2)
+          .map(([, pts]) => pts);
+
+        // Determine match result from each manager's perspective
+        const entry1Result: 'win' | 'draw' | 'loss' =
+          winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
+        const entry2Result: 'win' | 'draw' | 'loss' =
+          winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
+
+        // K-163: Calculate luck using correct formula (Actual - Expected)
+        const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
+        const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+
+        luckMap[entry1] = Math.round(entry1Luck * 10) / 10; // Round to 1 decimal
+        luckMap[entry2] = Math.round(entry2Luck * 10) / 10; // Round to 1 decimal
       });
     } catch (error) {
-      console.error('[K-150] Error calculating GW luck:', error);
+      console.error('[K-163] Error calculating GW luck:', error);
       // If luck calculation fails, all managers get 0 luck
     }
 

@@ -3,6 +3,7 @@ import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { detectFPLError } from '@/lib/fpl-errors';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula
 
 // Force dynamic rendering - prevent caching and static generation
 export const dynamic = 'force-dynamic';
@@ -182,56 +183,73 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   return { rankChange, previousRank };
 }
 
-// K-150: Calculate luck for each manager (opponent deviation from average)
+// K-163: Calculate luck using CORRECT formula (Actual - Expected)
 function calculateLuck(matches: any[], upToGW: number) {
-  // Step 1: Calculate each manager's average points
-  const pointsByManager: Record<number, number[]> = {};
+  // Step 1: Group points by gameweek to get all teams' points per GW
+  const pointsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> points }
+  const managerIds = new Set<number>();
 
   matches.forEach((match: any) => {
     if (match.event > upToGW) return;
 
+    const gw = Number(match.event);
     const entry1 = Number(match.entry_1_id);
     const entry2 = Number(match.entry_2_id);
     const entry1Points = Number(match.entry_1_points);
     const entry2Points = Number(match.entry_2_points);
 
-    if (!pointsByManager[entry1]) pointsByManager[entry1] = [];
-    if (!pointsByManager[entry2]) pointsByManager[entry2] = [];
+    if (!pointsByGW[gw]) pointsByGW[gw] = {};
 
-    pointsByManager[entry1].push(entry1Points);
-    pointsByManager[entry2].push(entry2Points);
+    pointsByGW[gw][entry1] = entry1Points;
+    pointsByGW[gw][entry2] = entry2Points;
+
+    managerIds.add(entry1);
+    managerIds.add(entry2);
   });
 
-  const averages: Record<number, number> = {};
-  Object.entries(pointsByManager).forEach(([entryId, points]) => {
-    const sum = points.reduce((a, b) => a + b, 0);
-    averages[Number(entryId)] = sum / points.length;
-  });
-
-  // Step 2: Calculate luck for each manager
+  // Step 2: Initialize luck for all managers
   const luck: Record<number, number> = {};
-
-  // Initialize all managers with 0 luck
-  Object.keys(averages).forEach(entryId => {
-    luck[Number(entryId)] = 0;
+  managerIds.forEach(entryId => {
+    luck[entryId] = 0;
   });
 
-  // Process each match
+  // Step 3: Calculate luck for each match using correct formula
   matches.forEach((match: any) => {
     if (match.event > upToGW) return;
 
+    const gw = Number(match.event);
     const entry1 = Number(match.entry_1_id);
     const entry2 = Number(match.entry_2_id);
     const entry1Points = Number(match.entry_1_points);
     const entry2Points = Number(match.entry_2_points);
+    const winner = match.winner ? Number(match.winner) : null;
 
-    // How much did opponent deviate from their average?
-    // Positive = opponent underperformed (lucky for manager)
-    const opp_deviation_for_entry1 = (averages[entry2] || 0) - entry2Points;
-    const opp_deviation_for_entry2 = (averages[entry1] || 0) - entry1Points;
+    // Get all teams' points for this GW
+    const allGWPoints = pointsByGW[gw];
+    if (!allGWPoints) return;
 
-    luck[entry1] = (luck[entry1] || 0) + opp_deviation_for_entry1;
-    luck[entry2] = (luck[entry2] || 0) + opp_deviation_for_entry2;
+    // For entry1: get all OTHER teams' points
+    const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
+      .filter(([id]) => Number(id) !== entry1)
+      .map(([, pts]) => Number(pts));
+
+    // For entry2: get all OTHER teams' points
+    const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
+      .filter(([id]) => Number(id) !== entry2)
+      .map(([, pts]) => Number(pts));
+
+    // Determine match result from each manager's perspective
+    const entry1Result: 'win' | 'draw' | 'loss' =
+      winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
+    const entry2Result: 'win' | 'draw' | 'loss' =
+      winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
+
+    // K-163: Calculate luck using correct formula (Actual - Expected)
+    const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
+    const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+
+    luck[entry1] = (luck[entry1] || 0) + entry1Luck;
+    luck[entry2] = (luck[entry2] || 0) + entry2Luck;
   });
 
   return luck;
@@ -559,7 +577,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round(luckValues[standing.entry_id] || 0) // K-150: Add luck to standings
+        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) / 10 // K-163: Round to 1 decimal
       };
     });
 
