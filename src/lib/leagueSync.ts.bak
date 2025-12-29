@@ -13,6 +13,7 @@ async function getGameweeksMissingK108Data(
   db: any,
   maxGW: number
 ): Promise<number[]> {
+  console.log(`[K-108/K-144 Check] Checking for missing or invalid calculated_points up to GW${maxGW}...`);
 
   // K-144: Check for VALID data (non-zero points), not just row existence
   const result = await db.query(`
@@ -36,6 +37,7 @@ async function getGameweeksMissingK108Data(
     if (rowCount > 0 && totalPoints > 0) {
       validGWs.add(gw);
     } else {
+      console.log(`[K-144] GW${gw}: Invalid data detected (rows=${rowCount}, points=${totalPoints})`);
     }
   }
 
@@ -49,7 +51,9 @@ async function getGameweeksMissingK108Data(
   }
 
   if (missingOrInvalidGWs.length > 0) {
+    console.log(`[K-144] GWs needing sync: ${missingOrInvalidGWs.join(', ')}`);
   } else {
+    console.log(`[K-144] All GWs 1-${maxGW} have valid calculated_points ✓`);
   }
 
   return missingOrInvalidGWs;
@@ -65,6 +69,7 @@ export async function syncK108PlayerStats(
   gameweeks: number[],
   bootstrap: any
 ): Promise<{ synced: number; errors: number }> {
+  console.log(`[K-108 Sync] Starting sync for ${gameweeks.length} gameweek(s): ${gameweeks.join(', ')}`);
 
   const players = bootstrap.elements || [];
   const teams = bootstrap.teams || [];
@@ -81,6 +86,7 @@ export async function syncK108PlayerStats(
   // Process each gameweek
   for (const gw of gameweeks) {
     try {
+      console.log(`[K-108 Sync] Fetching live data for GW${gw}...`);
 
       // Fetch fixtures for this GW
       const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gw}`);
@@ -230,6 +236,7 @@ export async function syncK108PlayerStats(
         }
       }
 
+      console.log(`[K-108 Sync] GW${gw} complete: ${gwSynced} players synced`);
 
       // Rate limiting between GWs
       if (gw !== gameweeks[gameweeks.length - 1]) {
@@ -242,6 +249,7 @@ export async function syncK108PlayerStats(
     }
   }
 
+  console.log(`[K-108 Sync] Complete: ${synced} player records synced, ${errors} errors`);
   return { synced, errors };
 }
 
@@ -330,6 +338,7 @@ export async function checkForMissingGWs(leagueId: number): Promise<number[]> {
     const missingGWs = completedGWs.filter((gw: number) => !syncedGWs.includes(gw));
 
     if (missingGWs.length > 0) {
+      console.log(`[Sync] League ${leagueId} missing GWs:`, missingGWs);
     }
 
     return missingGWs;
@@ -353,6 +362,7 @@ export async function syncMissingGWs(
   const db = await getDatabase();
 
   try {
+    console.log(`[Sync] Syncing ${missingGWs.length} missing GWs for league ${leagueId}:`, missingGWs);
 
     // Get managers for this league
     const managersResult = await db.query(`
@@ -366,6 +376,7 @@ export async function syncMissingGWs(
 
     // ========== K-112: SYNC K-108 PLAYER STATS (GLOBAL OPERATION) ==========
     // Check if K-108 calculated_points exists for the missing GWs
+    console.log(`[K-112] Quick sync: Checking K-108 data for missing GWs...`);
     const maxGW = Math.max(...missingGWs);
     const missingK108GWs = await getGameweeksMissingK108Data(db, maxGW);
 
@@ -373,8 +384,11 @@ export async function syncMissingGWs(
     const k108ToSync = missingK108GWs.filter(gw => missingGWs.includes(gw));
 
     if (k108ToSync.length > 0) {
+      console.log(`[K-112] Quick sync: Syncing K-108 data for ${k108ToSync.length} GW(s): ${k108ToSync.join(', ')}`);
       const k108Result = await syncK108PlayerStats(db, k108ToSync, bootstrap);
+      console.log(`[K-112] Quick sync K-108 complete: ${k108Result.synced} players, ${k108Result.errors} errors`);
     } else {
+      console.log(`[K-112] Quick sync: K-108 data exists for all missing GWs ✓`);
     }
     // ========================================================================
 
@@ -419,6 +433,7 @@ export async function syncMissingGWs(
 
     // Sync each missing GW
     for (const gw of missingGWs) {
+      console.log(`[Sync] Syncing GW${gw} for league ${leagueId}...`);
 
       // Fetch live data for this GW (for points)
       const liveRes = await fetch(`https://fantasy.premierleague.com/api/event/${gw}/live/`);
@@ -521,6 +536,7 @@ export async function syncMissingGWs(
         }
       }
 
+      console.log(`[Sync] Completed GW${gw} for league ${leagueId}`);
     }
 
     // Update last_synced timestamp
@@ -577,12 +593,14 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
 
     // If force clear, delete all existing data for this league
     if (forceClear) {
+      console.log(`[Sync] Force clearing existing data for league ${leagueId}...`);
 
       // Clear manager_gw_history
       const gwResult = await db.query(
         'DELETE FROM manager_gw_history WHERE league_id = $1',
         [leagueId]
       );
+      console.log(`[Sync] Deleted ${gwResult.rowCount} rows from manager_gw_history`);
 
       // Clear entry_captains
       const captainsResult = await db.query(`
@@ -591,24 +609,28 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
           SELECT entry_id FROM league_standings WHERE league_id = $1
         )
       `, [leagueId]);
+      console.log(`[Sync] Deleted ${captainsResult.rowCount} rows from entry_captains`);
 
       // Clear manager_chips
       const chipsResult = await db.query(
         'DELETE FROM manager_chips WHERE league_id = $1',
         [leagueId]
       );
+      console.log(`[Sync] Deleted ${chipsResult.rowCount} rows from manager_chips`);
 
       // Clear manager_transfers
       const transfersResult = await db.query(
         'DELETE FROM manager_transfers WHERE league_id = $1',
         [leagueId]
       );
+      console.log(`[Sync] Deleted ${transfersResult.rowCount} rows from manager_transfers`);
 
       // Clear manager_picks
       const picksResult = await db.query(
         'DELETE FROM manager_picks WHERE league_id = $1',
         [leagueId]
       );
+      console.log(`[Sync] Deleted ${picksResult.rowCount} rows from manager_picks`);
     }
 
     // Get all managers in this league
@@ -617,6 +639,7 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
     `, [leagueId]);
 
     const managerIds = managersResult.rows.map(r => parseInt(r.entry_id));
+    console.log(`[Sync] Found ${managerIds.length} managers`);
 
     // Get current gameweek
     const bootstrapRes = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
@@ -627,11 +650,15 @@ export async function syncLeagueData(leagueId: number, forceClear: boolean = fal
     // ========== K-112: SYNC K-108 PLAYER STATS (GLOBAL OPERATION) ==========
     // Check if K-108 calculated_points exists for needed GWs
     // This is global (all 760 players), not league-specific - benefits all leagues
+    console.log(`[K-112] Checking K-108 data status for GW1-${currentGW}...`);
     const missingK108GWs = await getGameweeksMissingK108Data(db, currentGW);
 
     if (missingK108GWs.length > 0) {
+      console.log(`[K-112] K-108 data missing for ${missingK108GWs.length} gameweek(s), syncing now...`);
       const k108Result = await syncK108PlayerStats(db, missingK108GWs, bootstrap);
+      console.log(`[K-112] K-108 sync complete: ${k108Result.synced} players, ${k108Result.errors} errors`);
     } else {
+      console.log(`[K-112] K-108 data exists for all GWs, fast path ✓`);
     }
     // ========================================================================
 
@@ -677,12 +704,14 @@ async function syncManagerData(
   bootstrap: any
 ): Promise<void> {
   try {
+    console.log(`[Sync] Syncing manager ${entryId}...`);
 
     // 1. Fetch manager history
     const historyRes = await fetch(
       `https://fantasy.premierleague.com/api/entry/${entryId}/history/`
     );
     if (!historyRes.ok) {
+      console.log(`[Sync] Manager ${entryId} history fetch failed`);
       return;
     }
     const history = await historyRes.json();
@@ -727,12 +756,15 @@ async function syncManagerData(
             ]);
           }
         }
+        console.log(`[Sync] Manager ${entryId}: Synced ${currentSeasonTransfers.length} transfers`);
       }
     } catch (err) {
+      console.log(`[Sync] Manager ${entryId}: Transfer sync failed:`, err);
     }
 
     // 4. Sync GW history
     const gwHistory = history.current || [];
+    console.log(`[Sync] Manager ${entryId}: Found ${gwHistory.length} GW history entries`);
 
     for (const gw of gwHistory) {
       if (gameweeks.includes(gw.event)) {
@@ -755,6 +787,7 @@ async function syncManagerData(
             gw.rank, gw.rank_sort, gw.overall_rank, gw.event_transfers,
             gw.event_transfers_cost, gw.value, gw.bank, gw.points_on_bench
           ]);
+          console.log(`[Sync] Manager ${entryId} GW${gw.event}: Inserted/updated`);
         } catch (error) {
           console.error(`[Sync] Manager ${entryId} GW${gw.event}: INSERT FAILED:`, error);
         }
@@ -820,15 +853,18 @@ async function syncManagerData(
             pick.is_vice_captain
           ]);
         }
+        console.log(`[Sync] Manager ${entryId} GW${gwNum}: Synced ${picks.length} picks`);
 
         // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 50));
 
       } catch (e) {
         // Skip this GW if error
+        console.log(`[Sync] Manager ${entryId} GW ${gwNum} failed:`, e);
       }
     }
 
+    console.log(`[Sync] Manager ${entryId} completed`);
 
   } catch (error) {
     console.error(`[Sync] Manager ${entryId} failed:`, error);

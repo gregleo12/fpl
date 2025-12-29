@@ -15,6 +15,14 @@ interface Props {
 const MEDAL_ICONS = ['🥇', '🥈', '🥉'];
 
 export function GWRankingsModal({ isOpen, onClose, gameweek, rankings, myTeamId }: Props) {
+  console.log('[K-109 Phase 3] GWRankingsModal received data:', {
+    isOpen,
+    gameweek,
+    rankingsCount: rankings?.length || 0,
+    myTeamId,
+    topFive: rankings?.slice(0, 5).map(r => ({ rank: r.rank, name: r.player_name, points: r.points })) || []
+  });
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

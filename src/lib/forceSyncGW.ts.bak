@@ -22,6 +22,7 @@ export async function syncGameweekForLeague(
   leagueId: number,
   gameweek: number
 ): Promise<SyncResult> {
+  console.log(`[K-146d] Force sync GW${gameweek} for league ${leagueId} using proven sync path...`);
 
   const db = await getDatabase();
 
@@ -36,6 +37,7 @@ export async function syncGameweekForLeague(
   const managersCount = parseInt(managersResult.rows[0]?.count || '0');
 
   // Step 2: Clear existing data (force clean slate for manual sync)
+  console.log(`[K-146d] Clearing existing data for league ${leagueId} GW${gameweek}...`);
 
   await db.query(
     'DELETE FROM manager_gw_history WHERE league_id = $1 AND event = $2',
@@ -57,6 +59,7 @@ export async function syncGameweekForLeague(
   // - K-148 auto-sync (proven working)
   // - Settings force sync (just confirmed working)
   // - First-time league setup
+  console.log(`[K-146d] Calling syncCompletedGW (proven working sync path)...`);
   await syncCompletedGW(leagueId, gameweek);
 
   // Step 4: Get player stats count (for reporting)
@@ -67,6 +70,7 @@ export async function syncGameweekForLeague(
 
   const playersCount = parseInt(playersResult.rows[0]?.count || '0');
 
+  console.log(`[K-146d] ✓ Sync complete: ${managersCount} managers, ${playersCount} players`);
 
   return {
     managersCount,

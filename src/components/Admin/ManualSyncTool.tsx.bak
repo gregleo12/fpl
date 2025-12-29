@@ -129,6 +129,7 @@ export function ManualSyncTool() {
     const timeoutId = setTimeout(() => controller.abort(), 11 * 60 * 1000); // 11 minutes
 
     try {
+      console.log(`[K-156] Starting sync: ${leagueCount} league(s) × ${selectedGWs.length} GW(s) = ${totalTasks} tasks`);
 
       const response = await fetch('/api/admin/sync/manual', {
         method: 'POST',
@@ -148,6 +149,7 @@ export function ManualSyncTool() {
       }
 
       const data = await response.json();
+      console.log('[K-156] Sync complete:', data.summary);
       setResults(data);
 
       // Refresh status after sync

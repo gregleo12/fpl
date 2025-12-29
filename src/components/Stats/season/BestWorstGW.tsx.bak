@@ -15,6 +15,14 @@ export function BestWorstGW({ bestData, worstData }: Props) {
   const [view, setView] = useState<'best' | 'worst'>('best');
   const [showModal, setShowModal] = useState(false);
 
+  console.log('[K-109 Phase 4] BestWorstGW received data:', {
+    bestCount: bestData?.length || 0,
+    worstCount: worstData?.length || 0,
+    bestTopThree: bestData?.slice(0, 3).map(d => ({ name: d.player_name, gw: d.event, pts: d.points })) || [],
+    worstTopThree: worstData?.slice(0, 3).map(d => ({ name: d.player_name, gw: d.event, pts: d.points })) || [],
+    uniqueGWsInBest: Array.from(new Set(bestData?.map(d => d.event) || [])).sort((a, b) => b - a)
+  });
+
   const data = view === 'best' ? bestData : worstData;
   const IconComponent = view === 'best' ? Flame : Skull;
   // K-135: Keep title static - toggle button shows Best/Worst

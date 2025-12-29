@@ -109,6 +109,7 @@ export async function GET(
     if (currentGWStatus === 'in_progress' || currentGWStatus === 'upcoming') {
       try {
         // K-109 Phase 5: Use K-108c for live GW score
+        console.log(`[K-109 Phase 5] Calculating live GW${currentGW} for team ${teamId} using K-108c`);
         const teamScore = await calculateTeamGameweekScore(parseInt(teamId), currentGW);
         const scoreResult = { score: teamScore.points.net_total };
 

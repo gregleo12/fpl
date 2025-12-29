@@ -26,7 +26,6 @@ export async function GET(
     `, [playerId, gameweek]);
 
     if (result.rows.length === 0) {
-      console.log(`[Player GW Stats] No data found for player ${playerId} GW${gameweek}, attempting sync...`);
 
       // Try to sync this player's history
       await syncPlayerHistory(playerId);

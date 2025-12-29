@@ -29,9 +29,6 @@ export default function TeamSelectionPage() {
 
     // Check for saved team selection
     const savedState = loadState();
-    console.log('=== DEBUG: Saved State ===');
-    console.log('Saved state:', savedState);
-    console.log('Current league ID:', parsedData.leagueId);
 
     // Sort standings alphabetically by manager name
     const standings = [...parsedData.standings].sort((a: any, b: any) =>
@@ -39,12 +36,9 @@ export default function TeamSelectionPage() {
     );
 
     if (savedState && savedState.leagueId === parsedData.leagueId) {
-      console.log('League IDs match!');
       const savedTeamIndex = standings.findIndex(
         (team: any) => team.entry_id.toString() === savedState.myTeamId
       );
-      console.log('Saved team index:', savedTeamIndex);
-      console.log('Looking for team ID:', savedState.myTeamId);
 
       if (savedTeamIndex > -1) {
         const savedTeam = standings[savedTeamIndex];
@@ -53,24 +47,18 @@ export default function TeamSelectionPage() {
         setSelectedTeam(savedState.myTeamId);
         setSavedTeamId(savedState.myTeamId);
         setSavedTeamData(savedTeam);
-        console.log('Saved team data set:', savedTeam);
 
         // Auto-continue to dashboard if this team was remembered (saved to localStorage)
         // Check if it's in localStorage (not just sessionStorage)
         if (typeof window !== 'undefined' && localStorage.getItem('fpl_h2h_state')) {
-          console.log('Auto-continuing with saved team...');
           // Small delay to let user see the selection
           setTimeout(() => {
             router.push('/dashboard');
           }, 500);
         }
       } else {
-        console.log('Team not found in standings');
       }
     } else {
-      console.log('No saved state or league mismatch');
-      console.log('Has saved state:', !!savedState);
-      console.log('League match:', savedState?.leagueId === parsedData.leagueId);
     }
 
     setSortedStandings(standings);
@@ -216,9 +204,6 @@ export default function TeamSelectionPage() {
     );
   }
 
-  console.log('=== DEBUG: Render ===');
-  console.log('Saved team data at render:', savedTeamData);
-  console.log('Should show recent section:', !!savedTeamData);
 
   return (
     <main className={styles.container}>

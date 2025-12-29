@@ -28,6 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid parameters' }, { status: 400 });
     }
 
+    console.log(`[K-136b] Fetching team data for entry ${entryId}, GW${gameweek}...`);
 
     // K-136: Determine GW status from FPL API FIRST
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
@@ -53,6 +54,7 @@ export async function GET(
       }
     }
 
+    console.log(`[K-136] GW${gameweek} status: ${status}`);
 
     // Fetch entry data for overall stats
     const entryResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`);
@@ -63,7 +65,14 @@ export async function GET(
     let liveSquadData: any = null;
 
     if (status === 'in_progress' || status === 'upcoming') {
+      console.log(`[K-136] Using FPL API for live/upcoming GW`);
       const liveResult = await calculateManagerLiveScore(entryId, gameweek, status);
+      console.log(`[K-136b DEBUG] liveResult:`, {
+        score: liveResult.score,
+        transferCost: liveResult.breakdown.transferCost,
+        captainPoints: liveResult.breakdown.captainPoints,
+        squadSize: liveResult.squad ? `${liveResult.squad.starting11?.length || 0}+${liveResult.squad.bench?.length || 0}` : 'null'
+      });
       teamScore = {
         points: {
           starting_xi_total: 0, // Not available from live calculator
@@ -81,9 +90,11 @@ export async function GET(
       };
       liveSquadData = liveResult.squad;  // Use squad data from live calculation
     } else {
+      console.log(`[K-136] Using database for completed GW`);
       teamScore = await calculateTeamGameweekScore(entryId, gameweek);
     }
 
+    console.log(`[K-136] Score: ${teamScore.points.net_total} pts`);
 
     const db = await getDatabase();
 
@@ -95,6 +106,7 @@ export async function GET(
 
     if (liveSquadData) {
       // Use live data from calculateManagerLiveScore
+      console.log(`[K-136b] Building picks from live squad data`);
       const allPlayers = [...liveSquadData.starting11, ...liveSquadData.bench];
 
       // K-136b: Create player lookup from bootstrap for team/team_code info
@@ -109,6 +121,14 @@ export async function GET(
           };
         });
       }
+
+      console.log(`[K-136b DEBUG] First player in squad:`, {
+        id: allPlayers[0]?.id,
+        name: allPlayers[0]?.name,
+        position: allPlayers[0]?.position,
+        points: allPlayers[0]?.points,
+        hasTeamInBootstrap: !!bootstrapPlayerLookup[allPlayers[0]?.id]
+      });
 
       picks = allPlayers.map((player: any, index: number) => ({
         player_id: player.id,
@@ -136,12 +156,14 @@ export async function GET(
         })
       };
 
+      console.log(`[K-136b] Built ${playersResult.rows.length} players with team data`);
 
       // Fetch fixtures for opponent info
       const fixturesResponse = await fetch(`https://fantasy.premierleague.com/api/fixtures/?event=${gameweek}`);
       fixturesData = fixturesResponse.ok ? await fixturesResponse.json() : [];
     } else {
       // Use database for completed GWs
+      console.log(`[K-136] Querying database for completed GW`);
       const picksResult = await db.query(
         `SELECT DISTINCT ON (position, player_id)
            player_id, position, multiplier, is_captain, is_vice_captain
@@ -229,6 +251,7 @@ export async function GET(
       });
     }
 
+    console.log(`[K-136] Auto-subs: ${teamScore.auto_subs?.length || 0} substitutions`);
 
     // Build player data lookup
     const playerLookup: { [key: number]: any } = {};
@@ -270,6 +293,8 @@ export async function GET(
       is_vice_captain: pick.is_vice_captain
     }));
 
+    console.log(`[K-109 Phase 2] Returning ${transformedPicks.length} picks with K-108c data`);
+    console.log(`[K-136b DEBUG] Response gwPoints: ${teamScore.points.net_total}`);
 
     // Return enriched data
     return NextResponse.json({

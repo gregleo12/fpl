@@ -120,12 +120,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
         cache: 'no-store'
       });
       const json = await res.json();
-      console.log(`[PlayerModal] Player ${player.id} API response:`, {
-        isLive: json.isLive,
-        provisionalBonus: json.provisionalBonus,
-        hasPlayer: !!json.player,
-        hasHistory: !!json.history
-      });
       setData(json);
     } catch (error) {
       console.error('[PlayerModal] Error fetching player:', error);
@@ -154,14 +148,11 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
     const isLive = player.fixture_started && (!gwStats || gwStats.minutes === 0 || gwStats.minutes < 90);
 
     if (isLive) {
-      console.log('[PlayerModal] Setting up auto-refresh for live game...');
       const interval = setInterval(() => {
-        console.log('[PlayerModal] Refreshing live player stats...');
         fetchDetailedData();
       }, 30000); // 30 seconds
 
       return () => {
-        console.log('[PlayerModal] Clearing auto-refresh interval');
         clearInterval(interval);
       };
     }
@@ -339,14 +330,6 @@ export function PlayerModal({ player, pick, gameweek, onClose }: Props) {
               })}
 
               {/* K-63c: Provisional Bonus (Live) - shown during live games */}
-              {(() => {
-                console.log('[PlayerModal] Bonus (Live) check:', {
-                  isLive: data?.isLive,
-                  provisionalBonus: data?.provisionalBonus,
-                  willShow: data?.isLive && data?.provisionalBonus > 0
-                });
-                return null;
-              })()}
               {data?.isLive && data?.provisionalBonus > 0 && (
                 <div className={styles.statRow}>
                   <span className={styles.statLabel}>Bonus (Live)</span>

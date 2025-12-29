@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log(`[K-146/K-154] Manual sync: ${targetLeagueIds.length} league(s), GWs: ${gameweeks.join(', ')}`);
 
     // Build task list
     const tasks: Array<{ leagueId: number; gw: number }> = [];
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log(`[K-146/K-154] Total tasks: ${tasks.length}`);
 
     // Execute syncs
     const results: any[] = [];
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
       const progress = `${i + 1}/${tasks.length}`;
 
       try {
+        console.log(`[K-154] ${progress}: Starting league ${task.leagueId} GW${task.gw}...`);
 
         const result = await syncGameweekForLeague(task.leagueId, task.gw);
 
@@ -76,6 +79,7 @@ export async function POST(request: NextRequest) {
         });
 
         successCount++;
+        console.log(`[K-154] ${progress}: ✓ League ${task.leagueId} GW${task.gw} - ${result.managersCount}m, ${result.playersCount}p (${Date.now() - startTime}ms)`);
 
       } catch (error: any) {
         failCount++;
@@ -97,6 +101,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    console.log(`[K-154] ═══════════════════════════════════════════════════════`);
+    console.log(`[K-154] Batch sync complete: ${successCount} success, ${failCount} failed out of ${tasks.length} total`);
+    console.log(`[K-154] ═══════════════════════════════════════════════════════`);
 
     const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
 

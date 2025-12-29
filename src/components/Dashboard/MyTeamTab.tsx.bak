@@ -186,6 +186,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     if (!isLiveGW || selectedGW !== liveGWNumber) return;
 
     const interval = setInterval(() => {
+      console.log('[K-68] Auto-refreshing live GW data...');
       handleRefresh();
     }, 60000); // 60 seconds
 

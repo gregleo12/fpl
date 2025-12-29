@@ -55,6 +55,7 @@ export async function GET(
 
     // If no history, sync it
     if (historyResult.rows.length === 0) {
+      console.log(`[Player Detail] No history found for player ${playerId}, syncing...`);
       await syncPlayerHistory(playerId);
       historyResult = await db.query(`
         SELECT * FROM player_gameweek_stats
@@ -174,6 +175,7 @@ export async function GET(
     let isLive = false;
 
     if (currentGW > 0 && currentGWFixtures.length > 0) {
+      console.log(`[Player ${playerId}] Checking for live bonus. Team: ${player.team_id}, GW: ${currentGW}, Fixtures: ${currentGWFixtures.length}`);
 
       // K-63e Fix #3: Find player's fixture directly by team (don't rely on explain data)
       const playerFixture = currentGWFixtures.find((f: any) =>
@@ -182,6 +184,7 @@ export async function GET(
         !f.finished
       );
 
+      console.log(`[Player ${playerId}] Fixture found:`, playerFixture ? `ID ${playerFixture.id}, Started: ${playerFixture.started}, Finished: ${playerFixture.finished}, player_stats count: ${playerFixture.player_stats?.length || 0}` : 'None');
 
       if (playerFixture && playerFixture.player_stats && playerFixture.player_stats.length > 0) {
         isLive = true;
@@ -190,6 +193,7 @@ export async function GET(
         const playerStats = playerFixture.player_stats;
         const playerData = playerStats.find((p: any) => p.id === playerId);
 
+        console.log(`[Player ${playerId}] Player in stats:`, playerData ? `BPS: ${playerData.bps}` : 'Not found');
 
         if (playerData) {
           // Sort players by BPS (descending)
@@ -201,16 +205,26 @@ export async function GET(
           else if (rank === 1) provisionalBonus = 2;
           else if (rank === 2) provisionalBonus = 1;
 
+          console.log(`[Player ${playerId}] Rank: ${rank}, Provisional Bonus: ${provisionalBonus}`);
         }
       }
     }
 
+    console.log(`[Player ${playerId}] Final: isLive=${isLive}, provisionalBonus=${provisionalBonus}`);
 
     // K-110: Calculate accurate season stats from K-108 data
     let calculatedStats = null;
     if (currentGW > 0) {
       try {
         calculatedStats = await calculatePlayerSeasonStats(playerId, currentGW);
+        console.log(`[K-110] Player ${playerId} (${player.web_name}):`, {
+          pts: `${player.total_points}→${calculatedStats.total_points}`,
+          goals: `${player.goals_scored}→${calculatedStats.goals}`,
+          assists: `${player.assists}→${calculatedStats.assists}`,
+          mins: `${player.minutes}→${calculatedStats.minutes}`,
+          bonus: `${player.bonus}→${calculatedStats.bonus}`,
+          starts: calculatedStats.starts
+        });
       } catch (error) {
         console.error(`[K-110] Error calculating season stats for player ${playerId}:`, error);
         // Fall back to FPL bootstrap stats on error

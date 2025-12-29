@@ -141,7 +141,6 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
       }
 
       const result = await response.json();
-      console.log('[Settings] Sync started:', result);
 
       // Poll for completion
       let pollCount = 0;
@@ -154,7 +153,6 @@ export default function SettingsTab({ leagueName, myTeamName, onRefresh, isRefre
           const statusRes = await fetch(`/api/league/${state.leagueId}/sync`);
           const statusData = await statusRes.json();
 
-          console.log(`[Settings] Poll ${pollCount}: status=${statusData.status}`);
 
           if (statusData.status === 'completed') {
             clearInterval(pollInterval);

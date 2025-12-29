@@ -79,6 +79,7 @@ export default function DashboardPage() {
       setLastSyncedGW(lastGW);
 
       if (needsSync && status !== 'syncing') {
+        console.log(`[K-131] New GW detected: ${gw} > ${lastGW}. Auto-triggering sync...`);
         setSyncStatus('syncing');
 
         // Trigger sync
@@ -123,6 +124,7 @@ export default function DashboardPage() {
         const data = await response.json();
 
         if (data.status === 'completed' || data.status === 'idle') {
+          console.log('[K-131] Sync completed successfully');
           return true;
         }
 
@@ -169,6 +171,7 @@ export default function DashboardPage() {
       const needsSync = forceSync || !lastSync || (now - lastSyncTime) > SYNC_THRESHOLD;
 
       if (needsSync) {
+        console.log('[Dashboard] Syncing league data with FPL...');
         // Sync h2h_matches table with latest FPL data
         const syncResponse = await fetch(`/api/league/${leagueId}`, {
           cache: 'no-store',
@@ -179,10 +182,12 @@ export default function DashboardPage() {
 
         if (syncResponse.ok) {
           localStorage.setItem(lastSyncKey, now.toString());
+          console.log('[Dashboard] League data synced successfully');
         } else {
           console.warn('[Dashboard] Failed to sync league data, continuing with cached data');
         }
       } else {
+        console.log('[Dashboard] Using cached data (last sync:', Math.round((now - lastSyncTime) / 1000), 'seconds ago)');
       }
 
       // Fetch league standings and player profile in parallel

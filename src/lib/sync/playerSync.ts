@@ -18,7 +18,6 @@ export async function syncPlayers(): Promise<SyncResult> {
 
   try {
     // 1. Fetch bootstrap data
-    console.log('[Player Sync] Fetching bootstrap data...');
     const bootstrapRes = await fetch(FPL_BOOTSTRAP_URL);
     if (!bootstrapRes.ok) throw new Error('Failed to fetch bootstrap data');
 
@@ -26,7 +25,6 @@ export async function syncPlayers(): Promise<SyncResult> {
     const elements = bootstrap.elements || [];
     const teams = bootstrap.teams || [];
 
-    console.log(`[Player Sync] Found ${elements.length} players and ${teams.length} teams`);
 
     const db = await getDatabase();
 
@@ -40,7 +38,6 @@ export async function syncPlayers(): Promise<SyncResult> {
     }
 
     // 3. Upsert teams
-    console.log('[Player Sync] Upserting teams...');
     for (const team of teams) {
       await db.query(`
         INSERT INTO teams (id, name, short_name, strength,
@@ -75,7 +72,6 @@ export async function syncPlayers(): Promise<SyncResult> {
     };
 
     // 5. Upsert each player
-    console.log('[Player Sync] Upserting players...');
     for (const el of elements) {
       const team = teamMap.get(el.team);
 
@@ -164,7 +160,6 @@ export async function syncPlayers(): Promise<SyncResult> {
       result.playersUpdated++;
     }
 
-    console.log(`[Player Sync] ✓ Updated ${result.playersUpdated} players`);
 
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -178,7 +173,6 @@ export async function syncPlayers(): Promise<SyncResult> {
 // Sync detailed per-GW history for a specific player
 export async function syncPlayerHistory(playerId: number): Promise<number> {
   try {
-    console.log(`[Player History Sync] Fetching history for player ${playerId}...`);
 
     const res = await fetch(`${FPL_ELEMENT_URL}${playerId}/`);
     if (!res.ok) throw new Error(`Failed to fetch player ${playerId}`);
@@ -186,7 +180,6 @@ export async function syncPlayerHistory(playerId: number): Promise<number> {
     const data = await res.json();
     const history = data.history || [];
 
-    console.log(`[Player History Sync] Found ${history.length} gameweeks for player ${playerId}`);
 
     const db = await getDatabase();
 
@@ -248,7 +241,6 @@ export async function syncPlayerHistory(playerId: number): Promise<number> {
       updated++;
     }
 
-    console.log(`[Player History Sync] ✓ Updated ${updated} gameweeks for player ${playerId}`);
     return updated;
 
   } catch (error) {

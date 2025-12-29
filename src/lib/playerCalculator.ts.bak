@@ -44,6 +44,7 @@ export async function calculatePlayerSeasonStats(
 ): Promise<PlayerSeasonStats> {
   const db = await getDatabase();
 
+  console.log(`[K-110] Calculating season stats for player ${playerId} through GW${throughGameweek}`);
 
   const result = await db.query(`
     SELECT
@@ -70,6 +71,7 @@ export async function calculatePlayerSeasonStats(
   `, [playerId, throughGameweek]);
 
   if (result.rows.length === 0) {
+    console.log(`[K-110] No stats found for player ${playerId}, returning zeros`);
     return {
       player_id: playerId,
       total_points: 0, goals: 0, assists: 0, minutes: 0,
@@ -80,6 +82,7 @@ export async function calculatePlayerSeasonStats(
   }
 
   const stats = result.rows[0];
+  console.log(`[K-110] Player ${playerId}: ${stats.total_points} pts, ${stats.goals} goals, ${stats.assists} assists, ${stats.starts} starts`);
 
   return stats;
 }
@@ -96,6 +99,7 @@ export async function calculateAllPlayerSeasonStats(
 ): Promise<Map<number, PlayerSeasonStats>> {
   const db = await getDatabase();
 
+  console.log(`[K-110] Calculating season stats for all players through GW${throughGameweek}`);
 
   const startTime = Date.now();
 
@@ -129,6 +133,7 @@ export async function calculateAllPlayerSeasonStats(
   }
 
   const duration = Date.now() - startTime;
+  console.log(`[K-110] Calculated season stats for ${stats.size} players in ${duration}ms`);
 
   return stats;
 }
@@ -157,6 +162,7 @@ export async function getCurrentGameweek(): Promise<number> {
                         events[0];
 
     const gw = currentEvent?.id || 17;
+    console.log(`[K-110] Current gameweek: GW${gw}`);
 
     return gw;
   } catch (error) {

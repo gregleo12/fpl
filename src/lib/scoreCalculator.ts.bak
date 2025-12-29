@@ -201,6 +201,7 @@ async function fetchPlayerStatsFromDB(gameweek: number, playerIds: number[]): Pr
       explain: [] // Not needed for completed GWs
     }));
 
+    console.log(`[Perf] Fetched ${result.rows.length} player stats from DB`);
     return { elements };
   } catch (error) {
     console.error(`Error fetching player stats from database for GW${gameweek}:`, error);
@@ -241,6 +242,7 @@ async function fetchFixturesFromDB(gameweek: number): Promise<any[] | null> {
       return null; // No data found, will fall back to API
     }
 
+    console.log(`[Perf] Fetched ${result.rows.length} fixtures from DB`);
     // Transform to match FPL API format
     return result.rows.map(row => ({
       id: row.id,
@@ -279,6 +281,7 @@ async function fetchScoreData(entryId: number, gameweek: number, status: 'upcomi
 
     // Extract player IDs from picks (15 players)
     const playerIds = picksData.picks?.map((p: any) => p.element) || [];
+    console.log(`[Perf] Extracted ${playerIds.length} player IDs from picks`);
 
     // Step 2: Fetch player stats, fixtures, and bootstrap in parallel
     // OPTIMIZED: Only fetch stats for the 15 players in squad, not all 760
@@ -302,11 +305,13 @@ async function fetchScoreData(entryId: number, gameweek: number, status: 'upcomi
 
     // If we have complete DB data, use it
     if (dbLiveData && dbFixtures && playerIds.length === 15) {
+      console.log(`[ScoreCalculator] ✓ Using database for GW${gameweek} (completed)`);
       const fixturesData = processFixturesData(dbFixtures, dbLiveData);
       return { picksData, liveData: dbLiveData, bootstrapData, fixturesData };
     }
 
     // Otherwise fall back to API
+    console.log(`[ScoreCalculator] ✗ DB data incomplete for GW${gameweek}, falling back to API`);
   }
 
   // For live/upcoming GWs or if DB fetch failed, use FPL API
@@ -374,6 +379,12 @@ export function calculateScoreFromData(
     const gw = picksData.entry_history?.event || 'unknown';
 
     // K-106b: Debug logging to investigate -2pt discrepancy
+    console.log(`[K-106b DEBUG] Entry ${entryId} GW${gw} (COMPLETED):`);
+    console.log(`[K-106b DEBUG] - Official Points (GROSS): ${officialPoints}`);
+    console.log(`[K-106b DEBUG] - Transfer Cost: ${transferCost}`);
+    console.log(`[K-106b DEBUG] - Final Score (NET): ${finalScore}`);
+    console.log(`[K-106b DEBUG] - Data Source: ${picksData.entry_history ? 'entry_history' : 'FALLBACK TO 0'}`);
+    console.log(`[K-106b DEBUG] - Active Chip: ${activeChip || 'none'}`);
 
     const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
     const captain = squad.starting11.find(p => p.multiplier > 1);
@@ -381,6 +392,9 @@ export function calculateScoreFromData(
     // K-106b: Log squad composition for verification
     const squadTotal = squad.starting11.reduce((sum, p) => sum + p.points, 0);
     const benchTotal = squad.bench.reduce((sum, p) => sum + p.points, 0);
+    console.log(`[K-106b DEBUG] - Starting XI total (raw): ${squadTotal}`);
+    console.log(`[K-106b DEBUG] - Bench total (raw): ${benchTotal}`);
+    console.log(`[K-106b DEBUG] - Captain: ${captain?.name || 'none'} (×${captain?.multiplier || 1})`);
 
     return {
       entryId,

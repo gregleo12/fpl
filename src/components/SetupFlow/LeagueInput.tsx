@@ -60,7 +60,6 @@ export default function LeagueInput() {
           const statusRes = await fetch(`/api/league/${leagueId}/sync`);
           const statusData = await statusRes.json();
 
-          console.log(`[Sync Poll ${pollCount}] Status:`, statusData.status);
 
           // Update progress based on status
           if (statusData.status === 'syncing') {
@@ -102,7 +101,6 @@ export default function LeagueInput() {
           if (pollCount >= maxPolls) {
             clearInterval(pollInterval);
             setShowSyncProgress(false);
-            console.log('[Sync] Timeout - continuing anyway');
             resolve();
           }
         } catch (error) {
@@ -124,9 +122,7 @@ export default function LeagueInput() {
 
     try {
       // Fetch league data from API
-      console.log('Fetching league:', id);
       const response = await fetch(`/api/league/${id}`);
-      console.log('League response status:', response.status);
 
       if (!response.ok) {
         // Try to parse error as JSON for specific error types
@@ -189,7 +185,6 @@ export default function LeagueInput() {
 
       // Check if sync was triggered for first-time league load
       if (leagueData.syncTriggered) {
-        console.log(`[League ${id}] First-time sync triggered, showing progress...`);
         clearTimeout(timeoutId);
         setIsLoading(false);
         setShowSyncProgress(true);
@@ -201,7 +196,6 @@ export default function LeagueInput() {
       }
 
       const statsResponse = await fetch(`/api/league/${id}/stats`);
-      console.log('Stats response status:', statsResponse.status);
 
       if (!statsResponse.ok) {
         const errorText = await statsResponse.text();
@@ -210,7 +204,6 @@ export default function LeagueInput() {
       }
 
       const data = await statsResponse.json();
-      console.log('Successfully fetched league data');
 
       // Store league data temporarily
       sessionStorage.setItem('temp_league', JSON.stringify({

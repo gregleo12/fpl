@@ -148,6 +148,8 @@ function calculateLiveStats(
 ) {
   const picks = picksData.picks;
 
+  console.log('Calculating stats for:', manager);
+  console.log('Active chip:', picksData.active_chip);
 
   // Find captain
   const captainPick = picks.find((p: any) => p.is_captain);
@@ -174,6 +176,7 @@ function calculateLiveStats(
     fixturesData
   );
 
+  console.log(`[K-109 Phase 7] Captain: ${captainElement?.web_name}, Raw points: ${rawCaptainPoints} (includes ${captainOfficialBonus} bonus), Multiplier: ${captainMultiplier}, Total: ${captainPoints}`);
 
   // Calculate stats (players played, bench points, etc.)
   const isBenchBoost = picksData.active_chip === 'bboost';
@@ -189,6 +192,12 @@ function calculateLiveStats(
   if (!isBenchBoost) {
     const squad = createSquadFromPicks(picksData, liveData, bootstrapData, fixturesData);
     autoSubResult = applyAutoSubstitutions(squad);
+
+    if (autoSubResult.substitutions.length > 0) {
+      console.log(`Auto-substitutions for ${manager}:`, autoSubResult.substitutions.map(s =>
+        `${s.playerOut.name} (0 min) → ${s.playerIn.name} (+${s.playerIn.points} pts)`
+      ));
+    }
   }
 
   picks.forEach((pick: any) => {
@@ -202,6 +211,7 @@ function calculateLiveStats(
 
     if (pick.position <= 11) {
       // Starting 11
+      console.log(`${bootstrapElement?.web_name} (Pos ${pick.position}): ${rawPoints} pts`);
 
       // Add to live score (with captain multiplier)
       if (pick.is_captain) {
@@ -218,6 +228,7 @@ function calculateLiveStats(
     } else {
       // Bench (positions 12-15)
       benchPoints += rawPoints;
+      console.log(`BENCH ${bootstrapElement?.web_name}: ${rawPoints} pts`);
 
       // Collect bench player details
       benchPlayers.push({
@@ -241,6 +252,7 @@ function calculateLiveStats(
 
   // Get transfer cost (hits)
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
+  console.log(`Transfer cost from API: ${transferCost}`);
 
   // Use auto-substitution adjusted score if available (with provisional bonus from fixtures data)
   let finalLiveScore = liveScore;
@@ -252,15 +264,20 @@ function calculateLiveStats(
   finalLiveScore = result.totalPoints;
 
   if (result.provisionalBonus > 0) {
+    console.log(`Provisional bonus for ${manager}: +${result.provisionalBonus} pts`);
   }
 
   if (autoSubResult && !isBenchBoost && autoSubResult.substitutions.length > 0) {
+    console.log(`Score with auto-subs and bonus: ${finalLiveScore} (${autoSubResult.substitutions.length} subs)`);
   } else if (isBenchBoost) {
+    console.log(`Score with Bench Boost and bonus: ${finalLiveScore} (all 15 players count)`);
   }
 
   // Calculate final live score (subtract hits - API returns positive values)
   const currentScore = finalLiveScore - Math.abs(transferCost);
+  console.log(`Live calculated score for ${manager}: ${currentScore} (${finalLiveScore} from players - ${Math.abs(transferCost)} from hits)`);
 
+  console.log(`Players: ${playersPlayed} played, ${playersRemaining} remaining (total: ${totalPlayers})`);
 
   // K-63e: Bonus info already calculated earlier (before multiplier applied)
 
@@ -770,6 +787,7 @@ function calculateDifferentials(
   const hits1 = picks1Data.entry_history?.event_transfers_cost || 0;
   const hits2 = picks2Data.entry_history?.event_transfers_cost || 0;
 
+  console.log(`Transfer hits - Player1: ${hits1}, Player2: ${hits2}`);
 
   // Only show transfer hit as a differential if one player has it and the other doesn't
   // Note: FPL API returns POSITIVE values for hits taken (e.g., 4, 8), 0 for no hits
@@ -779,6 +797,7 @@ function calculateDifferentials(
       // Player 1 took MORE hits (higher positive value)
       const diffPoints = -(hits1 - hits2); // Make it negative: -(4 - 0) = -4
       const numHits = (hits1 - hits2) / 4;
+      console.log(`Adding ${diffPoints} pts transfer hit to player1 (${numHits} hits)`);
       player1Differentials.push({
         name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
         points: diffPoints,
@@ -790,6 +809,7 @@ function calculateDifferentials(
       // Player 2 took MORE hits (higher positive value)
       const diffPoints = -(hits2 - hits1); // Make it negative: -(4 - 0) = -4
       const numHits = (hits2 - hits1) / 4;
+      console.log(`Adding ${diffPoints} pts transfer hit to player2 (${numHits} hits)`);
       player2Differentials.push({
         name: numHits === 1 ? 'Transfer Hit' : `Transfer Hits (${numHits}x)`,
         points: diffPoints,

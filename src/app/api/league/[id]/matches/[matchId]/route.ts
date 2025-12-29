@@ -168,7 +168,17 @@ export async function GET(
               const chipUsed = gw.chip_name;
 
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
-                // WC/FH: Transfers don't consume FT, and no +1 FT for next GW
+                // K-162: FH/WC chips CONSUME 1 FT to activate
+                // Net effect: -1 (chip cost) + 1 (rollover) = 0 change to FT balance
+                ftBalance = Math.max(0, ftBalance - 1);
+
+                // Add +1 FT for the NEXT gameweek (same logic as regular weeks)
+                const nextGWIndex = currentGWs.findIndex((g: any) => g.event === gw.event) + 1;
+                const nextGW = currentGWs[nextGWIndex];
+
+                if (nextGW && nextGW.event < upcomingGW) {
+                  ftBalance = Math.min(5, ftBalance + 1);
+                }
               } else {
                 // First consume transfers
                 ftBalance = Math.max(0, ftBalance - transfers);
@@ -265,7 +275,6 @@ export async function GET(
           }
         }
       } catch (error) {
-        console.log(`Error fetching strategic intel for entry ${entryId}:`, error);
       }
 
       return {
@@ -423,7 +432,6 @@ export async function GET(
           .sort((a: any, b: any) => b.avgPoints - a.avgPoints);
       }
     } catch (error) {
-      console.log('Error calculating common players and differentials:', error);
     }
 
     // Add common players to both strategic intel objects

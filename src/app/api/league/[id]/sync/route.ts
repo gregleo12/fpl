@@ -20,7 +20,6 @@ export async function POST(
     const { searchParams } = new URL(request.url);
     const force = searchParams.get('force') === 'true';
 
-    console.log(`[API] Manual sync requested for league ${leagueId}${force ? ' (force clear)' : ''}`);
 
     // Get current sync status
     const db = await getDatabase();
@@ -40,7 +39,6 @@ export async function POST(
     const SYNC_TIMEOUT_MINUTES = 10;
 
     if (currentStatus === 'syncing' && minutesSinceSync > SYNC_TIMEOUT_MINUTES) {
-      console.log(`[API] League ${leagueId} was stuck in 'syncing' for ${minutesSinceSync.toFixed(1)} minutes. Auto-resetting.`);
 
       await db.query(`
         UPDATE leagues

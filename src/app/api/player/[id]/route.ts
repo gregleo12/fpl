@@ -43,7 +43,6 @@ export async function GET(
         maxStartedGW = Math.max(...startedGameweeks.map((e: any) => e.id));
       }
     } catch (error) {
-      console.log('Could not fetch bootstrap data, including all gameweeks');
     }
 
     // Get manager info from database
@@ -167,7 +166,6 @@ export async function GET(
         }
       } catch (error) {
         // Skip if we can't fetch opponent data
-        console.log(`Could not fetch chip data for opponent ${match.opponentId}`);
       }
     }
 

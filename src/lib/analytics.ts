@@ -34,7 +34,6 @@ export async function trackRequest({
   try {
     const db = await getDatabase();
 
-    console.log('[Analytics] Tracking request:', { leagueId, endpoint, method, userHash, selectedTeamId });
 
     const result = await db.query(`
       INSERT INTO analytics_requests
@@ -43,7 +42,6 @@ export async function trackRequest({
       RETURNING id
     `, [leagueId, endpoint, method, userHash, responseTimeMs || null, statusCode || 200, selectedTeamId || null]);
 
-    console.log('[Analytics] Request tracked successfully, ID:', result.rows[0]?.id);
   } catch (error) {
     // Silent fail - don't break the app for analytics
     console.error('[Analytics] Tracking error:', error);

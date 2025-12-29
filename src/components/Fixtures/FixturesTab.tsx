@@ -290,7 +290,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   useEffect(() => {
     if (fixturesData?.status === 'in_progress') {
       const interval = setInterval(() => {
-        console.log('Auto-refreshing live gameweek scores...');
         fetchFixtures();
       }, 30000); // 30 seconds
 
@@ -334,15 +333,8 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
           const isOpponentAverage = opponent.player_name === 'AVERAGE';
 
-          console.log('[INSIGHTS] Opponent check:', {
-            opponentId: opponent.id,
-            opponentName: opponent.player_name,
-            isAverage: isOpponentAverage
-          });
-
           // Skip fetching insights for AVERAGE opponent (odd-numbered leagues)
           if (!isOpponentAverage) {
-            console.log('[INSIGHTS] Fetching insights for opponent:', opponent.id);
             const insightsResponse = await fetch(
               `/api/league/${leagueId}/insights/${opponent.id}?myId=${myTeamId}`
             );
@@ -352,7 +344,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               setInsights(insightsData);
             }
           } else {
-            console.log('[INSIGHTS] Skipping insights for AVERAGE opponent');
             setInsights(null);
           }
         }
@@ -420,16 +411,9 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
   }
 
   async function handleCardClick(matchId: number, match: Match) {
-    console.log('[CLICK] Handle card click:', {
-      matchId,
-      entry1: { id: match.entry_1.id, name: match.entry_1.player_name },
-      entry2: { id: match.entry_2.id, name: match.entry_2.player_name }
-    });
-
     // Prevent clicks on AVERAGE matches (odd-numbered leagues)
     // Use player_name check instead of entry_id because database may have AVERAGE with real IDs
     if (match.entry_1.player_name === 'AVERAGE' || match.entry_2.player_name === 'AVERAGE') {
-      console.log('[CLICK] Ignoring click on AVERAGE match');
       return;
     }
 
@@ -439,7 +423,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
       setLoadingLiveData(true);
       try {
         const statusLabel = fixturesData?.status === 'completed' ? 'completed' : 'live';
-        console.log(`Fetching ${statusLabel} match data for GW`, currentGW);
         const liveData = await getLiveMatchData(
           match.entry_1.id,
           match.entry_2.id,
@@ -450,7 +433,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           match.entry_2.team_name,
           leagueId
         );
-        console.log(`${statusLabel} match data received:`, liveData);
         setLiveMatchData(liveData);
         setShowLiveModal(true);
       } catch (error) {
@@ -625,14 +607,6 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           const isAverageMatch =
             match.entry_1.player_name === 'AVERAGE' ||
             match.entry_2.player_name === 'AVERAGE';
-
-          if (isAverageMatch) {
-            console.log('[AVERAGE] Match detected:', {
-              matchId: match.id,
-              entry1: { id: match.entry_1.id, name: match.entry_1.player_name },
-              entry2: { id: match.entry_2.id, name: match.entry_2.player_name }
-            });
-          }
 
           return (
             <div

@@ -63,11 +63,14 @@ export async function GET(
       }
     }
 
+    console.log(`[K-136] /api/gw/${gameweek}/team/${entry_id} - GW status: ${status}`);
 
     // K-136: For live/upcoming GWs, use FPL API
     if (status === 'in_progress' || status === 'upcoming') {
+      console.log(`[K-136] Using FPL API for live/upcoming GW`);
       const liveResult = await calculateManagerLiveScore(entry_id, gameweek, status);
 
+      console.log(`[K-136] Live score: ${liveResult.score} pts`);
 
       return NextResponse.json({
         gameweek,
@@ -110,6 +113,7 @@ export async function GET(
     }
 
     // For completed GWs, use database (original K-108c logic)
+    console.log(`[K-136] Using database for completed GW`);
     const db = await getDatabase();
 
     // 1. Get manager picks

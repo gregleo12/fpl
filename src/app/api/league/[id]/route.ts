@@ -22,7 +22,6 @@ export async function GET(
     let syncTriggered = false;
 
     if (needsSync) {
-      console.log(`[League ${leagueId}] League needs sync - triggering background sync...`);
       // Trigger sync in background - don't await to avoid blocking
       syncLeagueData(leagueId).catch(err => {
         console.error(`[League ${leagueId}] Background sync failed:`, err);
@@ -33,15 +32,12 @@ export async function GET(
       const missingGWs = await checkForMissingGWs(leagueId);
 
       if (missingGWs.length > 0) {
-        console.log(`[League ${leagueId}] Missing GWs detected:`, missingGWs);
 
         // For 1-2 GWs, sync inline (fast enough - 1-2 seconds)
         if (missingGWs.length <= 2) {
-          console.log(`[League ${leagueId}] Syncing ${missingGWs.length} missing GWs inline...`);
           await syncMissingGWs(leagueId, missingGWs);
         } else {
           // For more GWs, trigger background sync to avoid blocking
-          console.log(`[League ${leagueId}] Syncing ${missingGWs.length} missing GWs in background...`);
           syncMissingGWs(leagueId, missingGWs).catch(err => {
             console.error(`[League ${leagueId}] Background GW sync failed:`, err);
           });
@@ -55,12 +51,9 @@ export async function GET(
     });
 
     // Try to fetch H2H league data
-    console.log(`[League ${leagueId}] Starting fetch...`);
     let league;
     try {
-      console.log(`[League ${leagueId}] Fetching H2H league data...`);
       league = await fplApi.getH2HLeague(leagueId);
-      console.log(`[League ${leagueId}] Successfully fetched league: ${league?.league?.name}`);
     } catch (error: any) {
       console.error(`[League ${leagueId}] Error fetching H2H league:`, {
         status: error.response?.status,
@@ -98,11 +91,9 @@ export async function GET(
       );
     }
 
-    console.log(`[League ${leagueId}] Fetching all H2H matches...`);
     let allMatches;
     try {
       allMatches = await fplApi.getAllH2HMatches(leagueId);
-      console.log(`[League ${leagueId}] Fetched ${allMatches.length} total matches`);
     } catch (error: any) {
       console.error(`[League ${leagueId}] Error fetching matches:`, {
         status: error.response?.status,
@@ -135,7 +126,6 @@ export async function GET(
     ).catch(() => {}); // Silent fail
 
     // Store standings and managers (including AVERAGE for odd leagues)
-    console.log(`[League ${leagueId}] Processing ${league.standings.results.length} standings...`);
     let averageCount = 0;
 
     for (const standing of league.standings.results) {
@@ -158,7 +148,6 @@ export async function GET(
 
       if (isAverage) {
         averageCount++;
-        console.log(`[League ${leagueId}] Found AVERAGE entry - this is an odd-numbered league`);
       }
 
       // Store manager info (use -1 for AVERAGE)
@@ -199,11 +188,9 @@ export async function GET(
     }
 
     if (averageCount > 0) {
-      console.log(`[League ${leagueId}] Odd-numbered league detected - included AVERAGE entry`);
     }
 
     // Store basic match data (including matches vs AVERAGE for odd leagues)
-    console.log(`[League ${leagueId}] Processing ${allMatches.length} matches...`);
     let averageMatches = 0;
 
     for (const match of allMatches) {
@@ -251,10 +238,8 @@ export async function GET(
     }
 
     if (averageMatches > 0) {
-      console.log(`[League ${leagueId}] Stored ${averageMatches} matches vs AVERAGE`);
     }
 
-    console.log('League data fetch completed successfully (minimal mode for fast loading)');
 
     // Return minimal data for team selection - detailed stats loaded on-demand later
     return NextResponse.json({

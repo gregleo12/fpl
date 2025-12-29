@@ -86,51 +86,41 @@ export default function SettingsPage() {
     const shouldForce = state.leagueId === '7381' ||
                         confirm('Force clear all existing data before syncing? (Recommended if data looks incorrect)');
 
-    console.log('[Settings] Starting manual sync for league:', state.leagueId, 'force:', shouldForce);
     setIsRefreshingData(true);
     setSyncStatus(shouldForce ? 'Force clearing old data...' : 'Starting sync...');
 
     try {
       const endpoint = `/api/league/${state.leagueId}/sync${shouldForce ? '?force=true' : ''}`;
-      console.log('[Settings] Calling POST', endpoint);
       const response = await fetch(endpoint, {
         method: 'POST'
       });
 
-      console.log('[Settings] POST response status:', response.status);
       const data = await response.json();
-      console.log('[Settings] POST response data:', data);
 
       if (response.ok) {
         setSyncStatus(data.message || 'Sync started...');
-        console.log('[Settings] Sync started, polling for status...');
 
         let pollCount = 0;
         // Poll for completion
         const checkInterval = setInterval(async () => {
           pollCount++;
-          console.log(`[Settings] Poll #${pollCount}: Checking sync status...`);
 
           try {
             const statusResponse = await fetch(`/api/league/${state.leagueId}/sync`);
             const statusData = await statusResponse.json();
-            console.log(`[Settings] Poll #${pollCount} status:`, statusData);
 
             if (statusData.status === 'completed') {
               clearInterval(checkInterval);
-              console.log('[Settings] Sync completed!');
               setSyncStatus('Sync completed! Refreshing page...');
               setTimeout(() => {
                 window.location.reload();
               }, 1000);
             } else if (statusData.status === 'failed') {
               clearInterval(checkInterval);
-              console.log('[Settings] Sync failed');
               setSyncStatus('Sync failed. Please try again.');
               setIsRefreshingData(false);
             } else {
               const statusText = `Syncing... (${statusData.status})`;
-              console.log(`[Settings] Poll #${pollCount}: ${statusText}`);
               setSyncStatus(statusText);
             }
           } catch (pollError) {
@@ -142,7 +132,6 @@ export default function SettingsPage() {
         setTimeout(() => {
           clearInterval(checkInterval);
           if (isRefreshingData) {
-            console.log('[Settings] Sync timeout - taking longer than expected');
             setSyncStatus('Sync taking longer than expected. Check back later.');
             setIsRefreshingData(false);
           }

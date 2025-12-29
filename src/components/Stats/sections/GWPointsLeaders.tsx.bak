@@ -19,6 +19,12 @@ interface Props {
 const MEDAL_ICONS = ['🥇', '🥈', '🥉'];
 
 export function GWPointsLeaders({ data, onViewFullRankings }: Props) {
+  console.log('[K-109 Phase 3] GWPointsLeaders received data:', {
+    dataExists: !!data,
+    dataLength: data?.length || 0,
+    topThree: data?.slice(0, 3).map(m => ({ name: m.player_name, points: m.points })) || []
+  });
+
   if (!data || data.length === 0) {
     return (
       <div className={styles.section}>

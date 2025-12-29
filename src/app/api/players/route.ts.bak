@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
         WHERE table_schema = 'public'
         AND table_name IN ('players', 'teams', 'player_gameweek_stats')
       `);
+      console.log('[Players API] Tables check:', JSON.stringify(tableCheck.rows));
     } catch (dbErr: any) {
       console.error('[Players API] DB connection error:', dbErr.message);
     }
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
     // K-110: Calculate accurate season stats from K-108 data
     const currentGW = await getCurrentGameweek();
     const seasonStats = await calculateAllPlayerSeasonStats(currentGW);
+    console.log(`[K-110] Calculated season stats for ${seasonStats.size} players through GW${currentGW}`);
 
     // Format players
     const players = playersResult.rows.map((p: any) => {
@@ -126,6 +128,7 @@ export async function GET(request: NextRequest) {
         if (calculated.bonus !== p.bonus) diffs.push(`bonus: ${p.bonus}→${calculated.bonus}`);
 
         if (diffs.length > 0) {
+          console.log(`[K-110] ${p.web_name}: ${diffs.join(', ')}`);
         }
 
         return {

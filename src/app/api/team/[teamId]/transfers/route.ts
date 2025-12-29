@@ -45,7 +45,6 @@ export async function GET(
 
     if (isLiveOrUpcoming) {
       // Live/Upcoming GW → Fetch from FPL API (real-time data)
-      console.log(`[Transfers] GW${targetGW} is live/upcoming - fetching from FPL API`);
 
       try {
         const fplTransfersResponse = await fetch(
@@ -117,7 +116,6 @@ export async function GET(
       }
     } else {
       // Completed GW → Use database (K-27 cache)
-      console.log(`[Transfers] GW${targetGW} is completed - fetching from database`);
 
       const transfersResult = await db.query(`
         SELECT

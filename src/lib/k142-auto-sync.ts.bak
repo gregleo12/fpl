@@ -30,6 +30,7 @@ export async function getGWFinishTime(gw: number): Promise<number> {
     // Check if all fixtures have finished
     const allFinished = fixtures.every((f: any) => f.finished);
     if (!allFinished) {
+      console.log(`[K-142] GW${gw} has unfinished fixtures, not ready for sync`);
       return Date.now(); // Return now to fail the buffer check
     }
 
@@ -70,6 +71,7 @@ export async function checkDatabaseHasTeamGWData(entryId: number, gw: number): P
 
     const isValid = hasTeam && hasPlayers;
 
+    console.log(`[K-142b/K-144] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, team=${hasTeam}, players=${hasPlayers}, valid=${isValid}`);
 
     return isValid;
   } catch (error) {
@@ -98,6 +100,7 @@ export async function checkDatabaseHasGWData(leagueId: number, gw: number): Prom
 
     const isValid = hasManagers && hasPlayers;
 
+    console.log(`[K-142c/K-144] checkDatabaseHasGWData: league=${leagueId}, gw=${gw}, managers=${hasManagers}, players=${hasPlayers}, valid=${isValid}`);
 
     return isValid;
   } catch (error) {
@@ -111,6 +114,7 @@ export async function checkDatabaseHasGWData(leagueId: number, gw: number): Prom
  * Calls existing sync functions for all K-27 tables
  */
 export async function syncCompletedGW(leagueId: number, gw: number): Promise<void> {
+  console.log(`[K-142] ===== Starting GW${gw} sync for league ${leagueId} =====`);
 
   try {
     const db = await getDatabase();
@@ -125,8 +129,10 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
     `, [leagueId]);
 
     const managers = managersResult.rows;
+    console.log(`[K-142] Found ${managers.length} managers in league ${leagueId}`);
 
     if (managers.length === 0) {
+      console.log(`[K-142] No managers found, aborting sync`);
       return;
     }
 
@@ -138,6 +144,7 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
     const bootstrap = await bootstrapResponse.json();
 
     // 1. Sync manager GW history (points, transfers, rank)
+    console.log(`[K-142] Syncing manager GW history...`);
     for (const manager of managers) {
       try {
         const historyResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${manager.entry_id}/history/`);
@@ -179,6 +186,7 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
     }
 
     // 2. Sync manager picks
+    console.log(`[K-142] Syncing manager picks...`);
     for (const manager of managers) {
       try {
         const picksResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`);
@@ -211,6 +219,7 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
     }
 
     // 3. Sync manager chips
+    console.log(`[K-142] Syncing manager chips...`);
     for (const manager of managers) {
       try {
         const picksResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${manager.entry_id}/event/${gw}/picks/`);
@@ -235,6 +244,7 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
     }
 
     // 4. Sync transfers
+    console.log(`[K-142] Syncing manager transfers...`);
     for (const manager of managers) {
       try {
         const transfersResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${manager.entry_id}/transfers/`);
@@ -271,13 +281,16 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
 
     // K-146b: Sync player gameweek stats with calculated_points
     // This is required for validation to pass (hasValidPlayerStats checks calculated_points)
+    console.log(`[K-142/K-146b] Syncing player gameweek stats with K-108 calculated_points...`);
     try {
       const result = await syncK108PlayerStats(db, [gw], bootstrap);
+      console.log(`[K-142/K-146b] Player stats sync complete: ${result.synced} players, ${result.errors} errors`);
     } catch (error) {
       console.error(`[K-142/K-146b] Error syncing player stats:`, error);
       // Don't throw - manager data is already synced, player stats can be retried
     }
 
+    console.log(`[K-142] ===== Successfully synced GW${gw} for league ${leagueId} =====`);
 
   } catch (error) {
     console.error(`[K-142] Error syncing GW${gw}:`, error);
@@ -304,6 +317,7 @@ async function checkSafetyBuffer(gw: number): Promise<{ passed: boolean; hoursSi
  */
 export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
   try {
+    console.log(`[K-148] Smart validation for league ${leagueId}...`);
 
     // 1. Get current GW status from FPL API
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
@@ -320,12 +334,15 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
       .sort((a: any, b: any) => a.id - b.id); // Oldest first
 
     if (finishedGWs.length === 0) {
+      console.log('[K-148] No finished GWs yet');
       return;
     }
 
+    console.log(`[K-148] Total finished GWs: ${finishedGWs.length}`);
 
     // 3. K-148: Smart validation - check latest 2 GWs first
     const latestTwo = finishedGWs.slice(-2); // Get last 2 GWs
+    console.log(`[K-148] Checking latest 2 GWs: ${latestTwo.map((e: any) => e.id).join(', ')}`);
 
     const invalidGWs: number[] = [];
 
@@ -335,16 +352,19 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
       const hasValidData = await checkDatabaseHasGWData(leagueId, event.id);
 
       if (!hasValidData) {
+        console.log(`[K-148] GW${event.id}: INVALID`);
         invalidGWs.push(event.id);
       }
     }
 
     if (invalidGWs.length === 0) {
       // Latest 2 are valid → trust older GWs
+      console.log(`[K-148] Latest 2 GWs valid ✓ (2 queries, skipping ${finishedGWs.length - 2} older GWs)`);
       return;
     }
 
     // 4. Found invalid in latest 2 → scan backwards for more
+    console.log(`[K-148] Found ${invalidGWs.length} invalid in latest 2, scanning older GWs...`);
 
     // Check older GWs (skip the 2 we already checked)
     for (let i = finishedGWs.length - 3; i >= 0; i--) {
@@ -352,15 +372,18 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
       const hasValidData = await checkDatabaseHasGWData(leagueId, event.id);
 
       if (!hasValidData) {
+        console.log(`[K-148] GW${event.id}: INVALID`);
         invalidGWs.push(event.id);
       }
 
       // Stop after finding 5 invalid total (rate limit detection)
       if (invalidGWs.length >= 5) {
+        console.log(`[K-148] Found 5 invalid GWs, stopping scan`);
         break;
       }
     }
 
+    console.log(`[K-148] Total invalid GWs found: ${invalidGWs.length} (${invalidGWs.join(', ')})`);
 
     // 5. Apply 10-hour buffer only to LATEST finished GW
     const latestFinishedGW = finishedGWs[finishedGWs.length - 1];
@@ -372,17 +395,21 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
         const { passed, hoursSinceFinished } = await checkSafetyBuffer(gw);
 
         if (!passed) {
+          console.log(`[K-148] GW${gw}: Within 10-hour buffer (${hoursSinceFinished.toFixed(1)}h), skipping`);
           continue;
         }
 
+        console.log(`[K-148] GW${gw}: Buffer passed (${hoursSinceFinished.toFixed(1)}h > ${SYNC_BUFFER_HOURS}h)`);
       } else {
         // Older GWs: sync immediately (no buffer needed)
+        console.log(`[K-148] GW${gw}: Old GW, syncing immediately`);
       }
 
       gwsToSync.push(gw);
     }
 
     if (gwsToSync.length === 0) {
+      console.log(`[K-148] No GWs ready to sync (latest within buffer)`);
       return;
     }
 
@@ -391,18 +418,22 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
     const gwsThisCycle = gwsToSync.slice(0, MAX_GWS_PER_CYCLE);
 
     if (gwsToSync.length > MAX_GWS_PER_CYCLE) {
+      console.log(`[K-148] Limiting to ${MAX_GWS_PER_CYCLE} GWs this cycle. Remaining: ${gwsToSync.length - MAX_GWS_PER_CYCLE}`);
     }
 
     // 7. Sync the GWs
     for (const gw of gwsThisCycle) {
+      console.log(`[K-148] Syncing GW${gw}...`);
       await syncCompletedGW(leagueId, gw);
 
       // Add delay between syncs to avoid rate limiting
       if (gwsThisCycle.indexOf(gw) < gwsThisCycle.length - 1) {
+        console.log(`[K-148] Waiting 1s before next sync...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
+    console.log(`[K-148] Auto-sync complete. Synced ${gwsThisCycle.length} GW(s).`);
 
   } catch (error) {
     console.error('[K-148] Auto-sync error:', error);

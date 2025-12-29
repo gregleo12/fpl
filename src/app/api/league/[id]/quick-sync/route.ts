@@ -14,13 +14,11 @@ export async function POST(
   }
 
   try {
-    console.log(`[Quick Sync API] Starting for league ${leagueId}`);
 
     // Check for missing GWs
     const missingGWs = await checkForMissingGWs(leagueId);
 
     if (missingGWs.length === 0) {
-      console.log(`[Quick Sync API] League ${leagueId} is up to date`);
       return NextResponse.json({
         success: true,
         message: 'Already up to date',
@@ -28,13 +26,11 @@ export async function POST(
       });
     }
 
-    console.log(`[Quick Sync API] League ${leagueId} missing GWs:`, missingGWs);
 
     // Sync missing GWs
     const result = await syncMissingGWs(leagueId, missingGWs);
 
     if (result.success) {
-      console.log(`[Quick Sync API] League ${leagueId} synced GWs:`, result.synced);
       return NextResponse.json({
         success: true,
         message: `Synced ${result.synced.length} gameweek(s)`,

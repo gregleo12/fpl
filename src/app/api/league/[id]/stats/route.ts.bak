@@ -472,6 +472,7 @@ export async function GET(
 
           // K-137: Use appropriate calculator based on GW status
           const dataSource = status === 'completed' ? 'database (K-108c)' : 'FPL API (live)';
+          console.log(`[K-137] Calculating GW${currentGW} scores for ${entryIds.length} teams from ${dataSource}, status: ${status}`);
 
           const scoresPromises = entryIds.map(async (entryId: number) => {
             try {
@@ -502,6 +503,7 @@ export async function GET(
             liveScores.set(entryId, score);
           });
 
+          console.log(`[K-137] Calculated ${liveScores.size} scores from ${dataSource}`);
 
           // Update matches with live scores
           matchesWithLiveScores = allMatches.map((match: any) => {
@@ -529,6 +531,7 @@ export async function GET(
             return match;
           });
 
+          console.log(`[K-137] Updated ${currentGWMatches.length} matches with scores from ${dataSource} for GW${currentGW}`);
         }
       } catch (error) {
         console.error('Error fetching live scores for rankings:', error);

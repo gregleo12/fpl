@@ -26,15 +26,12 @@ pool.on('error', (err, client) => {
 });
 
 pool.on('connect', (client) => {
-  console.log('Database client connected');
 });
 
 pool.on('acquire', (client) => {
-  console.log('Database client acquired from pool');
 });
 
 pool.on('remove', (client) => {
-  console.log('Database client removed from pool');
 });
 
 let initialized = false;
@@ -164,21 +161,17 @@ export async function getDatabase() {
 }
 
 export async function closeDatabase() {
-  console.log('Closing database connection pool...');
   await pool.end();
-  console.log('Database connection pool closed');
 }
 
 // Graceful shutdown handlers
 if (typeof process !== 'undefined') {
   process.on('SIGTERM', async () => {
-    console.log('SIGTERM received, closing database connections...');
     await closeDatabase();
     process.exit(0);
   });
 
   process.on('SIGINT', async () => {
-    console.log('SIGINT received, closing database connections...');
     await closeDatabase();
     process.exit(0);
   });
