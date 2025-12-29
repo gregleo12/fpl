@@ -2,7 +2,178 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.28 (December 29, 2025)
+**Current Version:** v4.3.29 (December 29, 2025)
+
+---
+
+## v4.3.29 - K-145: Auto-Sync ALL Invalid GWs (Not Just Latest) (Dec 29, 2025)
+
+**CRITICAL FIX:** K-142 now checks ALL finished gameweeks for invalid data, not just the latest one.
+
+### The Problem
+
+**Before K-145:**
+```
+checkAndSyncCompletedGW():
+  1. Find LATEST finished GW (e.g., GW19)
+  2. Validate GW19 only
+  3. If invalid → sync GW19
+  4. GW18 with zeros → IGNORED FOREVER ❌
+```
+
+**Example Scenario:**
+1. GW18 has zeros from bad sync
+2. GW19 finishes
+3. K-142 only checks GW19 (latest)
+4. GW18 zeros remain forever
+5. No way to fix without manual intervention
+
+### The Fix
+
+**After K-145:**
+```
+checkAndSyncCompletedGW():
+  1. Find ALL finished GWs (GW1-GW19)
+  2. Check EACH GW for valid data
+  3. Collect all invalid GWs
+  4. Apply 10-hour buffer to latest GW only
+  5. Sync invalid GWs (max 3 per cycle)
+  6. All bad GWs get fixed eventually ✅
+```
+
+**Now:**
+1. GW18 has zeros, GW19 finishes
+2. K-145 checks GW1-19
+3. Detects: `[K-145] GW18: Invalid data detected`
+4. Syncs GW18 immediately (old GW, no buffer)
+5. **Zeros fixed automatically on next load** ✅
+
+### Implementation Details
+
+**1. Check ALL Finished GWs (Not Just Latest)**
+- **Before:** Only checked `latestFinishedGW`
+- **After:** Loops through ALL finished GWs
+- Builds list of invalid GWs
+
+**2. Smart Buffer Logic**
+- **Latest GW:** Apply 10-hour buffer (FPL may still be processing)
+- **Old GWs:** Sync immediately (no buffer needed, been finished for days/weeks)
+- Example:
+  - GW19 finished 5h ago + invalid → Skip (within buffer)
+  - GW18 finished 200h ago + invalid → Sync immediately
+
+**3. Rate Limiting**
+- Max 3 GWs per sync cycle
+- Prevents FPL API overload
+- Remaining GWs queued for next load
+- 1-second delay between syncs
+
+**4. Enhanced Logging**
+```
+[K-145] Checking 18 finished GWs for league 804742...
+[K-145] GW16: Invalid data detected
+[K-145] GW17: Invalid data detected
+[K-145] Found 2 GW(s) with invalid data: 16, 17
+[K-145] GW16: Old GW, syncing immediately
+[K-145] GW17: Old GW, syncing immediately
+[K-145] Syncing GW16...
+[K-145] Waiting 1s before next sync...
+[K-145] Syncing GW17...
+[K-145] Auto-sync complete. Synced 2 GW(s).
+```
+
+### Benefits
+
+1. **No GW Left Behind:** All invalid GWs eventually get fixed
+2. **Self-Healing:** Bad data from weeks ago automatically repaired
+3. **Smart Buffering:** Latest GW respects 10-hour buffer, old GWs don't
+4. **API-Friendly:** Rate limiting prevents overload
+5. **Progressive Fixing:** 3 GWs per load, remaining on next load
+
+### Edge Cases Handled
+
+| Scenario | Behavior |
+|----------|----------|
+| 0 finished GWs | Exit early, no action |
+| All GWs valid | Log success, no sync |
+| 1 invalid GW (old) | Sync immediately |
+| 1 invalid GW (latest, within buffer) | Skip, wait for buffer |
+| 1 invalid GW (latest, past buffer) | Sync |
+| 5 invalid GWs | Sync 3, queue 2 for next load |
+| GW1 invalid, GW18 valid | Sync GW1 only |
+
+### How It Works
+
+**Detection Phase:**
+```typescript
+for (const event of finishedGWs) {
+  const hasValidData = await checkDatabaseHasGWData(leagueId, event.id);
+  if (!hasValidData) {
+    invalidGWs.push(event.id);
+  }
+}
+```
+
+**Buffer Check (Latest GW Only):**
+```typescript
+if (gw === latestFinishedGW.id) {
+  const { passed, hoursSinceFinished } = await checkSafetyBuffer(gw);
+  if (!passed) continue; // Skip, wait for buffer
+}
+```
+
+**Rate-Limited Sync:**
+```typescript
+const gwsThisCycle = gwsToSync.slice(0, 3); // Max 3
+for (const gw of gwsThisCycle) {
+  await syncCompletedGW(leagueId, gw);
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 1s delay
+}
+```
+
+### Combined with K-144
+
+**K-144 (Sync Detection):**
+- Full Resync detects invalid data
+- Quick Sync detects invalid data
+- Returns: All GWs needing sync (missing OR invalid)
+
+**K-145 (Auto-Sync):**
+- Background process checks all finished GWs
+- Detects invalid data using K-144 validation
+- Syncs invalid GWs automatically on league load
+- Rate-limited, smart buffering
+
+**Result:** Fully self-healing system. Bad data gets detected and fixed automatically.
+
+### Technical Notes
+
+**New Helper Function:**
+```typescript
+async function checkSafetyBuffer(gw: number): Promise<{
+  passed: boolean;
+  hoursSinceFinished: number
+}>
+```
+
+**Updated Function:**
+```typescript
+export async function checkAndSyncCompletedGW(leagueId: number): Promise<void>
+```
+- Now loops through ALL finished GWs
+- Collects invalid GWs
+- Applies smart buffer logic
+- Rate-limits syncs
+
+### Files Modified
+
+- `/src/lib/k142-auto-sync.ts` - Check all GWs, smart buffering, rate limiting
+
+### Related
+
+- Builds on K-142 (auto-sync foundation)
+- Uses K-144 (shared validation logic)
+- Completes self-healing architecture
 
 ---
 
