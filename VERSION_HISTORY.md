@@ -2,7 +2,39 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.26 (December 29, 2025)
+**Current Version:** v4.3.27 (December 29, 2025)
+
+---
+
+## v4.3.27 - K-143d: Reorder Season Stats sections (Dec 29, 2025)
+
+**UI IMPROVEMENT:** Swapped positions of Classic Pts and Chips sections in Season Stats leaderboards.
+
+### Change
+
+Reordered Season Stats sections to prioritize Chips usage higher:
+- **Classic Pts:** Moved from position 4 to position 7
+- **Chips:** Moved from position 7 to position 4
+
+### New Section Order
+
+1. Form - Recent performance
+2. Luck - Variance indicator
+3. Captain - Captain points leaderboard
+4. **Chips** - Chip usage ← Moved up from 7th
+5. Streak - Win/loss streaks
+6. GW Records - Best/Worst individual GWs
+7. **Classic Pts** - Points-based rankings ← Moved down from 4th
+8. Team Value - Squad value rankings
+9. Bench Points - Points left on bench
+
+### Technical Details
+
+**File Modified:** `/src/components/Stats/SeasonView.tsx`
+- Swapped section rendering order
+- Updated order comment
+
+**Related:** Part of K-143 Season Stats improvements series (v4.3.23-v4.3.27)
 
 ---
 

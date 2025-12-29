@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.26** (December 29, 2025)
+**v4.3.27** (December 29, 2025)
 
-BUG FIX: Fixed Classic Pts leaderboard showing gross points instead of net points. Was summing raw points without subtracting transfer costs. Now correctly calculates: SUM(points - event_transfers_cost). Example: 1127 gross - 8 hits = 1119 net (correct). Related to v3.4.30 K-65 bug pattern.
+UI IMPROVEMENT: Reordered Season Stats sections - swapped Classic Pts and Chips positions. Chips moved from 7th to 4th, Classic Pts moved from 4th to 7th. New order: Form → Luck → Captain → Chips → Streak → GW Records → Classic Pts → Team Value → Bench Points. Part of K-143 improvements.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

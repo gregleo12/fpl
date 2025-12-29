@@ -151,7 +151,7 @@ export function SeasonView({ leagueId }: Props) {
       {view === 'leaderboards' ? (
         <div className={styles.section}>
           <div className={styles.leaderboards}>
-            {/* K-143: New section order: Form → Luck → Captain → Classic Pts → Streak → GW Records → Chips → Team Value → Bench Points */}
+            {/* K-143: Section order: Form → Luck → Captain → Chips → Streak → GW Records → Classic Pts → Team Value → Bench Points */}
 
             {/* 1. Form - Recent performance */}
             {data.formRankings && data.formRankings.length > 0 && (
@@ -166,10 +166,8 @@ export function SeasonView({ leagueId }: Props) {
             {/* 3. Captain - Captain points leaderboard */}
             <CaptainLeaderboard data={data.leaderboards.captainPoints} />
 
-            {/* 4. Classic Pts - Points-based rankings (replaces Consistency) */}
-            {data.classicPts && data.classicPts.length > 0 && (
-              <ClassicPts data={data.classicPts} />
-            )}
+            {/* 4. Chips - Chip usage */}
+            <ChipPerformance data={data.leaderboards.chipPerformance} />
 
             {/* 5. Streak - Win/loss streaks */}
             <Streaks
@@ -183,8 +181,10 @@ export function SeasonView({ leagueId }: Props) {
               worstData={data.leaderboards.worstGameweeks}
             />
 
-            {/* 7. Chips - Chip usage */}
-            <ChipPerformance data={data.leaderboards.chipPerformance} />
+            {/* 7. Classic Pts - Points-based rankings (replaces Consistency) */}
+            {data.classicPts && data.classicPts.length > 0 && (
+              <ClassicPts data={data.classicPts} />
+            )}
 
             {/* 8. Team Value - Squad value rankings */}
             {data.valueRankings && (
