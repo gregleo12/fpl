@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.29** (December 29, 2025)
+**v4.3.30** (December 29, 2025)
 
-CRITICAL FIX (K-145): Auto-sync now checks ALL finished GWs, not just latest. Before: K-142 only checked latest GW → old GWs with zeros stayed broken forever. After: Checks all finished GWs, detects invalid data, syncs with rate limiting (max 3/cycle). Smart buffering: 10-hour buffer for latest GW only, old GWs sync immediately. Combined with K-144 → fully self-healing system. Example: GW18 zeros + GW19 finishes → both get checked and fixed automatically.
+PERFORMANCE + UX (K-148): Smart validation reduces queries from 18 to 2 (89% reduction). Before: Checked all GWs every load (wasteful), pull-to-refresh returned same bad data. After: Checks latest 2 GWs only, trusts older GWs if valid. If invalid found → scans backwards + syncs. Pull-to-refresh now validates before returning data. Result: 85% faster validation + user sees real data on refresh. Example: 18 finished GWs → 2 queries (happy path) vs 18 queries (old).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

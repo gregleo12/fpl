@@ -294,55 +294,80 @@ async function checkSafetyBuffer(gw: number): Promise<{ passed: boolean; hoursSi
 
 /**
  * Main orchestrator: Check if a completed GW needs syncing and trigger if needed
- * K-145: Now checks ALL finished GWs, not just the latest
+ * K-148: Smart validation - checks latest 2 GWs only, scans backwards only if invalid found
  * Called on league load - runs in background, non-blocking
  */
 export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
   try {
-    console.log(`[K-145] Checking for completed GW sync need for league ${leagueId}...`);
+    console.log(`[K-148] Smart validation for league ${leagueId}...`);
 
     // 1. Get current GW status from FPL API
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     if (!bootstrapResponse.ok) {
-      console.error('[K-145] Failed to fetch bootstrap data');
+      console.error('[K-148] Failed to fetch bootstrap data');
       return;
     }
 
     const data = await bootstrapResponse.json();
 
-    // 2. Find ALL finished GWs (K-145: not just latest)
+    // 2. Find ALL finished GWs
     const finishedGWs = data.events
       .filter((e: any) => e.finished)
       .sort((a: any, b: any) => a.id - b.id); // Oldest first
 
     if (finishedGWs.length === 0) {
-      console.log('[K-145] No finished GWs yet');
+      console.log('[K-148] No finished GWs yet');
       return;
     }
 
-    console.log(`[K-145] Checking ${finishedGWs.length} finished GWs for league ${leagueId}...`);
+    console.log(`[K-148] Total finished GWs: ${finishedGWs.length}`);
 
-    // 3. K-145: Check EACH finished GW for valid data
+    // 3. K-148: Smart validation - check latest 2 GWs first
+    const latestTwo = finishedGWs.slice(-2); // Get last 2 GWs
+    console.log(`[K-148] Checking latest 2 GWs: ${latestTwo.map((e: any) => e.id).join(', ')}`);
+
     const invalidGWs: number[] = [];
 
-    for (const event of finishedGWs) {
+    // Check latest 2 (newest first)
+    for (let i = latestTwo.length - 1; i >= 0; i--) {
+      const event = latestTwo[i];
       const hasValidData = await checkDatabaseHasGWData(leagueId, event.id);
 
       if (!hasValidData) {
-        console.log(`[K-145] GW${event.id}: Invalid data detected`);
+        console.log(`[K-148] GW${event.id}: INVALID`);
         invalidGWs.push(event.id);
       }
     }
 
     if (invalidGWs.length === 0) {
-      console.log(`[K-145] All ${finishedGWs.length} finished GWs have valid data ✓`);
+      // Latest 2 are valid → trust older GWs
+      console.log(`[K-148] Latest 2 GWs valid ✓ (2 queries, skipping ${finishedGWs.length - 2} older GWs)`);
       return;
     }
 
-    console.log(`[K-145] Found ${invalidGWs.length} GW(s) with invalid data: ${invalidGWs.join(', ')}`);
+    // 4. Found invalid in latest 2 → scan backwards for more
+    console.log(`[K-148] Found ${invalidGWs.length} invalid in latest 2, scanning older GWs...`);
 
-    // 4. K-145: Apply 10-hour buffer only to LATEST finished GW
-    // Older GWs should be synced immediately (they've been finished for a while)
+    // Check older GWs (skip the 2 we already checked)
+    for (let i = finishedGWs.length - 3; i >= 0; i--) {
+      const event = finishedGWs[i];
+      const hasValidData = await checkDatabaseHasGWData(leagueId, event.id);
+
+      if (!hasValidData) {
+        console.log(`[K-148] GW${event.id}: INVALID`);
+        invalidGWs.push(event.id);
+      }
+
+      // Stop after finding 5 invalid total (rate limit detection)
+      if (invalidGWs.length >= 5) {
+        console.log(`[K-148] Found 5 invalid GWs, stopping scan`);
+        break;
+      }
+    }
+
+    console.log(`[K-148] Total invalid GWs found: ${invalidGWs.length} (${invalidGWs.join(', ')})`);
+
+    // 5. Apply 10-hour buffer only to LATEST finished GW
     const latestFinishedGW = finishedGWs[finishedGWs.length - 1];
     const gwsToSync: number[] = [];
 
@@ -352,48 +377,48 @@ export async function checkAndSyncCompletedGW(leagueId: number): Promise<void> {
         const { passed, hoursSinceFinished } = await checkSafetyBuffer(gw);
 
         if (!passed) {
-          console.log(`[K-145] GW${gw}: Within 10-hour buffer (${hoursSinceFinished.toFixed(1)}h), skipping`);
+          console.log(`[K-148] GW${gw}: Within 10-hour buffer (${hoursSinceFinished.toFixed(1)}h), skipping`);
           continue;
         }
 
-        console.log(`[K-145] GW${gw}: Buffer passed (${hoursSinceFinished.toFixed(1)}h > ${SYNC_BUFFER_HOURS}h)`);
+        console.log(`[K-148] GW${gw}: Buffer passed (${hoursSinceFinished.toFixed(1)}h > ${SYNC_BUFFER_HOURS}h)`);
       } else {
         // Older GWs: sync immediately (no buffer needed)
-        console.log(`[K-145] GW${gw}: Old GW, syncing immediately`);
+        console.log(`[K-148] GW${gw}: Old GW, syncing immediately`);
       }
 
       gwsToSync.push(gw);
     }
 
     if (gwsToSync.length === 0) {
-      console.log(`[K-145] No GWs ready to sync (latest within buffer)`);
+      console.log(`[K-148] No GWs ready to sync (latest within buffer)`);
       return;
     }
 
-    // 5. K-145: Rate limiting - max 3 GWs per cycle to avoid API overload
+    // 6. Rate limiting - max 3 GWs per cycle
     const MAX_GWS_PER_CYCLE = 3;
     const gwsThisCycle = gwsToSync.slice(0, MAX_GWS_PER_CYCLE);
 
     if (gwsToSync.length > MAX_GWS_PER_CYCLE) {
-      console.log(`[K-145] Limiting to ${MAX_GWS_PER_CYCLE} GWs this cycle. Remaining: ${gwsToSync.length - MAX_GWS_PER_CYCLE} (will sync on next load)`);
+      console.log(`[K-148] Limiting to ${MAX_GWS_PER_CYCLE} GWs this cycle. Remaining: ${gwsToSync.length - MAX_GWS_PER_CYCLE}`);
     }
 
-    // 6. Sync the GWs
+    // 7. Sync the GWs
     for (const gw of gwsThisCycle) {
-      console.log(`[K-145] Syncing GW${gw}...`);
+      console.log(`[K-148] Syncing GW${gw}...`);
       await syncCompletedGW(leagueId, gw);
 
       // Add delay between syncs to avoid rate limiting
       if (gwsThisCycle.indexOf(gw) < gwsThisCycle.length - 1) {
-        console.log(`[K-145] Waiting 1s before next sync...`);
+        console.log(`[K-148] Waiting 1s before next sync...`);
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
-    console.log(`[K-145] Auto-sync complete. Synced ${gwsThisCycle.length} GW(s).`);
+    console.log(`[K-148] Auto-sync complete. Synced ${gwsThisCycle.length} GW(s).`);
 
   } catch (error) {
-    console.error('[K-145] Auto-sync error:', error);
+    console.error('[K-148] Auto-sync error:', error);
     // Don't throw - this is a background operation, shouldn't break the page
   }
 }

@@ -145,9 +145,10 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
       setRefreshKey(prev => prev + 1);
 
       // K-109 Phase 1: Use K-108c for GW points and transfer cost (100% accurate)
+      // K-148: Pass leagueId for smart validation on refresh
       const [teamResponse, infoResponse] = await Promise.all([
         fetch(`/api/gw/${selectedGW}/team/${myTeamId}?t=${Date.now()}`),
-        fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&t=${Date.now()}`)
+        fetch(`/api/team/${myTeamId}/info?gw=${selectedGW}&leagueId=${leagueId}&t=${Date.now()}`)
       ]);
 
       // Get GW points and transfer cost from K-108c

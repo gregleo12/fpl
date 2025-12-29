@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
-import { checkDatabaseHasTeamGWData } from '@/lib/k142-auto-sync';
+import { checkDatabaseHasTeamGWData, checkAndSyncCompletedGW } from '@/lib/k142-auto-sync';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,6 +13,16 @@ export async function GET(
     const { teamId } = params;
     const { searchParams } = new URL(request.url);
     const gwParam = searchParams.get('gw');
+    const leagueIdParam = searchParams.get('leagueId');
+
+    // K-148: Smart validation on refresh (if leagueId provided)
+    if (leagueIdParam) {
+      const leagueId = parseInt(leagueIdParam);
+      if (!isNaN(leagueId)) {
+        console.log(`[K-148] Validating data before refresh for league ${leagueId}...`);
+        await checkAndSyncCompletedGW(leagueId);
+      }
+    }
 
     // Fetch entry info and history in parallel
     const [entryResponse, historyResponse] = await Promise.all([
