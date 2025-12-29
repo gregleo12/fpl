@@ -1026,13 +1026,14 @@ async function getValueRankings(managers: any[], lastFinishedGW: number) {
 
         const picksData = await picksRes.json();
 
-        // FPL API returns:
-        // - entry_history.value = TOTAL value (team + bank) in tenths
-        // - entry_history.bank = In The Bank in tenths
-        // So we need to calculate team value by subtracting bank from total
+        // FPL Picks API (/event/{gw}/picks/) returns entry_history with:
+        // - entry_history.value = TOTAL value (team + bank) in TENTHS
+        // - entry_history.bank = In The Bank in TENTHS
+        // Note: Different from History API (/history/) which returns values in pounds
+        // Example: value=1053 means £105.3m total, bank=20 means £2.0m ITB
         const totalValue = (picksData.entry_history?.value || 1000) / 10;
         const bank = (picksData.entry_history?.bank || 0) / 10;
-        const teamValue = totalValue - bank;
+        const teamValue = totalValue - bank;  // £105.3m - £2.0m = £103.3m
 
         return {
           entry_id: manager.entry_id,
