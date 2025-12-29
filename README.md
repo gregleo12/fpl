@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.45** (December 29, 2025)
+**v4.3.53** (December 29, 2025)
 
-BUG FIX (K-159): Tentative fix for first H2H fixture hidden behind navigation bar on iPhone 17 Pro Max PWA. Root cause: Fixtures container had no top padding on mobile, causing first fixture to render at y=0 while sticky rivalsHeader positioned at ~67px due to larger Dynamic Island safe-area. Fix: Added 0.5rem top padding to mobile container for clearance. Needs user testing on iPhone 17 Pro Max PWA to confirm.
+FEATURE (K-163a Part 2): Completed luck display implementation across all frontend locations. Added match-specific luck to H2H Match Preview and Match Detail Modal with ×10 format (e.g., +26, -18) and color coding (green for positive, red for negative). Luck now displays in H2H section below "Last meeting" showing both players' luck from that matchup. All 7 API endpoints and all 7 frontend displays now complete.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

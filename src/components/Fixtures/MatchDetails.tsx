@@ -77,6 +77,10 @@ interface MatchDetailsProps {
   entry1: PlayerStats;
   entry2: PlayerStats;
   headToHead?: H2HRecord;
+  matchLuck?: { // K-163a: Add luck prop
+    entry_1_luck: number;
+    entry_2_luck: number;
+  } | null;
   differentialPlayers?: DifferentialPlayers;
 }
 
@@ -90,7 +94,7 @@ function getChipAbbreviation(chip: string): string {
   return chipMap[chip.toLowerCase()] || chip;
 }
 
-export function MatchDetails({ entry1, entry2, headToHead, differentialPlayers }: MatchDetailsProps) {
+export function MatchDetails({ entry1, entry2, headToHead, matchLuck, differentialPlayers }: MatchDetailsProps) {
   return (
     <div className={styles.detailsGrid}>
       {/* Header */}
@@ -246,6 +250,35 @@ export function MatchDetails({ entry1, entry2, headToHead, differentialPlayers }
           {headToHead.last_meeting && (
             <div className={styles.lastMeeting}>
               Last meeting: GW{headToHead.last_meeting.event} ({headToHead.last_meeting.entry_1_score}-{headToHead.last_meeting.entry_2_score})
+            </div>
+          )}
+          {/* K-163a: Display match luck */}
+          {matchLuck && (
+            <div className={styles.luckDisplay} style={{
+              marginTop: '8px',
+              display: 'flex',
+              justifyContent: 'space-around',
+              fontSize: '0.85rem',
+              gap: '12px'
+            }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '4px' }}>Luck</div>
+                <div style={{
+                  color: matchLuck.entry_1_luck > 0 ? '#00ff87' : matchLuck.entry_1_luck < 0 ? '#ff4444' : 'inherit',
+                  fontWeight: 'bold'
+                }}>
+                  {matchLuck.entry_1_luck > 0 ? `+${matchLuck.entry_1_luck}` : matchLuck.entry_1_luck}
+                </div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '4px' }}>Luck</div>
+                <div style={{
+                  color: matchLuck.entry_2_luck > 0 ? '#00ff87' : matchLuck.entry_2_luck < 0 ? '#ff4444' : 'inherit',
+                  fontWeight: 'bold'
+                }}>
+                  {matchLuck.entry_2_luck > 0 ? `+${matchLuck.entry_2_luck}` : matchLuck.entry_2_luck}
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -2,7 +2,53 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.45 (December 29, 2025)
+**Current Version:** v4.3.53 (December 29, 2025)
+
+---
+
+## v4.3.53 - K-163a Part 2: Add Luck Display to H2H Match Preview and Match Detail Modal (Dec 29, 2025)
+
+**FEATURE:** Display match-specific luck in H2H Match Preview and Match Detail Modal.
+
+### Changes Made
+
+**Frontend Luck Display Added:**
+1. **H2H Match Preview (Upcoming Matches)**
+   - Added luck display to MatchDetails component in H2H section
+   - Shows both players' luck from last meeting with ×10 format
+   - Color coded: green for positive (+26), red for negative (-18)
+
+2. **Match Detail Modal**
+   - Uses same MatchDetails component, luck displays in modal too
+   - Works on both desktop (inline expansion) and mobile (modal)
+
+### Files Modified
+
+**Components:**
+- `/src/components/Fixtures/FixturesTab.tsx` - Added match_luck to MatchDetailsData interface, passed to components
+- `/src/components/Fixtures/MatchDetails.tsx` - Added matchLuck prop, displays luck in H2H section
+- `/src/components/Fixtures/MatchDetailsModal.tsx` - Added matchLuck prop, passes to MatchDetails
+
+**Display Format:**
+- Uses ×10 scaling (e.g., +26, -18 instead of +2.6, -1.8)
+- Color coding with #00ff87 (green) for positive, #ff4444 (red) for negative
+- Displayed below "Last meeting" in H2H section
+
+### K-163a Completion Status
+
+**Backend (Completed v4.3.51):**
+- ✅ All 7 API endpoints return ×10 luck values
+
+**Frontend (Completed v4.3.52-53):**
+- ✅ Rank Tab (existing)
+- ✅ Luck Index Modal (existing)
+- ✅ GW Rankings Modal (existing)
+- ✅ Team Stats Tab (v4.3.52)
+- ✅ H2H Match Preview (v4.3.53)
+- ✅ Match Detail Modal (v4.3.53)
+- ✅ Awards (existing)
+
+**K-163a NOW COMPLETE** - All luck displays implemented with ×10 format and color coding.
 
 ---
 

@@ -152,6 +152,10 @@ interface MatchDetailsData {
       entry_2_score: number;
     } | null;
   };
+  match_luck?: { // K-163a: Add match luck data
+    entry_1_luck: number;
+    entry_2_luck: number;
+  } | null;
   differential_players?: {
     entry_1: Array<{
       playerName: string;
@@ -714,6 +718,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
                     entry1={details.entry_1}
                     entry2={details.entry_2}
                     headToHead={details.head_to_head}
+                    matchLuck={details.match_luck}
                     differentialPlayers={details.differential_players}
                   />
                 </div>
@@ -736,6 +741,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           entry1={modalData.entry_1}
           entry2={modalData.entry_2}
           headToHead={modalData.head_to_head}
+          matchLuck={modalData.match_luck}
           differentialPlayers={modalData.differential_players}
           onClose={() => setShowModal(false)}
         />

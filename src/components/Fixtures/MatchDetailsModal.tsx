@@ -66,11 +66,15 @@ interface MatchDetailsModalProps {
   entry1: PlayerStats;
   entry2: PlayerStats;
   headToHead?: H2HRecord;
+  matchLuck?: { // K-163a: Add luck prop
+    entry_1_luck: number;
+    entry_2_luck: number;
+  } | null;
   differentialPlayers?: DifferentialPlayers;
   onClose: () => void;
 }
 
-export function MatchDetailsModal({ entry1, entry2, headToHead, differentialPlayers, onClose }: MatchDetailsModalProps) {
+export function MatchDetailsModal({ entry1, entry2, headToHead, matchLuck, differentialPlayers, onClose }: MatchDetailsModalProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Prevent body scroll when modal is open
@@ -120,6 +124,7 @@ export function MatchDetailsModal({ entry1, entry2, headToHead, differentialPlay
             entry1={entry1}
             entry2={entry2}
             headToHead={headToHead}
+            matchLuck={matchLuck}
             differentialPlayers={differentialPlayers}
           />
         </div>
