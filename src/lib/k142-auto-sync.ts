@@ -154,12 +154,14 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
         const gwHistory = historyData.current?.find((h: any) => h.event === gw);
 
         if (gwHistory) {
+          // K-146e: Fixed ON CONFLICT to match actual constraint (entry_id, event) not (league_id, entry_id, event)
           await db.query(`
             INSERT INTO manager_gw_history (
               league_id, entry_id, event, points, total_points, rank, bank,
               value, event_transfers, event_transfers_cost, points_on_bench
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-            ON CONFLICT (league_id, entry_id, event) DO UPDATE SET
+            ON CONFLICT (entry_id, event) DO UPDATE SET
+              league_id = EXCLUDED.league_id,
               points = EXCLUDED.points,
               total_points = EXCLUDED.total_points,
               rank = EXCLUDED.rank,
@@ -226,11 +228,12 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
         const picksData = await picksResponse.json();
 
         if (picksData.active_chip) {
+          // K-146e: Fixed ON CONFLICT to match actual constraint (entry_id, chip_name, event) not (league_id, entry_id, event)
           await db.query(`
             INSERT INTO manager_chips (league_id, entry_id, event, chip_name)
             VALUES ($1, $2, $3, $4)
-            ON CONFLICT (league_id, entry_id, event) DO UPDATE SET
-              chip_name = EXCLUDED.chip_name
+            ON CONFLICT (entry_id, chip_name, event) DO UPDATE SET
+              league_id = EXCLUDED.league_id
           `, [leagueId, manager.entry_id, gw, picksData.active_chip]);
         }
 
@@ -251,15 +254,18 @@ export async function syncCompletedGW(leagueId: number, gw: number): Promise<voi
         const gwTransfers = transfers.filter((t: any) => t.event === gw);
 
         for (const transfer of gwTransfers) {
+          // K-146e: Fixed ON CONFLICT to match actual constraint (entry_id, event, player_in, player_out)
+          // and fixed column names (player_in/out not element_in/out)
           await db.query(`
             INSERT INTO manager_transfers (
-              league_id, entry_id, event, time, element_in, element_in_cost,
-              element_out, element_out_cost
+              league_id, entry_id, event, transfer_time, player_in, player_in_cost,
+              player_out, player_out_cost
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-            ON CONFLICT (league_id, entry_id, event, element_in, element_out) DO UPDATE SET
-              time = EXCLUDED.time,
-              element_in_cost = EXCLUDED.element_in_cost,
-              element_out_cost = EXCLUDED.element_out_cost
+            ON CONFLICT (entry_id, event, player_in, player_out) DO UPDATE SET
+              league_id = EXCLUDED.league_id,
+              transfer_time = EXCLUDED.transfer_time,
+              player_in_cost = EXCLUDED.player_in_cost,
+              player_out_cost = EXCLUDED.player_out_cost
           `, [
             leagueId, manager.entry_id, transfer.event, transfer.time,
             transfer.element_in, transfer.element_in_cost,

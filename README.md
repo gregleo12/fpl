@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.36** (December 29, 2025)
+**v4.3.37** (December 29, 2025)
 
-BUG FIX (K-146d): Simplified admin manual sync to use proven working sync path. Root cause: custom forceSyncGW() had validation bugs, while Settings force sync (using syncCompletedGW) worked perfectly. Fix: Removed all custom validation logic, just call syncCompletedGW() - the battle-tested function used by Settings force sync, K-148 auto-sync (129 leagues), and first-time setup. Admin manual sync now uses exact same code path as working force sync.
+CRITICAL BUG FIX (K-146e): Fixed syncCompletedGW ON CONFLICT constraints. Root cause: K-142's syncCompletedGW used wrong ON CONFLICT clauses that didn't match actual database UNIQUE constraints, causing PostgreSQL errors that were silently swallowed by try-catch blocks. Result: admin manual sync reported success but wrote ZERO manager rows to database. Fix: Corrected all three ON CONFLICT clauses (manager_gw_history, manager_chips, manager_transfers) to match actual constraints, and fixed column names (element_in/out → player_in/out, time → transfer_time). Admin sync now properly writes manager data.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

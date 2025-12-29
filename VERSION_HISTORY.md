@@ -2,7 +2,154 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.36 (December 29, 2025)
+**Current Version:** v4.3.37 (December 29, 2025)
+
+---
+
+## v4.3.37 - K-146e: Fix syncCompletedGW ON CONFLICT Constraints (Dec 29, 2025)
+
+**CRITICAL BUG FIX:** syncCompletedGW silently failed to write manager data because ON CONFLICT constraints didn't match actual database constraints, causing PostgreSQL errors that were swallowed by try-catch blocks.
+
+### The Bug
+
+After K-146d, admin manual sync reported success "10 managers, 760 players" but wrote ZERO manager rows to database:
+
+```sql
+-- League 3537 GW18 after "successful" sync:
+manager_rows: 0 ❌
+player_rows: 760 ✓
+```
+
+Validation grid showed ○ (Missing) because no manager data existed.
+
+### Root Cause Analysis
+
+**Database Investigation:**
+1. Verified FPL API has data ✓ (manager 331132 GW18: 48 points)
+2. Verified managers exist in database ✓ (10 managers in league 3537)
+3. Verified league_standings intact ✓ (10 rows)
+4. Checked if data written to wrong league ✗ (no GW18 data for those managers anywhere)
+
+**Code Investigation:**
+Compared `syncCompletedGW` (broken) vs `syncManagerData` (working Settings force sync):
+
+```typescript
+// syncCompletedGW (K-142) - WRONG
+ON CONFLICT (league_id, entry_id, event) DO UPDATE...
+
+// syncManagerData (leagueSync) - CORRECT
+ON CONFLICT (entry_id, event) DO UPDATE...
+```
+
+**Actual Database Constraints:**
+
+```sql
+-- manager_gw_history
+UNIQUE KEY: (entry_id, event)  -- NOT (league_id, entry_id, event)
+
+-- manager_chips
+UNIQUE KEY: (entry_id, chip_name, event)  -- NOT (league_id, entry_id, event)
+
+-- manager_transfers
+UNIQUE KEY: (entry_id, event, player_in, player_out)  -- NOT (league_id, entry_id, event, element_in, element_out)
+
+-- manager_picks
+UNIQUE KEY: (league_id, entry_id, event, player_id)  -- This one was correct
+```
+
+**What Happened:**
+
+When `syncCompletedGW` tried to INSERT with a non-existent constraint:
+```sql
+ON CONFLICT (league_id, entry_id, event) ...
+```
+
+PostgreSQL threw an error:
+```
+ERROR: there is no unique or exclusion constraint matching the ON CONFLICT specification
+```
+
+But the error was caught by try-catch and only logged to console:
+```typescript
+} catch (error) {
+  console.error(`[K-142] Error syncing history for manager ${manager.entry_id}:`, error);
+  // Continues to next manager!
+}
+```
+
+Result: ALL 10 managers failed silently, zero rows written, but no exception thrown so API reported success.
+
+### The Fix
+
+**Fixed all three ON CONFLICT bugs in `k142-auto-sync.ts`:**
+
+**1. manager_gw_history (lines 156-179)**
+```typescript
+// Before (K-146d)
+ON CONFLICT (league_id, entry_id, event) DO UPDATE SET...
+
+// After (K-146e)
+ON CONFLICT (entry_id, event) DO UPDATE SET
+  league_id = EXCLUDED.league_id,  // Update league_id on conflict
+  points = EXCLUDED.points,
+  ...
+```
+
+**2. manager_chips (lines 230-238)**
+```typescript
+// Before
+ON CONFLICT (league_id, entry_id, event) DO UPDATE SET...
+
+// After
+ON CONFLICT (entry_id, chip_name, event) DO UPDATE SET
+  league_id = EXCLUDED.league_id
+```
+
+**3. manager_transfers (lines 256-273)**
+```typescript
+// Before
+INSERT INTO manager_transfers (
+  league_id, entry_id, event, time, element_in, element_in_cost,
+  element_out, element_out_cost
+) VALUES (...)
+ON CONFLICT (league_id, entry_id, event, element_in, element_out) DO UPDATE SET...
+
+// After
+INSERT INTO manager_transfers (
+  league_id, entry_id, event, transfer_time, player_in, player_in_cost,
+  player_out, player_out_cost
+) VALUES (...)
+ON CONFLICT (entry_id, event, player_in, player_out) DO UPDATE SET
+  league_id = EXCLUDED.league_id,
+  transfer_time = EXCLUDED.transfer_time,
+  ...
+```
+
+**Also fixed column names:** `element_in/out` → `player_in/out`, `time` → `transfer_time` to match actual schema.
+
+### Why This Went Undetected
+
+1. **Settings force sync worked** because `syncManagerData` (in leagueSync.ts) uses correct constraints
+2. **K-148 auto-sync worked** because it calls `syncManagerData`, not `syncCompletedGW`
+3. **K-146d looked correct** because it just called `syncCompletedGW` (which had hidden bugs from K-142)
+4. **First-time setup worked** because it uses `syncManagerData`, not `syncCompletedGW`
+
+`syncCompletedGW` was only used by K-148 auto-sync (which might have been failing silently all along?) and the new K-146 admin tool.
+
+### Expected Behavior (After Fix)
+
+1. Admin manual sync for league 3537 GW18
+2. Deletes existing data for that league/GW
+3. Fetches manager data from FPL API
+4. **Successfully inserts** to manager_gw_history, manager_picks, manager_chips, manager_transfers
+5. Returns correct counts
+6. Validation grid shows ✓ after refresh
+
+### Testing on Staging
+
+Test with league 3537 GW18:
+- Before: 0 manager rows, grid shows ○
+- After: Should write 10 manager rows, grid shows ✓
 
 ---
 
