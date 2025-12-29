@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.21** (December 29, 2025)
+**v4.3.22** (December 29, 2025)
 
-ENHANCEMENT: Added comprehensive K-142b validation and diagnostic logging to Rivals H2H fixtures endpoint. Enhanced status detection with `[K-142c]` logs to diagnose why GW18 fixtures show 0-0 scores. Logs bootstrap fetch, GW status flags, database validation results, and fallback logic decisions.
+BUG FIX: Fixed Rivals H2H showing 0-0 for GW18. Enhanced `checkDatabaseHasGWData()` to validate BOTH manager data AND player stats. K-108c needs both tables - if `player_gameweek_stats` has zeros, all scores are zero. Now uses two-stage validation matching team routes pattern.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

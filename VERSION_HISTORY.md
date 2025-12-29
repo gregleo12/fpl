@@ -2,7 +2,78 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.21 (December 29, 2025)
+**Current Version:** v4.3.22 (December 29, 2025)
+
+---
+
+## v4.3.22 - K-142c FIX: Database Validation Now Checks Player Stats (Dec 29, 2025)
+
+**BUG FIX:** Fixed Rivals H2H showing 0-0 for GW18 by enhancing `checkDatabaseHasGWData()` to validate player stats in addition to manager data.
+
+### The Problem
+
+Despite K-142c enhanced logging deployed in v4.3.21, Rivals H2H still showed 0-0 for all GW18 matches. Logs revealed:
+
+```
+[K-142c] checkDatabaseHasGWData: league=804742, gw=18, rows=20, points=975, valid=true
+[K-136] Calculating scores for 20 entries in GW18 from database (K-108c)...
+```
+
+**Root Cause:** The validation was passing (finding 975 total points in `manager_gw_history`), but K-108c score calculator was returning zeros because `player_gameweek_stats` table had 0 points for GW18.
+
+**The Two-Table Problem:**
+- `manager_gw_history` table: Had GW18 data with 975 pts (synced after matches)
+- `player_gameweek_stats` table: Had 0 pts for GW18 (stale from Dec 26)
+- K-108c (used by fixtures) needs BOTH tables to calculate scores
+- Team routes used `checkDatabaseHasTeamGWData()` which checks both ✓
+- League/fixtures routes used `checkDatabaseHasGWData()` which only checked manager table ✗
+
+### The Fix
+
+Enhanced `checkDatabaseHasGWData()` in `/src/lib/k142-auto-sync.ts` to match the two-stage validation pattern:
+
+```typescript
+// Stage 1: Check manager data
+const managerResult = await db.query(`
+  SELECT COUNT(*) as total_rows, SUM(points) as total_points
+  FROM manager_gw_history
+  WHERE league_id = $1 AND event = $2
+`, [leagueId, gw]);
+
+if (managerRows === 0 || managerPoints === 0) {
+  return false; // No valid manager data
+}
+
+// Stage 2: ALSO check player stats (CRITICAL for K-108c)
+const playerStatsResult = await db.query(`
+  SELECT SUM(total_points) as total_points
+  FROM player_gameweek_stats
+  WHERE gameweek = $1
+`, [gw]);
+
+const playerTotalPoints = parseFloat(playerStatsResult.rows[0]?.total_points || '0');
+return playerTotalPoints > 0; // Only valid if BOTH tables have data
+```
+
+Now logs will show:
+```
+[K-142c] checkDatabaseHasGWData: league=804742, gw=18, managerRows=20, managerPoints=975, playerPoints=0, valid=false
+[K-142c] ✗ Database has invalid/zero data - forcing IN_PROGRESS status to use FPL API
+```
+
+This forces status to IN_PROGRESS → uses FPL API instead of database → shows correct scores.
+
+### Technical Details
+
+**File Modified:** `/src/lib/k142-auto-sync.ts`
+- Function: `checkDatabaseHasGWData()` (lines 99-148)
+- Added player stats validation matching `checkDatabaseHasTeamGWData()` pattern
+- Enhanced logging with `[K-142c]` prefix showing both manager and player points
+
+**Why This Matters:**
+- Fixtures endpoint uses K-108c which calculates scores by joining picks with player stats
+- If `player_gameweek_stats` has zeros, all calculated scores are zero even if picks exist
+- Both tables must have non-zero data for database route to work correctly
 
 ---
 
