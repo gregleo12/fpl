@@ -2,7 +2,96 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.22 (December 29, 2025)
+**Current Version:** v4.3.23 (December 29, 2025)
+
+---
+
+## v4.3.23 - K-143: Season Stats Improvements (Dec 29, 2025)
+
+**FEATURE:** Multiple improvements to Season Stats tab for better organization and insights.
+
+### Change 1: GW Records - Unique Players Only
+
+**Before:** GW Records showed ALL high/low scores, meaning same player could appear multiple times.
+
+**After:** Shows only the **single best/worst performance** for each unique player.
+
+**Implementation:**
+- Groups scores by `entry_id`
+- For Best: Takes MAX(points) per player
+- For Worst: Takes MIN(points) per player
+- Displays unique players ranked by their peak/worst performance
+
+**Why Better:** More meaningful leaderboard showing which players had the absolute best/worst individual performances, without repetition.
+
+### Change 2: Classic Pts - New Points-Based Leaderboard
+
+**Replaced:** "Consistency" table (standard deviation metric)
+
+**New:** "Classic Pts" leaderboard - shows what standings would look like in a Classic league format
+
+**Columns:**
+- Rank: Points-based position (1st = highest total points)
+- Manager: Player/team name
+- Total Pts: Sum of all completed GW points
+- Variance: `H2H_Rank - Pts_Rank`
+
+**Variance Meaning:**
+- **Negative (green):** Doing BETTER in H2H than points suggest (e.g., -8 = 8 spots better)
+- **Positive (red):** Doing WORSE in H2H than points suggest (e.g., +5 = 5 spots worse)
+- **Zero:** H2H rank matches points rank exactly
+
+**Example:**
+- Player ranked 1st in points, 3rd in H2H → Variance: +2 (red - doing worse in H2H)
+- Player ranked 3rd in points, 1st in H2H → Variance: -2 (green - doing better in H2H)
+
+**Why Better:** Shows who's maximizing their points into wins vs. who's accumulating points but losing matches.
+
+### Change 3: Form - Added Average GW Points
+
+**Added:** Average GW points displayed below the total in Form section.
+
+**Display:** `avg: XX.X` (e.g., "avg: 58.2" for 291 pts over 5 GWs)
+
+**Calculation:** `total_form_points / number_of_GWs`
+
+**Why Better:** Provides context for form total - 250 pts over 5 GWs (avg 50) vs. 250 pts over 10 GWs (avg 25) tells different stories.
+
+### Change 4: Reordered Sections
+
+**New Order:**
+1. **Form** - Recent performance (most relevant)
+2. **Luck** - Variance indicator
+3. **Captain** - Captain points leaderboard
+4. **Classic Pts** - Points-based rankings (NEW)
+5. **Streak** - Win/loss streaks
+6. **GW Records** - Best/Worst individual GWs
+7. **Chips** - Chip usage
+8. **Team Value** - Squad value rankings
+9. **Bench Points** - Points left on bench
+
+**Rationale:**
+- Current state first (Form, Luck)
+- Key metrics next (Captain, Classic Pts)
+- Historical/achievements later (Streaks, Records)
+- Asset management last (Chips, Value, Bench)
+
+### Technical Details
+
+**Files Created:**
+- `/src/components/Stats/season/ClassicPts.tsx` - New Classic Pts component
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/season/route.ts`:
+  - Enhanced `calculateBestWorstGameweeks()` to filter unique players (lines 955-985)
+  - Added `calculateClassicPts()` function (lines 1492-1571)
+  - Added classicPts to API response
+- `/src/components/Stats/season/FormRankings.tsx`:
+  - Added average GW calculation and display (lines 68-100)
+- `/src/components/Stats/SeasonView.tsx`:
+  - Added ClassicPts import and interface
+  - Reordered sections in leaderboards view (lines 150-198)
+  - Replaced Consistency with ClassicPts
 
 ---
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.22** (December 29, 2025)
+**v4.3.23** (December 29, 2025)
 
-BUG FIX: Fixed Rivals H2H showing 0-0 for GW18. Enhanced `checkDatabaseHasGWData()` to validate BOTH manager data AND player stats. K-108c needs both tables - if `player_gameweek_stats` has zeros, all scores are zero. Now uses two-stage validation matching team routes pattern.
+FEATURE: K-143 Season Stats improvements. GW Records now shows unique players only (best/worst performance per player). Replaced Consistency with new "Classic Pts" leaderboard showing points-based rankings with H2H variance. Added average GW points to Form section. Reordered sections for better flow: Form → Luck → Captain → Classic Pts → Streak → GW Records → Chips → Team Value → Bench Points.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

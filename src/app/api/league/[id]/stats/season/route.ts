@@ -79,7 +79,7 @@ export async function GET(
     // K-133: Get last finished GW for value rankings (from finishedGWs array)
     const lastFinishedGW = finishedGWs.length > 0 ? finishedGWs[finishedGWs.length - 1] : 1;
 
-    // K-133: Calculate season statistics using ONLY finished GWs
+    // K-133 + K-143: Calculate season statistics using ONLY finished GWs
     const [
       captainLeaderboard,
       chipPerformance,
@@ -90,7 +90,8 @@ export async function GET(
       benchPoints,
       formRankings,
       consistency,
-      luckIndex
+      luckIndex,
+      classicPts
     ] = await Promise.all([
       calculateCaptainLeaderboard(db, leagueId, finishedGWs, managers),
       calculateChipPerformance(db, leagueId, finishedGWs, managers),
@@ -102,6 +103,7 @@ export async function GET(
       calculateFormRankings(db, leagueId, finishedGWs, leagueStandings),
       calculateConsistency(db, leagueId, finishedGWs),
       calculateLuckIndex(db, leagueId, finishedGWs),
+      calculateClassicPts(db, leagueId, finishedGWs, leagueStandings),
     ]);
 
     return NextResponse.json({
@@ -122,6 +124,7 @@ export async function GET(
       formRankings,
       consistency,
       luckIndex,
+      classicPts, // K-143: Classic Pts leaderboard
     });
   } catch (error: any) {
     console.error('Error fetching season stats:', error);
@@ -949,13 +952,42 @@ async function calculateBestWorstGameweeks(
     };
   }
 
-  // Sort for best and worst
-  const sortedBest = [...allScores].sort((a, b) => b.points - a.points);
-  const sortedWorst = [...allScores].sort((a, b) => a.points - b.points);
+  // K-143: Filter to show only ONE entry per unique player (their best/worst performance)
+  // Group by entry_id and take max for best, min for worst
+  type ScoreData = {
+    entry_id: number;
+    player_name: string;
+    team_name: string;
+    event: number;
+    points: number;
+  };
 
-  console.log('[K-133] Best/Worst calculated:', {
+  const bestByPlayer = new Map<number, ScoreData>();
+  const worstByPlayer = new Map<number, ScoreData>();
+
+  allScores.forEach((score: ScoreData) => {
+    // For best: keep score if player not in map OR this score is higher
+    const existingBest = bestByPlayer.get(score.entry_id);
+    if (!existingBest || score.points > existingBest.points) {
+      bestByPlayer.set(score.entry_id, score);
+    }
+
+    // For worst: keep score if player not in map OR this score is lower
+    const existingWorst = worstByPlayer.get(score.entry_id);
+    if (!existingWorst || score.points < existingWorst.points) {
+      worstByPlayer.set(score.entry_id, score);
+    }
+  });
+
+  // Convert maps to arrays and sort
+  const sortedBest = Array.from(bestByPlayer.values()).sort((a, b) => b.points - a.points);
+  const sortedWorst = Array.from(worstByPlayer.values()).sort((a, b) => a.points - b.points);
+
+  console.log('[K-143] Best/Worst calculated (unique players only):', {
     bestTopThree: sortedBest.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points })),
-    worstTopThree: sortedWorst.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points }))
+    worstTopThree: sortedWorst.slice(0, 3).map(s => ({ name: s.player_name, gw: s.event, pts: s.points })),
+    uniquePlayersInBest: bestByPlayer.size,
+    uniquePlayersInWorst: worstByPlayer.size
   });
 
   return {
@@ -1461,6 +1493,87 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
     return luckIndex;
   } catch (error) {
     console.error('[LUCK INDEX] Database error:', error);
+    return [];
+  }
+}
+
+// K-143: Calculate Classic Pts leaderboard (points-based rankings vs H2H rank)
+async function calculateClassicPts(
+  db: any,
+  leagueId: number,
+  completedGameweeks: number[],
+  leagueStandings: any[]
+) {
+  try {
+    console.log('[K-143 CLASSIC PTS] Calculating Classic Pts for league:', leagueId);
+
+    // Get total points for each manager from completed GWs
+    const pointsResult = await db.query(`
+      SELECT
+        entry_id,
+        SUM(points) as total_points
+      FROM manager_gw_history
+      WHERE league_id = $1
+        AND event = ANY($2)
+      GROUP BY entry_id
+      ORDER BY total_points DESC
+    `, [leagueId, completedGameweeks]);
+
+    // Get manager names
+    const managersResult = await db.query(`
+      SELECT m.entry_id, m.player_name, m.team_name
+      FROM managers m
+      JOIN league_standings ls ON ls.entry_id = m.entry_id
+      WHERE ls.league_id = $1
+    `, [leagueId]);
+
+    const managerMap = new Map();
+    managersResult.rows.forEach((row: any) => {
+      managerMap.set(row.entry_id, {
+        player_name: row.player_name,
+        team_name: row.team_name
+      });
+    });
+
+    // Create H2H rank map
+    const h2hRankMap = new Map();
+    leagueStandings.forEach((standing: any) => {
+      h2hRankMap.set(standing.entry_id, standing.rank);
+    });
+
+    // Build Classic Pts data with variance calculation
+    const classicPts = pointsResult.rows.map((row: any, index: number) => {
+      const entryId = row.entry_id;
+      const manager = managerMap.get(entryId);
+      const ptsRank = index + 1; // Points-based rank (1st = highest points)
+      const h2hRank = h2hRankMap.get(entryId) || 0;
+      const variance = h2hRank - ptsRank; // Negative = better in H2H, Positive = worse in H2H
+
+      return {
+        entry_id: entryId,
+        player_name: manager?.player_name || 'Unknown',
+        team_name: manager?.team_name || 'Unknown',
+        total_points: parseInt(row.total_points) || 0,
+        pts_rank: ptsRank,
+        h2h_rank: h2hRank,
+        variance
+      };
+    });
+
+    console.log('[K-143 CLASSIC PTS] Calculated:', {
+      count: classicPts.length,
+      sample: classicPts.slice(0, 3).map((p: any) => ({
+        name: p.player_name,
+        pts: p.total_points,
+        ptsRank: p.pts_rank,
+        h2hRank: p.h2h_rank,
+        variance: p.variance
+      }))
+    });
+
+    return classicPts;
+  } catch (error) {
+    console.error('[K-143 CLASSIC PTS] Database error:', error);
     return [];
   }
 }

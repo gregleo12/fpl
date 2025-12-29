@@ -12,6 +12,7 @@ import { BenchPoints, type BenchPointsData } from './season/BenchPoints';
 import { FormRankings, type FormRankingsData } from './season/FormRankings';
 import { Consistency, type ConsistencyData } from './season/Consistency';
 import { LuckIndex, type LuckIndexData } from './season/LuckIndex';
+import { ClassicPts, type ClassicPtsData } from './season/ClassicPts';
 import { Awards } from './season/Awards';
 
 export interface SeasonStats {
@@ -34,6 +35,7 @@ export interface SeasonStats {
   formRankings?: FormRankingsData[];
   consistency?: ConsistencyData[];
   luckIndex?: LuckIndexData[];
+  classicPts?: ClassicPtsData[]; // K-143: Classic Pts leaderboard
 }
 
 export interface CaptainLeaderboardData {
@@ -145,34 +147,53 @@ export function SeasonView({ leagueId }: Props) {
         </button>
       </div>
 
-      {/* K-125: Conditional rendering based on view */}
+      {/* K-125 + K-143: Conditional rendering based on view */}
       {view === 'leaderboards' ? (
         <div className={styles.section}>
           <div className={styles.leaderboards}>
+            {/* K-143: New section order: Form → Luck → Captain → Classic Pts → Streak → GW Records → Chips → Team Value → Bench Points */}
+
+            {/* 1. Form - Recent performance */}
+            {data.formRankings && data.formRankings.length > 0 && (
+              <FormRankings data={data.formRankings} />
+            )}
+
+            {/* 2. Luck - Variance indicator */}
+            {data.luckIndex && data.luckIndex.length > 0 && (
+              <LuckIndex data={data.luckIndex} />
+            )}
+
+            {/* 3. Captain - Captain points leaderboard */}
             <CaptainLeaderboard data={data.leaderboards.captainPoints} />
-            <ChipPerformance data={data.leaderboards.chipPerformance} />
+
+            {/* 4. Classic Pts - Points-based rankings (replaces Consistency) */}
+            {data.classicPts && data.classicPts.length > 0 && (
+              <ClassicPts data={data.classicPts} />
+            )}
+
+            {/* 5. Streak - Win/loss streaks */}
             <Streaks
               winningStreaks={data.leaderboards.streaks.winning}
               losingStreaks={data.leaderboards.streaks.losing}
             />
+
+            {/* 6. GW Records - Best/Worst individual GWs */}
             <BestWorstGW
               bestData={data.leaderboards.bestGameweeks}
               worstData={data.leaderboards.worstGameweeks}
             />
+
+            {/* 7. Chips - Chip usage */}
+            <ChipPerformance data={data.leaderboards.chipPerformance} />
+
+            {/* 8. Team Value - Squad value rankings */}
             {data.valueRankings && (
               <ValueLeaderboard data={data.valueRankings} />
             )}
+
+            {/* 9. Bench Points - Points left on bench */}
             {data.benchPoints && data.benchPoints.length > 0 && (
               <BenchPoints data={data.benchPoints} />
-            )}
-            {data.formRankings && data.formRankings.length > 0 && (
-              <FormRankings data={data.formRankings} />
-            )}
-            {data.consistency && data.consistency.length > 0 && (
-              <Consistency data={data.consistency} />
-            )}
-            {data.luckIndex && data.luckIndex.length > 0 && (
-              <LuckIndex data={data.luckIndex} />
             )}
           </div>
         </div>

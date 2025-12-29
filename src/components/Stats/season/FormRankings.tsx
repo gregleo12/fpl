@@ -65,6 +65,9 @@ export function FormRankings({ data, myTeamId }: Props) {
     const points = showLast5 ? item.form_points_5 : item.form_points_10;
     const trend = showLast5 ? item.trend_5 : item.trend_10;
     const trendInfo = getTrendDisplay(trend);
+    // K-143: Calculate average GW points
+    const numGWs = showLast5 ? 5 : 10;
+    const average = (points / numGWs).toFixed(1);
 
     return (
       <div className={styles.listItem}>
@@ -90,6 +93,10 @@ export function FormRankings({ data, myTeamId }: Props) {
           )}
           <div className={styles.statValue}>
             {points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
+          </div>
+          {/* K-143: Show average GW points */}
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
+            avg: {average}
           </div>
         </div>
       </div>
