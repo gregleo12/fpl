@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { fplApi } from '@/lib/fpl-api';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string; matchId: string } }
@@ -138,6 +140,20 @@ export async function GET(
           if (historyData.current && historyData.current.length > 0) {
             const currentGWs = historyData.current;
 
+            // K-162: Query database for chip usage (FPL API doesn't include this)
+            const chipsResult = await db.query(`
+              SELECT event, chip_name
+              FROM manager_chips
+              WHERE entry_id = $1
+              ORDER BY event ASC
+            `, [entryId]);
+
+            // Create map of gameweek -> chip_name for quick lookup
+            const chipsByGW = new Map<number, string>();
+            for (const chip of chipsResult.rows) {
+              chipsByGW.set(chip.event, chip.chip_name);
+            }
+
             // Calculate free transfers by tracking through the season
             // IMPORTANT: This calculates FT available FOR the current/upcoming GW,
             // NOT what you'll have after it completes
@@ -165,7 +181,7 @@ export async function GET(
               }
 
               const transfers = gw.event_transfers || 0;
-              const chipUsed = gw.chip_name;
+              const chipUsed = chipsByGW.get(gw.event); // K-162: Get from database
 
               if (chipUsed === 'wildcard' || chipUsed === 'freehit') {
                 // K-162: FH/WC chips CONSUME 1 FT to activate
