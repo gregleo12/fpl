@@ -2,7 +2,78 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.37 (December 29, 2025)
+**Current Version:** v4.3.38 (December 29, 2025)
+
+---
+
+## v4.3.38 - K-153: Fix League Rankings Sticky Header Position (Dec 29, 2025)
+
+**BUG FIX:** League Rankings (Rank tab) table header appeared after the first row instead of at the top of the table on desktop.
+
+### The Bug
+
+On desktop, the League Rankings table header was detached from the table and appeared AFTER the first data row:
+
+```
+Row 1: Bangkok Warriors    14  0  4  W7  42
+HEADER: RANK | TEAM | W | D | L | STREAK | PTS   ← WRONG POSITION
+Row 2: (partially hidden/merged with header)
+```
+
+Expected behavior: Header should appear at TOP of table, above all rows.
+
+### Root Cause
+
+K-152 set desktop sticky header position to `top: calc(5rem + env(safe-area-inset-top))` (80px + safe area) to account for the fixed tabs bar height. However, 5rem was slightly too large, causing the sticky header to be positioned at approximately the same vertical position as the first data row, resulting in overlap and visual misalignment.
+
+**Tabs Bar Height Calculation:**
+- tabsWrapper padding-top: 12px
+- tabs padding: 8px
+- tab content (icon + gap + label + padding): ~54px
+- tabs padding-bottom: 8px
+- tabsWrapper padding-bottom: 8px
+- **Total:** ~90px = 5.625rem
+
+K-152 used 5rem (80px) as an approximation, but this was too close to the actual height, leaving insufficient clearance and causing the header to render at/near the first row position.
+
+### The Fix
+
+**Reduced desktop sticky header `top` value from 5rem to 4rem:**
+
+```css
+/* Before (K-152) */
+@media (min-width: 769px) {
+  .table th {
+    top: calc(5rem + env(safe-area-inset-top, 0px));  /* 80px */
+  }
+}
+
+/* After (K-153) */
+@media (min-width: 769px) {
+  .table th {
+    top: calc(4rem + env(safe-area-inset-top, 0px));  /* 64px */
+  }
+}
+```
+
+**Why 4rem works:**
+- 4rem (64px) provides comfortable clearance below the tabs bar
+- Positions the sticky header at the correct visual location
+- Prevents overlap with the first data row
+- Mobile unchanged (`0.5rem + safe-area` - tabs at bottom)
+
+### Files Changed
+
+- `/src/components/Dashboard/Dashboard.module.css` - Updated `.table th` sticky position for desktop
+
+### Testing
+
+Test on staging:
+1. Open any league's Rank tab on desktop (>769px width)
+2. Verify table header appears at TOP of table (above Row 1)
+3. Scroll down and verify header sticks correctly below tabs bar
+4. Test on mobile to ensure no regression (tabs at bottom)
+5. Test iOS PWA to ensure K-152 fix not broken
 
 ---
 

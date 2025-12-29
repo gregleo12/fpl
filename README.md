@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.37** (December 29, 2025)
+**v4.3.38** (December 29, 2025)
 
-CRITICAL BUG FIX (K-146e): Fixed syncCompletedGW ON CONFLICT constraints. Root cause: K-142's syncCompletedGW used wrong ON CONFLICT clauses that didn't match actual database UNIQUE constraints, causing PostgreSQL errors that were silently swallowed by try-catch blocks. Result: admin manual sync reported success but wrote ZERO manager rows to database. Fix: Corrected all three ON CONFLICT clauses (manager_gw_history, manager_chips, manager_transfers) to match actual constraints, and fixed column names (element_in/out → player_in/out, time → transfer_time). Admin sync now properly writes manager data.
+BUG FIX (K-153): Fixed League Rankings table header appearing after first row on desktop. Root cause: K-152 set sticky header position to `top: 5rem` (80px) but actual tabs bar height is ~90px, causing header to overlap with first data row. Fix: Reduced sticky `top` value from 5rem to 4rem (64px) to provide proper clearance and position header above all table rows. Mobile unchanged (tabs at bottom).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

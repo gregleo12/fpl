@@ -95,9 +95,10 @@
 }
 
 /* K-152: Desktop - tabs at top, need tabs bar height + safe area */
+/* K-153: Reduced from 5rem to 4rem to fix header appearing after first row */
 @media (min-width: 769px) {
   .table th {
-    top: calc(5rem + env(safe-area-inset-top, 0px));
+    top: calc(4rem + env(safe-area-inset-top, 0px));
   }
 }
 
