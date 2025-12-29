@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.16** (December 27, 2025)
+**v4.3.17** (December 29, 2025)
 
-CRITICAL BUG FIX: Auto-subs now trigger immediately when matches finish (finished_provisional: true) instead of waiting until end of gameweek. Users see real-time auto-substitutions as each match completes.
+CRITICAL BUG FIX (K-141): Fixed completed gameweeks showing 0 points in My Team and Rivals. Issue: status detection was using database for finished-but-still-current GWs (database had stale data). Fix: Only use database when next GW has started (finished AND !is_current). Now uses FPL API for GW18 until GW19 starts.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

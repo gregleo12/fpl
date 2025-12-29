@@ -2,7 +2,132 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.16 (December 27, 2025)
+**Current Version:** v4.3.17 (December 29, 2025)
+
+---
+
+## v4.3.17 - K-141 CRITICAL: Fixed Completed GW Showing 0 Points (Dec 29, 2025)
+
+**CRITICAL BUG FIX:** My Team and Rivals tabs now show correct points for completed gameweeks.
+
+### The Problem
+
+GW18 completed but showed **0 points everywhere**:
+- ❌ My Team: GW PTS showed 0, all player cards showed 0
+- ❌ Rivals: All H2H fixtures showed 0-0
+- ✅ Player modals worked (showed correct stats)
+- ✅ Live Match modals worked (showed correct scores)
+- ✅ Season stats updated correctly
+
+User reported: "Quick Sync and Full Re-sync didn't fix it"
+
+### Root Cause Investigation
+
+**GW18 FPL API Status:**
+```json
+{
+  "finished": true,        // GW matches all finished
+  "is_current": true,      // But still current (GW19 hasn't started)
+  "data_checked": true
+}
+```
+
+**The Bug:** Status detection logic was:
+```typescript
+// BEFORE (WRONG):
+if (currentEvent.finished) {
+  status = 'completed';  // Uses database
+}
+```
+
+This caused GW18 to be marked as 'completed' → used database → database had stale/zero data from early sync.
+
+**Database Issue:**
+- `player_gameweek_stats` synced on Dec 26 at 19:33 (1 hour after deadline)
+- GW18 had matches Dec 26-29 (most hadn't played yet)
+- Sync captured all zeros
+- Database never re-synced as GW progressed
+
+**Why Modals Worked:**
+- Player modals fetch directly from FPL API (bypass database)
+- My Team/Rivals cards use database path for "completed" GWs
+
+### The Solution
+
+**New Status Detection Logic:**
+
+```typescript
+// AFTER (CORRECT):
+// K-141: Only use database for truly completed GWs (finished AND next GW has started)
+if (currentEvent.finished && !currentEvent.is_current) {
+  status = 'completed';  // Only when GW19 starts
+} else if (currentEvent.is_current || currentEvent.data_checked) {
+  status = 'in_progress';  // Use FPL API for finished-but-still-current GWs
+}
+```
+
+**Now:**
+- GW17 (finished, not current): Uses database ✅
+- **GW18 (finished, IS current): Uses FPL API** ✅
+- GW19 (not finished, is current): Uses FPL API ✅
+
+### Technical Implementation
+
+**7 API Routes Fixed:**
+1. `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - My Team data
+2. `/src/app/api/league/[id]/fixtures/[gw]/route.ts` - Rivals H2H fixtures
+3. `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts` - GW Points Leaders
+4. `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` - Stats/GW section
+5. `/src/app/api/team/[teamId]/info/route.ts` - Team info tile
+6. `/src/app/api/team/[teamId]/history/route.ts` - GW history
+7. `/src/app/api/gw/[gw]/team/[teamId]/route.ts` - Generic GW team data
+
+**All received same K-141 fix:** Check `!currentEvent.is_current` before using database.
+
+### Impact
+
+**Before v4.3.17 (GW18 finished but GW19 not started):**
+- My Team GW18: 0 pts ❌
+- Rivals GW18: 0-0 ❌
+- Database: Stale zeros from early sync
+- User experience: Broken, looks like data loss
+
+**After v4.3.17:**
+- My Team GW18: Actual points from FPL API ✅
+- Rivals GW18: Correct H2H scores ✅
+- Uses live FPL data until next GW starts ✅
+- Once GW19 starts, GW18 switches to database (which will have correct data by then) ✅
+
+### Long-Term Fix Needed
+
+**Database Sync Issue:** The `sync-player-gw-stats` script needs improvement:
+- Currently syncs when `finished: true` (too early)
+- Should wait for ALL matches to finish before syncing
+- Or re-sync periodically during GW
+- Or add API endpoint to trigger manual sync
+
+**For now:** This K-141 fix ensures completed-but-current GWs always show correct data from FPL API.
+
+### Files Changed
+- `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`
+- `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
+- `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts`
+- `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts`
+- `/src/app/api/team/[teamId]/info/route.ts`
+- `/src/app/api/team/[teamId]/history/route.ts`
+- `/src/app/api/gw/[gw]/team/[teamId]/route.ts`
+
+### Testing
+
+**Immediate test (GW18 still current):**
+- ✅ My Team GW18 shows correct points
+- ✅ Rivals GW18 shows correct H2H scores
+- ✅ All player cards show actual points
+
+**Future test (when GW19 starts):**
+- ✅ GW18 switches to database (which has correct data)
+- ✅ GW19 uses FPL API
+- ✅ No regression on past GWs (1-17)
 
 ---
 

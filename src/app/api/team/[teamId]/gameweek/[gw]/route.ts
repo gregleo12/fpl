@@ -40,7 +40,10 @@ export async function GET(
 
     let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
     if (currentEvent) {
-      if (currentEvent.finished) {
+      // K-141: Only use database for truly completed GWs (finished AND next GW has started)
+      // A finished GW that's still current means we're in the gap between GW end and next GW start
+      // In this case, use FPL API (which has final data) instead of database (which may be stale)
+      if (currentEvent.finished && !currentEvent.is_current) {
         status = 'completed';
       } else if (currentEvent.is_current || currentEvent.data_checked) {
         status = 'in_progress';

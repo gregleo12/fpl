@@ -69,7 +69,8 @@ export async function GET(
     // Determine gameweek status
     let status: 'upcoming' | 'in_progress' | 'completed' = 'in_progress';
     if (currentEvent) {
-      if (currentEvent.finished) {
+      // K-141: Only use database for truly completed GWs (finished AND next GW has started)
+      if (currentEvent.finished && !currentEvent.is_current) {
         status = 'completed';
       } else if (!currentEvent.is_current && !currentEvent.data_checked) {
         status = 'upcoming';

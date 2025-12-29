@@ -39,7 +39,8 @@ export async function GET(
       const currentEvent = bootstrapData.events?.find((e: any) => e.is_current);
       if (currentEvent) {
         currentGW = currentEvent.id;
-        if (currentEvent.finished) {
+        // K-141: Only use database for truly completed GWs (finished AND next GW has started)
+        if (currentEvent.finished && !currentEvent.is_current) {
           currentGWStatus = 'completed';
         } else if (!currentEvent.is_current && !currentEvent.data_checked) {
           currentGWStatus = 'upcoming';
