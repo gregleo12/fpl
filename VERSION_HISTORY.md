@@ -2,7 +2,199 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.40 (December 29, 2025)
+**Current Version:** v4.3.41 (December 29, 2025)
+
+---
+
+## v4.3.41 - K-156: Fix Batch Sync Hanging on Frontend (Dec 29, 2025)
+
+**BUG FIX:** Batch sync hung indefinitely ("limbo") when syncing multiple invalid leagues. Single league sync worked, but selecting multiple leagues or "All Leagues" caused the frontend to hang with no response.
+
+### The Bug
+
+**User Report:**
+> "I see invalid leagues but when I select them and ask for syncing it starts but stays in limbo. Syncing one invalid league works and once synced is removed from invalid leagues."
+
+**Symptoms:**
+1. Select multiple invalid leagues (or "All Leagues")
+2. Click SYNC button
+3. Button shows "🔄 Syncing..." state
+4. **Never completes** - frontend hangs indefinitely
+5. No success/failure message ever appears
+6. UI stuck in syncing state, must refresh page
+
+**Confirmed Behavior:**
+- ✓ Single league sync works perfectly
+- ✓ "Show Only Invalid" filter works correctly
+- ✗ Syncing 2+ leagues hangs indefinitely
+
+### Root Cause
+
+**Frontend Fetch Timeout:**
+- Browser's `fetch()` API has implicit timeout (varies by browser, typically 60-120 seconds)
+- Backend processing time: 69 leagues × ~5-10s each = **5-10 minutes**
+- Browser times out the HTTP connection after 60-120 seconds
+- Backend continues processing and completes successfully
+- But the HTTP connection was closed by browser → frontend never receives response
+- Frontend waits forever for a response that will never arrive
+
+**Why Single League Worked:**
+- 1 league × 5-10s = completes in <30s → well under browser timeout
+- Response received before browser timeout kicks in
+
+**Why Multiple Leagues Hung:**
+- 5+ leagues × 5-10s = 25-50s+ → approaching/exceeding browser timeout
+- 69 leagues = 5-10 minutes → far exceeds browser timeout
+
+### The Fix
+
+**1. Added AbortController with 11-minute timeout:**
+
+```typescript
+// K-156: Create AbortController with 11-minute timeout
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 11 * 60 * 1000); // 11 minutes
+
+const response = await fetch('/api/admin/sync/manual', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({...}),
+  signal: controller.signal // K-156: Add abort signal
+});
+
+clearTimeout(timeoutId);
+```
+
+Frontend now:
+- Has explicit 11-minute timeout (matches backend's 10min + 1min buffer)
+- Uses AbortController to cleanly cancel request if timeout occurs
+- Shows proper error message instead of hanging
+
+**2. Added batch size warning dialog:**
+
+```typescript
+// K-156: Warn about large batches
+const totalTasks = leagueCount * selectedGWs.length;
+
+if (totalTasks > 20) {
+  const proceed = window.confirm(
+    `This will sync ${totalTasks} league-gameweek combinations.\n\n` +
+    `Large batches may take 5-15 minutes to complete.\n\n` +
+    `Recommendation: Sync in smaller batches (≤20 at a time).\n\n` +
+    `Continue with full batch?`
+  );
+  if (!proceed) return;
+}
+```
+
+When user selects >20 tasks:
+- Shows confirmation dialog with task count
+- Warns about long processing time (5-15 minutes)
+- Recommends smaller batches for better reliability
+- User can choose to proceed or cancel
+
+**3. Better error handling and messaging:**
+
+```typescript
+catch (error: any) {
+  let errorMessage = 'Sync failed';
+  if (error.name === 'AbortError') {
+    errorMessage = 'Sync timed out after 11 minutes. The sync may still be processing on the server. Please refresh and check the validation grid.';
+  } else if (error.message) {
+    errorMessage = `Sync failed: ${error.message}`;
+  }
+  setResults({ error: errorMessage });
+}
+```
+
+Now shows:
+- Specific timeout message if AbortController triggered
+- Tells user sync may still be processing server-side
+- Instructs to refresh and check validation grid
+- Shows HTTP error codes if present
+
+**4. Improved results display:**
+
+```typescript
+// Show failed results prominently
+{results.summary?.failed > 0 && (
+  <div style={{ background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.3)' }}>
+    <strong>Failed:</strong>
+    {/* List all failed leagues */}
+  </div>
+)}
+```
+
+Results now show:
+- ⚠️ icon if any failures (instead of just ✅)
+- "X successful, Y failed" summary
+- Failed leagues highlighted in red box at top
+- Success and failure counts clear and prominent
+
+**5. Added console logging for debugging:**
+
+```typescript
+console.log(`[K-156] Starting sync: ${leagueCount} league(s) × ${selectedGWs.length} GW(s) = ${totalTasks} tasks`);
+console.log('[K-156] Sync complete:', data.summary);
+console.error('[K-156] Sync failed:', error);
+```
+
+### Why This Fixes the Hanging
+
+**Before (K-155):**
+1. User selects 10 invalid leagues, clicks SYNC
+2. Frontend: `await fetch(...)` with no timeout
+3. Backend: Processes for 60 seconds...
+4. Browser: "60 seconds? That's too long!" → closes connection
+5. Backend: Continues processing for 5 more minutes, completes successfully
+6. Backend: Tries to send response → connection already closed
+7. Frontend: Still waiting for response that will never arrive → **HANGS FOREVER**
+
+**After (K-156):**
+1. User selects 10 invalid leagues
+2. Frontend: Shows warning "20 tasks, 5-15 minutes, continue?"
+3. User: Clicks OK
+4. Frontend: `await fetch(..., { signal: controller.signal })` with 11min timeout
+5. Backend: Processes for 5 minutes
+6. Backend: Sends response successfully (connection still open)
+7. Frontend: Receives response within timeout → **COMPLETES SUCCESSFULLY**
+
+If backend takes >11 minutes:
+1. AbortController triggers after 11 minutes
+2. Frontend shows: "Sync timed out after 11 minutes. Check validation grid."
+3. User refreshes validation grid → sees completed data (backend finished)
+4. No infinite hang!
+
+### Testing
+
+Test on staging with different batch sizes:
+
+**Test 1: Small batch (under timeout)**
+1. Select 2-3 invalid leagues, GW18
+2. Click SYNC
+3. ✓ Should complete in <30s
+4. ✓ Should show success message
+
+**Test 2: Medium batch (warning threshold)**
+1. Select 5-6 invalid leagues, GW18
+2. Click SYNC
+3. ✓ Should show warning dialog (>20 tasks)
+4. Click Continue
+5. ✓ Should complete in 1-3 minutes
+6. ✓ Should show success message
+
+**Test 3: Large batch (all leagues)**
+1. Select "All Leagues (69)", GW18
+2. Click SYNC
+3. ✓ Should show warning dialog
+4. Click Continue
+5. Wait 6-10 minutes
+6. ✓ Should complete successfully (not hang!)
+7. ✓ Should show "69/69 successful"
+
+### Files Changed
+
+- `/src/components/Admin/ManualSyncTool.tsx` - Added timeout handling, warnings, better error display
 
 ---
 

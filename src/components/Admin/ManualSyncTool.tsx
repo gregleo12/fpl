@@ -106,10 +106,31 @@ export function ManualSyncTool() {
   const runSync = async () => {
     if (selectedGWs.length === 0) return;
 
+    // K-156: Calculate total tasks
+    const leagueCount = selectedLeague === 'all' ? filteredLeagues.length : 1;
+    const totalTasks = leagueCount * selectedGWs.length;
+
+    // K-156: Warn about large batches
+    if (totalTasks > 20) {
+      const proceed = window.confirm(
+        `This will sync ${totalTasks} league-gameweek combinations.\n\n` +
+        `Large batches may take 5-15 minutes to complete.\n\n` +
+        `Recommendation: Sync in smaller batches (≤20 at a time) for better reliability.\n\n` +
+        `Continue with full batch?`
+      );
+      if (!proceed) return;
+    }
+
     setSyncing(true);
     setResults(null);
 
+    // K-156: Create AbortController with 11-minute timeout (slightly longer than backend's 10min)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 11 * 60 * 1000); // 11 minutes
+
     try {
+      console.log(`[K-156] Starting sync: ${leagueCount} league(s) × ${selectedGWs.length} GW(s) = ${totalTasks} tasks`);
+
       const response = await fetch('/api/admin/sync/manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,18 +138,37 @@ export function ManualSyncTool() {
           leagueIds: selectedLeague === 'all' ? 'all' : [selectedLeague],
           gameweeks: selectedGWs.sort((a, b) => a - b),
           force: true
-        })
+        }),
+        signal: controller.signal // K-156: Add abort signal
       });
 
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const data = await response.json();
+      console.log('[K-156] Sync complete:', data.summary);
       setResults(data);
 
       // Refresh status after sync
       await fetchStatus();
 
-    } catch (error) {
-      console.error('Sync failed:', error);
-      setResults({ error: 'Sync failed' });
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+
+      console.error('[K-156] Sync failed:', error);
+
+      // K-156: Better error messages
+      let errorMessage = 'Sync failed';
+      if (error.name === 'AbortError') {
+        errorMessage = 'Sync timed out after 11 minutes. The sync may still be processing on the server. Please refresh and check the validation grid.';
+      } else if (error.message) {
+        errorMessage = `Sync failed: ${error.message}`;
+      }
+
+      setResults({ error: errorMessage });
     }
 
     setSyncing(false);
@@ -257,9 +297,23 @@ export function ManualSyncTool() {
           ) : (
             <>
               <div className={styles.resultsSummary}>
-                ✅ {results.summary?.success || 0} / {results.summary?.total || 0} successful
-                ({((results.summary?.totalDuration || 0) / 1000).toFixed(1)}s)
+                {/* K-156: Show success/failed counts with color coding */}
+                {results.summary?.failed > 0 ? '⚠️' : '✅'}
+                {' '}{results.summary?.success || 0} / {results.summary?.total || 0} successful
+                {results.summary?.failed > 0 && `, ${results.summary.failed} failed`}
+                {' '}({((results.summary?.totalDuration || 0) / 1000).toFixed(1)}s)
               </div>
+              {/* K-156: Show failed results first if any */}
+              {results.summary?.failed > 0 && (
+                <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.3)', borderRadius: '4px' }}>
+                  <strong>Failed:</strong>
+                  {results.results?.filter((r: any) => r.status === 'error').map((r: any, i: number) => (
+                    <div key={i} style={{ marginTop: '0.25rem', fontSize: '0.85rem' }}>
+                      League {r.leagueId} GW{r.gw}: {r.error}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className={styles.resultsList}>
                 {results.results?.map((r: any, i: number) => (
                   <div key={i} className={`${styles.resultItem} ${styles[r.status]}`}>

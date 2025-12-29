@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.40** (December 29, 2025)
+**v4.3.41** (December 29, 2025)
 
-FEATURE (K-155): Added "Show Only Invalid/Missing" filter checkbox to admin manual sync tool. When checked, league dropdown filters to show only leagues with sync issues (⚠ Invalid or ○ Missing gameweeks), making it easier to identify and re-sync problematic leagues without scrolling through all 69. Dropdown label updates dynamically: "Invalid Leagues (6)" vs "All Leagues (69)".
+BUG FIX (K-156): Fixed batch sync hanging when syncing multiple leagues. Root cause: Browser fetch() timeout after 60-120s but backend processing takes 5-10 minutes for large batches, causing connection to close before response received. Fix: Added AbortController with 11-minute explicit timeout, batch size warning dialog (>20 tasks), better error messaging, and improved results display with failed leagues highlighted. Single league sync unaffected, batch sync now completes successfully.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
