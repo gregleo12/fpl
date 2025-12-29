@@ -2,7 +2,38 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.42 (December 29, 2025)
+**Current Version:** v4.3.43 (December 29, 2025)
+
+---
+
+## v4.3.43 - K-157: Fix League Rankings Sticky Header Position (Dec 29, 2025)
+
+**BUG FIX:** League Rankings table header appeared after the first data row instead of staying at the top, causing column headers to "move around."
+
+### The Bug
+- Header row (RANK, TEAM, W, D, L, STREAK, PTS) appeared AFTER first data row
+- Expected: `[HEADER] → [Row 1] → [Row 2]...`
+- Actual: `[Row 1] → [HEADER] → [Row 2]...` ❌
+
+### Root Cause
+- Desktop tab bar actual height: ~102px (6.4rem)
+- Sticky header `top` value: `4rem` (64px) - **38px too small**
+- Header stuck at 64px from top, inside the tab bar area
+- First row appeared above header
+
+### The Fix
+Changed sticky top from `4rem` (64px) → `6.5rem` (104px):
+```css
+@media (min-width: 769px) {
+  .table th {
+    top: calc(6.5rem + env(safe-area-inset-top, 0px)); /* Was 4rem */
+  }
+}
+```
+
+Header now sticks just below tab bar at correct position.
+
+**File Changed:** `src/components/Dashboard/Dashboard.module.css`
 
 ---
 

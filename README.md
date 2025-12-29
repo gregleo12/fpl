@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.42** (December 29, 2025)
+**v4.3.43** (December 29, 2025)
 
-P0-CRITICAL BUG FIX: Fixed production crash causing `TypeError: Cannot read properties of null (reading 'toLocaleString')` in stats/rankings components. Root cause: Multiple components called `.toLocaleString()` on null/undefined values without null checks. Fix: Added null coalescing operator (`value ?? 0`) to ALL toLocaleString calls in RankProgressModal, GWRankModal, PointsAnalysisModal, MyTeamTab, and PlayerDetailModal. Empty/null data now safely displays "0" instead of crashing. Ready for immediate production deployment.
+BUG FIX (K-157): Fixed League Rankings table header appearing after first data row instead of at top. Root cause: Sticky header `top` value was 4rem (64px) but desktop tab bar is ~102px tall, causing 38px gap where header appeared inside table content. Fix: Increased sticky top from 4rem → 6.5rem (104px) to properly clear tab bar. Headers now stay at top of table correctly on desktop.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
