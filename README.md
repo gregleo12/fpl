@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.24** (December 29, 2025)
+**v4.3.25** (December 29, 2025)
 
-BUG FIX: Fixed Classic Pts leaderboard showing "Unknown" for all manager names. Type mismatch in Map keys - PostgreSQL entry_id wasn't being consistently converted to numbers. Also fixed display to show top 3 preview items instead of 5 to match other leaderboard cards.
+UI IMPROVEMENT: Form component simplified - changed title from "Form Rankings" to "Form". Reorganized stats layout: points first, then trend arrow and average on same line below. Average now in parentheses (avg: XX.X) for clarity.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -2,7 +2,42 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.24 (December 29, 2025)
+**Current Version:** v4.3.25 (December 29, 2025)
+
+---
+
+## v4.3.25 - UI FIX: Form component title and layout improvements (Dec 29, 2025)
+
+**UI IMPROVEMENT:** Simplified Form component title and improved stats layout for better readability.
+
+### Changes
+
+1. **Title Simplified:**
+   - Changed from "Form Rankings" → "Form"
+   - More concise, matches other section naming
+
+2. **Stats Layout Reorganized:**
+   - **Before:** Trend arrow above points, average below
+     ```
+           ↑11
+     387 PTS
+    avg: 77.4
+     ```
+   - **After:** Points first, trend and average on same line below
+     ```
+     387 PTS
+    ↑11  (avg: 77.4)
+     ```
+   - Average now in parentheses to avoid confusion with trend
+   - Both secondary stats aligned on same line for cleaner look
+
+### Technical Details
+
+**File Modified:** `/src/components/Stats/season/FormRankings.tsx`
+- Updated title from "Form Rankings" to "Form" (lines 33, 58, 150)
+- Restructured stats display (lines 81-107)
+- Moved trend arrow below points, on same line as average
+- Added parentheses around average: `(avg: XX.X)`
 
 ---
 

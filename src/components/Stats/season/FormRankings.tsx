@@ -30,7 +30,7 @@ export function FormRankings({ data, myTeamId }: Props) {
         <div className={styles.cardHeader}>
           <h4 className={styles.cardTitle}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Flame size={18} color="#00ff87" /> Form Rankings
+              <Flame size={18} color="#00ff87" /> Form
             </div>
           </h4>
         </div>
@@ -55,7 +55,7 @@ export function FormRankings({ data, myTeamId }: Props) {
 
   const title = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-      <Flame size={18} color="#00ff87" /> Form Rankings
+      <Flame size={18} color="#00ff87" /> Form
     </div>
   );
 
@@ -79,24 +79,30 @@ export function FormRankings({ data, myTeamId }: Props) {
           <div className={styles.meta}>{item.team_name}</div>
         </div>
         <div className={styles.stats}>
-          {trend !== 0 && (
-            <div
-              style={{
-                fontSize: '0.875rem',
-                fontWeight: 700,
-                color: trendInfo.color,
-                marginBottom: '0.125rem'
-              }}
-            >
-              {trendInfo.arrow}{trendInfo.value}
-            </div>
-          )}
           <div className={styles.statValue}>
             {points} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', textTransform: 'uppercase' }}>PTS</span>
           </div>
-          {/* K-143: Show average GW points */}
-          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: '0.125rem' }}>
-            avg: {average}
+          {/* K-143: Show trend and average on same line below points */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: '0.75rem',
+            marginTop: '0.125rem'
+          }}>
+            {trend !== 0 && (
+              <div
+                style={{
+                  fontWeight: 700,
+                  color: trendInfo.color
+                }}
+              >
+                {trendInfo.arrow}{trendInfo.value}
+              </div>
+            )}
+            <div style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+              (avg: {average})
+            </div>
           </div>
         </div>
       </div>
@@ -141,7 +147,7 @@ export function FormRankings({ data, myTeamId }: Props) {
       <FullRankingModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={`Form Rankings - Full Rankings${showLast5 ? ' (Last 5)' : ' (Last 10)'}`}
+        title={`Form - Full Rankings${showLast5 ? ' (Last 5)' : ' (Last 10)'}`}
         icon={<Flame size={18} color="#00ff87" />}
         data={sortedData}
         renderItem={renderItem}
