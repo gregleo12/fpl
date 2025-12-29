@@ -1,0 +1,262 @@
+.container {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #00ff87;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.select {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9375rem;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #00ff87;
+}
+
+.gwGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+}
+
+.gwButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 50px;
+}
+
+.gwButton:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.gwButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.gwButton.selected {
+  border-color: #00ff87;
+  background: rgba(0, 255, 135, 0.1);
+}
+
+.gwButton.valid .gwIndicator {
+  color: #00ff87;
+}
+
+.gwButton.invalid .gwIndicator {
+  color: #ffaa00;
+}
+
+.gwButton.missing .gwIndicator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.gwButton.not_finished .gwIndicator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.gwNumber {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.gwIndicator {
+  font-size: 0.875rem;
+  margin-top: 2px;
+}
+
+.legend {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.validIndicator {
+  color: #00ff87;
+}
+
+.invalidIndicator {
+  color: #ffaa00;
+}
+
+.missingIndicator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.summary {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.syncButton {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00ff87 0%, #00cc6a 100%);
+  border: none;
+  border-radius: 8px;
+  color: #0e0a1f;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.syncButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.syncButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 255, 135, 0.3);
+}
+
+.results {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results h3 {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resultsSummary {
+  font-size: 1rem;
+  color: #00ff87;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.resultsList {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.resultItem {
+  padding: 0.5rem;
+  margin-bottom: 0.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.resultItem.success {
+  border-left: 3px solid #00ff87;
+}
+
+.resultItem.error {
+  border-left: 3px solid #ff6b6b;
+  color: #ff6b6b;
+}
+
+.resultError {
+  color: #ff6b6b;
+  font-weight: 600;
+}
+
+.loading,
+.error {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+@media (max-width: 768px) {
+  .gwGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .gwGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+}

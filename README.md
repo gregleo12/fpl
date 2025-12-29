@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.30** (December 29, 2025)
+**v4.3.31** (December 29, 2025)
 
-PERFORMANCE + UX (K-148): Smart validation reduces queries from 18 to 2 (89% reduction). Before: Checked all GWs every load (wasteful), pull-to-refresh returned same bad data. After: Checks latest 2 GWs only, trusts older GWs if valid. If invalid found → scans backwards + syncs. Pull-to-refresh now validates before returning data. Result: 85% faster validation + user sees real data on refresh. Example: 18 finished GWs → 2 queries (happy path) vs 18 queries (old).
+ADMIN TOOL (K-146): Visual interface to manually sync specific gameweeks with status indicators. Admins can now see which GWs have valid/invalid/missing data, select specific GWs (or use quick select buttons), and trigger one-click syncs without SSH access. Features: GW grid with color-coded status (✓ valid, ⚠ invalid, ○ missing), league selector (single or all), real-time progress feedback, and detailed results. Reuses K-142 sync logic + K-144 validation. Available at /admin → Sync tab.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

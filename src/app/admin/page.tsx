@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import styles from './admin.module.css';
+import { ManualSyncTool } from '@/components/Admin/ManualSyncTool';
 
 interface HealthData {
   healthy: boolean;
@@ -98,7 +99,7 @@ export default function AdminPage() {
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'health' | 'analytics'>('analytics');
+  const [activeTab, setActiveTab] = useState<'health' | 'analytics' | 'sync'>('analytics');
   const [aggregating, setAggregating] = useState(false);
   const [aggregationResult, setAggregationResult] = useState<any>(null);
   const [metricType, setMetricType] = useState<'managers' | 'requests'>('managers');
@@ -254,6 +255,12 @@ export default function AdminPage() {
             onClick={() => setActiveTab('analytics')}
           >
             📊 Analytics
+          </button>
+          <button
+            className={`${styles.tabButton} ${activeTab === 'sync' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('sync')}
+          >
+            🔄 Sync
           </button>
           <button
             className={`${styles.tabButton} ${activeTab === 'health' ? styles.tabActive : ''}`}
@@ -759,6 +766,13 @@ export default function AdminPage() {
               )}
             </div>
           </>
+        )}
+
+        {/* Sync Tab */}
+        {activeTab === 'sync' && (
+          <div className={styles.section}>
+            <ManualSyncTool />
+          </div>
         )}
 
         {/* Health Tab */}

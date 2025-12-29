@@ -2,7 +2,114 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.30 (December 29, 2025)
+**Current Version:** v4.3.31 (December 29, 2025)
+
+---
+
+## v4.3.31 - K-146: Admin Manual Sync Tool (Dec 29, 2025)
+
+**ADMIN TOOL:** Visual interface to manually sync specific gameweeks for specific leagues with status indicators.
+
+### The Need
+
+Admins need a way to:
+1. See which GWs have valid/invalid/missing data
+2. Manually trigger syncs for specific GWs without SSH/terminal access
+3. Monitor sync progress and results
+
+### The Solution
+
+**New Admin Panel Feature:**
+- Visual GW grid showing status for each gameweek (valid ✓, invalid ⚠, missing ○)
+- League selector (single league or all leagues)
+- Quick select buttons ("Select All Invalid", "Select All", "Clear")
+- One-click sync with real-time progress feedback
+- Results display showing success/failure for each sync task
+
+### Implementation
+
+**Files Created:**
+
+1. `/src/lib/forceSyncGW.ts` - Sync orchestration logic
+   - Wraps K-142's `syncCompletedGW()` for manual triggers
+   - Clears existing data before re-syncing (force clean slate)
+   - Returns manager/player counts for reporting
+
+2. `/src/app/api/admin/sync/status/route.ts` - Status endpoint
+   - Returns all leagues with manager counts
+   - Checks each GW status: valid, invalid, missing, not_finished
+   - Uses K-144 validation functions (`hasValidManagerHistory`, `hasValidPlayerStats`)
+
+3. `/src/app/api/admin/sync/manual/route.ts` - Manual sync endpoint
+   - Accepts league IDs (array or "all") and gameweek numbers
+   - Requires `force: true` safety flag
+   - Runs syncs sequentially with 500ms delay between tasks
+   - Returns detailed results for each sync task
+   - Max duration: 5 minutes
+
+4. `/src/components/Admin/ManualSyncTool.tsx` - UI component
+   - League dropdown (single or all)
+   - GW grid with color-coded status indicators
+   - Selection management with quick select buttons
+   - Sync button with progress indicator
+   - Results display with success/error breakdown
+
+5. `/src/components/Admin/ManualSyncTool.module.css` - Styles
+   - Responsive GW grid (6 cols desktop, 4 cols tablet, 3 cols mobile)
+   - Color-coded status indicators (green/yellow/gray)
+   - Hover states and transitions
+   - Success/error result styling
+
+6. `/src/app/admin/page.tsx` - Integration
+   - Added "Sync" tab to admin navigation
+   - Renders `ManualSyncTool` component
+
+### Usage
+
+1. Navigate to `/admin`
+2. Click "Sync" tab
+3. Select league (or "All Leagues")
+4. Click GWs to sync (or use quick select buttons)
+5. Click "SYNC SELECTED"
+6. Monitor progress and results
+
+### Example
+
+**Sync GW18 for League 804742:**
+```
+1. Select "804742 - Dedoume FPL 9th edition"
+2. Click GW18 (shows ⚠ invalid)
+3. Click "SYNC SELECTED"
+4. Results: ✅ League 804742 GW18: 20 managers, 760 players (3.4s)
+```
+
+### Status Indicators
+
+| Icon | Status | Meaning |
+|------|--------|---------|
+| ✓ | Valid | Has data with non-zero points |
+| ⚠ | Invalid | Has rows but all zeros |
+| ○ | Missing | No rows exist |
+| ○ | Not Finished | GW hasn't completed yet |
+
+### Technical Details
+
+- **Validation:** Uses K-144 shared validation functions
+- **Sync Logic:** Reuses K-142's `syncCompletedGW()` (DRY principle)
+- **Rate Limiting:** 500ms delay between sync tasks
+- **Safety:** Requires explicit `force: true` flag
+- **Error Handling:** Captures and displays errors per task
+- **Duration Tracking:** Reports sync time for each task
+
+### Files Modified (1)
+- `/src/app/admin/page.tsx` - Added Sync tab and component
+
+### Files Created (5)
+- `/src/lib/forceSyncGW.ts`
+- `/src/app/api/admin/sync/status/route.ts`
+- `/src/app/api/admin/sync/manual/route.ts`
+- `/src/components/Admin/ManualSyncTool.tsx`
+- `/src/components/Admin/ManualSyncTool.module.css`
 
 ---
 
