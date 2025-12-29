@@ -165,6 +165,20 @@ export function MyTeamView({ leagueId, myTeamId, myTeamName, myManagerName }: Pr
             <span className={styles.statLabel}>RANK</span>
           </div>
         </div>
+
+        {/* K-163a: Row 3: LUCK */}
+        {playerData.season_luck !== undefined && (
+          <div className={styles.statsGrid} style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginTop: '0.5rem' }}>
+            <div className={styles.statCard}>
+              <span className={styles.statValue} style={{
+                color: playerData.season_luck > 0 ? '#00ff87' : playerData.season_luck < 0 ? '#ff4444' : 'inherit'
+              }}>
+                {playerData.season_luck > 0 ? `+${playerData.season_luck}` : playerData.season_luck}
+              </span>
+              <span className={styles.statLabel}>LUCK</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Recent Form */}
