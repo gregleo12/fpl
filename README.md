@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.43** (December 29, 2025)
+**v4.3.44** (December 29, 2025)
 
-BUG FIX (K-157): Fixed League Rankings table header appearing after first data row instead of at top. Root cause: Sticky header `top` value was 4rem (64px) but desktop tab bar is ~102px tall, causing 38px gap where header appeared inside table content. Fix: Increased sticky top from 4rem → 6.5rem (104px) to properly clear tab bar. Headers now stay at top of table correctly on desktop.
+BUG FIX (K-158): Fixed League Rankings table header floating in middle of rows (appearing between rows 2 and 3). Root cause: `position: sticky` with `top: 6.5rem` pulled header out of normal table flow and positioned it at 104px from viewport, landing it in middle of visible content. K-157 attempt made it worse. Fix: Removed `position: sticky` entirely - header now appears at top of table as first row (normal `<thead>` behavior). Trade-off: Header scrolls off screen but at least appears in correct position.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

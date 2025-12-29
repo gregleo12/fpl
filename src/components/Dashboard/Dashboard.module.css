@@ -88,19 +88,9 @@
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.5px;
-  position: sticky;
-  /* K-152: Mobile - tabs at bottom, only need safe area padding */
-  top: calc(0.5rem + env(safe-area-inset-top, 0px));
-  z-index: 90; /* K-126: Match other sticky headers (below nav) */
-}
-
-/* K-152: Desktop - tabs at top, need tabs bar height + safe area */
-/* K-153: Reduced from 5rem to 4rem to fix header appearing after first row */
-/* K-157: Increased to 6.5rem (~104px) to properly clear tab bar (actual height ~102px) */
-@media (min-width: 769px) {
-  .table th {
-    top: calc(6.5rem + env(safe-area-inset-top, 0px));
-  }
+  /* K-158: Removed position: sticky - was causing header to float in wrong position */
+  /* Header is now part of normal table flow */
+  z-index: 90;
 }
 
 .table tbody tr {

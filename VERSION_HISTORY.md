@@ -2,38 +2,79 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.43 (December 29, 2025)
+**Current Version:** v4.3.44 (December 29, 2025)
 
 ---
 
-## v4.3.43 - K-157: Fix League Rankings Sticky Header Position (Dec 29, 2025)
+## v4.3.44 - K-158: REAL Fix - Remove Broken Sticky Header (Dec 29, 2025)
 
-**BUG FIX:** League Rankings table header appeared after the first data row instead of staying at the top, causing column headers to "move around."
+**BUG FIX:** League Rankings table header floating in middle of table rows instead of appearing at top.
 
 ### The Bug
-- Header row (RANK, TEAM, W, D, L, STREAK, PTS) appeared AFTER first data row
-- Expected: `[HEADER] → [Row 1] → [Row 2]...`
-- Actual: `[Row 1] → [HEADER] → [Row 2]...` ❌
+User screenshot showed header appearing BETWEEN row 2 and row 3:
+```
+Row 1: FK Gradnulica
+Row 2: Magico
+[RANK | TEAM | W | D | L | STREAK | PTS] ← Header here ❌
+Row 3: Glumkele
+Row 4: zarkzi
+```
 
-### Root Cause
-- Desktop tab bar actual height: ~102px (6.4rem)
-- Sticky header `top` value: `4rem` (64px) - **38px too small**
-- Header stuck at 64px from top, inside the tab bar area
-- First row appeared above header
+**Expected:** Header at TOP of table before all data rows
 
-### The Fix
-Changed sticky top from `4rem` (64px) → `6.5rem` (104px):
+### Root Cause - K-157 Made It WORSE
+
+K-153 and K-157 tried to fix this with `position: sticky` + `top` values, but **fundamentally misunderstood how sticky positioning works**:
+
 ```css
-@media (min-width: 769px) {
-  .table th {
-    top: calc(6.5rem + env(safe-area-inset-top, 0px)); /* Was 4rem */
-  }
+/* K-157 attempt */
+.table th {
+  position: sticky;
+  top: calc(6.5rem + env(safe-area-inset-top)); /* 104px from viewport */
 }
 ```
 
-Header now sticks just below tab bar at correct position.
+**What this actually does:**
+- "Stick this element 104px from the viewport top"
+- Pulls header OUT of normal table flow
+- Places it at absolute position 104px from top
+- **Result:** Header floats in middle of visible rows ❌
+
+**Why sticky was broken here:**
+- `position: sticky` works for scroll behavior, not layout positioning
+- Using large `top` values pulls element away from its natural position
+- Table `<thead>` should be part of normal document flow
+- Header is THE FIRST ROW of the table - it should naturally appear first
+
+### The Real Fix (K-158)
+
+**Removed `position: sticky` entirely:**
+```css
+.table th {
+  background: rgba(40, 30, 70, 0.9);
+  backdrop-filter: blur(10px);
+  font-weight: 600;
+  /* ... other styles ... */
+  /* K-158: Removed position: sticky - was causing header to float */
+  /* Header is now part of normal table flow */
+  z-index: 90;
+}
+```
+
+**Result:**
+- Header appears at top of table (where `<thead>` naturally goes) ✅
+- Normal table structure: Header → Row 1 → Row 2 → Row 3... ✅
+- **Trade-off:** Header scrolls off screen (won't stick) - but at least it's in the RIGHT PLACE
+
+**Future improvement:** If sticky header is needed, implement properly with container-relative positioning or fixed overlay approach.
 
 **File Changed:** `src/components/Dashboard/Dashboard.module.css`
+
+---
+
+## v4.3.43 - K-157: FAILED - Made Header Position Worse (Dec 29, 2025)
+
+**UNSUCCESSFUL FIX:** Attempted to fix sticky header by increasing `top` value to 6.5rem, but this actually made the header float in the middle of table rows. See K-158 for real fix.
 
 ---
 
