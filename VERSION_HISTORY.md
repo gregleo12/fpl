@@ -2,7 +2,62 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.20 (December 29, 2025)
+**Current Version:** v4.3.21 (December 29, 2025)
+
+---
+
+## v4.3.21 - K-142c: Enhanced Fixtures Endpoint Validation & Logging (Dec 29, 2025)
+
+**ENHANCEMENT:** Added comprehensive K-142b validation and diagnostic logging to Rivals H2H fixtures endpoint.
+
+### The Problem
+
+User reported Rivals H2H tab showing 0-0 for GW18 matches despite:
+- Logs showing "Successfully calculated 20/20 scores from database (K-108c)"
+- All scores showing as zeros
+- No `[K-142b]` validation logs appearing for fixtures endpoint
+
+This suggested the database validation wasn't working properly, or the fixtures route was using stale database data without proper K-142b validation checks.
+
+### The Fix
+
+Enhanced `/src/app/api/league/[id]/fixtures/[gw]/route.ts` with comprehensive `[K-142c]` logging:
+
+1. **Bootstrap Fetch Validation:**
+   - Logs success/failure of FPL API fetch
+   - Explicitly throws error if bootstrap fails (instead of silent failure)
+   - Logs if event not found for requested GW
+
+2. **GW Status Detection:**
+   - Logs FPL API flags: `finished`, `is_current`, `data_checked`
+   - Shows exactly which condition triggers which status
+
+3. **K-142b Database Validation:**
+   - Logs when validation is being called
+   - Logs validation result (`hasValidData=true/false`)
+   - Logs decision to use database vs FPL API
+   - Shows why COMPLETED vs IN_PROGRESS status was chosen
+
+4. **Fallback Logic:**
+   - Logs when fallback to h2h_matches is used
+   - Shows whether h2h_matches has scores > 0
+   - Logs fallback status decision
+
+5. **Final Status:**
+   - Clear summary log showing final status decision
+
+This will help diagnose whether:
+- K-142b validation is running but passing incorrectly (finding points when there are zeros)
+- Bootstrap fetch is failing and using fallback logic (bypassing validation)
+- Database validation is throwing errors before logging
+
+All logs use `[K-142c]` prefix for easy filtering in Railway logs.
+
+### Technical Details
+
+**File Modified:** `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
+
+Lines 46-119: Enhanced status detection with comprehensive logging at every decision point.
 
 ---
 

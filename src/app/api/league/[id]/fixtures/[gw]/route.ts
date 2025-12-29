@@ -43,39 +43,57 @@ export async function GET(
 
     const matches = matchesResult.rows;
 
-    // Determine status by checking FPL API for actual gameweek status
+    // K-142c: Determine status with enhanced validation and logging
     let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    console.log(`[K-142c] Determining status for league ${leagueId} GW${gw}...`);
 
     try {
       // Fetch bootstrap-static to get current gameweek status
       const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
-      if (bootstrapResponse.ok) {
-        const bootstrapData = await bootstrapResponse.json();
-        const events = bootstrapData.events;
-        const currentEvent = events.find((e: any) => e.id === gw);
+      if (!bootstrapResponse.ok) {
+        console.error(`[K-142c] Bootstrap fetch failed: ${bootstrapResponse.status}`);
+        throw new Error('Bootstrap fetch failed');
+      }
 
-        if (currentEvent) {
-          // K-142: Check database validity for completed GWs
-          if (currentEvent.finished) {
-            const hasValidData = await checkDatabaseHasGWData(leagueId, gw);
-            if (hasValidData) {
-              status = 'completed';
-            } else {
-              status = 'in_progress';
-            }
-          }
-          // Check if gameweek is currently in progress
-          else if (currentEvent.is_current || currentEvent.data_checked) {
-            status = 'in_progress';
-          }
-          // Otherwise it's upcoming
-          else {
-            status = 'upcoming';
-          }
+      const bootstrapData = await bootstrapResponse.json();
+      const events = bootstrapData.events;
+      const currentEvent = events.find((e: any) => e.id === gw);
+
+      if (!currentEvent) {
+        console.error(`[K-142c] No event found for GW${gw}`);
+        throw new Error('Event not found');
+      }
+
+      console.log(`[K-142c] GW${gw} status from FPL: finished=${currentEvent.finished}, is_current=${currentEvent.is_current}, data_checked=${currentEvent.data_checked}`);
+
+      // K-142c: Check database validity for completed GWs
+      if (currentEvent.finished) {
+        console.log(`[K-142c] GW${gw} is FINISHED - checking database validity...`);
+        const hasValidData = await checkDatabaseHasGWData(leagueId, gw);
+        console.log(`[K-142c] Database validation result: hasValidData=${hasValidData}`);
+
+        if (hasValidData) {
+          status = 'completed';
+          console.log(`[K-142c] ✓ Database has valid data - using COMPLETED status`);
+        } else {
+          status = 'in_progress';
+          console.log(`[K-142c] ✗ Database has invalid/zero data - forcing IN_PROGRESS status to use FPL API`);
         }
       }
+      // Check if gameweek is currently in progress
+      else if (currentEvent.is_current || currentEvent.data_checked) {
+        status = 'in_progress';
+        console.log(`[K-142c] GW${gw} is IN_PROGRESS (is_current=${currentEvent.is_current}, data_checked=${currentEvent.data_checked})`);
+      }
+      // Otherwise it's upcoming
+      else {
+        status = 'upcoming';
+        console.log(`[K-142c] GW${gw} is UPCOMING`);
+      }
     } catch (error) {
-      console.error('Error determining gameweek status:', error);
+      console.error('[K-142c] Error determining gameweek status from FPL API:', error);
+      console.log('[K-142c] Falling back to database-based detection...');
+
       // Fall back to database-based detection if FPL API fails
       if (matches.length > 0) {
         const hasScores = matches.some((m: any) =>
@@ -83,15 +101,22 @@ export async function GET(
           (m.entry_2_points && m.entry_2_points > 0)
         );
 
+        console.log(`[K-142c] Fallback: h2h_matches has scores > 0: ${hasScores}`);
+
         if (hasScores) {
           const allComplete = matches.every((m: any) =>
             (m.entry_1_points !== null && m.entry_1_points >= 0) &&
             (m.entry_2_points !== null && m.entry_2_points >= 0)
           );
           status = allComplete ? 'completed' : 'in_progress';
+          console.log(`[K-142c] Fallback: status set to ${status.toUpperCase()}`);
+        } else {
+          console.log(`[K-142c] Fallback: no scores in h2h_matches, using UPCOMING status`);
         }
       }
     }
+
+    console.log(`[K-142c] ===== FINAL STATUS for league ${leagueId} GW${gw}: ${status.toUpperCase()} =====`);
 
     // K-109 Phase 2 + K-136: Use appropriate calculator based on status
     let liveScoresMap: Map<number, { score: number; hit: number; chip: string | null; captain: string | null }> | null = null;

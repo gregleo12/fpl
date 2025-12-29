@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.20** (December 29, 2025)
+**v4.3.21** (December 29, 2025)
 
-BUG FIX: Fixed Team Value Rankings modal showing incorrect breakdown. FPL API's `value` field contains total value (team + bank), not team value alone. Was displaying "Total Value + ITB" instead of "Team Value + ITB". Now correctly calculates: Team Value = Total - ITB.
+ENHANCEMENT: Added comprehensive K-142b validation and diagnostic logging to Rivals H2H fixtures endpoint. Enhanced status detection with `[K-142c]` logs to diagnose why GW18 fixtures show 0-0 scores. Logs bootstrap fetch, GW status flags, database validation results, and fallback logic decisions.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
