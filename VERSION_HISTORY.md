@@ -2,7 +2,58 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.25 (December 29, 2025)
+**Current Version:** v4.3.26 (December 29, 2025)
+
+---
+
+## v4.3.26 - BUG FIX: Classic Pts showing gross points instead of net (Dec 29, 2025)
+
+**BUG FIX:** Fixed Classic Pts leaderboard displaying gross points (before hits) instead of net points (after hits deducted).
+
+### The Problem
+
+Classic Pts was showing inflated point totals by not accounting for transfer costs:
+- **Example:** Manager with 1127 gross pts and 2 hits (8 pts deducted)
+- **Shown:** 1127 pts ❌
+- **Should be:** 1119 pts ✓ (1127 - 8)
+
+### Root Cause
+
+Similar to **v3.4.30 (K-65)** bug - the query was summing raw `points` from `manager_gw_history` without subtracting `event_transfers_cost`.
+
+**Original Query:**
+```sql
+SELECT entry_id, SUM(points) as total_points  -- GROSS points
+FROM manager_gw_history
+...
+```
+
+The `points` field in the database may contain gross points (before transfer penalties), so we need to explicitly subtract hits to get net points.
+
+### The Fix
+
+Updated query to calculate NET points by subtracting transfer costs:
+
+```sql
+SELECT
+  entry_id,
+  SUM(points - COALESCE(event_transfers_cost, 0)) as total_points  -- NET points
+FROM manager_gw_history
+...
+```
+
+Now Classic Pts correctly shows:
+- Total points AFTER hits are deducted
+- Accurate representation of actual points earned
+- Consistent with K-27 data source rules (same calculation used in other routes)
+
+### Technical Details
+
+**File Modified:** `/src/app/api/league/[id]/stats/season/route.ts` (lines 1510-1521)
+- Added `COALESCE(event_transfers_cost, 0)` subtraction
+- Added K-65 reference comment for future developers
+
+**Related Bug:** This follows the same pattern as v3.4.30 (K-65 HOTFIX) which fixed a similar issue in Total Points modal.
 
 ---
 

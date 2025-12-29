@@ -1507,11 +1507,12 @@ async function calculateClassicPts(
   try {
     console.log('[K-143 CLASSIC PTS] Calculating Classic Pts for league:', leagueId);
 
-    // Get total points for each manager from completed GWs
+    // Get total NET points for each manager from completed GWs (after deducting hits)
+    // K-65: Database 'points' may be GROSS, so we calculate NET points here
     const pointsResult = await db.query(`
       SELECT
         entry_id,
-        SUM(points) as total_points
+        SUM(points - COALESCE(event_transfers_cost, 0)) as total_points
       FROM manager_gw_history
       WHERE league_id = $1
         AND event = ANY($2)

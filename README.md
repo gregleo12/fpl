@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.25** (December 29, 2025)
+**v4.3.26** (December 29, 2025)
 
-UI IMPROVEMENT: Form component simplified - changed title from "Form Rankings" to "Form". Reorganized stats layout: points first, then trend arrow and average on same line below. Average now in parentheses (avg: XX.X) for clarity.
+BUG FIX: Fixed Classic Pts leaderboard showing gross points instead of net points. Was summing raw points without subtracting transfer costs. Now correctly calculates: SUM(points - event_transfers_cost). Example: 1127 gross - 8 hits = 1119 net (correct). Related to v3.4.30 K-65 bug pattern.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
