@@ -11,6 +11,14 @@
   border: none;
 }
 
+/* K-159: Mobile PWA - add small top padding to prevent first fixture hiding behind sticky header */
+/* Especially needed on iPhone 17 Pro Max with larger safe-area-inset-top */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 0.5rem;
+  }
+}
+
 /* Desktop: Add top padding to match Stats section */
 @media (min-width: 769px) {
   .container {

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.44** (December 29, 2025)
+**v4.3.45** (December 29, 2025)
 
-BUG FIX (K-158): Fixed League Rankings table header floating in middle of rows (appearing between rows 2 and 3). Root cause: `position: sticky` with `top: 6.5rem` pulled header out of normal table flow and positioned it at 104px from viewport, landing it in middle of visible content. K-157 attempt made it worse. Fix: Removed `position: sticky` entirely - header now appears at top of table as first row (normal `<thead>` behavior). Trade-off: Header scrolls off screen but at least appears in correct position.
+BUG FIX (K-159): Tentative fix for first H2H fixture hidden behind navigation bar on iPhone 17 Pro Max PWA. Root cause: Fixtures container had no top padding on mobile, causing first fixture to render at y=0 while sticky rivalsHeader positioned at ~67px due to larger Dynamic Island safe-area. Fix: Added 0.5rem top padding to mobile container for clearance. Needs user testing on iPhone 17 Pro Max PWA to confirm.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -2,7 +2,72 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.44 (December 29, 2025)
+**Current Version:** v4.3.45 (December 29, 2025)
+
+---
+
+## v4.3.45 - K-159: Fix First Fixture Hidden Behind Nav on iPhone 17 Pro Max PWA (Dec 29, 2025)
+
+**BUG FIX (TENTATIVE):** First H2H fixture stuck behind sticky navigation bar on iPhone 17 Pro Max PWA.
+
+### The Bug
+
+**User Report (iPhone 17 Pro Max PWA only):**
+- First fixture appears behind H2H/Fixtures toggle bar
+- Stays stuck there, doesn't come back down
+- Only happens in PWA mode, not browser
+- iPhone 15 Pro Max doesn't have this issue
+
+**Screenshot Analysis:**
+- Partial fixture visible at top (showing "C: Haaland" text)
+- Cut off by sticky rivalsHeader navigation
+- Visible fixtures start with "Riverstone vs Cheese FC" (should be 2nd fixture)
+
+### Root Cause Hypothesis
+
+**Device Differences:**
+- iPhone 17 Pro Max has larger `env(safe-area-inset-top)` value (Dynamic Island)
+- iPhone 15 Pro Max has smaller value (standard notch)
+- Sticky header uses: `top: calc(0.5rem + env(safe-area-inset-top))`
+- Larger safe-area pushes header down more on iPhone 17
+
+**Layout Issue:**
+- `.container` had NO top padding on mobile (only desktop had `padding-top: 2.5rem`)
+- Content started at viewport top (y=0)
+- Sticky rivalsHeader positioned at ~67px (on iPhone 17) vs ~55px (on iPhone 15)
+- First fixture rendered at y=0, behind the sticky header
+
+### Tentative Fix (K-159)
+
+Added mobile-specific top padding to Fixtures container:
+```css
+/* Mobile PWA */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 0.5rem; /* 8px buffer */
+  }
+}
+```
+
+**Why This Might Help:**
+- Creates small vertical buffer at top of content
+- Prevents first fixture from starting at absolute top
+- Gives clearance for varying safe-area-inset values
+
+**File Changed:** `src/components/Fixtures/Fixtures.module.css`
+
+### Testing Needed
+
+⚠️ **User with iPhone 17 Pro Max must test in PWA:**
+1. Open PWA on iPhone 17 Pro Max
+2. Navigate to Rivals tab
+3. Check if first fixture is visible at top (not hidden)
+4. Scroll down and back up - verify fixture doesn't get stuck
+
+**If still broken, next steps:**
+- Increase padding-top to 1rem or 1.5rem
+- OR remove `position: sticky` from rivalsHeader on mobile PWA
+- OR add scroll-padding-top to dashboard page container
 
 ---
 
