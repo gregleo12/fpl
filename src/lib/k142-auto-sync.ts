@@ -53,68 +53,78 @@ export async function getGWFinishTime(gw: number): Promise<number> {
 }
 
 /**
- * Check if database has valid data for a manager's gameweek (any league)
+ * K-142b: Check if database has VALID data for a manager's gameweek (any league)
  * Used by team-specific routes that don't have league context
- * Valid = has records AND total points > 0 (not just zeros from early sync)
+ * Valid = has manager data with non-zero points AND player stats exist
  */
 export async function checkDatabaseHasTeamGWData(entryId: number, gw: number): Promise<boolean> {
   try {
     const db = await getDatabase();
 
-    // Check if ANY league has synced this manager's GW data
-    const result = await db.query(`
+    // First check if manager_gw_history has VALID data (non-zero points)
+    const managerResult = await db.query(`
       SELECT COUNT(*) as count, SUM(points) as total_points
       FROM manager_gw_history
       WHERE entry_id = $1 AND event = $2
     `, [entryId, gw]);
 
-    const { count, total_points } = result.rows[0];
+    const managerRows = parseInt(managerResult.rows[0]?.count || '0');
+    const managerPoints = parseFloat(managerResult.rows[0]?.total_points || '0');
 
-    // Valid if: has records AND total points > 0
-    const hasValidData = parseInt(count) > 0 && parseFloat(total_points || '0') > 0;
-
-    if (hasValidData) {
-      console.log(`[K-142] Team ${entryId} GW${gw} database check: ✓ Valid (${count} records, ${total_points} total pts)`);
-    } else {
-      console.log(`[K-142] Team ${entryId} GW${gw} database check: ✗ Invalid (${count} records, ${total_points} total pts)`);
+    if (managerRows === 0 || managerPoints === 0) {
+      console.log(`[K-142b] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, valid=false (no valid manager data)`);
+      return false;
     }
 
-    return hasValidData;
+    // Also check if player_gameweek_stats has any non-zero points for this GW
+    // This ensures we're not using stale player data
+    const playerStatsResult = await db.query(`
+      SELECT SUM(total_points) as total_points
+      FROM player_gameweek_stats
+      WHERE gameweek = $1
+    `, [gw]);
+
+    const playerTotalPoints = parseFloat(playerStatsResult.rows[0]?.total_points || '0');
+    const isValid = playerTotalPoints > 0;
+
+    console.log(`[K-142b] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, playerPoints=${playerTotalPoints}, valid=${isValid}`);
+
+    return isValid;
   } catch (error) {
-    console.error(`[K-142] Error checking team ${entryId} database for GW${gw}:`, error);
+    console.error(`[K-142b] Error checking team ${entryId} database for GW${gw}:`, error);
     return false;
   }
 }
 
 /**
- * Check if database has valid data for a gameweek
+ * K-142b: Check if database has VALID data for a gameweek
  * Valid = has records AND total points > 0 (not just zeros from early sync)
  */
 export async function checkDatabaseHasGWData(leagueId: number, gw: number): Promise<boolean> {
   try {
     const db = await getDatabase();
 
-    // Check manager_gw_history has non-zero points for this GW
+    // Check if manager_gw_history has VALID data (non-zero points) for this GW
+    // Must have rows AND at least some managers with points > 0
     const result = await db.query(`
-      SELECT COUNT(*) as count, SUM(points) as total_points
+      SELECT
+        COUNT(*) as total_rows,
+        SUM(points) as total_points
       FROM manager_gw_history
       WHERE league_id = $1 AND event = $2
     `, [leagueId, gw]);
 
-    const { count, total_points } = result.rows[0];
+    const totalRows = parseInt(result.rows[0]?.total_rows || '0');
+    const totalPoints = parseFloat(result.rows[0]?.total_points || '0');
 
-    // Valid if: has records AND total points > 0
-    const hasValidData = parseInt(count) > 0 && parseFloat(total_points || '0') > 0;
+    // Valid if: has rows AND total points > 0 (not all zeros)
+    const isValid = totalRows > 0 && totalPoints > 0;
 
-    if (hasValidData) {
-      console.log(`[K-142] GW${gw} database check: ✓ Valid (${count} records, ${total_points} total pts)`);
-    } else {
-      console.log(`[K-142] GW${gw} database check: ✗ Invalid (${count} records, ${total_points} total pts)`);
-    }
+    console.log(`[K-142b] checkDatabaseHasGWData: league=${leagueId}, gw=${gw}, rows=${totalRows}, points=${totalPoints}, valid=${isValid}`);
 
-    return hasValidData;
+    return isValid;
   } catch (error) {
-    console.error(`[K-142] Error checking database for GW${gw}:`, error);
+    console.error(`[K-142b] Error checking database for GW${gw}:`, error);
     return false;
   }
 }

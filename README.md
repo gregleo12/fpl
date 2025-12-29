@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.18** (December 29, 2025)
+**v4.3.19** (December 29, 2025)
 
-ENHANCEMENT (K-142): Auto-sync completed gameweeks to database after 10-hour buffer. Replaces K-141 quick fix with intelligent database management - checks database validity before deciding data source. Automatically syncs on league load (non-blocking). Uses database when valid, FPL API when stale. Optimal performance + data freshness.
+HOTFIX (K-142b): Enhanced database validation logging and added player stats verification. Improves diagnosis of validation decisions in production. Team routes now check both manager data AND player_gameweek_stats for comprehensive validation. Prevents using stale player data.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

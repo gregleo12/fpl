@@ -2,7 +2,55 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.18 (December 29, 2025)
+**Current Version:** v4.3.19 (December 29, 2025)
+
+---
+
+## v4.3.19 - K-142b HOTFIX: Enhanced Database Validation Logging (Dec 29, 2025)
+
+**HOTFIX:** Enhanced database validation logging and added player stats verification for team routes.
+
+### The Issue
+
+After K-142 deployment, improved logging was needed to diagnose why validation might pass/fail. Also added additional check for `player_gameweek_stats` in team routes to ensure comprehensive validation.
+
+### Changes Made
+
+**Enhanced `checkDatabaseHasGWData()` (League Routes):**
+- More verbose logging with `[K-142b]` prefix
+- Explicitly logs: `league`, `gw`, `rows`, `points`, `valid`
+- Makes diagnosis easier in production logs
+
+**Enhanced `checkDatabaseHasTeamGWData()` (Team Routes):**
+- Two-stage validation:
+  1. Check `manager_gw_history` has non-zero points
+  2. Check `player_gameweek_stats` has non-zero points for GW
+- Prevents using stale player data even if manager data exists
+- Comprehensive logging: `entry`, `gw`, `managerRows`, `managerPoints`, `playerPoints`, `valid`
+
+### Example Logs
+
+**Valid Database (Will Use Database):**
+```
+[K-142b] checkDatabaseHasGWData: league=804742, gw=17, rows=20, points=1247, valid=true
+```
+
+**Invalid Database (Will Use FPL API):**
+```
+[K-142b] checkDatabaseHasGWData: league=804742, gw=18, rows=20, points=0, valid=false
+```
+
+**Team Validation:**
+```
+[K-142b] checkDatabaseHasTeamGWData: entry=2511225, gw=18, managerRows=1, managerPoints=0, playerPoints=0, valid=false (no valid manager data)
+```
+
+### Impact
+
+- Better visibility into validation decisions
+- Easier debugging in production
+- More robust validation for team routes
+- Ensures we never use stale player stats
 
 ---
 
