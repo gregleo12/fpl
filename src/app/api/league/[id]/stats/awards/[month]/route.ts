@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula for awards
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -297,6 +298,7 @@ async function calculateConsistency(
   }
 }
 
+// K-163: Calculate luck using CORRECT formula (Actual - Expected)
 async function calculateLuck(
   db: any,
   leagueId: number,
@@ -305,80 +307,90 @@ async function calculateLuck(
   managers: any[]
 ) {
   try {
-    const result = await db.query(`
-      WITH manager_avg AS (
-        -- Use season-wide average for consistent baseline
-        SELECT
-          entry_id,
-          AVG(points - COALESCE(event_transfers_cost, 0)) as avg_points
-        FROM manager_gw_history
-        WHERE entry_id = ANY($1)
-          AND event = ANY($2)
-        GROUP BY entry_id
-      ),
-      luck_calc AS (
-        -- K-134b: Calculate luck for entry_1 managers (fixed column names)
-        SELECT
-          h.entry_1_id as entry_id,
-          m.player_name,
-          m.team_name,
-          ROUND(SUM(
-            (h.entry_1_points - ma1.avg_points) -
-            (h.entry_2_points - ma2.avg_points)
-          )::numeric, 0) as luck_index
-        FROM h2h_matches h
-        JOIN managers m ON m.entry_id = h.entry_1_id
-        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
-        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
-        WHERE h.league_id = $4
-          AND h.event = ANY($3)
-        GROUP BY h.entry_1_id, m.player_name, m.team_name
+    // Step 1: Get all managers' points for each GW
+    const allPointsResult = await db.query(`
+      SELECT entry_id, event, points
+      FROM manager_gw_history
+      WHERE league_id = $1 AND event = ANY($2)
+      ORDER BY event, entry_id
+    `, [leagueId, gameweeks]);
 
-        UNION ALL
+    // Group points by GW
+    const pointsByGW: Record<number, Record<number, number>> = {};
+    allPointsResult.rows.forEach((row: any) => {
+      const gw = row.event;
+      if (!pointsByGW[gw]) pointsByGW[gw] = {};
+      pointsByGW[gw][row.entry_id] = row.points;
+    });
 
-        -- K-134b: Calculate luck for entry_2 managers (fixed column names)
-        SELECT
-          h.entry_2_id as entry_id,
-          m.player_name,
-          m.team_name,
-          ROUND(SUM(
-            (h.entry_2_points - ma2.avg_points) -
-            (h.entry_1_points - ma1.avg_points)
-          )::numeric, 0) as luck_index
-        FROM h2h_matches h
-        JOIN managers m ON m.entry_id = h.entry_2_id
-        JOIN manager_avg ma2 ON ma2.entry_id = h.entry_2_id
-        JOIN manager_avg ma1 ON ma1.entry_id = h.entry_1_id
-        WHERE h.league_id = $4
-          AND h.event = ANY($3)
-        GROUP BY h.entry_2_id, m.player_name, m.team_name
-      ),
-      -- K-134: Aggregate luck across both sides of matches
-      aggregated_luck AS (
-        SELECT
-          entry_id,
-          player_name,
-          team_name,
-          SUM(luck_index) as total_luck
-        FROM luck_calc
-        GROUP BY entry_id, player_name, team_name
-      )
-      SELECT
-        entry_id,
-        player_name,
-        team_name,
-        total_luck as value,
-        CASE
-          WHEN total_luck > 0 THEN '+' || total_luck || ' pts'
-          ELSE total_luck || ' pts'
-        END as formatted_value
-      FROM aggregated_luck
-      ORDER BY total_luck DESC
-    `, [managers.map(m => m.entry_id), seasonGameweeks, gameweeks, leagueId]);
+    // Step 2: Get all H2H matches with results
+    const matchesResult = await db.query(`
+      SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, winner, event
+      FROM h2h_matches
+      WHERE league_id = $1 AND event = ANY($2)
+      ORDER BY event
+    `, [leagueId, gameweeks]);
+
+    // Step 3: Calculate luck for each manager
+    const luckByManager: Record<number, number> = {};
+    managers.forEach(m => {
+      luckByManager[m.entry_id] = 0;
+    });
+
+    matchesResult.rows.forEach((match: any) => {
+      const gw = match.event;
+      const entry1 = match.entry_1_id;
+      const entry2 = match.entry_2_id;
+      const entry1Points = match.entry_1_points;
+      const entry2Points = match.entry_2_points;
+      const winner = match.winner;
+
+      const allGWPoints = pointsByGW[gw];
+      if (!allGWPoints) return;
+
+      // Get other teams' points for each manager
+      const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
+        .filter(([id]) => parseInt(id) !== entry1)
+        .map(([, pts]) => Number(pts));
+
+      const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
+        .filter(([id]) => parseInt(id) !== entry2)
+        .map(([, pts]) => Number(pts));
+
+      // Determine results
+      const entry1Result: 'win' | 'draw' | 'loss' =
+        winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
+      const entry2Result: 'win' | 'draw' | 'loss' =
+        winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
+
+      // Calculate luck
+      const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
+      const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+
+      luckByManager[entry1] = (luckByManager[entry1] || 0) + entry1Luck;
+      luckByManager[entry2] = (luckByManager[entry2] || 0) + entry2Luck;
+    });
+
+    // Step 4: Get manager names and format results
+    const managersMap = new Map(managers.map(m => [m.entry_id, m]));
+
+    const luckResults = Object.entries(luckByManager)
+      .map(([entryId, luck]) => {
+        const manager = managersMap.get(parseInt(entryId));
+        const roundedLuck = Math.round(luck * 10) / 10;
+        return {
+          entry_id: parseInt(entryId),
+          player_name: manager?.player_name || 'Unknown',
+          team_name: manager?.team_name || 'Unknown',
+          value: roundedLuck,
+          formatted_value: roundedLuck > 0 ? `+${roundedLuck}` : `${roundedLuck}`
+        };
+      })
+      .sort((a, b) => b.value - a.value);
 
     return {
-      best: result.rows[0] || null,  // Luckiest (highest luck)
-      worst: result.rows[result.rows.length - 1] || null  // Unluckiest (lowest luck)
+      best: luckResults[0] || null,  // Luckiest (highest luck)
+      worst: luckResults[luckResults.length - 1] || null  // Unluckiest (lowest luck)
     };
   } catch (e) {
     console.error('Luck error:', e);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fplApi } from '@/lib/fpl-api';
 import { getDatabase } from '@/lib/db';
 import { detectFPLError } from '@/lib/fpl-errors';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Add season luck to team stats
 
 export async function GET(
   request: NextRequest,
@@ -169,6 +170,71 @@ export async function GET(
       }
     }
 
+    // K-163: Calculate season luck
+    let seasonLuck = 0;
+    let luckRank: number | null = null;
+    try {
+      // Get all GWs that have been played
+      const completedGWs = matchHistory.map(m => m.event);
+
+      if (completedGWs.length > 0) {
+        // Get all managers' points for each GW
+        const allPointsResult = await db.query(`
+          SELECT entry_id, event, points
+          FROM manager_gw_history
+          WHERE league_id = $1 AND event = ANY($2)
+          ORDER BY event, entry_id
+        `, [leagueId, completedGWs]);
+
+        // Group points by GW
+        const pointsByGW: Record<number, Record<number, number>> = {};
+        allPointsResult.rows.forEach((row: any) => {
+          const gw = row.event;
+          if (!pointsByGW[gw]) pointsByGW[gw] = {};
+          pointsByGW[gw][row.entry_id] = row.points;
+        });
+
+        // Calculate luck for each match
+        const luckValues: number[] = [];
+        for (const match of matchHistory) {
+          const gw = match.event;
+          const allGWPoints = pointsByGW[gw];
+          if (!allGWPoints) continue;
+
+          // Get other teams' points (excluding this player)
+          const otherTeamsPoints = Object.entries(allGWPoints)
+            .filter(([id]) => parseInt(id) !== entryId)
+            .map(([, pts]) => Number(pts));
+
+          // Determine result
+          const result: 'win' | 'draw' | 'loss' =
+            match.result === 'W' ? 'win' : match.result === 'D' ? 'draw' : 'loss';
+
+          // Calculate luck for this GW
+          const gwLuck = calculateGWLuck(match.playerPoints, otherTeamsPoints, result);
+          luckValues.push(gwLuck);
+        }
+
+        // Season luck = sum of all GW luck values
+        seasonLuck = luckValues.reduce((sum, luck) => sum + luck, 0);
+
+        // Get luck ranking among all managers in league
+        const allManagersLuckResult = await db.query(`
+          SELECT entry_id
+          FROM manager_gw_history
+          WHERE league_id = $1
+          GROUP BY entry_id
+        `, [leagueId]);
+
+        // Calculate luck for all managers (simplified - just need to know our rank)
+        // For now, we'll get this from the league stats endpoint
+        // This is a simplified version - full calculation would be expensive here
+      }
+    } catch (error) {
+      console.error('[K-163] Error calculating season luck:', error);
+      // Non-critical, continue without luck data
+    }
+
     return NextResponse.json({
       manager,
       entry,
@@ -176,7 +242,8 @@ export async function GET(
       matchHistory,
       chipsPlayed,
       chipsFaced,
-      gwHistory: history.current || []
+      gwHistory: history.current || [],
+      season_luck: Math.round(seasonLuck * 10) / 10 // K-163: Add season luck
     });
   } catch (error: any) {
     console.error('Error fetching player profile:', error);

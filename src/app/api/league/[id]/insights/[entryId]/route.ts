@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { fplApi } from '@/lib/fpl-api';
+import { calculateGWLuck, formatLuck } from '@/lib/luckCalculator'; // K-163: Add luck to H2H preview
 
 export const dynamic = 'force-dynamic';
 
@@ -311,6 +312,54 @@ export async function GET(
       // FT data not critical, continue without it
     }
 
+    // K-163: Calculate luck for last H2H meeting
+    let lastMeetingLuck: { your_luck: number; their_luck: number; gw: number } | null = null;
+    if (lastMeeting) {
+      try {
+        const lastGW = lastMeeting.event;
+
+        // Get all managers' points for that GW
+        const allPointsResult = await db.query(`
+          SELECT entry_id, points
+          FROM manager_gw_history
+          WHERE league_id = $1 AND event = $2
+        `, [leagueId, lastGW]);
+
+        const allGWPoints = allPointsResult.rows.reduce((acc: Record<number, number>, row: any) => {
+          acc[row.entry_id] = row.points;
+          return acc;
+        }, {});
+
+        // Get other teams' points (excluding you and opponent)
+        const otherTeamsPointsForYou = Object.entries(allGWPoints)
+          .filter(([id]) => parseInt(id) !== myId)
+          .map(([, pts]) => Number(pts));
+
+        const otherTeamsPointsForThem = Object.entries(allGWPoints)
+          .filter(([id]) => parseInt(id) !== targetEntryId)
+          .map(([, pts]) => Number(pts));
+
+        // Determine results
+        const yourResult: 'win' | 'draw' | 'loss' =
+          lastMeeting.margin > 0 ? 'win' : lastMeeting.margin < 0 ? 'loss' : 'draw';
+        const theirResult: 'win' | 'draw' | 'loss' =
+          lastMeeting.margin < 0 ? 'win' : lastMeeting.margin > 0 ? 'loss' : 'draw';
+
+        // Calculate luck using correct formula
+        const yourLuck = calculateGWLuck(lastMeeting.your_score, otherTeamsPointsForYou, yourResult);
+        const theirLuck = calculateGWLuck(lastMeeting.their_score, otherTeamsPointsForThem, theirResult);
+
+        lastMeetingLuck = {
+          your_luck: Math.round(yourLuck * 10) / 10,
+          their_luck: Math.round(theirLuck * 10) / 10,
+          gw: lastGW
+        };
+      } catch (error) {
+        console.error('[K-163] Error calculating H2H luck:', error);
+        // Non-critical, continue without luck data
+      }
+    }
+
     return NextResponse.json({
       opponent_id: opponent.entry_id,
       opponent_name: opponent.player_name,
@@ -321,6 +370,7 @@ export async function GET(
       chips_remaining: chipsRemaining,
       momentum,
       head_to_head: headToHead,
+      last_meeting_luck: lastMeetingLuck, // K-163: Add luck data
       free_transfers: freeTransfers
     });
   } catch (error: any) {

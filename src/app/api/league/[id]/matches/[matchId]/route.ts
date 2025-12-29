@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { fplApi } from '@/lib/fpl-api';
+import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Add luck to match details
 
 export const dynamic = 'force-dynamic';
 
@@ -482,6 +483,54 @@ export async function GET(
     const entry2Wins = h2hMatches.filter((m: any) => m.winner && parseInt(m.winner) === entry2Id).length;
     const draws = h2hMatches.filter((m: any) => !m.winner).length;
 
+    // K-163: Calculate luck for this match
+    let matchLuck: { entry_1_luck: number; entry_2_luck: number } | null = null;
+    if (match.entry_1_points && match.entry_2_points) {
+      try {
+        const matchGW = match.event;
+
+        // Get all managers' points for this GW
+        const allPointsResult = await db.query(`
+          SELECT entry_id, points
+          FROM manager_gw_history
+          WHERE league_id = $1 AND event = $2
+        `, [leagueId, matchGW]);
+
+        const allGWPoints = allPointsResult.rows.reduce((acc: Record<number, number>, row: any) => {
+          acc[row.entry_id] = row.points;
+          return acc;
+        }, {});
+
+        // Get other teams' points (excluding each manager)
+        const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
+          .filter(([id]) => parseInt(id) !== entry1Id)
+          .map(([, pts]) => Number(pts));
+
+        const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
+          .filter(([id]) => parseInt(id) !== entry2Id)
+          .map(([, pts]) => Number(pts));
+
+        // Determine results from each manager's perspective
+        const winner = match.winner ? parseInt(match.winner) : null;
+        const entry1Result: 'win' | 'draw' | 'loss' =
+          winner === entry1Id ? 'win' : winner === null ? 'draw' : 'loss';
+        const entry2Result: 'win' | 'draw' | 'loss' =
+          winner === entry2Id ? 'win' : winner === null ? 'draw' : 'loss';
+
+        // Calculate luck using correct formula
+        const entry1Luck = calculateGWLuck(match.entry_1_points, otherTeamsPointsForEntry1, entry1Result);
+        const entry2Luck = calculateGWLuck(match.entry_2_points, otherTeamsPointsForEntry2, entry2Result);
+
+        matchLuck = {
+          entry_1_luck: Math.round(entry1Luck * 10) / 10,
+          entry_2_luck: Math.round(entry2Luck * 10) / 10
+        };
+      } catch (error) {
+        console.error('[K-163] Error calculating match luck:', error);
+        // Non-critical, continue without luck data
+      }
+    }
+
     return NextResponse.json({
       match_id: matchId,
       entry_1: {
@@ -507,6 +556,7 @@ export async function GET(
           entry_2_score: h2hMatches[0].entry2_score
         } : null
       },
+      match_luck: matchLuck, // K-163: Add luck data for this match
       differential_players: differentialPlayers
     });
   } catch (error: any) {
