@@ -3,7 +3,7 @@ import { getDatabase } from '@/lib/db';
 import { syncGameweekForLeague } from '@/lib/forceSyncGW';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes max for sync operations
+export const maxDuration = 600; // K-154: Increased to 10 minutes for all leagues batch sync (69 leagues × ~5s each = ~6min)
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[K-146] Manual sync: ${targetLeagueIds.length} league(s), GWs: ${gameweeks.join(', ')}`);
+    console.log(`[K-146/K-154] Manual sync: ${targetLeagueIds.length} league(s), GWs: ${gameweeks.join(', ')}`);
 
     // Build task list
     const tasks: Array<{ leagueId: number; gw: number }> = [];
@@ -52,16 +52,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[K-146] Total tasks: ${tasks.length}`);
+    console.log(`[K-146/K-154] Total tasks: ${tasks.length}`);
 
     // Execute syncs
     const results: any[] = [];
+    let successCount = 0;
+    let failCount = 0;
 
-    for (const task of tasks) {
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
       const startTime = Date.now();
+      const progress = `${i + 1}/${tasks.length}`;
 
       try {
-        console.log(`[K-146] Syncing league ${task.leagueId} GW${task.gw}...`);
+        console.log(`[K-154] ${progress}: Starting league ${task.leagueId} GW${task.gw}...`);
 
         const result = await syncGameweekForLeague(task.leagueId, task.gw);
 
@@ -74,10 +78,13 @@ export async function POST(request: NextRequest) {
           duration: Date.now() - startTime
         });
 
-        console.log(`[K-146] ✓ League ${task.leagueId} GW${task.gw} complete (${Date.now() - startTime}ms)`);
+        successCount++;
+        console.log(`[K-154] ${progress}: ✓ League ${task.leagueId} GW${task.gw} - ${result.managersCount}m, ${result.playersCount}p (${Date.now() - startTime}ms)`);
 
       } catch (error: any) {
-        console.error(`[K-146] ✗ League ${task.leagueId} GW${task.gw} failed:`, error);
+        failCount++;
+        console.error(`[K-154] ${progress}: ✗ League ${task.leagueId} GW${task.gw} FAILED:`, error.message);
+        console.error(`[K-154] ${progress}: Error stack:`, error.stack);
 
         results.push({
           leagueId: task.leagueId,
@@ -88,16 +95,17 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Delay between syncs to avoid hammering FPL API
-      if (tasks.indexOf(task) < tasks.length - 1) {
+      // K-154: Delay between syncs to avoid FPL API rate limiting
+      if (i < tasks.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
-    const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
-    const successCount = results.filter(r => r.status === 'success').length;
+    console.log(`[K-154] ═══════════════════════════════════════════════════════`);
+    console.log(`[K-154] Batch sync complete: ${successCount} success, ${failCount} failed out of ${tasks.length} total`);
+    console.log(`[K-154] ═══════════════════════════════════════════════════════`);
 
-    console.log(`[K-146] Manual sync complete: ${successCount}/${tasks.length} successful (${totalDuration}ms total)`);
+    const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
 
     return NextResponse.json({
       status: 'complete',
@@ -105,7 +113,7 @@ export async function POST(request: NextRequest) {
       summary: {
         total: tasks.length,
         success: successCount,
-        failed: tasks.length - successCount,
+        failed: failCount,
         totalDuration
       }
     });

@@ -2,7 +2,128 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.38 (December 29, 2025)
+**Current Version:** v4.3.39 (December 29, 2025)
+
+---
+
+## v4.3.39 - K-154: Fix All Leagues Batch Sync Partial Failures (Dec 29, 2025)
+
+**BUG FIX:** When syncing "All Leagues (69)" for a gameweek, the first ~63 leagues synced successfully but the last 5-6 failed silently, showing ⚠ Invalid/Zero in the validation grid.
+
+### The Bug
+
+Batch sync behavior:
+- Started sync for all 69 leagues
+- First ~63 leagues: ✓ Valid
+- Last 5-6 leagues: ⚠ Invalid/Zero (still showing old stale data)
+- Individual manual sync for those leagues worked fine
+- Frontend sometimes showed "✅ 0/0 successful (0.0s)" or appeared to hang
+
+### Root Cause Analysis
+
+**Timeout Issue:**
+- API route had `maxDuration = 300` (5 minutes)
+- Syncing 69 leagues: 69 × (~5-10s per league + 500ms delay) = ~6-12 minutes
+- Request timed out at 5 minutes, cutting off the last ~10-15 leagues
+- Response never completed, causing frontend to show "0/0 successful"
+
+**Silent Failures:**
+- Errors were caught but not detailed in logs
+- No progress tracking to identify which league failed
+- Success/failure counts calculated at end, after timeout
+
+### The Fix
+
+**1. Increased API timeout from 5min to 10min:**
+
+```typescript
+// Before
+export const maxDuration = 300; // 5 minutes
+
+// After (K-154)
+export const maxDuration = 600; // 10 minutes for all leagues batch sync
+```
+
+Railway allows up to 10-minute function duration. This handles worst case: 69 leagues × 10s each = ~11.5 minutes (with built-in buffer).
+
+**2. Added detailed progress logging:**
+
+```typescript
+// Before
+console.log(`[K-146] Syncing league ${leagueId} GW${gw}...`);
+console.log(`[K-146] ✓ League ${leagueId} complete`);
+
+// After (K-154)
+console.log(`[K-154] ${i+1}/${total}: Starting league ${leagueId} GW${gw}...`);
+console.log(`[K-154] ${i+1}/${total}: ✓ League ${leagueId} - ${managers}m, ${players}p (${duration}ms)`);
+console.log(`[K-154] ${i+1}/${total}: ✗ League ${leagueId} FAILED: ${error.message}`);
+console.error(`[K-154] ${i+1}/${total}: Error stack:`, error.stack);
+```
+
+Now each league shows:
+- Progress indicator (e.g., "45/69")
+- Success with manager/player counts
+- Failure with full error message and stack trace
+
+**3. Added running success/failure counters:**
+
+```typescript
+// Track counts incrementally instead of calculating at end
+let successCount = 0;
+let failCount = 0;
+
+// Increment on success/failure
+successCount++; // or failCount++;
+
+// Summary at end
+console.log(`Batch sync complete: ${successCount} success, ${failCount} failed out of ${total} total`);
+```
+
+**4. Fixed K-146e bugs that may have contributed:**
+
+The recent K-146e fix (v4.3.37) corrected ON CONFLICT constraints in `syncCompletedGW`, which may have been causing some of the "silent" failures.
+
+### Why Last 5-6 Leagues Failed
+
+With 5-minute timeout:
+- Leagues 1-63: Synced successfully (took ~5-8s each)
+- Leagues 64-69: Request timed out before reaching them
+- Response cut off mid-flight → frontend received partial/empty response
+
+### Expected Behavior (After Fix)
+
+1. User clicks "SYNC" for all 69 leagues, GW18
+2. Backend starts processing sequentially (500ms delay between each)
+3. Backend logs progress for each league: "45/69: ✓ League 123 - 20m, 760p (5432ms)"
+4. Backend completes all 69 leagues within 10-minute window
+5. Returns: `{"success": 69, "failed": 0, "results": [...]}`
+6. Frontend shows: "✅ 69/69 successful (8.5min)"
+7. Validation grid updates to show ✓ for all leagues
+
+### Monitoring
+
+Railway logs will now show:
+```
+[K-154] 1/69: Starting league 804742 GW18...
+[K-154] 1/69: ✓ League 804742 - 20m, 760p (5234ms)
+[K-154] 2/69: Starting league 3537 GW18...
+[K-154] 2/69: ✓ League 3537 - 10m, 760p (4821ms)
+...
+[K-154] 69/69: ✓ League 999999 - 15m, 760p (6102ms)
+[K-154] ═══════════════════════════════════════════════════════
+[K-154] Batch sync complete: 69 success, 0 failed out of 69 total
+[K-154] ═══════════════════════════════════════════════════════
+```
+
+### Testing
+
+Test on staging with all 69 leagues for GW18:
+1. Click "All Leagues (69)" → Select GW18 → SYNC
+2. Monitor Railway logs for progress
+3. Wait for completion (~6-8 minutes)
+4. Verify response: "✅ 69/69 successful"
+5. Check validation grid: All leagues should show ✓
+6. If any fail, check logs for specific error messages
 
 ---
 
