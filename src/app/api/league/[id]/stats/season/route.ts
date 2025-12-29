@@ -1529,7 +1529,7 @@ async function calculateClassicPts(
 
     const managerMap = new Map();
     managersResult.rows.forEach((row: any) => {
-      managerMap.set(row.entry_id, {
+      managerMap.set(Number(row.entry_id), {
         player_name: row.player_name,
         team_name: row.team_name
       });
@@ -1538,12 +1538,12 @@ async function calculateClassicPts(
     // Create H2H rank map
     const h2hRankMap = new Map();
     leagueStandings.forEach((standing: any) => {
-      h2hRankMap.set(standing.entry_id, standing.rank);
+      h2hRankMap.set(Number(standing.entry_id), Number(standing.rank));
     });
 
     // Build Classic Pts data with variance calculation
     const classicPts = pointsResult.rows.map((row: any, index: number) => {
-      const entryId = row.entry_id;
+      const entryId = Number(row.entry_id);
       const manager = managerMap.get(entryId);
       const ptsRank = index + 1; // Points-based rank (1st = highest points)
       const h2hRank = h2hRankMap.get(entryId) || 0;

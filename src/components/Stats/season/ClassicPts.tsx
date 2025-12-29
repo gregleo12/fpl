@@ -90,7 +90,7 @@ export function ClassicPts({ data, myTeamId }: Props) {
     );
   };
 
-  const top5 = data.slice(0, 5);
+  const top3 = data.slice(0, 3);
 
   return (
     <>
@@ -103,7 +103,7 @@ export function ClassicPts({ data, myTeamId }: Props) {
         </div>
 
         <div className={styles.list}>
-          {top5.map((item, index) => (
+          {top3.map((item, index) => (
             <div key={item.entry_id}>
               {renderItem(item, index)}
             </div>

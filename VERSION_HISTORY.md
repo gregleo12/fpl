@@ -2,7 +2,56 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.23 (December 29, 2025)
+**Current Version:** v4.3.24 (December 29, 2025)
+
+---
+
+## v4.3.24 - BUG FIX: Classic Pts showing "Unknown" managers (Dec 29, 2025)
+
+**BUG FIX:** Fixed Classic Pts leaderboard showing "Unknown" for all manager names and displaying 5 items instead of 3.
+
+### The Problem
+
+Classic Pts component was showing:
+- "Unknown" for all player/team names (despite points and variance displaying correctly)
+- 5 preview items instead of 3 (inconsistent with other leaderboard cards)
+
+### Root Cause
+
+**Manager Names Issue:** Type mismatch in Map keys. PostgreSQL returns `entry_id` which could be parsed as string or number depending on context. The `managerMap` was using the raw value as key, but when retrieving with `managerMap.get(entryId)`, the types didn't match, causing all lookups to fail.
+
+**Display Count Issue:** Component used `top5` instead of `top3` for preview.
+
+### The Fix
+
+**Fixed Type Conversions:**
+```typescript
+// Before:
+managerMap.set(row.entry_id, ...)     // Could be string
+const manager = managerMap.get(entryId)  // Could be different type
+
+// After:
+managerMap.set(Number(row.entry_id), ...)
+const manager = managerMap.get(Number(entryId))  // Consistent number type
+```
+
+**Fixed Display Count:**
+```typescript
+// Before:
+const top5 = data.slice(0, 5);
+
+// After:
+const top3 = data.slice(0, 3);  // Matches other leaderboards
+```
+
+### Technical Details
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/season/route.ts` (lines 1531-1547)
+  - Added `Number()` conversion for all Map operations
+  - Ensures entry_id, rank values are consistently numbers
+- `/src/components/Stats/season/ClassicPts.tsx` (line 93)
+  - Changed from `top5` to `top3`
 
 ---
 

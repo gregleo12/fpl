@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.23** (December 29, 2025)
+**v4.3.24** (December 29, 2025)
 
-FEATURE: K-143 Season Stats improvements. GW Records now shows unique players only (best/worst performance per player). Replaced Consistency with new "Classic Pts" leaderboard showing points-based rankings with H2H variance. Added average GW points to Form section. Reordered sections for better flow: Form → Luck → Captain → Classic Pts → Streak → GW Records → Chips → Team Value → Bench Points.
+BUG FIX: Fixed Classic Pts leaderboard showing "Unknown" for all manager names. Type mismatch in Map keys - PostgreSQL entry_id wasn't being consistently converted to numbers. Also fixed display to show top 3 preview items instead of 5 to match other leaderboard cards.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
