@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.31** (December 29, 2025)
+**v4.3.32** (December 29, 2025)
 
-ADMIN TOOL (K-146): Visual interface to manually sync specific gameweeks with status indicators. Admins can now see which GWs have valid/invalid/missing data, select specific GWs (or use quick select buttons), and trigger one-click syncs without SSH access. Features: GW grid with color-coded status (✓ valid, ⚠ invalid, ○ missing), league selector (single or all), real-time progress feedback, and detailed results. Reuses K-142 sync logic + K-144 validation. Available at /admin → Sync tab.
+UI ENHANCEMENT (K-150): Replaced +/- (differential) column with Luck in both Rank Tab and GW Rankings Modal. Shows season-cumulative luck (sum of opponent deviations from average) in league standings, and GW-specific luck (opponent season avg - opponent GW score) in gameweek rankings. Color-coded: green (positive luck), red (negative luck), gray (neutral). No database changes, calculated on-demand from existing H2H match data.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

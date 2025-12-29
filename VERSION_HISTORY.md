@@ -2,7 +2,113 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.31 (December 29, 2025)
+**Current Version:** v4.3.32 (December 29, 2025)
+
+---
+
+## v4.3.32 - K-150: Add Luck Column to Rankings (Dec 29, 2025)
+
+**UI ENHANCEMENT:** Replace +/- (differential) column with Luck in both League standings and GW Rankings modal.
+
+### The Need
+
+The +/- (differential) column showed the difference between points for and points against, which doesn't reflect actual luck. Users need to see:
+1. How much luck each manager has accumulated (season-long)
+2. How much luck each manager had in a specific gameweek
+
+### The Solution
+
+**Replaced +/- with Luck in two places:**
+1. **Rank Tab** - League standings table shows season-cumulative luck
+2. **GW Rankings Modal** - Gameweek-specific luck for individual GWs
+
+**Luck Calculation:**
+```typescript
+// Season-long luck (cumulative across all H2H matches)
+luck = sum of (opponent_average - opponent_actual_score)
+
+// GW-specific luck (for one gameweek)
+gw_luck = opponent_season_average - opponent_gw_score
+```
+
+### Implementation
+
+**API Changes:**
+
+1. `/src/app/api/league/[id]/stats/route.ts` - Added luck to league stats
+   - New `calculateLuck()` function computes season-cumulative luck
+   - Calculates each manager's average points
+   - For each H2H match: `luck += opponent_avg - opponent_actual`
+   - Returns rounded integer values
+   - Added to standings response as `luck` field
+
+2. `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts` - Added GW-specific luck
+   - Queries H2H matches for specific gameweek
+   - Queries manager averages up to that gameweek
+   - Calculates `gw_luck = opponent_avg - opponent_gw_points`
+   - Returns rounded integer values
+   - Added to rankings response as `gw_luck` field
+
+**UI Changes:**
+
+3. `/src/components/Dashboard/LeagueTab.tsx` - Updated Rank tab
+   - Changed table header from `+/-` to `Luck`
+   - Updated data extraction: `const luck = team.luck || 0;`
+   - Color-coded display: green (positive), red (negative), gray (neutral)
+   - Format: `+X` for positive, `-X` for negative
+
+4. `/src/components/Stats/GWRankingsModal.tsx` - Updated GW rankings modal
+   - Added luck column to ranking items
+   - Structure: `| Rank | Manager | GW Pts | Luck |`
+   - Color-coded display matching Rank tab
+   - Shows `gw_luck` value with proper formatting
+
+**CSS Changes:**
+
+5. `/src/components/Dashboard/Dashboard.module.css` - Luck styling for Rank tab
+   - `.luckCol` - 60px width, center-aligned
+   - `.luckPositive` - #00ff87 (green)
+   - `.luckNegative` - #ff4444 (red)
+   - `.luckNeutral` - rgba(255, 255, 255, 0.5) (gray)
+   - Mobile: hidden on small screens (same as old +/- column)
+
+6. `/src/components/Stats/GWRankingsModal.module.css` - Luck styling for modal
+   - `.luckColumn` - flex column, 60px min-width
+   - `.luck` - 1rem font-size, 600 weight
+   - `.luckLabel` - "luck" label below value
+   - Same color scheme as Rank tab
+   - Mobile: 50px min-width, slightly smaller font
+
+### Example
+
+**Rank Tab - Season Luck:**
+```
+Rank | Team             | W | D | L | Form  | Streak | PF   | Luck | Pts
+1    | Greg's Team      | 8 | 3 | 2 | WWLDW | W2     | 1250 | +18  | 27
+2    | John's Team      | 7 | 4 | 2 | DWWWL | L1     | 1180 | -12  | 25
+```
+
+**GW Rankings Modal - GW18 Luck:**
+```
+Rank | Manager      | GW Pts | Luck
+1    | Greg Brown   | 85     | +8
+2    | John Smith   | 72     | -3
+```
+
+### Technical Details
+
+- **Data Source:** Uses existing H2H matches and manager history tables
+- **Calculation:** Season-long for Rank tab, GW-specific for rankings modal
+- **Performance:** Calculated on-demand, no database schema changes
+- **Color Coding:** Positive (green), negative (red), neutral (gray)
+- **Mobile:** Hidden on small screens to maintain table readability
+
+### Migration Notes
+
+- No database migration required
+- No breaking API changes
+- Existing +/- column completely replaced
+- All luck values calculated from existing match data
 
 ---
 

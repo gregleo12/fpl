@@ -201,7 +201,7 @@
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* Differential */
+/* Differential (deprecated - replaced by Luck in K-150) */
 .differential {
   font-weight: 700;
 }
@@ -216,6 +216,28 @@
 
 .neutral {
   color: #999;
+}
+
+/* K-150: Luck Column */
+.luckCol {
+  text-align: center;
+  width: 60px;
+}
+
+.luck {
+  font-weight: 600;
+}
+
+.luckPositive {
+  color: #00ff87;
+}
+
+.luckNegative {
+  color: #ff4444;
+}
+
+.luckNeutral {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* My Team Tab */
@@ -663,7 +685,7 @@
   /* Hide non-essential columns on mobile */
   .formCol,
   .pfCol,
-  .diffCol {
+  .luckCol { /* K-150: Updated from diffCol */
     display: none;
   }
 

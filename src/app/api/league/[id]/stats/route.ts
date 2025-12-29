@@ -182,6 +182,61 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   return { rankChange, previousRank };
 }
 
+// K-150: Calculate luck for each manager (opponent deviation from average)
+function calculateLuck(matches: any[], upToGW: number) {
+  // Step 1: Calculate each manager's average points
+  const pointsByManager: Record<number, number[]> = {};
+
+  matches.forEach((match: any) => {
+    if (match.event > upToGW) return;
+
+    const entry1 = Number(match.entry_1_id);
+    const entry2 = Number(match.entry_2_id);
+    const entry1Points = Number(match.entry_1_points);
+    const entry2Points = Number(match.entry_2_points);
+
+    if (!pointsByManager[entry1]) pointsByManager[entry1] = [];
+    if (!pointsByManager[entry2]) pointsByManager[entry2] = [];
+
+    pointsByManager[entry1].push(entry1Points);
+    pointsByManager[entry2].push(entry2Points);
+  });
+
+  const averages: Record<number, number> = {};
+  Object.entries(pointsByManager).forEach(([entryId, points]) => {
+    const sum = points.reduce((a, b) => a + b, 0);
+    averages[Number(entryId)] = sum / points.length;
+  });
+
+  // Step 2: Calculate luck for each manager
+  const luck: Record<number, number> = {};
+
+  // Initialize all managers with 0 luck
+  Object.keys(averages).forEach(entryId => {
+    luck[Number(entryId)] = 0;
+  });
+
+  // Process each match
+  matches.forEach((match: any) => {
+    if (match.event > upToGW) return;
+
+    const entry1 = Number(match.entry_1_id);
+    const entry2 = Number(match.entry_2_id);
+    const entry1Points = Number(match.entry_1_points);
+    const entry2Points = Number(match.entry_2_points);
+
+    // How much did opponent deviate from their average?
+    // Positive = opponent underperformed (lucky for manager)
+    const opp_deviation_for_entry1 = (averages[entry2] || 0) - entry2Points;
+    const opp_deviation_for_entry2 = (averages[entry1] || 0) - entry1Points;
+
+    luck[entry1] = (luck[entry1] || 0) + opp_deviation_for_entry1;
+    luck[entry2] = (luck[entry2] || 0) + opp_deviation_for_entry2;
+  });
+
+  return luck;
+}
+
 function rebuildStandingsFromMatches(matches: any[], managers: any[], upToGW: number) {
   // Build standings from scratch using match results
   const standings: any = {};
@@ -487,6 +542,9 @@ export async function GET(
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(matchesWithLiveScores, managers, currentGW);
 
+    // K-150: Calculate luck for all managers
+    const luckValues = calculateLuck(matchesWithLiveScores, currentGW);
+
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = standings.map((standing: any) => {
       const formData = calculateFormAndStreakFromMatches(standing.entry_id, matchesWithLiveScores, currentGW);
@@ -503,7 +561,8 @@ export async function GET(
         ...standing,
         ...formData,
         rankChange,
-        previousRank: standing.rank - rankChange
+        previousRank: standing.rank - rankChange,
+        luck: Math.round(luckValues[standing.entry_id] || 0) // K-150: Add luck to standings
       };
     });
 

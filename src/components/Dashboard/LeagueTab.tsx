@@ -84,7 +84,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onTea
                 <th className={styles.formCol}>Form</th>
                 <th className={styles.streakCol}>Streak</th>
                 <th className={styles.pfCol}>PF</th>
-                <th className={styles.diffCol}>+/-</th>
+                <th className={styles.luckCol}>Luck</th>
                 <th className={styles.ptsCol}>Pts</th>
               </tr>
             </thead>
@@ -92,7 +92,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onTea
               {data.standings.map((team: any) => {
                 const isMyTeam = team.entry_id.toString() === myTeamId;
                 const isAverage = team.entry_id === -1 || team.player_name === 'AVERAGE';
-                const differential = team.points_for - team.points_against;
+                const luck = team.luck || 0; // K-150: Use luck instead of differential
                 const rankChange = team.rankChange || 0;
 
                 const handleRowClick = () => {
@@ -163,13 +163,13 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onTea
                       )}
                     </td>
                     <td className={styles.pfCol}>{team.points_for}</td>
-                    <td className={styles.diffCol}>
-                      <span className={`${styles.differential} ${
-                        differential > 0 ? styles.positive :
-                        differential < 0 ? styles.negative :
-                        styles.neutral
+                    <td className={styles.luckCol}>
+                      <span className={`${styles.luck} ${
+                        luck > 0 ? styles.luckPositive :
+                        luck < 0 ? styles.luckNegative :
+                        styles.luckNeutral
                       }`}>
-                        {differential > 0 ? `+${differential}` : differential}
+                        {luck > 0 ? `+${luck}` : luck}
                       </span>
                     </td>
                     <td className={styles.ptsCol}><strong>{team.total}</strong></td>

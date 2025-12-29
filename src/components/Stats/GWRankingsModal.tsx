@@ -82,6 +82,16 @@ export function GWRankingsModal({ isOpen, onClose, gameweek, rankings, myTeamId 
                       <div className={styles.points}>{ranking.points}</div>
                       <div className={styles.ptsLabel}>pts</div>
                     </div>
+                    <div className={styles.luckColumn}>
+                      <div className={`${styles.luck} ${
+                        (ranking as any).gw_luck > 0 ? styles.luckPositive :
+                        (ranking as any).gw_luck < 0 ? styles.luckNegative :
+                        styles.luckNeutral
+                      }`}>
+                        {(ranking as any).gw_luck > 0 ? `+${(ranking as any).gw_luck}` : (ranking as any).gw_luck || 0}
+                      </div>
+                      <div className={styles.luckLabel}>luck</div>
+                    </div>
                   </div>
                 );
               })}

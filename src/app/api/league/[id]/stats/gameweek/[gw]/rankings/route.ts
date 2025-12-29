@@ -96,6 +96,49 @@ export async function GET(
 
     const managerScores = await Promise.all(managerScoresPromises);
 
+    // K-150: Calculate GW-specific luck
+    const luckMap: Record<number, number> = {};
+
+    try {
+      // Get H2H match for this specific GW
+      const matchesResult = await db.query(`
+        SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points
+        FROM h2h_matches
+        WHERE league_id = $1 AND event = $2
+      `, [leagueId, gw]);
+
+      // Calculate each manager's season average (up to this GW)
+      const averagesResult = await db.query(`
+        SELECT entry_id, AVG(points) as avg_points
+        FROM manager_gw_history
+        WHERE league_id = $1 AND event <= $2
+        GROUP BY entry_id
+      `, [leagueId, gw]);
+
+      const averages: Record<number, number> = {};
+      averagesResult.rows.forEach((row: any) => {
+        averages[row.entry_id] = parseFloat(row.avg_points) || 0;
+      });
+
+      // Calculate luck for each manager in this GW
+      matchesResult.rows.forEach((match: any) => {
+        const entry1 = parseInt(match.entry_1_id);
+        const entry2 = parseInt(match.entry_2_id);
+        const entry1Points = parseInt(match.entry_1_points);
+        const entry2Points = parseInt(match.entry_2_points);
+
+        // Opponent deviation from average = luck
+        const luck1 = (averages[entry2] || 0) - entry2Points;
+        const luck2 = (averages[entry1] || 0) - entry1Points;
+
+        luckMap[entry1] = Math.round(luck1);
+        luckMap[entry2] = Math.round(luck2);
+      });
+    } catch (error) {
+      console.error('[K-150] Error calculating GW luck:', error);
+      // If luck calculation fails, all managers get 0 luck
+    }
+
     // Sort by points descending
     managerScores.sort((a, b) => b.points - a.points);
 
@@ -118,6 +161,7 @@ export async function GET(
         player_name: manager.player_name,
         team_name: manager.team_name,
         points: manager.points,
+        gw_luck: luckMap[manager.entry_id] || 0 // K-150: Add GW-specific luck
       });
 
       previousPoints = manager.points;
