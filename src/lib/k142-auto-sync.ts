@@ -3,9 +3,12 @@
  *
  * Automatically syncs completed gameweek data from FPL API to database
  * after a 10-hour safety buffer to ensure FPL has finalized all data.
+ *
+ * K-144: Now uses shared validation functions from dataValidation.ts for DRY principle.
  */
 
 import { getDatabase } from '@/lib/db';
+import { hasValidPlayerStats, hasValidTeamHistory, hasValidManagerHistory } from '@/lib/dataValidation';
 
 const SYNC_BUFFER_HOURS = 10;
 
@@ -61,33 +64,13 @@ export async function checkDatabaseHasTeamGWData(entryId: number, gw: number): P
   try {
     const db = await getDatabase();
 
-    // First check if manager_gw_history has VALID data (non-zero points)
-    const managerResult = await db.query(`
-      SELECT COUNT(*) as count, SUM(points) as total_points
-      FROM manager_gw_history
-      WHERE entry_id = $1 AND event = $2
-    `, [entryId, gw]);
+    // K-144: Use shared validation functions
+    const hasTeam = await hasValidTeamHistory(db, entryId, gw);
+    const hasPlayers = await hasValidPlayerStats(db, gw);
 
-    const managerRows = parseInt(managerResult.rows[0]?.count || '0');
-    const managerPoints = parseFloat(managerResult.rows[0]?.total_points || '0');
+    const isValid = hasTeam && hasPlayers;
 
-    if (managerRows === 0 || managerPoints === 0) {
-      console.log(`[K-142b] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, valid=false (no valid manager data)`);
-      return false;
-    }
-
-    // Also check if player_gameweek_stats has any non-zero points for this GW
-    // This ensures we're not using stale player data
-    const playerStatsResult = await db.query(`
-      SELECT SUM(total_points) as total_points
-      FROM player_gameweek_stats
-      WHERE gameweek = $1
-    `, [gw]);
-
-    const playerTotalPoints = parseFloat(playerStatsResult.rows[0]?.total_points || '0');
-    const isValid = playerTotalPoints > 0;
-
-    console.log(`[K-142b] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, playerPoints=${playerTotalPoints}, valid=${isValid}`);
+    console.log(`[K-142b/K-144] checkDatabaseHasTeamGWData: entry=${entryId}, gw=${gw}, team=${hasTeam}, players=${hasPlayers}, valid=${isValid}`);
 
     return isValid;
   } catch (error) {
@@ -110,35 +93,13 @@ export async function checkDatabaseHasGWData(leagueId: number, gw: number): Prom
   try {
     const db = await getDatabase();
 
-    // Check if manager_gw_history has VALID data (non-zero points) for this GW
-    const managerResult = await db.query(`
-      SELECT
-        COUNT(*) as total_rows,
-        SUM(points) as total_points
-      FROM manager_gw_history
-      WHERE league_id = $1 AND event = $2
-    `, [leagueId, gw]);
+    // K-144: Use shared validation functions
+    const hasManagers = await hasValidManagerHistory(db, leagueId, gw);
+    const hasPlayers = await hasValidPlayerStats(db, gw);
 
-    const managerRows = parseInt(managerResult.rows[0]?.total_rows || '0');
-    const managerPoints = parseFloat(managerResult.rows[0]?.total_points || '0');
+    const isValid = hasManagers && hasPlayers;
 
-    if (managerRows === 0 || managerPoints === 0) {
-      console.log(`[K-142c] checkDatabaseHasGWData: league=${leagueId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, valid=false (no valid manager data)`);
-      return false;
-    }
-
-    // K-142c: ALSO check if player_gameweek_stats has any non-zero points for this GW
-    // This is CRITICAL because K-108c (used by fixtures) relies on player stats
-    const playerStatsResult = await db.query(`
-      SELECT SUM(total_points) as total_points
-      FROM player_gameweek_stats
-      WHERE gameweek = $1
-    `, [gw]);
-
-    const playerTotalPoints = parseFloat(playerStatsResult.rows[0]?.total_points || '0');
-    const isValid = playerTotalPoints > 0;
-
-    console.log(`[K-142c] checkDatabaseHasGWData: league=${leagueId}, gw=${gw}, managerRows=${managerRows}, managerPoints=${managerPoints}, playerPoints=${playerTotalPoints}, valid=${isValid}`);
+    console.log(`[K-142c/K-144] checkDatabaseHasGWData: league=${leagueId}, gw=${gw}, managers=${hasManagers}, players=${hasPlayers}, valid=${isValid}`);
 
     return isValid;
   } catch (error) {

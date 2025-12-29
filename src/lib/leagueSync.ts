@@ -1,43 +1,62 @@
 import { getDatabase } from '@/lib/db';
 import { calculatePoints, type Position } from '@/lib/pointsCalculator';
+import { hasValidPlayerStats } from '@/lib/dataValidation';
 
 const SYNC_INTERVAL_HOURS = 24; // Re-sync if older than 24 hours
 
 /**
  * K-112: Check which gameweeks are missing K-108 calculated_points data
+ * K-144: Now checks for INVALID data (zeros) in addition to missing data
  * Returns array of GW numbers that need K-108 syncing
  */
 async function getGameweeksMissingK108Data(
   db: any,
   maxGW: number
 ): Promise<number[]> {
-  console.log(`[K-108 Check] Checking for missing calculated_points up to GW${maxGW}...`);
+  console.log(`[K-108/K-144 Check] Checking for missing or invalid calculated_points up to GW${maxGW}...`);
 
-  // Query: For each GW, check if ANY player has calculated_points
+  // K-144: Check for VALID data (non-zero points), not just row existence
   const result = await db.query(`
-    SELECT DISTINCT gameweek
+    SELECT gameweek,
+           COUNT(*) as row_count,
+           SUM(COALESCE(calculated_points, 0)) as total_points
     FROM player_gameweek_stats
     WHERE gameweek <= $1
-      AND calculated_points IS NOT NULL
+    GROUP BY gameweek
     ORDER BY gameweek
   `, [maxGW]);
 
-  const populatedGWs = new Set(result.rows.map((r: any) => parseInt(r.gameweek)));
-  const missingGWs: number[] = [];
+  // Build set of GWs with VALID data (rows exist AND points > 0)
+  const validGWs = new Set<number>();
+  for (const row of result.rows) {
+    const gw = parseInt(row.gameweek);
+    const rowCount = parseInt(row.row_count || '0');
+    const totalPoints = parseFloat(row.total_points || '0');
 
-  for (let gw = 1; gw <= maxGW; gw++) {
-    if (!populatedGWs.has(gw)) {
-      missingGWs.push(gw);
+    // K-144: Must have both rows AND non-zero total points
+    if (rowCount > 0 && totalPoints > 0) {
+      validGWs.add(gw);
+    } else {
+      console.log(`[K-144] GW${gw}: Invalid data detected (rows=${rowCount}, points=${totalPoints})`);
     }
   }
 
-  if (missingGWs.length > 0) {
-    console.log(`[K-108 Check] Missing calculated_points for GWs: ${missingGWs.join(', ')}`);
-  } else {
-    console.log(`[K-108 Check] All GWs 1-${maxGW} have calculated_points ✓`);
+  // Find GWs that are MISSING or INVALID
+  const missingOrInvalidGWs: number[] = [];
+
+  for (let gw = 1; gw <= maxGW; gw++) {
+    if (!validGWs.has(gw)) {
+      missingOrInvalidGWs.push(gw);
+    }
   }
 
-  return missingGWs;
+  if (missingOrInvalidGWs.length > 0) {
+    console.log(`[K-144] GWs needing sync: ${missingOrInvalidGWs.join(', ')}`);
+  } else {
+    console.log(`[K-144] All GWs 1-${maxGW} have valid calculated_points ✓`);
+  }
+
+  return missingOrInvalidGWs;
 }
 
 /**

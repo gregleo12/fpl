@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.27** (December 29, 2025)
+**v4.3.28** (December 29, 2025)
 
-UI IMPROVEMENT: Reordered Season Stats sections - swapped Classic Pts and Chips positions. Chips moved from 7th to 4th, Classic Pts moved from 4th to 7th. New order: Form → Luck → Captain → Chips → Streak → GW Records → Classic Pts → Team Value → Bench Points. Part of K-143 improvements.
+CRITICAL FIX (K-144): Sync now detects INVALID (zero) data, not just missing data. Before: Sync checked "Does GW have rows?" → skipped GWs with all zeros. After: Sync checks "Does GW have non-zero points?" → re-syncs invalid data automatically. Self-healing sync, DRY validation shared with K-142. Example: GW with 760 rows but calculated_points=0 now gets re-synced instead of skipped forever.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

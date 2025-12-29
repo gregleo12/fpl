@@ -2,7 +2,121 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.27 (December 29, 2025)
+**Current Version:** v4.3.28 (December 29, 2025)
+
+---
+
+## v4.3.28 - K-144: Sync Detects Invalid/Zero Data (Dec 29, 2025)
+
+**CRITICAL FIX:** Updated sync logic to detect INVALID (zero) data, not just missing data.
+
+### The Problem
+
+**Before K-144:**
+```
+Sync Logic: Does GW have rows? → YES → Skip (even if all zeros)
+```
+
+**Example Scenario:**
+1. GW18 synced on Dec 26 (before GW18 started)
+2. Database has 760 rows in `player_gameweek_stats` for GW18
+3. All rows have `calculated_points = 0` (invalid)
+4. User runs Full Resync
+5. Sync sees "GW18 has data" → skips it
+6. **Zeros remain forever** ❌
+
+### The Fix
+
+**After K-144:**
+```
+Sync Logic: Does GW have rows WITH non-zero points? → NO → Re-sync
+```
+
+**Now:**
+1. Sync detects GW18 has zeros (invalid data)
+2. Logs: `[K-144] GW18: Invalid data detected (rows=760, points=0)`
+3. Re-syncs GW18 with correct data
+4. **Zeros fixed automatically** ✅
+
+### Implementation Details
+
+**1. Created Shared Validation Module**
+- **File:** `/src/lib/dataValidation.ts` (NEW)
+- **Functions:**
+  - `hasValidPlayerStats()` - Check player_gameweek_stats for non-zero points
+  - `hasValidManagerHistory()` - Check manager_gw_history for non-zero points
+  - `hasValidTeamHistory()` - Check team-specific manager data
+  - `getValidationDetails()` - Get detailed validation info for logging
+
+**2. Updated K-142 Validation (DRY Principle)**
+- **File:** `/src/lib/k142-auto-sync.ts`
+- Now uses shared validation functions
+- `checkDatabaseHasGWData()` → uses `hasValidManagerHistory()` + `hasValidPlayerStats()`
+- `checkDatabaseHasTeamGWData()` → uses `hasValidTeamHistory()` + `hasValidPlayerStats()`
+- Logs updated: `[K-142b/K-144]` and `[K-142c/K-144]`
+
+**3. Updated Sync Detection Logic**
+- **File:** `/src/lib/leagueSync.ts`
+- `getGameweeksMissingK108Data()` enhanced:
+  - OLD: Check if `calculated_points IS NOT NULL`
+  - NEW: Check if `SUM(calculated_points) > 0`
+- Logs invalid GWs: `[K-144] GW{X}: Invalid data detected (rows=N, points=0)`
+- Returns all GWs needing sync (missing OR invalid)
+
+### What Gets Fixed
+
+| Scenario | Before K-144 | After K-144 |
+|----------|--------------|-------------|
+| GW has rows but all zeros | Skipped (bug) | Re-synced ✓ |
+| GW has no rows | Synced ✓ | Synced ✓ |
+| GW has valid data | Skipped ✓ | Skipped ✓ |
+| Player stats valid, manager zero | Not detected | Detected + re-synced ✓ |
+| Manager valid, player stats zero | Not detected | Detected + re-synced ✓ |
+
+### Benefits
+
+1. **Self-Healing Sync:** Bad data automatically detected and fixed
+2. **DRY Code:** K-142 and sync use same validation logic
+3. **Clear Logging:** Know exactly which GWs are invalid and why
+4. **Works Everywhere:**
+   - Full Resync (Settings)
+   - Quick Sync (missing GWs)
+   - Auto-sync (K-142 background)
+
+### Technical Notes
+
+**Database Validation Query:**
+```sql
+SELECT gameweek,
+       COUNT(*) as row_count,
+       SUM(COALESCE(calculated_points, 0)) as total_points
+FROM player_gameweek_stats
+WHERE gameweek <= $1
+GROUP BY gameweek
+```
+
+**Validation Logic:**
+```typescript
+// K-144: Must have BOTH rows AND non-zero total points
+if (rowCount > 0 && totalPoints > 0) {
+  validGWs.add(gw);  // Valid
+} else {
+  console.log(`[K-144] GW${gw}: Invalid (rows=${rowCount}, points=${totalPoints})`);
+  missingOrInvalidGWs.push(gw);  // Needs re-sync
+}
+```
+
+### Files Modified
+
+- `/src/lib/dataValidation.ts` - NEW shared validation module
+- `/src/lib/k142-auto-sync.ts` - Use shared validation (DRY)
+- `/src/lib/leagueSync.ts` - Detect invalid data, not just missing
+
+### Related
+
+- Builds on K-142 (runtime validation)
+- Builds on K-108/K-112 (calculated_points syncing)
+- Addresses root cause identified in K-143 audit
 
 ---
 
