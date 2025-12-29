@@ -2,7 +2,138 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.34 (December 29, 2025)
+**Current Version:** v4.3.35 (December 29, 2025)
+
+---
+
+## v4.3.35 - K-146c: Fix Manual Sync Database Connection Issue (Dec 29, 2025)
+
+**BUG FIX:** Manual sync validation was using stale database connection, causing validation to fail even when sync succeeded.
+
+### The Bug
+
+After K-146b, manual sync reported validation failures for ALL leagues tested:
+- League 3537 (10 managers) - ❌ "manager data is invalid or missing"
+- League 3742 (49 managers) - ❌ "manager data is invalid or missing"
+- League 7381 (8 managers) - ❌ "manager data is invalid or missing"
+
+Meanwhile, K-148 auto-sync worked fine for the same gameweeks.
+
+### Root Cause
+
+Database connection isolation issue in `forceSyncGW.ts`:
+
+```typescript
+// forceSyncGW.ts execution flow:
+const db = await getDatabase();           // Connection A
+
+// 1. Delete using connection A
+await db.query('DELETE FROM manager_gw_history...');
+
+// 2. Sync using connection B (created inside syncCompletedGW)
+await syncCompletedGW(leagueId, gameweek);  // Creates its own connection
+
+// 3. Validate using connection A
+const hasManagers = await hasValidManagerHistory(db, ...);  // ❌ Stale connection!
+```
+
+**The Problem:**
+- DELETE operations happened in connection A
+- INSERT operations happened in connection B (created inside `syncCompletedGW()`)
+- Validation used connection A, which might not immediately see data committed by connection B
+
+This could cause validation to run before the other connection's commits are visible, especially under load or with connection pooling.
+
+### The Fix
+
+**Get fresh database connection after sync completes:**
+
+```typescript
+// Step 3: Use K-142's sync function to fetch fresh data
+await syncCompletedGW(leagueId, gameweek);
+
+// K-146c: Get fresh database connection for validation
+// syncCompletedGW uses its own connection, so we need a fresh one to see committed data
+const freshDb = await getDatabase();
+
+// Now validation sees the committed data
+const hasManagers = await hasValidManagerHistory(freshDb, leagueId, gameweek);
+const hasPlayers = await hasValidPlayerStats(freshDb, gameweek);
+```
+
+**Added detailed debug logging:**
+
+```typescript
+// K-146c: Check actual row counts and point totals for debugging
+const managerCheck = await freshDb.query(`
+  SELECT COUNT(*) as row_count, SUM(COALESCE(points, 0)) as total_points
+  FROM manager_gw_history
+  WHERE league_id = $1 AND event = $2
+`, [leagueId, gameweek]);
+
+console.log(`[K-146c] Manager data: ${managerCheck.rows[0]?.row_count} rows, ${managerCheck.rows[0]?.total_points} total points`);
+```
+
+Now logs show exactly what data exists in the database for debugging.
+
+### Changes Made
+
+| Line | Change | Why |
+|------|--------|-----|
+| 65 | `const freshDb = await getDatabase();` | Get fresh connection after sync |
+| 68-73 | Use `freshDb` for all validation queries | Ensure we see committed data |
+| 79-92 | Added debug queries for row counts + point totals | Help diagnose future issues |
+| 99, 105 | Log actual row/point counts on validation failure | Show what validation saw |
+
+### Expected Behavior (After Fix)
+
+1. User clicks "SYNC" for specific league/GW
+2. Backend deletes old data (connection A)
+3. Backend syncs new data (connection B created in syncCompletedGW)
+4. Backend gets **fresh connection** (connection C)
+5. Backend validates using fresh connection
+6. If data exists and has points: ✅ Success
+7. If data missing or all zeros: ❌ Error with debug info
+8. Grid updates to show ✓ after successful sync
+
+### Debug Output Example
+
+**Success:**
+```
+[K-146c] Getting fresh database connection for validation...
+[K-146c] Manager data: 10 rows, 687 total points
+[K-146c] Player data: 623 rows, 4523 total points
+[K-146b] ✓ Validation passed: data is valid
+```
+
+**Failure (with debug info):**
+```
+[K-146c] Manager data: 0 rows, 0 total points
+[K-146b] ✗ Validation failed: manager_gw_history has invalid/zero data
+[K-146c] Debug: Rows=0, Points=0
+```
+
+### Technical Notes
+
+**Why This Works:**
+- `getDatabase()` returns a connection from the pool
+- Getting a fresh connection ensures we see all committed transactions
+- Previous connection might have been holding a snapshot from before sync completed
+
+**Connection Lifecycle:**
+1. Connection A: Used for DELETEs, kept alive during sync
+2. Connection B: Created inside syncCompletedGW, commits and closes
+3. Connection C: Fresh connection, sees all committed data
+
+### Testing Instructions
+
+1. Go to `/admin` on staging
+2. Select any league with invalid/missing GW18 data
+3. Click "SYNC" for GW18
+4. Watch Railway logs for debug output
+5. Should see row counts and point totals
+6. Should see "✓ Validation passed"
+7. Grid should update to show ✓ (green)
 
 ---
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.34** (December 29, 2025)
+**v4.3.35** (December 29, 2025)
 
-CRITICAL BUG FIX (K-146b): Fixed K-146 admin sync tool reporting success but validation grid not updating. Root cause: `syncCompletedGW()` synced manager data but never synced player stats. Validation checked both tables, so it always failed even when manager sync succeeded. Fix: Added `syncK108PlayerStats()` call to sync player gameweek stats with calculated_points after manager sync. Added post-sync validation to catch failures immediately. Grid now updates correctly after successful sync.
+BUG FIX (K-146c): Fixed manual sync database connection issue causing false validation failures. Root cause: validation used stale database connection A while sync wrote data using connection B. Connection A couldn't see uncommitted/newly-committed data from B. Fix: Get fresh database connection after sync completes before running validation. Added detailed debug logging showing actual row counts and point totals. Manual sync tool now works correctly.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
