@@ -377,7 +377,7 @@ async function calculateLuck(
     const luckResults = Object.entries(luckByManager)
       .map(([entryId, luck]) => {
         const manager = managersMap.get(parseInt(entryId));
-        const roundedLuck = Math.round(luck * 10) / 10;
+        const roundedLuck = Math.round(luck * 10);
         return {
           entry_id: parseInt(entryId),
           player_name: manager?.player_name || 'Unknown',

@@ -1130,7 +1130,7 @@ async function calculateBenchPoints(
         team_name: row.team_name,
         total_bench_points: benchPts,
         total_points: totalPts,
-        bench_percentage: Math.round(percentage * 10) / 10 // Round to 1 decimal
+        bench_percentage: Math.round(percentage * 10) // Round to 1 decimal
       };
     });
 
@@ -1483,7 +1483,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
         entry_id: parseInt(entryId),
         player_name: managerMap[parseInt(entryId)]?.player_name || 'Unknown',
         team_name: managerMap[parseInt(entryId)]?.team_name || 'Unknown',
-        luck_index: Math.round(luckValue * 10) / 10 // Round to 1 decimal
+        luck_index: Math.round(luckValue * 10) // Round to 1 decimal
       }))
       .sort((a, b) => b.luck_index - a.luck_index);
 
@@ -1495,7 +1495,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
 
     console.log('[K-163 LUCK INDEX] Calculated luck index:', {
       count: luckIndex.length,
-      sumOfLuck: Math.round(sumOfLuck * 10) / 10,
+      sumOfLuck: Math.round(sumOfLuck * 10),
       range: `${minLuck.toFixed(1)} to ${maxLuck.toFixed(1)}`,
       luckiest: luckIndex.slice(0, 3).map((l: any) => ({
         name: l.player_name,

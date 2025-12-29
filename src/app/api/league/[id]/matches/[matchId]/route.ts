@@ -522,8 +522,8 @@ export async function GET(
         const entry2Luck = calculateGWLuck(match.entry_2_points, otherTeamsPointsForEntry2, entry2Result);
 
         matchLuck = {
-          entry_1_luck: Math.round(entry1Luck * 10) / 10,
-          entry_2_luck: Math.round(entry2Luck * 10) / 10
+          entry_1_luck: Math.round(entry1Luck * 10),
+          entry_2_luck: Math.round(entry2Luck * 10)
         };
       } catch (error) {
         console.error('[K-163] Error calculating match luck:', error);

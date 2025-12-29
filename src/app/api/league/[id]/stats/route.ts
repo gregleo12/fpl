@@ -577,7 +577,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) / 10 // K-163: Round to 1 decimal
+        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) // K-163a: ×10 format
       };
     });
 

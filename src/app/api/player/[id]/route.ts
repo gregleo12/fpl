@@ -243,7 +243,7 @@ export async function GET(
       chipsPlayed,
       chipsFaced,
       gwHistory: history.current || [],
-      season_luck: Math.round(seasonLuck * 10) / 10 // K-163: Add season luck
+      season_luck: Math.round(seasonLuck * 10) // K-163: Add season luck
     });
   } catch (error: any) {
     console.error('Error fetching player profile:', error);

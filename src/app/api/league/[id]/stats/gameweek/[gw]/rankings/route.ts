@@ -137,8 +137,8 @@ export async function GET(
         const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
         const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
 
-        luckMap[entry1] = Math.round(entry1Luck * 10) / 10; // Round to 1 decimal
-        luckMap[entry2] = Math.round(entry2Luck * 10) / 10; // Round to 1 decimal
+        luckMap[entry1] = Math.round(entry1Luck * 10); // Round to 1 decimal
+        luckMap[entry2] = Math.round(entry2Luck * 10); // Round to 1 decimal
       });
     } catch (error) {
       console.error('[K-163] Error calculating GW luck:', error);

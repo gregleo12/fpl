@@ -101,16 +101,17 @@ export function calculateSeasonLuck(gwLuckValues: number[]): number {
 }
 
 /**
- * Format luck value for display
- * @param luck Luck value to format
- * @param decimals Number of decimal places (default: 1)
- * @returns Formatted string with + or - prefix
+ * Format luck value for display (K-163a: ×10 format for better readability)
+ * @param luck Raw luck value (-1 to +1 per GW)
+ * @returns Formatted string with + or - prefix (×10 scaled)
+ * @example formatLuck(0.263) // "+3" (rounded from 2.63)
+ * @example formatLuck(-1.82) // "-18"
  */
-export function formatLuck(luck: number, decimals: number = 1): string {
-  const rounded = Math.round(luck * Math.pow(10, decimals)) / Math.pow(10, decimals);
+export function formatLuck(luck: number): string {
+  const scaled = Math.round(luck * 10);
 
-  if (rounded > 0) return `+${rounded.toFixed(decimals)}`;
-  if (rounded < 0) return `${rounded.toFixed(decimals)}`;
+  if (scaled > 0) return `+${scaled}`;
+  if (scaled < 0) return `${scaled}`;
   return '0';
 }
 

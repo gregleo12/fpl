@@ -350,8 +350,8 @@ export async function GET(
         const theirLuck = calculateGWLuck(lastMeeting.their_score, otherTeamsPointsForThem, theirResult);
 
         lastMeetingLuck = {
-          your_luck: Math.round(yourLuck * 10) / 10,
-          their_luck: Math.round(theirLuck * 10) / 10,
+          your_luck: Math.round(yourLuck * 10),
+          their_luck: Math.round(theirLuck * 10),
           gw: lastGW
         };
       } catch (error) {
