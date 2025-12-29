@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
+import { checkDatabaseHasTeamGWData } from '@/lib/k142-auto-sync';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,9 +40,14 @@ export async function GET(
       const currentEvent = bootstrapData.events?.find((e: any) => e.is_current);
       if (currentEvent) {
         currentGW = currentEvent.id;
-        // K-141: Only use database for truly completed GWs (finished AND next GW has started)
-        if (currentEvent.finished && !currentEvent.is_current) {
-          currentGWStatus = 'completed';
+        // K-142: Check database validity for completed GWs
+        if (currentEvent.finished) {
+          const hasValidData = await checkDatabaseHasTeamGWData(parseInt(teamId), currentGW);
+          if (hasValidData) {
+            currentGWStatus = 'completed';
+          } else {
+            currentGWStatus = 'in_progress';
+          }
         } else if (!currentEvent.is_current && !currentEvent.data_checked) {
           currentGWStatus = 'upcoming';
         }

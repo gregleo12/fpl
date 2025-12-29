@@ -4,6 +4,7 @@ import { getDatabase } from '@/lib/db';
 import { updateLeagueMetadata } from '@/lib/analytics';
 import { shouldSyncLeague, syncLeagueData, checkForMissingGWs, syncMissingGWs } from '@/lib/leagueSync';
 import { detectFPLError, FPL_ERRORS } from '@/lib/fpl-errors';
+import { checkAndSyncCompletedGW } from '@/lib/k142-auto-sync';
 
 export async function GET(
   request: NextRequest,
@@ -47,6 +48,11 @@ export async function GET(
         }
       }
     }
+
+    // K-142: Check and auto-sync completed GW if needed (non-blocking background operation)
+    checkAndSyncCompletedGW(leagueId).catch(err => {
+      console.error(`[League ${leagueId}] K-142 auto-sync error:`, err);
+    });
 
     // Try to fetch H2H league data
     console.log(`[League ${leagueId}] Starting fetch...`);

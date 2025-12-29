@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.17** (December 29, 2025)
+**v4.3.18** (December 29, 2025)
 
-CRITICAL BUG FIX (K-141): Fixed completed gameweeks showing 0 points in My Team and Rivals. Issue: status detection was using database for finished-but-still-current GWs (database had stale data). Fix: Only use database when next GW has started (finished AND !is_current). Now uses FPL API for GW18 until GW19 starts.
+ENHANCEMENT (K-142): Auto-sync completed gameweeks to database after 10-hour buffer. Replaces K-141 quick fix with intelligent database management - checks database validity before deciding data source. Automatically syncs on league load (non-blocking). Uses database when valid, FPL API when stale. Optimal performance + data freshness.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

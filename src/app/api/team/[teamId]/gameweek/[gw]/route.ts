@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { getDatabase } from '@/lib/db';
+import { checkDatabaseHasTeamGWData } from '@/lib/k142-auto-sync';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -40,11 +41,14 @@ export async function GET(
 
     let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
     if (currentEvent) {
-      // K-141: Only use database for truly completed GWs (finished AND next GW has started)
-      // A finished GW that's still current means we're in the gap between GW end and next GW start
-      // In this case, use FPL API (which has final data) instead of database (which may be stale)
-      if (currentEvent.finished && !currentEvent.is_current) {
-        status = 'completed';
+      // K-142: Check database validity for completed GWs
+      if (currentEvent.finished) {
+        const hasValidData = await checkDatabaseHasTeamGWData(entryId, gameweek);
+        if (hasValidData) {
+          status = 'completed';
+        } else {
+          status = 'in_progress';
+        }
       } else if (currentEvent.is_current || currentEvent.data_checked) {
         status = 'in_progress';
       }

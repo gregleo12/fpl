@@ -2,7 +2,137 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.17 (December 29, 2025)
+**Current Version:** v4.3.18 (December 29, 2025)
+
+---
+
+## v4.3.18 - K-142: Auto-Sync Completed GW to Database (Dec 29, 2025)
+
+**ENHANCEMENT:** Implemented automatic sync of completed gameweeks with 10-hour safety buffer, replacing K-141 quick fix with intelligent database management.
+
+### The Problem K-142 Solves
+
+**K-141 Quick Fix Limitations:**
+- ❌ Kept using FPL API for finished GWs until next GW started
+- ❌ Unnecessary API calls for stable, completed data
+- ❌ Database had valid data but wasn't being used
+- ❌ No automatic sync after GW completion
+
+**K-142 Intelligent Solution:**
+- ✅ Automatically syncs completed GW data after 10-hour buffer
+- ✅ Checks database validity before deciding data source
+- ✅ Uses database when valid, FPL API when stale
+- ✅ Triggered on every league load (non-blocking background operation)
+
+### How K-142 Works
+
+**1. Auto-Sync Trigger (On League Load):**
+```typescript
+// Non-blocking background operation in /api/league/[id]
+checkAndSyncCompletedGW(leagueId).catch(err => {
+  console.error(`[K-142] Auto-sync error:`, err);
+});
+```
+
+**2. Intelligent Decision Flow:**
+1. Is GW finished? → Check database validity
+2. Database has valid data (count > 0, total_points > 0)? → Use database
+3. Database invalid/stale? → Use FPL API (and trigger sync if >10hrs)
+
+**3. 10-Hour Safety Buffer:**
+- GW finish time = Last fixture kickoff + 2.5 hours
+- Wait 10 hours after finish before syncing
+- Ensures FPL has finalized all data (bonus points, corrections, etc.)
+
+### Technical Implementation
+
+**New File:** `/src/lib/k142-auto-sync.ts`
+
+**Core Functions:**
+1. `getGWFinishTime(gw)` - Calculates when GW finished
+2. `checkDatabaseHasGWData(leagueId, gw)` - League-specific validation
+3. `checkDatabaseHasTeamGWData(entryId, gw)` - Team-specific validation
+4. `syncCompletedGW(leagueId, gw)` - Syncs all K-27 tables
+5. `checkAndSyncCompletedGW(leagueId)` - Main orchestrator
+
+**7 API Routes Updated (K-141 → K-142):**
+
+**League Routes (use `checkDatabaseHasGWData`):**
+1. `/src/app/api/league/[id]/fixtures/[gw]/route.ts`
+2. `/src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts`
+3. `/src/app/api/league/[id]/stats/gameweek/[gw]/route.ts`
+
+**Team Routes (use `checkDatabaseHasTeamGWData`):**
+4. `/src/app/api/team/[teamId]/gameweek/[gw]/route.ts`
+5. `/src/app/api/gw/[gw]/team/[teamId]/route.ts`
+6. `/src/app/api/team/[teamId]/info/route.ts`
+7. `/src/app/api/team/[teamId]/history/route.ts`
+
+**Old K-141 Logic:**
+```typescript
+// Only check if next GW has started
+if (currentEvent.finished && !currentEvent.is_current) {
+  status = 'completed';  // Use database
+} else {
+  status = 'in_progress';  // Use FPL API
+}
+```
+
+**New K-142 Logic:**
+```typescript
+// Check database validity
+if (currentEvent.finished) {
+  const hasValidData = await checkDatabaseHasGWData(leagueId, gw);
+  if (hasValidData) {
+    status = 'completed';  // Use database (has valid data)
+  } else {
+    status = 'in_progress';  // Use FPL API (database stale)
+  }
+}
+```
+
+### What Gets Synced
+
+**K-27 Tables (All Required Data):**
+1. `manager_gw_history` - Points, transfers, rank, bank, value
+2. `manager_picks` - Team selections, captain, vice captain
+3. `manager_chips` - Active chip (bench boost, triple captain, etc.)
+4. `manager_transfers` - Transfer history with costs
+
+**Global Table (Separate):**
+- `player_gameweek_stats` - Player stats (synced separately via admin scripts)
+
+### Example Timeline
+
+**GW18 Scenario:**
+- Dec 29 15:00 - Last fixture finishes
+- Dec 29 17:30 - GW finish time (last kickoff + 2.5hrs)
+- Dec 30 03:30 - 10-hour buffer complete → auto-sync eligible
+- Next league load → Checks database → Invalid → Uses FPL API
+- Triggers sync if >10hrs since finish
+- Subsequent loads → Database now valid → Uses database ✅
+
+### Impact
+
+**Before K-142 (K-141 Quick Fix):**
+- Finished GW18 at 17:30 Dec 29
+- Until GW19 starts (Jan 4): Uses FPL API ❌
+- Database has valid data but unused
+- Unnecessary API load
+
+**After K-142:**
+- Finished GW18 at 17:30 Dec 29
+- After 03:30 Dec 30 (10hrs): Auto-syncs on league load
+- Database now valid → Uses database ✅
+- FPL API only called if database stale
+- Optimal performance + data freshness
+
+### K-142 Replaces K-141
+
+**K-141:** Quick fix to prevent showing zeros (check `!is_current`)
+**K-142:** Proper solution with intelligent database management
+
+K-141's `!is_current` checks have been **completely replaced** with K-142's `checkDatabaseHasGWData()` validation logic across all 7 routes.
 
 ---
 
