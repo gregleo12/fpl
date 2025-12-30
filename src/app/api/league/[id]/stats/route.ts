@@ -183,8 +183,8 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   return { rankChange, previousRank };
 }
 
-// K-163: Calculate luck using CORRECT formula (Actual - Expected)
-function calculateLuck(matches: any[], upToGW: number) {
+// K-163a Part 2: Calculate luck using 3-component formula
+async function calculateLuck(matches: any[], upToGW: number, db: any, leagueId: number) {
   // Step 1: Group points by gameweek to get all teams' points per GW
   const pointsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> points }
   const managerIds = new Set<number>();
@@ -207,13 +207,50 @@ function calculateLuck(matches: any[], upToGW: number) {
     managerIds.add(entry2);
   });
 
-  // Step 2: Initialize luck for all managers
+  // Step 2: Get progressive season averages for all managers
+  // For each GW, calculate average of all GWs up to and including that GW
+  const seasonAvgsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> avgPoints }
+
+  for (const gw of Object.keys(pointsByGW).map(Number).sort((a, b) => a - b)) {
+    seasonAvgsByGW[gw] = {};
+
+    // For each manager, calculate average up to this GW
+    for (const entryId of Array.from(managerIds)) {
+      const pointsUpToGW: number[] = [];
+
+      for (let g = 1; g <= gw; g++) {
+        if (pointsByGW[g] && pointsByGW[g][entryId] !== undefined) {
+          pointsUpToGW.push(pointsByGW[g][entryId]);
+        }
+      }
+
+      if (pointsUpToGW.length > 0) {
+        seasonAvgsByGW[gw][entryId] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
+      }
+    }
+  }
+
+  // Step 3: Get chip usage for all GWs
+  const chipsResult = await db.query(`
+    SELECT entry_id, event
+    FROM manager_chips
+    WHERE league_id = $1 AND event <= $2
+  `, [leagueId, upToGW]);
+
+  const chipsByGW: Record<number, Set<number>> = {}; // gw -> Set of entryIds who played chips
+  chipsResult.rows.forEach((row: any) => {
+    const gw = row.event;
+    if (!chipsByGW[gw]) chipsByGW[gw] = new Set();
+    chipsByGW[gw].add(row.entry_id);
+  });
+
+  // Step 4: Initialize luck for all managers
   const luck: Record<number, number> = {};
   managerIds.forEach(entryId => {
     luck[entryId] = 0;
   });
 
-  // Step 3: Calculate luck for each match using correct formula
+  // Step 5: Calculate luck for each match using 3-component formula
   matches.forEach((match: any) => {
     if (match.event > upToGW) return;
 
@@ -238,15 +275,31 @@ function calculateLuck(matches: any[], upToGW: number) {
       .filter(([id]) => Number(id) !== entry2)
       .map(([, pts]) => Number(pts));
 
+    // Get season averages for this GW
+    const entry1Avg = seasonAvgsByGW[gw]?.[entry1] || entry1Points;
+    const entry2Avg = seasonAvgsByGW[gw]?.[entry2] || entry2Points;
+
+    // Check if opponent played chip this GW
+    const entry1PlayedChip = chipsByGW[gw]?.has(entry1) || false;
+    const entry2PlayedChip = chipsByGW[gw]?.has(entry2) || false;
+
     // Determine match result from each manager's perspective
     const entry1Result: 'win' | 'draw' | 'loss' =
       winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
     const entry2Result: 'win' | 'draw' | 'loss' =
       winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
 
-    // K-163: Calculate luck using correct formula (Actual - Expected)
-    const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
-    const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+    // K-163a Part 2: Calculate luck using 3-component formula
+    const entry1Luck = calculateGWLuck(
+      entry1Points, otherTeamsPointsForEntry1,
+      entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
+      entry1Result
+    );
+    const entry2Luck = calculateGWLuck(
+      entry2Points, otherTeamsPointsForEntry2,
+      entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
+      entry2Result
+    );
 
     luck[entry1] = (luck[entry1] || 0) + entry1Luck;
     luck[entry2] = (luck[entry2] || 0) + entry2Luck;
@@ -557,8 +610,8 @@ export async function GET(
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(matchesWithLiveScores, managers, currentGW);
 
-    // K-150: Calculate luck for all managers
-    const luckValues = calculateLuck(matchesWithLiveScores, currentGW);
+    // K-163a Part 2: Calculate luck for all managers using 3-component formula
+    const luckValues = await calculateLuck(matchesWithLiveScores, currentGW, db, leagueId);
 
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = standings.map((standing: any) => {
@@ -577,7 +630,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) // K-163a: ×10 format
+        luck: Math.round(luckValues[standing.entry_id] || 0) // K-163a Part 2: Already scaled -10 to +10
       };
     });
 

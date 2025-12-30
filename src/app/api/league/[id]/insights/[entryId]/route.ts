@@ -312,7 +312,7 @@ export async function GET(
       // FT data not critical, continue without it
     }
 
-    // K-163: Calculate luck for last H2H meeting
+    // K-163a Part 2: Calculate luck for last H2H meeting using 3-component formula
     let lastMeetingLuck: { your_luck: number; their_luck: number; gw: number } | null = null;
     if (lastMeeting) {
       try {
@@ -330,6 +330,31 @@ export async function GET(
           return acc;
         }, {});
 
+        // Get season averages up to that GW
+        const seasonAvgsResult = await db.query(`
+          SELECT entry_id, AVG(points) as avg_points
+          FROM manager_gw_history
+          WHERE league_id = $1 AND event <= $2
+          GROUP BY entry_id
+        `, [leagueId, lastGW]);
+
+        const seasonAvgs: Record<number, number> = {};
+        seasonAvgsResult.rows.forEach((row: any) => {
+          seasonAvgs[row.entry_id] = parseFloat(row.avg_points);
+        });
+
+        // Get chip usage for that GW
+        const chipsResult = await db.query(`
+          SELECT entry_id
+          FROM manager_chips
+          WHERE league_id = $1 AND event = $2
+        `, [leagueId, lastGW]);
+
+        const chipsPlayed = new Set<number>();
+        chipsResult.rows.forEach((row: any) => {
+          chipsPlayed.add(row.entry_id);
+        });
+
         // Get other teams' points (excluding you and opponent)
         const otherTeamsPointsForYou = Object.entries(allGWPoints)
           .filter(([id]) => parseInt(id) !== myId)
@@ -345,17 +370,33 @@ export async function GET(
         const theirResult: 'win' | 'draw' | 'loss' =
           lastMeeting.margin < 0 ? 'win' : lastMeeting.margin > 0 ? 'loss' : 'draw';
 
-        // Calculate luck using correct formula
-        const yourLuck = calculateGWLuck(lastMeeting.your_score, otherTeamsPointsForYou, yourResult);
-        const theirLuck = calculateGWLuck(lastMeeting.their_score, otherTeamsPointsForThem, theirResult);
+        // Get season averages
+        const yourSeasonAvg = seasonAvgs[myId] || lastMeeting.your_score;
+        const theirSeasonAvg = seasonAvgs[targetEntryId] || lastMeeting.their_score;
+
+        // Check chip usage
+        const yourPlayedChip = chipsPlayed.has(myId);
+        const theirPlayedChip = chipsPlayed.has(targetEntryId);
+
+        // K-163a Part 2: Calculate luck using 3-component formula
+        const yourLuck = calculateGWLuck(
+          lastMeeting.your_score, otherTeamsPointsForYou,
+          yourSeasonAvg, theirSeasonAvg, lastMeeting.their_score, theirPlayedChip,
+          yourResult
+        );
+        const theirLuck = calculateGWLuck(
+          lastMeeting.their_score, otherTeamsPointsForThem,
+          theirSeasonAvg, yourSeasonAvg, lastMeeting.your_score, yourPlayedChip,
+          theirResult
+        );
 
         lastMeetingLuck = {
-          your_luck: Math.round(yourLuck * 10),
-          their_luck: Math.round(theirLuck * 10),
+          your_luck: Math.round(yourLuck),
+          their_luck: Math.round(theirLuck),
           gw: lastGW
         };
       } catch (error) {
-        console.error('[K-163] Error calculating H2H luck:', error);
+        console.error('[K-163a] Error calculating H2H luck:', error);
         // Non-critical, continue without luck data
       }
     }

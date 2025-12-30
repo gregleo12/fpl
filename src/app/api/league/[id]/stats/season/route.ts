@@ -1388,7 +1388,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       managerIds.add(entryId);
     });
 
-    console.log('[K-163 LUCK INDEX] Manager points:', {
+    console.log('[K-163a LUCK INDEX] Manager points:', {
       managerCount: managerIds.size,
       gwCount: Object.keys(pointsByGW).length,
       sampleGW: completedGameweeks[0] ? {
@@ -1397,7 +1397,40 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       } : null
     });
 
-    // Step 2: Get all H2H matches with results
+    // Step 2: Calculate progressive season averages (K-163a Part 2)
+    const seasonAvgsByGW: Record<number, Record<number, number>> = {};
+    const sortedGWs = completedGameweeks.sort((a, b) => a - b);
+
+    for (const gw of sortedGWs) {
+      seasonAvgsByGW[gw] = {};
+      for (const entryId of Array.from(managerIds)) {
+        const pointsUpToGW: number[] = [];
+        for (let g = sortedGWs[0]; g <= gw; g++) {
+          if (pointsByGW[g]?.[entryId] !== undefined) {
+            pointsUpToGW.push(pointsByGW[g][entryId]);
+          }
+        }
+        if (pointsUpToGW.length > 0) {
+          seasonAvgsByGW[gw][entryId] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
+        }
+      }
+    }
+
+    // Step 3: Get chip usage for all GWs (K-163a Part 2)
+    const chipsResult = await db.query(`
+      SELECT entry_id, event
+      FROM manager_chips
+      WHERE league_id = $1 AND event = ANY($2)
+    `, [leagueId, completedGameweeks]);
+
+    const chipsByGW: Record<number, Set<number>> = {};
+    chipsResult.rows.forEach((row: any) => {
+      const gw = row.event;
+      if (!chipsByGW[gw]) chipsByGW[gw] = new Set();
+      chipsByGW[gw].add(row.entry_id);
+    });
+
+    // Step 4: Get all H2H matches with results
     const matchesResult = await db.query(`
       SELECT
         entry_1_id,
@@ -1414,11 +1447,11 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       ORDER BY event
     `, [leagueId, completedGameweeks]);
 
-    console.log('[K-163 LUCK INDEX] H2H matches:', {
+    console.log('[K-163a LUCK INDEX] H2H matches:', {
       count: matchesResult.rows.length
     });
 
-    // Step 3: Calculate luck for each manager
+    // Step 5: Calculate luck for each manager using 3-component formula (K-163a Part 2)
     const luck: Record<number, number> = {};
 
     // Initialize all managers with 0 luck
@@ -1449,15 +1482,31 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
         .filter(([id]) => Number(id) !== entry2)
         .map(([, pts]) => Number(pts));
 
+      // Get season averages for this GW
+      const entry1Avg = seasonAvgsByGW[gw]?.[entry1] || entry1Points;
+      const entry2Avg = seasonAvgsByGW[gw]?.[entry2] || entry2Points;
+
+      // Check chip usage
+      const entry1PlayedChip = chipsByGW[gw]?.has(entry1) || false;
+      const entry2PlayedChip = chipsByGW[gw]?.has(entry2) || false;
+
       // Determine match result from each manager's perspective
       const entry1Result: 'win' | 'draw' | 'loss' =
         winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
       const entry2Result: 'win' | 'draw' | 'loss' =
         winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
 
-      // K-163: Calculate luck using correct formula (Actual - Expected)
-      const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
-      const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+      // K-163a Part 2: Calculate luck using 3-component formula
+      const entry1Luck = calculateGWLuck(
+        entry1Points, otherTeamsPointsForEntry1,
+        entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
+        entry1Result
+      );
+      const entry2Luck = calculateGWLuck(
+        entry2Points, otherTeamsPointsForEntry2,
+        entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
+        entry2Result
+      );
 
       luck[entry1] = (luck[entry1] || 0) + entry1Luck;
       luck[entry2] = (luck[entry2] || 0) + entry2Luck;
@@ -1483,7 +1532,7 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
         entry_id: parseInt(entryId),
         player_name: managerMap[parseInt(entryId)]?.player_name || 'Unknown',
         team_name: managerMap[parseInt(entryId)]?.team_name || 'Unknown',
-        luck_index: Math.round(luckValue * 10) // Round to 1 decimal
+        luck_index: Math.round(luckValue) // K-163a Part 2: Already scaled -10 to +10
       }))
       .sort((a, b) => b.luck_index - a.luck_index);
 

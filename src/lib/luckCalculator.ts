@@ -1,117 +1,215 @@
 /**
- * K-163: Luck Calculation Utility
+ * K-163a Part 2: 3-Component Luck Calculation
  *
- * Correct Formula:
- * GW Luck = Actual Result - Expected Result
- * - Expected = (teams_outscored + teams_drawn * 0.5) / total_opponents
- * - Actual = win=1, draw=0.5, loss=0
- * - Luck ranges from -1 to +1 per GW
+ * Luck = Rank Luck (50%) + Variance Luck (30%) + Chip Luck (20%)
  *
- * Season Luck = Sum of all GW luck values
+ * Scale: -10 to +10 per GW (extreme cases)
+ * Season: Sum of all GW luck values (-180 to +180 theoretical max)
  */
 
-export interface GWLuckData {
+export interface GWLuckBreakdown {
   gameweek: number;
+  rankLuck: number;
+  varianceLuck: number;
+  chipLuck: number;
+  totalLuck: number;
+  result: 'win' | 'draw' | 'loss';
   yourPoints: number;
   opponentPoints: number;
-  result: 'win' | 'draw' | 'loss';
-  teamsOutscored: number;
-  totalTeams: number;
-  expected: number;
-  actual: number;
-  luck: number;
 }
 
 /**
- * Calculate luck for a single gameweek
+ * Component 1: Rank Luck (50% weight)
+ * "Did your score deserve to win?"
+ *
  * @param yourPoints Your team's points for the GW
- * @param allTeamPoints All teams' points for this GW (excluding yours)
- * @param result Your H2H match result ('win', 'draw', or 'loss')
- * @returns Luck value (-1 to +1)
+ * @param allOtherPoints All other teams' points (19 opponents)
+ * @param result Your H2H match result
+ * @returns Rank luck (-5 to +5)
+ */
+export function calculateRankLuck(
+  yourPoints: number,
+  allOtherPoints: number[],
+  result: 'win' | 'draw' | 'loss'
+): number {
+  const outscored = allOtherPoints.filter(p => yourPoints > p).length;
+  const drawn = allOtherPoints.filter(p => yourPoints === p).length;
+
+  const expected = allOtherPoints.length > 0
+    ? (outscored + drawn * 0.5) / allOtherPoints.length
+    : 0;
+
+  const actual = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0;
+
+  // Scale: (0-1) × 10 × 0.5 = -5 to +5
+  return (actual - expected) * 10 * 0.5;
+}
+
+/**
+ * Component 2: Variance Luck (30% weight)
+ * "Did timing of form swings hurt/help you?"
+ *
+ * @param yourScore Your points this GW
+ * @param yourSeasonAvg Your season average (recalculates each GW)
+ * @param theirScore Opponent's points this GW
+ * @param theirSeasonAvg Opponent's season average
+ * @param result Match result
+ * @returns Variance luck (-3 to +3)
+ */
+export function calculateVarianceLuck(
+  yourScore: number,
+  yourSeasonAvg: number,
+  theirScore: number,
+  theirSeasonAvg: number,
+  result: 'win' | 'draw' | 'loss'
+): number {
+  const yourSwing = yourScore - yourSeasonAvg;
+  const theirSwing = theirScore - theirSeasonAvg;
+  const netSwing = yourSwing - theirSwing; // positive = swings favor you
+
+  // Normalize to -1 to +1 (30 pts = extreme swing)
+  const normalized = Math.max(-1, Math.min(1, netSwing / 30));
+
+  // Apply result context:
+  // - Negative swing + Loss = Unlucky (negative)
+  // - Negative swing + Win = Lucky (positive)
+  // - Positive swing + Win = Expected (zero)
+  // - Positive swing + Loss = Unlucky (negative)
+
+  let luck = 0;
+  if (result === 'win') {
+    // Won despite negative swing = lucky
+    luck = Math.max(0, -normalized);
+  } else if (result === 'loss') {
+    // Lost with negative swing = unlucky
+    luck = Math.min(0, normalized);
+  } else {
+    // Draw: half impact
+    luck = -normalized * 0.5;
+  }
+
+  // Scale: × 10 × 0.3 = -3 to +3
+  return luck * 10 * 0.3;
+}
+
+/**
+ * Component 3: Chip Luck (20% weight)
+ * "Did they boost against you?"
+ *
+ * Note: YOUR chip usage = your decision = not luck
+ *
+ * @param theyPlayedChip Whether opponent played a chip this GW
+ * @param result Match result
+ * @returns Chip luck (-2 to +2)
+ */
+export function calculateChipLuck(
+  theyPlayedChip: boolean,
+  result: 'win' | 'draw' | 'loss'
+): number {
+  if (!theyPlayedChip) return 0;
+
+  // They chipped you
+  if (result === 'win') return +2;  // Lucky - beat boosted opponent
+  if (result === 'loss') return -2; // Unlucky - lost to boosted opponent
+  return 0; // Draw - neutral
+}
+
+/**
+ * Calculate total GW luck (all 3 components)
+ *
+ * @param yourPoints Your points this GW
+ * @param allOtherPoints All other teams' points (19 opponents)
+ * @param yourSeasonAvg Your season average up to this GW
+ * @param theirSeasonAvg Opponent's season average up to this GW
+ * @param opponentPoints Opponent's points this GW
+ * @param theyPlayedChip Whether opponent played a chip
+ * @param result Match result
+ * @returns Total GW luck (-10 to +10)
  */
 export function calculateGWLuck(
   yourPoints: number,
-  allTeamPoints: number[],
+  allOtherPoints: number[],
+  yourSeasonAvg: number,
+  theirSeasonAvg: number,
+  opponentPoints: number,
+  theyPlayedChip: boolean,
   result: 'win' | 'draw' | 'loss'
 ): number {
-  // How many teams did you outscore?
-  const teamsOutscored = allTeamPoints.filter(pts => yourPoints > pts).length;
-  const teamsDrawn = allTeamPoints.filter(pts => yourPoints === pts).length;
-  const totalOpponents = allTeamPoints.length;
+  const rankLuck = calculateRankLuck(yourPoints, allOtherPoints, result);
+  const varianceLuck = calculateVarianceLuck(
+    yourPoints, yourSeasonAvg,
+    opponentPoints, theirSeasonAvg,
+    result
+  );
+  const chipLuck = calculateChipLuck(theyPlayedChip, result);
 
-  // Expected win rate (count draws as half)
-  const expected = totalOpponents > 0
-    ? (teamsOutscored + (teamsDrawn * 0.5)) / totalOpponents
-    : 0;
-
-  // Actual result
-  const actual = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0;
-
-  // Luck = Actual - Expected
-  return actual - expected;
+  return rankLuck + varianceLuck + chipLuck;
 }
 
 /**
- * Calculate detailed luck data for a single gameweek
- * @param gameweek The gameweek number
- * @param yourPoints Your team's points for the GW
- * @param opponentPoints Your H2H opponent's points
- * @param allTeamPoints All teams' points for this GW (excluding yours)
- * @param result Your H2H match result
- * @returns Detailed luck data object
+ * Calculate GW luck with breakdown (for detailed displays)
+ *
+ * @param gameweek GW number
+ * @param yourPoints Your points this GW
+ * @param allOtherPoints All other teams' points
+ * @param yourSeasonAvg Your season average
+ * @param theirSeasonAvg Opponent's season average
+ * @param opponentPoints Opponent's points
+ * @param theyPlayedChip Whether opponent played chip
+ * @param result Match result
+ * @returns Detailed breakdown object
  */
 export function calculateGWLuckDetailed(
   gameweek: number,
   yourPoints: number,
+  allOtherPoints: number[],
+  yourSeasonAvg: number,
+  theirSeasonAvg: number,
   opponentPoints: number,
-  allTeamPoints: number[],
+  theyPlayedChip: boolean,
   result: 'win' | 'draw' | 'loss'
-): GWLuckData {
-  const teamsOutscored = allTeamPoints.filter(pts => yourPoints > pts).length;
-  const teamsDrawn = allTeamPoints.filter(pts => yourPoints === pts).length;
-  const totalTeams = allTeamPoints.length;
-
-  const expected = totalTeams > 0
-    ? (teamsOutscored + (teamsDrawn * 0.5)) / totalTeams
-    : 0;
-
-  const actual = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0;
-  const luck = actual - expected;
+): GWLuckBreakdown {
+  const rankLuck = calculateRankLuck(yourPoints, allOtherPoints, result);
+  const varianceLuck = calculateVarianceLuck(
+    yourPoints, yourSeasonAvg,
+    opponentPoints, theirSeasonAvg,
+    result
+  );
+  const chipLuck = calculateChipLuck(theyPlayedChip, result);
 
   return {
     gameweek,
-    yourPoints,
-    opponentPoints,
+    rankLuck,
+    varianceLuck,
+    chipLuck,
+    totalLuck: rankLuck + varianceLuck + chipLuck,
     result,
-    teamsOutscored,
-    totalTeams,
-    expected,
-    actual,
-    luck
+    yourPoints,
+    opponentPoints
   };
 }
 
 /**
  * Calculate season-long luck (sum of all GW luck values)
  * @param gwLuckValues Array of per-GW luck values
- * @returns Season luck (sum of all GWs)
+ * @returns Season luck (sum of all GWs, -180 to +180 theoretical max)
  */
 export function calculateSeasonLuck(gwLuckValues: number[]): number {
   return gwLuckValues.reduce((sum, luck) => sum + luck, 0);
 }
 
 /**
- * Format luck value for display (K-163a: ×10 format for better readability)
- * @param luck Raw luck value (-1 to +1 per GW)
- * @returns Formatted string with + or - prefix (×10 scaled)
- * @example formatLuck(0.263) // "+3" (rounded from 2.63)
- * @example formatLuck(-1.82) // "-18"
+ * Format luck value for display
+ * @param luck Luck value (already scaled -10 to +10)
+ * @returns Formatted string with + or - prefix
+ * @example formatLuck(5.3) // "+5"
+ * @example formatLuck(-2.8) // "-3"
  */
 export function formatLuck(luck: number): string {
-  const scaled = Math.round(luck * 10);
+  const rounded = Math.round(luck);
 
-  if (scaled > 0) return `+${scaled}`;
-  if (scaled < 0) return `${scaled}`;
+  if (rounded > 0) return `+${rounded}`;
+  if (rounded < 0) return `${rounded}`;
   return '0';
 }
 

@@ -298,7 +298,7 @@ async function calculateConsistency(
   }
 }
 
-// K-163: Calculate luck using CORRECT formula (Actual - Expected)
+// K-163a Part 2: Calculate luck using 3-component formula
 async function calculateLuck(
   db: any,
   leagueId: number,
@@ -323,7 +323,41 @@ async function calculateLuck(
       pointsByGW[gw][row.entry_id] = row.points;
     });
 
-    // Step 2: Get all H2H matches with results
+    // Step 2: Calculate progressive season averages
+    const seasonAvgsByGW: Record<number, Record<number, number>> = {};
+    const sortedGWs = gameweeks.sort((a, b) => a - b);
+    const allEntryIds = new Set(managers.map(m => m.entry_id));
+
+    for (const gw of sortedGWs) {
+      seasonAvgsByGW[gw] = {};
+      for (const entryId of Array.from(allEntryIds)) {
+        const pointsUpToGW: number[] = [];
+        for (let g = sortedGWs[0]; g <= gw; g++) {
+          if (pointsByGW[g]?.[entryId] !== undefined) {
+            pointsUpToGW.push(pointsByGW[g][entryId]);
+          }
+        }
+        if (pointsUpToGW.length > 0) {
+          seasonAvgsByGW[gw][entryId] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
+        }
+      }
+    }
+
+    // Step 3: Get chip usage for all GWs
+    const chipsResult = await db.query(`
+      SELECT entry_id, event
+      FROM manager_chips
+      WHERE league_id = $1 AND event = ANY($2)
+    `, [leagueId, gameweeks]);
+
+    const chipsByGW: Record<number, Set<number>> = {};
+    chipsResult.rows.forEach((row: any) => {
+      const gw = row.event;
+      if (!chipsByGW[gw]) chipsByGW[gw] = new Set();
+      chipsByGW[gw].add(row.entry_id);
+    });
+
+    // Step 4: Get all H2H matches with results
     const matchesResult = await db.query(`
       SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, winner, event
       FROM h2h_matches
@@ -331,7 +365,7 @@ async function calculateLuck(
       ORDER BY event
     `, [leagueId, gameweeks]);
 
-    // Step 3: Calculate luck for each manager
+    // Step 5: Calculate luck for each manager
     const luckByManager: Record<number, number> = {};
     managers.forEach(m => {
       luckByManager[m.entry_id] = 0;
@@ -357,27 +391,43 @@ async function calculateLuck(
         .filter(([id]) => parseInt(id) !== entry2)
         .map(([, pts]) => Number(pts));
 
+      // Get season averages for this GW
+      const entry1Avg = seasonAvgsByGW[gw]?.[entry1] || entry1Points;
+      const entry2Avg = seasonAvgsByGW[gw]?.[entry2] || entry2Points;
+
+      // Check chip usage
+      const entry1PlayedChip = chipsByGW[gw]?.has(entry1) || false;
+      const entry2PlayedChip = chipsByGW[gw]?.has(entry2) || false;
+
       // Determine results
       const entry1Result: 'win' | 'draw' | 'loss' =
         winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
       const entry2Result: 'win' | 'draw' | 'loss' =
         winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
 
-      // Calculate luck
-      const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
-      const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+      // K-163a Part 2: Calculate luck using 3-component formula
+      const entry1Luck = calculateGWLuck(
+        entry1Points, otherTeamsPointsForEntry1,
+        entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
+        entry1Result
+      );
+      const entry2Luck = calculateGWLuck(
+        entry2Points, otherTeamsPointsForEntry2,
+        entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
+        entry2Result
+      );
 
       luckByManager[entry1] = (luckByManager[entry1] || 0) + entry1Luck;
       luckByManager[entry2] = (luckByManager[entry2] || 0) + entry2Luck;
     });
 
-    // Step 4: Get manager names and format results
+    // Step 6: Get manager names and format results
     const managersMap = new Map(managers.map(m => [m.entry_id, m]));
 
     const luckResults = Object.entries(luckByManager)
       .map(([entryId, luck]) => {
         const manager = managersMap.get(parseInt(entryId));
-        const roundedLuck = Math.round(luck * 10);
+        const roundedLuck = Math.round(luck); // K-163a Part 2: Already scaled -10 to +10
         return {
           entry_id: parseInt(entryId),
           player_name: manager?.player_name || 'Unknown',

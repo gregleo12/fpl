@@ -92,7 +92,7 @@ export async function GET(
 
     const managerScores = await Promise.all(managerScoresPromises);
 
-    // K-163: Calculate GW-specific luck using CORRECT formula
+    // K-163a Part 2: Calculate GW-specific luck using 3-component formula
     const luckMap: Record<number, number> = {};
 
     try {
@@ -100,6 +100,31 @@ export async function GET(
       const pointsMap: Record<number, number> = {};
       managerScores.forEach(manager => {
         pointsMap[manager.entry_id] = manager.points;
+      });
+
+      // Get season averages for all managers up to this GW
+      const seasonAvgsResult = await db.query(`
+        SELECT entry_id, AVG(points) as avg_points
+        FROM manager_gw_history
+        WHERE league_id = $1 AND event <= $2
+        GROUP BY entry_id
+      `, [leagueId, gw]);
+
+      const seasonAvgs: Record<number, number> = {};
+      seasonAvgsResult.rows.forEach((row: any) => {
+        seasonAvgs[row.entry_id] = parseFloat(row.avg_points);
+      });
+
+      // Get chip usage for this specific GW
+      const chipsResult = await db.query(`
+        SELECT entry_id, chip_name
+        FROM manager_chips
+        WHERE league_id = $1 AND event = $2
+      `, [leagueId, gw]);
+
+      const chipsPlayed: Set<number> = new Set();
+      chipsResult.rows.forEach((row: any) => {
+        chipsPlayed.add(row.entry_id);
       });
 
       // Get H2H matches for this specific GW with results
@@ -133,15 +158,31 @@ export async function GET(
         const entry2Result: 'win' | 'draw' | 'loss' =
           winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
 
-        // K-163: Calculate luck using correct formula (Actual - Expected)
-        const entry1Luck = calculateGWLuck(entry1Points, otherTeamsPointsForEntry1, entry1Result);
-        const entry2Luck = calculateGWLuck(entry2Points, otherTeamsPointsForEntry2, entry2Result);
+        // Get season averages
+        const entry1Avg = seasonAvgs[entry1] || entry1Points;
+        const entry2Avg = seasonAvgs[entry2] || entry2Points;
 
-        luckMap[entry1] = Math.round(entry1Luck * 10); // Round to 1 decimal
-        luckMap[entry2] = Math.round(entry2Luck * 10); // Round to 1 decimal
+        // Check if opponent played chip
+        const entry2PlayedChip = chipsPlayed.has(entry2);
+        const entry1PlayedChip = chipsPlayed.has(entry1);
+
+        // K-163a Part 2: Calculate luck using 3-component formula
+        const entry1Luck = calculateGWLuck(
+          entry1Points, otherTeamsPointsForEntry1,
+          entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
+          entry1Result
+        );
+        const entry2Luck = calculateGWLuck(
+          entry2Points, otherTeamsPointsForEntry2,
+          entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
+          entry2Result
+        );
+
+        luckMap[entry1] = Math.round(entry1Luck);
+        luckMap[entry2] = Math.round(entry2Luck);
       });
     } catch (error) {
-      console.error('[K-163] Error calculating GW luck:', error);
+      console.error('[K-163a] Error calculating GW luck:', error);
       // If luck calculation fails, all managers get 0 luck
     }
 

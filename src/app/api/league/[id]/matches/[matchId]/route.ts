@@ -501,6 +501,31 @@ export async function GET(
           return acc;
         }, {});
 
+        // Get season averages up to this GW
+        const seasonAvgsResult = await db.query(`
+          SELECT entry_id, AVG(points) as avg_points
+          FROM manager_gw_history
+          WHERE league_id = $1 AND event <= $2
+          GROUP BY entry_id
+        `, [leagueId, matchGW]);
+
+        const seasonAvgs: Record<number, number> = {};
+        seasonAvgsResult.rows.forEach((row: any) => {
+          seasonAvgs[row.entry_id] = parseFloat(row.avg_points);
+        });
+
+        // Get chip usage for this GW
+        const chipsResult = await db.query(`
+          SELECT entry_id
+          FROM manager_chips
+          WHERE league_id = $1 AND event = $2
+        `, [leagueId, matchGW]);
+
+        const chipsPlayed = new Set<number>();
+        chipsResult.rows.forEach((row: any) => {
+          chipsPlayed.add(row.entry_id);
+        });
+
         // Get other teams' points (excluding each manager)
         const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
           .filter(([id]) => parseInt(id) !== entry1Id)
@@ -510,6 +535,14 @@ export async function GET(
           .filter(([id]) => parseInt(id) !== entry2Id)
           .map(([, pts]) => Number(pts));
 
+        // Get season averages
+        const entry1Avg = seasonAvgs[entry1Id] || match.entry_1_points;
+        const entry2Avg = seasonAvgs[entry2Id] || match.entry_2_points;
+
+        // Check chip usage
+        const entry1PlayedChip = chipsPlayed.has(entry1Id);
+        const entry2PlayedChip = chipsPlayed.has(entry2Id);
+
         // Determine results from each manager's perspective
         const winner = match.winner ? parseInt(match.winner) : null;
         const entry1Result: 'win' | 'draw' | 'loss' =
@@ -517,16 +550,24 @@ export async function GET(
         const entry2Result: 'win' | 'draw' | 'loss' =
           winner === entry2Id ? 'win' : winner === null ? 'draw' : 'loss';
 
-        // Calculate luck using correct formula
-        const entry1Luck = calculateGWLuck(match.entry_1_points, otherTeamsPointsForEntry1, entry1Result);
-        const entry2Luck = calculateGWLuck(match.entry_2_points, otherTeamsPointsForEntry2, entry2Result);
+        // K-163a Part 2: Calculate luck using 3-component formula
+        const entry1Luck = calculateGWLuck(
+          match.entry_1_points, otherTeamsPointsForEntry1,
+          entry1Avg, entry2Avg, match.entry_2_points, entry2PlayedChip,
+          entry1Result
+        );
+        const entry2Luck = calculateGWLuck(
+          match.entry_2_points, otherTeamsPointsForEntry2,
+          entry2Avg, entry1Avg, match.entry_1_points, entry1PlayedChip,
+          entry2Result
+        );
 
         matchLuck = {
-          entry_1_luck: Math.round(entry1Luck * 10),
-          entry_2_luck: Math.round(entry2Luck * 10)
+          entry_1_luck: Math.round(entry1Luck),
+          entry_2_luck: Math.round(entry2Luck)
         };
       } catch (error) {
-        console.error('[K-163] Error calculating match luck:', error);
+        console.error('[K-163a] Error calculating match luck:', error);
         // Non-critical, continue without luck data
       }
     }

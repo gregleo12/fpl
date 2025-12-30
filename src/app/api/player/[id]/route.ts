@@ -170,7 +170,7 @@ export async function GET(
       }
     }
 
-    // K-163: Calculate season luck
+    // K-163a Part 2: Calculate season luck using 3-component formula
     let seasonLuck = 0;
     let luckRank: number | null = null;
     try {
@@ -194,6 +194,41 @@ export async function GET(
           pointsByGW[gw][row.entry_id] = row.points;
         });
 
+        // Calculate progressive season averages
+        const seasonAvgsByGW: Record<number, Record<number, number>> = {};
+        const sortedGWs = completedGWs.sort((a, b) => a - b);
+        const allEntryIds = new Set<number>();
+        allPointsResult.rows.forEach(row => allEntryIds.add(row.entry_id));
+
+        for (const gw of sortedGWs) {
+          seasonAvgsByGW[gw] = {};
+          for (const entryIdNum of Array.from(allEntryIds)) {
+            const pointsUpToGW: number[] = [];
+            for (let g = Math.min(...sortedGWs); g <= gw; g++) {
+              if (pointsByGW[g]?.[entryIdNum] !== undefined) {
+                pointsUpToGW.push(pointsByGW[g][entryIdNum]);
+              }
+            }
+            if (pointsUpToGW.length > 0) {
+              seasonAvgsByGW[gw][entryIdNum] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
+            }
+          }
+        }
+
+        // Get chip usage for all GWs
+        const chipsResult = await db.query(`
+          SELECT entry_id, event
+          FROM manager_chips
+          WHERE league_id = $1 AND event = ANY($2)
+        `, [leagueId, completedGWs]);
+
+        const chipsByGW: Record<number, Set<number>> = {};
+        chipsResult.rows.forEach((row: any) => {
+          const gw = row.event;
+          if (!chipsByGW[gw]) chipsByGW[gw] = new Set();
+          chipsByGW[gw].add(row.entry_id);
+        });
+
         // Calculate luck for each match
         const luckValues: number[] = [];
         for (const match of matchHistory) {
@@ -206,32 +241,31 @@ export async function GET(
             .filter(([id]) => parseInt(id) !== entryId)
             .map(([, pts]) => Number(pts));
 
+          // Get season averages for this GW
+          const yourAvg = seasonAvgsByGW[gw]?.[entryId] || match.playerPoints;
+          const opponentAvg = seasonAvgsByGW[gw]?.[match.opponentId] || match.opponentPoints;
+
+          // Check if opponent played chip
+          const opponentPlayedChip = chipsByGW[gw]?.has(match.opponentId) || false;
+
           // Determine result
           const result: 'win' | 'draw' | 'loss' =
             match.result === 'W' ? 'win' : match.result === 'D' ? 'draw' : 'loss';
 
-          // Calculate luck for this GW
-          const gwLuck = calculateGWLuck(match.playerPoints, otherTeamsPoints, result);
+          // K-163a Part 2: Calculate luck using 3-component formula
+          const gwLuck = calculateGWLuck(
+            match.playerPoints, otherTeamsPoints,
+            yourAvg, opponentAvg, match.opponentPoints, opponentPlayedChip,
+            result
+          );
           luckValues.push(gwLuck);
         }
 
         // Season luck = sum of all GW luck values
         seasonLuck = luckValues.reduce((sum, luck) => sum + luck, 0);
-
-        // Get luck ranking among all managers in league
-        const allManagersLuckResult = await db.query(`
-          SELECT entry_id
-          FROM manager_gw_history
-          WHERE league_id = $1
-          GROUP BY entry_id
-        `, [leagueId]);
-
-        // Calculate luck for all managers (simplified - just need to know our rank)
-        // For now, we'll get this from the league stats endpoint
-        // This is a simplified version - full calculation would be expensive here
       }
     } catch (error) {
-      console.error('[K-163] Error calculating season luck:', error);
+      console.error('[K-163a] Error calculating season luck:', error);
       // Non-critical, continue without luck data
     }
 
@@ -243,7 +277,7 @@ export async function GET(
       chipsPlayed,
       chipsFaced,
       gwHistory: history.current || [],
-      season_luck: Math.round(seasonLuck * 10) // K-163: Add season luck
+      season_luck: Math.round(seasonLuck) // K-163a Part 2: Already scaled -10 to +10
     });
   } catch (error: any) {
     console.error('Error fetching player profile:', error);
