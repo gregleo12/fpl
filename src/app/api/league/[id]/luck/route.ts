@@ -108,6 +108,7 @@ export async function GET(
     // Calculate final season averages (for schedule luck)
     const finalSeasonAvgs: Record<number, number> = {};
     for (const manager of managers) {
+      const mEntryId = parseInt(String(manager.entry_id));
       const points: number[] = [];
       for (const gw of allGWs) {
         if (pointsByGW[gw]?.[manager.entry_id] !== undefined) {
@@ -115,7 +116,7 @@ export async function GET(
         }
       }
       if (points.length > 0) {
-        finalSeasonAvgs[manager.entry_id] = points.reduce((a, b) => a + b, 0) / points.length;
+        finalSeasonAvgs[mEntryId] = points.reduce((a, b) => a + b, 0) / points.length;
       }
     }
 
@@ -129,18 +130,19 @@ export async function GET(
     const chipsByManager: Record<number, number> = {}; // count of chips played by each manager
     const chipsFacedByManager: Record<number, number> = {}; // count of chips faced
     chips.forEach(chip => {
-      chipsByManager[chip.entry_id] = (chipsByManager[chip.entry_id] || 0) + 1;
+      const chipEntryId = parseInt(String(chip.entry_id));
+      chipsByManager[chipEntryId] = (chipsByManager[chipEntryId] || 0) + 1;
     });
 
     // Calculate managers' luck components
     const managersData: any[] = [];
 
     for (const manager of managers) {
-      const entryId = manager.entry_id;
+      const entryId = parseInt(String(manager.entry_id)); // Convert BIGINT string to number
 
-      // Get this manager's matches
+      // Get this manager's matches (convert BIGINT strings to numbers for comparison)
       const managerMatches = matches.filter(m =>
-        m.entry_1_id === entryId || m.entry_2_id === entryId
+        parseInt(String(m.entry_1_id)) === entryId || parseInt(String(m.entry_2_id)) === entryId
       );
 
       // 1. VARIANCE LUCK (per-GW, zero-sum per match)
@@ -149,10 +151,10 @@ export async function GET(
 
       for (const match of managerMatches) {
         const gw = match.event;
-        const isEntry1 = match.entry_1_id === entryId;
+        const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
         const yourPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
         const oppPoints = isEntry1 ? match.entry_2_points : match.entry_1_points;
-        const oppId = isEntry1 ? match.entry_2_id : match.entry_1_id;
+        const oppId = parseInt(String(isEntry1 ? match.entry_2_id : match.entry_1_id));
 
         const yourAvg = seasonAvgsByGW[gw]?.[entryId] || yourPoints;
         const oppAvg = seasonAvgsByGW[gw]?.[oppId] || oppPoints;
@@ -178,9 +180,9 @@ export async function GET(
 
       for (const match of managerMatches) {
         const gw = match.event;
-        const isEntry1 = match.entry_1_id === entryId;
+        const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
         const yourPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
-        const winner = match.winner;
+        const winner = match.winner ? parseInt(String(match.winner)) : null;
 
         // Calculate GW rank
         const gwPoints = pointsByGW[gw];
@@ -207,6 +209,7 @@ export async function GET(
           gw,
           value: parseFloat(rankLuck.toFixed(4)),
           your_rank: yourRank,
+          your_points: yourPoints,
           total_managers: totalManagers,
           expected: parseFloat(expectedWin.toFixed(4)),
           result: actualResult,
@@ -220,8 +223,8 @@ export async function GET(
 
       for (const match of managerMatches) {
         const gw = match.event;
-        const isEntry1 = match.entry_1_id === entryId;
-        const oppId = isEntry1 ? match.entry_2_id : match.entry_1_id;
+        const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
+        const oppId = parseInt(String(isEntry1 ? match.entry_2_id : match.entry_1_id));
         const oppName = isEntry1 ? match.entry_2_name : match.entry_1_name;
         const oppSeasonAvg = finalSeasonAvgs[oppId] || 0;
 
@@ -240,13 +243,14 @@ export async function GET(
       // Calculate league average opponent strength
       let leagueAvgOppStrength = 0;
       for (const m of managers) {
+        const mEntryId = parseInt(String(m.entry_id));
         const mMatches = matches.filter(match =>
-          match.entry_1_id === m.entry_id || match.entry_2_id === m.entry_id
+          parseInt(String(match.entry_1_id)) === mEntryId || parseInt(String(match.entry_2_id)) === mEntryId
         );
         let mOppTotal = 0;
         for (const match of mMatches) {
-          const isE1 = match.entry_1_id === m.entry_id;
-          const oppId = isE1 ? match.entry_2_id : match.entry_1_id;
+          const isE1 = parseInt(String(match.entry_1_id)) === mEntryId;
+          const oppId = parseInt(String(isE1 ? match.entry_2_id : match.entry_1_id));
           mOppTotal += finalSeasonAvgs[oppId] || 0;
         }
         leagueAvgOppStrength += mMatches.length > 0 ? mOppTotal / mMatches.length : 0;
@@ -267,13 +271,13 @@ export async function GET(
 
       for (const match of managerMatches) {
         const gw = match.event;
-        const isEntry1 = match.entry_1_id === entryId;
-        const oppId = isEntry1 ? match.entry_2_id : match.entry_1_id;
+        const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
+        const oppId = parseInt(String(isEntry1 ? match.entry_2_id : match.entry_1_id));
         const oppName = isEntry1 ? match.entry_2_name : match.entry_1_name;
 
-        if (chipsByGW[gw]?.has(Number(oppId))) {
+        if (chipsByGW[gw]?.has(oppId)) {
           chipsFaced++;
-          const chipName = chips.find(c => c.entry_id === oppId && c.event === gw)?.chip_name || 'chip';
+          const chipName = chips.find(c => parseInt(String(c.entry_id)) === oppId && c.event === gw)?.chip_name || 'chip';
           chipsFacedDetail.push({
             gw,
             opponent: oppName,

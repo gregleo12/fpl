@@ -23,6 +23,7 @@ interface RankLuckGW {
   gw: number;
   value: number;
   your_rank: number;
+  your_points: number;
   total_managers: number;
   expected: number;
   result: number;
@@ -291,6 +292,7 @@ export default function LuckDebugPage() {
                       <tr>
                         <th className="px-2 py-1 text-left">GW</th>
                         <th className="px-2 py-1 text-left">Opponent</th>
+                        <th className="px-2 py-1 text-right">Your Pts</th>
                         <th className="px-2 py-1 text-right">Your Rank</th>
                         <th className="px-2 py-1 text-right">Expected Win %</th>
                         <th className="px-2 py-1 text-right">Result</th>
@@ -302,6 +304,7 @@ export default function LuckDebugPage() {
                         <tr key={gw.gw} className="border-t">
                           <td className="px-2 py-1">GW{gw.gw}</td>
                           <td className="px-2 py-1">{gw.opponent}</td>
+                          <td className="px-2 py-1 text-right">{gw.your_points}</td>
                           <td className="px-2 py-1 text-right">{gw.your_rank}/{gw.total_managers}</td>
                           <td className="px-2 py-1 text-right">{(gw.expected * 100).toFixed(1)}%</td>
                           <td className="px-2 py-1 text-right">{gw.result === 1 ? 'W' : gw.result === 0 ? 'L' : 'D'}</td>
