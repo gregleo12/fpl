@@ -25,6 +25,7 @@ Deployment records and discussions:
 Luck formula analysis and comparisons:
 - K-163b-comparison.md - 20/60/20 weight rebalancing analysis
 - K-163c-comparison.md - Zero-sum variance luck analysis
+- K-163f-comparison.md - 4-component system implementation summary
 - luck-analysis.json - Debug data snapshot (121 KB)
 
 ### `/scripts/`

@@ -1,656 +1,479 @@
 /**
- * K-163d: Luck Analysis Debug Page
+ * K-163f: Luck System V2 - Four Components Debug Page
  *
- * Hardcoded to league 804742 for formula analysis
- * Shows all luck calculations with raw values
+ * Displays all 4 luck components with detailed breakdowns
+ * Fetches from /api/league/[id]/luck endpoint
  */
 
-import { getDatabase } from '@/lib/db';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
 
 const LEAGUE_ID = 804742;
 
-interface Match {
-  event: number;
-  entry_1_id: number;
-  entry_1_points: number;
-  entry_2_id: number;
-  entry_2_points: number;
-  winner: number | null;
-  entry_1_name: string;
-  entry_2_name: string;
+interface VarianceLuckGW {
+  gw: number;
+  value: number;
+  your_var: number;
+  opp_var: number;
+  opponent: string;
 }
 
-interface ManagerGWPoints {
-  entry_id: number;
-  event: number;
-  points: number;
+interface RankLuckGW {
+  gw: number;
+  value: number;
+  your_rank: number;
+  total_managers: number;
+  expected: number;
+  result: number;
+  opponent: string;
 }
 
-interface ChipUsage {
-  entry_id: number;
-  event: number;
-  chip_name: string;
+interface OpponentStrength {
+  gw: number;
+  opponent: string;
+  opp_season_avg: number;
 }
 
-interface Manager {
-  entry_id: number;
-  player_name: string;
+interface ChipFaced {
+  gw: number;
+  opponent: string;
+  chip: string;
+}
+
+interface GWLuck {
+  gw: number;
+  variance: number;
+  rank: number;
+  total: number;
+}
+
+interface ManagerData {
+  entry_id: string;
+  name: string;
   team_name: string;
+  season_avg_points: number;
+  variance_luck: {
+    total: number;
+    per_gw: VarianceLuckGW[];
+  };
+  rank_luck: {
+    total: number;
+    per_gw: RankLuckGW[];
+  };
+  schedule_luck: {
+    value: number;
+    avg_opp_strength: number;
+    league_avg_opp_strength: number;
+    opponents: OpponentStrength[];
+  };
+  chip_luck: {
+    value: number;
+    chips_played: number;
+    chips_faced: number;
+    avg_chips_faced: number;
+    chips_faced_detail: ChipFaced[];
+  };
+  gw_luck: GWLuck[];
+  season_luck_index: number;
 }
 
-export default async function LuckDebugPage() {
-  const db = await getDatabase();
-
-  // Fetch all data
-  const managersResult = await db.query(`
-    SELECT m.entry_id, m.player_name, m.team_name
-    FROM managers m
-    JOIN league_standings ls ON ls.entry_id = m.entry_id
-    WHERE ls.league_id = $1
-    ORDER BY m.player_name
-  `, [LEAGUE_ID]);
-  const managers: Manager[] = managersResult.rows;
-  const managerMap: Record<number, Manager> = {};
-  managers.forEach(m => managerMap[m.entry_id] = m);
-
-  const matchesResult = await db.query(`
-    SELECT
-      hm.event,
-      hm.entry_1_id,
-      hm.entry_1_points,
-      hm.entry_2_id,
-      hm.entry_2_points,
-      hm.winner,
-      m1.player_name as entry_1_name,
-      m2.player_name as entry_2_name
-    FROM h2h_matches hm
-    LEFT JOIN managers m1 ON m1.entry_id = hm.entry_1_id
-    LEFT JOIN managers m2 ON m2.entry_id = hm.entry_2_id
-    WHERE hm.league_id = $1
-      AND (hm.entry_1_points > 0 OR hm.entry_2_points > 0)
-    ORDER BY hm.event, hm.entry_1_id
-  `, [LEAGUE_ID]);
-  const matches: Match[] = matchesResult.rows;
-
-  const gwPointsResult = await db.query(`
-    SELECT entry_id, event, points
-    FROM manager_gw_history
-    WHERE league_id = $1
-    ORDER BY event, entry_id
-  `, [LEAGUE_ID]);
-  const allGWPoints: ManagerGWPoints[] = gwPointsResult.rows;
-
-  const chipsResult = await db.query(`
-    SELECT entry_id, event, chip_name
-    FROM manager_chips
-    WHERE league_id = $1
-    ORDER BY event, entry_id
-  `, [LEAGUE_ID]);
-  const chips: ChipUsage[] = chipsResult.rows;
-
-  // Build data structures
-  const pointsByGW: Record<number, Record<number, number>> = {};
-  allGWPoints.forEach(row => {
-    if (!pointsByGW[row.event]) pointsByGW[row.event] = {};
-    pointsByGW[row.event][row.entry_id] = row.points;
-  });
-
-  const chipsByGW: Record<number, Set<number>> = {};
-  chips.forEach(chip => {
-    if (!chipsByGW[chip.event]) chipsByGW[chip.event] = new Set();
-    chipsByGW[chip.event].add(Number(chip.entry_id)); // Ensure number type
-  });
-
-  // Calculate progressive season averages
-  const allGWs = Object.keys(pointsByGW).map(Number).sort((a, b) => a - b);
-  const seasonAvgsByGW: Record<number, Record<number, number>> = {};
-
-  for (const gw of allGWs) {
-    seasonAvgsByGW[gw] = {};
-    const allEntryIds = new Set<number>();
-    allGWPoints.forEach(row => allEntryIds.add(row.entry_id));
-
-    for (const entryId of Array.from(allEntryIds)) {
-      const pointsUpToGW: number[] = [];
-      for (let g = allGWs[0]; g <= gw; g++) {
-        if (pointsByGW[g]?.[entryId] !== undefined) {
-          pointsUpToGW.push(pointsByGW[g][entryId]);
-        }
-      }
-      if (pointsUpToGW.length > 0) {
-        seasonAvgsByGW[gw][entryId] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
-      }
-    }
-  }
-
-  // Calculate rank luck for each manager in each GW
-  interface RankLuckRow {
-    gw: number;
-    manager: string;
-    points: number;
-    rank: number;
-    outscored: number;
-    total: number;
-    expectedWin: number;
-    actual: number;
-    rankLuck: number;
-  }
-
-  const rankLuckData: RankLuckRow[] = [];
-  const rankLuckByManagerGW: Record<string, number> = {}; // key: "entryId-gw"
-
-  for (const gw of allGWs) {
-    const gwPoints = pointsByGW[gw];
-    if (!gwPoints) continue;
-
-    // Calculate ranks for this GW
-    const sortedPoints = Object.entries(gwPoints)
-      .map(([id, pts]) => ({ id: parseInt(id), pts }))
-      .sort((a, b) => b.pts - a.pts);
-
-    const ranks: Record<number, number> = {};
-    sortedPoints.forEach((entry, idx) => {
-      ranks[entry.id] = idx + 1;
-    });
-
-    // For each manager, calculate their rank luck
-    for (const match of matches.filter(m => m.event === gw)) {
-      for (const side of [1, 2]) {
-        const entryId = side === 1 ? match.entry_1_id : match.entry_2_id;
-        const points = side === 1 ? match.entry_1_points : match.entry_2_points;
-        const winner = match.winner;
-
-        // Get all other teams' points
-        const otherPoints = Object.entries(gwPoints)
-          .filter(([id]) => parseInt(id) !== entryId)
-          .map(([, pts]) => pts);
-
-        const outscored = otherPoints.filter(p => points > p).length;
-        const drawn = otherPoints.filter(p => points === p).length;
-        const expectedWin = otherPoints.length > 0
-          ? (outscored + drawn * 0.5) / otherPoints.length
-          : 0;
-
-        let actual = 0.5; // draw
-        if (winner === null) {
-          actual = 0.5;
-        } else if (winner === entryId) {
-          actual = 1;
-        } else {
-          actual = 0;
-        }
-
-        const rankLuck = actual - expectedWin;
-
-        rankLuckData.push({
-          gw,
-          manager: managerMap[entryId]?.player_name || 'Unknown',
-          points,
-          rank: ranks[entryId] || 0,
-          outscored,
-          total: otherPoints.length,
-          expectedWin,
-          actual,
-          rankLuck
-        });
-
-        rankLuckByManagerGW[`${entryId}-${gw}`] = rankLuck;
-      }
-    }
-  }
-
-  // Calculate variance luck for each match
-  interface VarianceLuckRow {
-    gw: number;
-    manager1: string;
-    score1: number;
-    avg1: number;
-    swing1: number;
-    manager2: string;
-    score2: number;
-    avg2: number;
-    swing2: number;
-    netSwing: number;
-    varLuck1: number;
-    varLuck2: number;
-  }
-
-  const varianceLuckData: VarianceLuckRow[] = [];
-  const varianceLuckByManagerGW: Record<string, number> = {}; // key: "entryId-gw"
-
-  for (const match of matches) {
-    const gw = match.event;
-    const avg1 = seasonAvgsByGW[gw]?.[match.entry_1_id] || match.entry_1_points;
-    const avg2 = seasonAvgsByGW[gw]?.[match.entry_2_id] || match.entry_2_points;
-
-    const swing1 = match.entry_1_points - avg1;
-    const swing2 = match.entry_2_points - avg2;
-    const netSwing = swing1 - swing2;
-
-    // Raw variance luck (before weight)
-    const normalized = Math.max(-1, Math.min(1, netSwing / 30));
-    const varLuck1 = normalized; // raw, not scaled
-    const varLuck2 = -normalized; // zero-sum
-
-    varianceLuckData.push({
-      gw,
-      manager1: match.entry_1_name,
-      score1: match.entry_1_points,
-      avg1,
-      swing1,
-      manager2: match.entry_2_name,
-      score2: match.entry_2_points,
-      avg2,
-      swing2,
-      netSwing,
-      varLuck1,
-      varLuck2
-    });
-
-    varianceLuckByManagerGW[`${match.entry_1_id}-${gw}`] = varLuck1;
-    varianceLuckByManagerGW[`${match.entry_2_id}-${gw}`] = varLuck2;
-  }
-
-  // Calculate chip luck
-  interface ChipLuckRow {
-    gw: number;
-    chipUser: string;
-    chip: string;
-    userPts: number;
-    opponent: string;
-    oppPts: number;
-    result: string;
-    chipLuckUser: number;
-    chipLuckOpp: number;
-  }
-
-  const chipLuckData: ChipLuckRow[] = [];
-  const chipLuckByManagerGW: Record<string, number> = {}; // key: "entryId-gw"
-
-  for (const match of matches) {
-    const gw = match.event;
-    const chip1 = chipsByGW[gw]?.has(Number(match.entry_1_id));
-    const chip2 = chipsByGW[gw]?.has(Number(match.entry_2_id));
-
-    if (chip1) {
-      const chipName = chips.find(c => c.entry_id === match.entry_1_id && c.event === gw)?.chip_name || 'chip';
-      const result = match.winner === match.entry_1_id ? 'W-L' : match.winner === match.entry_2_id ? 'L-W' : 'D-D';
-
-      // User: no luck from own chip
-      const chipLuckUser = 0;
-      // Opponent: +1 if beat chip, -1 if lost to chip
-      const chipLuckOpp = match.winner === match.entry_2_id ? 1 : match.winner === match.entry_1_id ? -1 : 0;
-
-      chipLuckData.push({
-        gw,
-        chipUser: match.entry_1_name,
-        chip: chipName,
-        userPts: match.entry_1_points,
-        opponent: match.entry_2_name,
-        oppPts: match.entry_2_points,
-        result,
-        chipLuckUser,
-        chipLuckOpp
-      });
-
-      chipLuckByManagerGW[`${match.entry_1_id}-${gw}`] = chipLuckUser;
-      chipLuckByManagerGW[`${match.entry_2_id}-${gw}`] = (chipLuckByManagerGW[`${match.entry_2_id}-${gw}`] || 0) + chipLuckOpp;
-    }
-
-    if (chip2) {
-      const chipName = chips.find(c => c.entry_id === match.entry_2_id && c.event === gw)?.chip_name || 'chip';
-      const result = match.winner === match.entry_2_id ? 'W-L' : match.winner === match.entry_1_id ? 'L-W' : 'D-D';
-
-      const chipLuckUser = 0;
-      const chipLuckOpp = match.winner === match.entry_1_id ? 1 : match.winner === match.entry_2_id ? -1 : 0;
-
-      chipLuckData.push({
-        gw,
-        chipUser: match.entry_2_name,
-        chip: chipName,
-        userPts: match.entry_2_points,
-        opponent: match.entry_1_name,
-        oppPts: match.entry_1_points,
-        result,
-        chipLuckUser,
-        chipLuckOpp
-      });
-
-      chipLuckByManagerGW[`${match.entry_2_id}-${gw}`] = (chipLuckByManagerGW[`${match.entry_2_id}-${gw}`] || 0) + chipLuckUser;
-      chipLuckByManagerGW[`${match.entry_1_id}-${gw}`] = (chipLuckByManagerGW[`${match.entry_1_id}-${gw}`] || 0) + chipLuckOpp;
-    }
-  }
-
-  // Calculate combined summary
-  interface CombinedRow {
-    manager: string;
-    record: string;
-    rankLuck: number;
-    varLuck: number;
-    chipLuck: number;
-    total: number;
-  }
-
-  const combinedData: CombinedRow[] = [];
-
-  for (const manager of managers) {
-    const entryId = manager.entry_id;
-
-    // Calculate W-D-L
-    const managerMatches = matches.filter(m => m.entry_1_id === entryId || m.entry_2_id === entryId);
-    const wins = managerMatches.filter(m => m.winner === entryId).length;
-    const draws = managerMatches.filter(m => m.winner === null).length;
-    const losses = managerMatches.filter(m => m.winner && m.winner !== entryId).length;
-
-    // Sum up raw luck components
-    let totalRankLuck = 0;
-    let totalVarLuck = 0;
-    let totalChipLuck = 0;
-
-    for (const gw of allGWs) {
-      const key = `${entryId}-${gw}`;
-      totalRankLuck += rankLuckByManagerGW[key] || 0;
-      totalVarLuck += varianceLuckByManagerGW[key] || 0;
-      totalChipLuck += chipLuckByManagerGW[key] || 0;
-    }
-
-    // Apply weights and scaling (20/60/20)
-    const rankLuckWeighted = totalRankLuck * 10 * 0.2;
-    const varLuckWeighted = totalVarLuck * 10 * 0.6;
-    const chipLuckWeighted = totalChipLuck * 10 * 0.2;
-    const total = rankLuckWeighted + varLuckWeighted + chipLuckWeighted;
-
-    combinedData.push({
-      manager: manager.player_name,
-      record: `${wins}-${draws}-${losses}`,
-      rankLuck: rankLuckWeighted,
-      varLuck: varLuckWeighted,
-      chipLuck: chipLuckWeighted,
-      total
-    });
-  }
-
-  // Sort by total luck descending
-  combinedData.sort((a, b) => b.total - a.total);
-
-  // Calculate league totals
-  const leagueTotals = {
-    rankLuck: combinedData.reduce((sum, row) => sum + row.rankLuck, 0),
-    varLuck: combinedData.reduce((sum, row) => sum + row.varLuck, 0),
-    chipLuck: combinedData.reduce((sum, row) => sum + row.chipLuck, 0),
-    total: combinedData.reduce((sum, row) => sum + row.total, 0)
+interface LuckData {
+  leagueId: number;
+  currentGW: number;
+  managers: ManagerData[];
+  league_totals: {
+    variance_sum: number;
+    rank_sum: number;
+    schedule_sum: number;
+    chip_sum: number;
   };
+  per_gw_sums: {
+    gw: number;
+    variance_sum: number;
+    rank_sum: number;
+  }[];
+  weights: {
+    gw_luck: { variance: number; rank: number };
+    season_luck: { variance: number; rank: number; schedule: number; chip: number };
+  };
+  normalization: {
+    variance: string;
+    rank: string;
+    schedule: string;
+    chip: string;
+  };
+}
+
+export default function LuckDebugPage() {
+  const [data, setData] = useState<LuckData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedManager, setSelectedManager] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/league/${LEAGUE_ID}/luck`)
+      .then(res => res.json())
+      .then(setData)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="p-8">Loading luck data...</div>;
+  }
+
+  if (!data) {
+    return <div className="p-8">Failed to load luck data</div>;
+  }
+
+  const manager = selectedManager
+    ? data.managers.find(m => m.entry_id === selectedManager)
+    : data.managers[0];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-[1600px] mx-auto">
-        <h1 className="text-3xl font-bold mb-2">K-163d: Luck Analysis Debug Page</h1>
-        <p className="text-gray-400 mb-8">League 804742 • Formula: 20% Rank + 60% Variance + 20% Chip</p>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h1 className="text-3xl font-bold mb-2">K-163f: Luck System V2 - Four Components</h1>
+          <p className="text-gray-600 mb-4">League {data.leagueId} • Current GW: {data.currentGW}</p>
 
-        {/* Table 1: All H2H Matches */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">1. All H2H Matches (Raw Data)</h2>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <h3 className="font-semibold mb-2">Formula Weights</h3>
+              <p><strong>GW Luck:</strong> {(data.weights.gw_luck.variance * 100).toFixed(0)}% Variance + {(data.weights.gw_luck.rank * 100).toFixed(0)}% Rank</p>
+              <p><strong>Season Luck:</strong> {(data.weights.season_luck.variance * 100).toFixed(0)}% Variance + {(data.weights.season_luck.rank * 100).toFixed(0)}% Rank + {(data.weights.season_luck.schedule * 100).toFixed(0)}% Schedule + {(data.weights.season_luck.chip * 100).toFixed(0)}% Chip</p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Normalization</h3>
+              <p>Variance: {data.normalization.variance} | Rank: {data.normalization.rank}</p>
+              <p>Schedule: {data.normalization.schedule} | Chip: {data.normalization.chip}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* League Totals (Validation) */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">League Totals (Zero-Sum Validation)</h2>
+          <div className="grid grid-cols-4 gap-4 text-center">
+            <div className={`p-4 rounded ${Math.abs(data.league_totals.variance_sum) < 0.1 ? 'bg-green-100' : 'bg-red-100'}`}>
+              <div className="text-2xl font-bold">{data.league_totals.variance_sum.toFixed(2)}</div>
+              <div className="text-sm text-gray-600">Variance Sum<br/>(should be ~0)</div>
+            </div>
+            <div className="p-4 rounded bg-blue-100">
+              <div className="text-2xl font-bold">{data.league_totals.rank_sum.toFixed(2)}</div>
+              <div className="text-sm text-gray-600">Rank Sum<br/>(NOT zero-sum)</div>
+            </div>
+            <div className={`p-4 rounded ${Math.abs(data.league_totals.schedule_sum) < 0.1 ? 'bg-green-100' : 'bg-red-100'}`}>
+              <div className="text-2xl font-bold">{data.league_totals.schedule_sum.toFixed(2)}</div>
+              <div className="text-sm text-gray-600">Schedule Sum<br/>(should be ~0)</div>
+            </div>
+            <div className={`p-4 rounded ${Math.abs(data.league_totals.chip_sum) < 0.1 ? 'bg-green-100' : 'bg-red-100'}`}>
+              <div className="text-2xl font-bold">{data.league_totals.chip_sum.toFixed(2)}</div>
+              <div className="text-sm text-gray-600">Chip Sum<br/>(should be ~0)</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Season Rankings */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">Season Luck Rankings</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-gray-800 sticky top-0">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-100">
                 <tr>
-                  <th className="border border-gray-700 px-3 py-2">GW</th>
-                  <th className="border border-gray-700 px-3 py-2">Manager 1</th>
-                  <th className="border border-gray-700 px-3 py-2">Pts</th>
-                  <th className="border border-gray-700 px-3 py-2">vs</th>
-                  <th className="border border-gray-700 px-3 py-2">Pts</th>
-                  <th className="border border-gray-700 px-3 py-2">Manager 2</th>
-                  <th className="border border-gray-700 px-3 py-2">Result</th>
-                  <th className="border border-gray-700 px-3 py-2">Winner</th>
+                  <th className="px-4 py-2 text-left">Rank</th>
+                  <th className="px-4 py-2 text-left">Manager</th>
+                  <th className="px-4 py-2 text-right">Avg Pts</th>
+                  <th className="px-4 py-2 text-right">Variance</th>
+                  <th className="px-4 py-2 text-right">Rank</th>
+                  <th className="px-4 py-2 text-right">Schedule</th>
+                  <th className="px-4 py-2 text-right">Chip</th>
+                  <th className="px-4 py-2 text-right font-bold">Season Luck</th>
+                  <th className="px-4 py-2"></th>
                 </tr>
               </thead>
               <tbody>
-                {matches.map((match, idx) => {
-                  const result = match.winner === match.entry_1_id ? 'W-L' :
-                                 match.winner === match.entry_2_id ? 'L-W' : 'D-D';
-                  const winner = match.winner ? managerMap[match.winner]?.player_name : 'Draw';
-
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{match.event}</td>
-                      <td className="border border-gray-700 px-3 py-2">{match.entry_1_name}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{match.entry_1_points}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center text-gray-500">vs</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{match.entry_2_points}</td>
-                      <td className="border border-gray-700 px-3 py-2">{match.entry_2_name}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{result}</td>
-                      <td className="border border-gray-700 px-3 py-2">{winner}</td>
-                    </tr>
-                  );
-                })}
+                {data.managers.map((m, idx) => (
+                  <tr key={m.entry_id} className={`border-t ${selectedManager === m.entry_id ? 'bg-blue-50' : ''}`}>
+                    <td className="px-4 py-2">{idx + 1}</td>
+                    <td className="px-4 py-2 font-medium">{m.name}</td>
+                    <td className="px-4 py-2 text-right">{m.season_avg_points}</td>
+                    <td className="px-4 py-2 text-right">{m.variance_luck.total.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-right">{m.rank_luck.total.toFixed(4)}</td>
+                    <td className="px-4 py-2 text-right">{m.schedule_luck.value.toFixed(2)}</td>
+                    <td className="px-4 py-2 text-right">{m.chip_luck.value.toFixed(2)}</td>
+                    <td className={`px-4 py-2 text-right font-bold ${m.season_luck_index > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {m.season_luck_index > 0 ? '+' : ''}{m.season_luck_index.toFixed(4)}
+                    </td>
+                    <td className="px-4 py-2">
+                      <button
+                        onClick={() => setSelectedManager(m.entry_id)}
+                        className="text-blue-600 hover:underline text-xs"
+                      >
+                        Details
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        {/* Table 2: Rank Luck */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">2. Rank Luck (per GW per manager)</h2>
-          <p className="text-sm text-gray-400 mb-2">Raw values before 0.2 weight applied</p>
+        {/* Manager Details */}
+        {manager && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-bold mb-4">{manager.name} - Detailed Breakdown</h2>
+
+              {/* Component Summary */}
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="p-4 rounded bg-blue-50">
+                  <div className="text-sm text-gray-600">Variance Luck</div>
+                  <div className="text-2xl font-bold">{manager.variance_luck.total.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">Per-GW, Zero-sum</div>
+                </div>
+                <div className="p-4 rounded bg-purple-50">
+                  <div className="text-sm text-gray-600">Rank Luck</div>
+                  <div className="text-2xl font-bold">{manager.rank_luck.total.toFixed(4)}</div>
+                  <div className="text-xs text-gray-500">Per-GW, NOT zero-sum</div>
+                </div>
+                <div className="p-4 rounded bg-green-50">
+                  <div className="text-sm text-gray-600">Schedule Luck</div>
+                  <div className="text-2xl font-bold">{manager.schedule_luck.value.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">Seasonal, Zero-sum</div>
+                </div>
+                <div className="p-4 rounded bg-yellow-50">
+                  <div className="text-sm text-gray-600">Chip Luck</div>
+                  <div className="text-2xl font-bold">{manager.chip_luck.value.toFixed(2)}</div>
+                  <div className="text-xs text-gray-500">Seasonal, Zero-sum</div>
+                </div>
+              </div>
+
+              {/* Variance Luck Per-GW */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">1. Variance Luck (Per-GW)</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-2 py-1 text-left">GW</th>
+                        <th className="px-2 py-1 text-left">Opponent</th>
+                        <th className="px-2 py-1 text-right">Your Variance</th>
+                        <th className="px-2 py-1 text-right">Opp Variance</th>
+                        <th className="px-2 py-1 text-right font-bold">Luck</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {manager.variance_luck.per_gw.map(gw => (
+                        <tr key={gw.gw} className="border-t">
+                          <td className="px-2 py-1">GW{gw.gw}</td>
+                          <td className="px-2 py-1">{gw.opponent}</td>
+                          <td className="px-2 py-1 text-right">{gw.your_var.toFixed(2)}</td>
+                          <td className="px-2 py-1 text-right">{gw.opp_var.toFixed(2)}</td>
+                          <td className={`px-2 py-1 text-right font-bold ${gw.value > 0 ? 'text-green-600' : gw.value < 0 ? 'text-red-600' : ''}`}>
+                            {gw.value > 0 ? '+' : ''}{gw.value.toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Rank Luck Per-GW */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">2. Rank Luck (Per-GW)</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-2 py-1 text-left">GW</th>
+                        <th className="px-2 py-1 text-left">Opponent</th>
+                        <th className="px-2 py-1 text-right">Your Rank</th>
+                        <th className="px-2 py-1 text-right">Expected Win %</th>
+                        <th className="px-2 py-1 text-right">Result</th>
+                        <th className="px-2 py-1 text-right font-bold">Luck</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {manager.rank_luck.per_gw.map(gw => (
+                        <tr key={gw.gw} className="border-t">
+                          <td className="px-2 py-1">GW{gw.gw}</td>
+                          <td className="px-2 py-1">{gw.opponent}</td>
+                          <td className="px-2 py-1 text-right">{gw.your_rank}/{gw.total_managers}</td>
+                          <td className="px-2 py-1 text-right">{(gw.expected * 100).toFixed(1)}%</td>
+                          <td className="px-2 py-1 text-right">{gw.result === 1 ? 'W' : gw.result === 0 ? 'L' : 'D'}</td>
+                          <td className={`px-2 py-1 text-right font-bold ${gw.value > 0 ? 'text-green-600' : gw.value < 0 ? 'text-red-600' : ''}`}>
+                            {gw.value > 0 ? '+' : ''}{gw.value.toFixed(4)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Schedule Luck */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">3. Schedule Luck (Seasonal)</h3>
+                <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">Your Avg Opp Strength</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.avg_opp_strength.toFixed(2)}</div>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">League Avg Opp Strength</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.league_avg_opp_strength.toFixed(2)}</div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded">
+                    <div className="text-gray-600">Schedule Luck</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.value.toFixed(2)}</div>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-2 py-1 text-left">GW</th>
+                        <th className="px-2 py-1 text-left">Opponent</th>
+                        <th className="px-2 py-1 text-right">Opp Season Avg</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {manager.schedule_luck.opponents.map(opp => (
+                        <tr key={opp.gw} className="border-t">
+                          <td className="px-2 py-1">GW{opp.gw}</td>
+                          <td className="px-2 py-1">{opp.opponent}</td>
+                          <td className="px-2 py-1 text-right">{opp.opp_season_avg.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Chip Luck */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-2">4. Chip Luck (Seasonal)</h3>
+                <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">Chips Played</div>
+                    <div className="text-xl font-bold">{manager.chip_luck.chips_played}</div>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">Chips Faced</div>
+                    <div className="text-xl font-bold">{manager.chip_luck.chips_faced}</div>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">League Avg Faced</div>
+                    <div className="text-xl font-bold">{manager.chip_luck.avg_chips_faced.toFixed(2)}</div>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded">
+                    <div className="text-gray-600">Chip Luck</div>
+                    <div className="text-xl font-bold">{manager.chip_luck.value.toFixed(2)}</div>
+                  </div>
+                </div>
+                {manager.chip_luck.chips_faced_detail.length > 0 && (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-xs">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-2 py-1 text-left">GW</th>
+                          <th className="px-2 py-1 text-left">Opponent</th>
+                          <th className="px-2 py-1 text-left">Chip</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {manager.chip_luck.chips_faced_detail.map((chip, idx) => (
+                          <tr key={idx} className="border-t">
+                            <td className="px-2 py-1">GW{chip.gw}</td>
+                            <td className="px-2 py-1">{chip.opponent}</td>
+                            <td className="px-2 py-1">{chip.chip}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* GW Luck Index */}
+              <div>
+                <h3 className="font-semibold mb-2">GW Luck Index (60% Variance + 40% Rank)</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-2 py-1 text-left">GW</th>
+                        <th className="px-2 py-1 text-right">Variance</th>
+                        <th className="px-2 py-1 text-right">Rank</th>
+                        <th className="px-2 py-1 text-right font-bold">GW Luck</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {manager.gw_luck.map(gw => (
+                        <tr key={gw.gw} className="border-t">
+                          <td className="px-2 py-1">GW{gw.gw}</td>
+                          <td className="px-2 py-1 text-right">{gw.variance.toFixed(2)}</td>
+                          <td className="px-2 py-1 text-right">{gw.rank.toFixed(4)}</td>
+                          <td className={`px-2 py-1 text-right font-bold ${gw.total > 0 ? 'text-green-600' : gw.total < 0 ? 'text-red-600' : ''}`}>
+                            {gw.total > 0 ? '+' : ''}{gw.total.toFixed(4)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Per-GW Sums Validation */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">Per-GW Variance Validation (Should All Be 0)</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-gray-800 sticky top-0">
+            <table className="min-w-full text-xs">
+              <thead className="bg-gray-100">
                 <tr>
-                  <th className="border border-gray-700 px-3 py-2">GW</th>
-                  <th className="border border-gray-700 px-3 py-2">Manager</th>
-                  <th className="border border-gray-700 px-3 py-2">Points</th>
-                  <th className="border border-gray-700 px-3 py-2">League Rank</th>
-                  <th className="border border-gray-700 px-3 py-2">Outscored</th>
-                  <th className="border border-gray-700 px-3 py-2">Expected Win%</th>
-                  <th className="border border-gray-700 px-3 py-2">Actual</th>
-                  <th className="border border-gray-700 px-3 py-2">Rank Luck</th>
+                  <th className="px-2 py-1 text-left">GW</th>
+                  <th className="px-2 py-1 text-right">Variance Sum</th>
+                  <th className="px-2 py-1 text-right">Rank Sum</th>
                 </tr>
               </thead>
               <tbody>
-                {rankLuckData.map((row, idx) => {
-                  const luckColor = row.rankLuck > 0 ? 'text-green-400' : row.rankLuck < 0 ? 'text-red-400' : 'text-white';
-
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{row.gw}</td>
-                      <td className="border border-gray-700 px-3 py-2">{row.manager}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{row.points}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{row.rank}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{row.outscored}/{row.total}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{(row.expectedWin * 100).toFixed(0)}%</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{(row.actual * 100).toFixed(0)}%</td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono ${luckColor}`}>
-                        {row.rankLuck >= 0 ? '+' : ''}{row.rankLuck.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {data.per_gw_sums.map(gw => (
+                  <tr key={gw.gw} className="border-t">
+                    <td className="px-2 py-1">GW{gw.gw}</td>
+                    <td className={`px-2 py-1 text-right font-bold ${Math.abs(gw.variance_sum) < 0.01 ? 'text-green-600' : 'text-red-600'}`}>
+                      {gw.variance_sum.toFixed(2)}
+                    </td>
+                    <td className="px-2 py-1 text-right">{gw.rank_sum.toFixed(4)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </section>
+        </div>
 
-        {/* Table 3: Variance Luck */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">3. Variance Luck (per match)</h2>
-          <p className="text-sm text-gray-400 mb-2">Raw values before 0.6 weight applied • Zero-sum: M1 + M2 = 0</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-gray-800 sticky top-0">
-                <tr>
-                  <th className="border border-gray-700 px-2 py-2">GW</th>
-                  <th className="border border-gray-700 px-2 py-2">Manager 1</th>
-                  <th className="border border-gray-700 px-2 py-2">Score</th>
-                  <th className="border border-gray-700 px-2 py-2">Avg</th>
-                  <th className="border border-gray-700 px-2 py-2">Swing</th>
-                  <th className="border border-gray-700 px-2 py-2">Manager 2</th>
-                  <th className="border border-gray-700 px-2 py-2">Score</th>
-                  <th className="border border-gray-700 px-2 py-2">Avg</th>
-                  <th className="border border-gray-700 px-2 py-2">Swing</th>
-                  <th className="border border-gray-700 px-2 py-2">Net Swing</th>
-                  <th className="border border-gray-700 px-2 py-2">M1 Var Luck</th>
-                  <th className="border border-gray-700 px-2 py-2">M2 Var Luck</th>
-                </tr>
-              </thead>
-              <tbody>
-                {varianceLuckData.map((row, idx) => {
-                  const swing1Color = row.swing1 > 0 ? 'text-green-400' : row.swing1 < 0 ? 'text-red-400' : 'text-white';
-                  const swing2Color = row.swing2 > 0 ? 'text-green-400' : row.swing2 < 0 ? 'text-red-400' : 'text-white';
-                  const netColor = row.netSwing > 0 ? 'text-green-400' : row.netSwing < 0 ? 'text-red-400' : 'text-white';
-                  const luck1Color = row.varLuck1 > 0 ? 'text-green-400' : row.varLuck1 < 0 ? 'text-red-400' : 'text-white';
-                  const luck2Color = row.varLuck2 > 0 ? 'text-green-400' : row.varLuck2 < 0 ? 'text-red-400' : 'text-white';
-
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}>
-                      <td className="border border-gray-700 px-2 py-2 text-center">{row.gw}</td>
-                      <td className="border border-gray-700 px-2 py-2">{row.manager1}</td>
-                      <td className="border border-gray-700 px-2 py-2 text-center font-mono">{row.score1}</td>
-                      <td className="border border-gray-700 px-2 py-2 text-center font-mono text-gray-400">{row.avg1.toFixed(1)}</td>
-                      <td className={`border border-gray-700 px-2 py-2 text-center font-mono ${swing1Color}`}>
-                        {row.swing1 >= 0 ? '+' : ''}{row.swing1.toFixed(1)}
-                      </td>
-                      <td className="border border-gray-700 px-2 py-2">{row.manager2}</td>
-                      <td className="border border-gray-700 px-2 py-2 text-center font-mono">{row.score2}</td>
-                      <td className="border border-gray-700 px-2 py-2 text-center font-mono text-gray-400">{row.avg2.toFixed(1)}</td>
-                      <td className={`border border-gray-700 px-2 py-2 text-center font-mono ${swing2Color}`}>
-                        {row.swing2 >= 0 ? '+' : ''}{row.swing2.toFixed(1)}
-                      </td>
-                      <td className={`border border-gray-700 px-2 py-2 text-center font-mono ${netColor}`}>
-                        {row.netSwing >= 0 ? '+' : ''}{row.netSwing.toFixed(1)}
-                      </td>
-                      <td className={`border border-gray-700 px-2 py-2 text-center font-mono ${luck1Color}`}>
-                        {row.varLuck1 >= 0 ? '+' : ''}{row.varLuck1.toFixed(2)}
-                      </td>
-                      <td className={`border border-gray-700 px-2 py-2 text-center font-mono ${luck2Color}`}>
-                        {row.varLuck2 >= 0 ? '+' : ''}{row.varLuck2.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Table 4: Chip Luck */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">4. Chip Luck (matches with chips)</h2>
-          <p className="text-sm text-gray-400 mb-2">Raw values before 0.2 weight applied • User gets 0 (own decision)</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-gray-800 sticky top-0">
-                <tr>
-                  <th className="border border-gray-700 px-3 py-2">GW</th>
-                  <th className="border border-gray-700 px-3 py-2">Chip User</th>
-                  <th className="border border-gray-700 px-3 py-2">Chip</th>
-                  <th className="border border-gray-700 px-3 py-2">Pts</th>
-                  <th className="border border-gray-700 px-3 py-2">vs</th>
-                  <th className="border border-gray-700 px-3 py-2">Opponent</th>
-                  <th className="border border-gray-700 px-3 py-2">Pts</th>
-                  <th className="border border-gray-700 px-3 py-2">Result</th>
-                  <th className="border border-gray-700 px-3 py-2">Chip Luck (User)</th>
-                  <th className="border border-gray-700 px-3 py-2">Chip Luck (Opp)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {chipLuckData.map((row, idx) => {
-                  const oppLuckColor = row.chipLuckOpp > 0 ? 'text-green-400' : row.chipLuckOpp < 0 ? 'text-red-400' : 'text-white';
-
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{row.gw}</td>
-                      <td className="border border-gray-700 px-3 py-2">{row.chipUser}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono text-purple-400">{row.chip}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{row.userPts}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center text-gray-500">vs</td>
-                      <td className="border border-gray-700 px-3 py-2">{row.opponent}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{row.oppPts}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{row.result}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono text-gray-500">
-                        {row.chipLuckUser.toFixed(2)}
-                      </td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono ${oppLuckColor}`}>
-                        {row.chipLuckOpp >= 0 ? '+' : ''}{row.chipLuckOpp.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        {/* Table 5: Combined Summary */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold mb-4">5. Combined Luck Summary (Season Totals)</h2>
-          <p className="text-sm text-gray-400 mb-2">Weighted and scaled (×10): Rank ×0.2, Variance ×0.6, Chip ×0.2</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead className="bg-gray-800 sticky top-0">
-                <tr>
-                  <th className="border border-gray-700 px-3 py-2">Rank</th>
-                  <th className="border border-gray-700 px-3 py-2">Manager</th>
-                  <th className="border border-gray-700 px-3 py-2">W-D-L</th>
-                  <th className="border border-gray-700 px-3 py-2">Rank Luck</th>
-                  <th className="border border-gray-700 px-3 py-2">Var Luck</th>
-                  <th className="border border-gray-700 px-3 py-2">Chip Luck</th>
-                  <th className="border border-gray-700 px-3 py-2 bg-gray-700">TOTAL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {combinedData.map((row, idx) => {
-                  const rankColor = row.rankLuck > 0 ? 'text-green-400' : row.rankLuck < 0 ? 'text-red-400' : 'text-white';
-                  const varColor = row.varLuck > 0 ? 'text-green-400' : row.varLuck < 0 ? 'text-red-400' : 'text-white';
-                  const chipColor = row.chipLuck > 0 ? 'text-green-400' : row.chipLuck < 0 ? 'text-red-400' : 'text-white';
-                  const totalColor = row.total > 0 ? 'text-green-400' : row.total < 0 ? 'text-red-400' : 'text-white';
-
-                  return (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-800' : 'bg-gray-850'}>
-                      <td className="border border-gray-700 px-3 py-2 text-center">{idx + 1}</td>
-                      <td className="border border-gray-700 px-3 py-2">{row.manager}</td>
-                      <td className="border border-gray-700 px-3 py-2 text-center font-mono">{row.record}</td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono ${rankColor}`}>
-                        {row.rankLuck >= 0 ? '+' : ''}{row.rankLuck.toFixed(2)}
-                      </td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono ${varColor}`}>
-                        {row.varLuck >= 0 ? '+' : ''}{row.varLuck.toFixed(2)}
-                      </td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono ${chipColor}`}>
-                        {row.chipLuck >= 0 ? '+' : ''}{row.chipLuck.toFixed(2)}
-                      </td>
-                      <td className={`border border-gray-700 px-3 py-2 text-center font-mono font-bold ${totalColor} bg-gray-700`}>
-                        {row.total >= 0 ? '+' : ''}{row.total.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-                <tr className="bg-gray-700 font-bold">
-                  <td className="border border-gray-700 px-3 py-2" colSpan={2}>LEAGUE TOTALS (should be ~0)</td>
-                  <td className="border border-gray-700 px-3 py-2"></td>
-                  <td className="border border-gray-700 px-3 py-2 text-center font-mono">
-                    {leagueTotals.rankLuck >= 0 ? '+' : ''}{leagueTotals.rankLuck.toFixed(2)}
-                  </td>
-                  <td className="border border-gray-700 px-3 py-2 text-center font-mono">
-                    {leagueTotals.varLuck >= 0 ? '+' : ''}{leagueTotals.varLuck.toFixed(2)}
-                  </td>
-                  <td className="border border-gray-700 px-3 py-2 text-center font-mono">
-                    {leagueTotals.chipLuck >= 0 ? '+' : ''}{leagueTotals.chipLuck.toFixed(2)}
-                  </td>
-                  <td className="border border-gray-700 px-3 py-2 text-center font-mono bg-gray-600">
-                    {leagueTotals.total >= 0 ? '+' : ''}{leagueTotals.total.toFixed(2)}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <footer className="text-center text-gray-500 text-sm mt-12">
-          <p>K-163d Debug Page • Formula: 20% Rank + 60% Variance + 20% Chip</p>
-          <p>Variance is zero-sum • Chip luck: user = 0 (own decision), opponent = ±1</p>
-        </footer>
+        {/* Download JSON */}
+        <div className="bg-white rounded-lg shadow p-6 text-center">
+          <button
+            onClick={() => {
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `luck-k163f-${LEAGUE_ID}.json`;
+              a.click();
+            }}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+          >
+            Download Full JSON Data
+          </button>
+        </div>
       </div>
     </div>
   );
