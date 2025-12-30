@@ -73,7 +73,7 @@ export async function GET() {
     const chipsByGW: Record<number, Set<number>> = {};
     chips.forEach(chip => {
       if (!chipsByGW[chip.event]) chipsByGW[chip.event] = new Set();
-      chipsByGW[chip.event].add(chip.entry_id);
+      chipsByGW[chip.event].add(Number(chip.entry_id)); // Ensure number type
     });
 
     // Calculate progressive season averages
@@ -218,8 +218,8 @@ export async function GET() {
 
     for (const match of matches) {
       const gw = match.event;
-      const chip1 = chipsByGW[gw]?.has(match.entry_1_id);
-      const chip2 = chipsByGW[gw]?.has(match.entry_2_id);
+      const chip1 = chipsByGW[gw]?.has(Number(match.entry_1_id));
+      const chip2 = chipsByGW[gw]?.has(Number(match.entry_2_id));
 
       if (chip1) {
         const chipName = chips.find(c => c.entry_id === match.entry_1_id && c.event === gw)?.chip_name || 'chip';
