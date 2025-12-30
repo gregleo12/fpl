@@ -1,7 +1,8 @@
 /**
  * K-163a Part 2: 3-Component Luck Calculation
+ * K-163b: Rebalanced weights to 20/60/20
  *
- * Luck = Rank Luck (50%) + Variance Luck (30%) + Chip Luck (20%)
+ * Luck = Rank Luck (20%) + Variance Luck (60%) + Chip Luck (20%)
  *
  * Scale: -10 to +10 per GW (extreme cases)
  * Season: Sum of all GW luck values (-180 to +180 theoretical max)
@@ -19,13 +20,13 @@ export interface GWLuckBreakdown {
 }
 
 /**
- * Component 1: Rank Luck (50% weight)
+ * Component 1: Rank Luck (20% weight) [K-163b]
  * "Did your score deserve to win?"
  *
  * @param yourPoints Your team's points for the GW
  * @param allOtherPoints All other teams' points (19 opponents)
  * @param result Your H2H match result
- * @returns Rank luck (-5 to +5)
+ * @returns Rank luck (-2 to +2)
  */
 export function calculateRankLuck(
   yourPoints: number,
@@ -41,12 +42,12 @@ export function calculateRankLuck(
 
   const actual = result === 'win' ? 1 : result === 'draw' ? 0.5 : 0;
 
-  // Scale: (0-1) × 10 × 0.5 = -5 to +5
-  return (actual - expected) * 10 * 0.5;
+  // Scale: (0-1) × 10 × 0.2 = -2 to +2 [K-163b: reduced from 0.5]
+  return (actual - expected) * 10 * 0.2;
 }
 
 /**
- * Component 2: Variance Luck (30% weight)
+ * Component 2: Variance Luck (60% weight) [K-163b]
  * "Did timing of form swings hurt/help you?"
  *
  * @param yourScore Your points this GW
@@ -54,7 +55,7 @@ export function calculateRankLuck(
  * @param theirScore Opponent's points this GW
  * @param theirSeasonAvg Opponent's season average
  * @param result Match result
- * @returns Variance luck (-3 to +3)
+ * @returns Variance luck (-6 to +6)
  */
 export function calculateVarianceLuck(
   yourScore: number,
@@ -88,8 +89,8 @@ export function calculateVarianceLuck(
     luck = -normalized * 0.5;
   }
 
-  // Scale: × 10 × 0.3 = -3 to +3
-  return luck * 10 * 0.3;
+  // Scale: × 10 × 0.6 = -6 to +6 [K-163b: increased from 0.3]
+  return luck * 10 * 0.6;
 }
 
 /**
