@@ -1,0 +1,230 @@
+.container {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table th {
+  padding: 1rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.table th:first-child {
+  padding-left: 1.5rem;
+}
+
+.table th:last-child {
+  padding-right: 1.5rem;
+}
+
+/* Column sizing */
+.rankCol {
+  width: 80px;
+}
+
+.nameCol {
+  min-width: 140px;
+}
+
+.teamCol {
+  min-width: 160px;
+}
+
+.luckCol {
+  width: 100px;
+  text-align: center !important;
+}
+
+.componentCol {
+  width: 90px;
+  text-align: center !important;
+}
+
+.weight {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+  text-transform: none;
+}
+
+/* Table Rows */
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.row:hover {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.myRow {
+  background: rgba(0, 255, 135, 0.1) !important;
+}
+
+.myRow:hover {
+  background: rgba(0, 255, 135, 0.15) !important;
+}
+
+.table td {
+  padding: 0.875rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.table td:first-child {
+  padding-left: 1.5rem;
+}
+
+.table td:last-child {
+  padding-right: 1.5rem;
+}
+
+/* Rank Cell */
+.rankCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.rankIcon {
+  font-size: 1rem;
+}
+
+/* Name & Team Cells */
+.nameCell {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.teamCell {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8125rem;
+}
+
+/* Luck Index Cell */
+.luckCell {
+  text-align: center;
+}
+
+.luckValue {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Component Cells */
+.componentCell {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+
+/* Color Coding */
+.lucky {
+  color: #00ff87;
+}
+
+.unlucky {
+  color: #ef4444;
+}
+
+.neutral {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: 1rem;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    padding-right: 1rem;
+  }
+
+  .rankCol {
+    width: 60px;
+  }
+
+  .nameCol,
+  .teamCol {
+    min-width: 120px;
+  }
+
+  .luckCol,
+  .componentCol {
+    width: 70px;
+  }
+
+  .luckValue {
+    font-size: 0.875rem;
+  }
+
+  .componentCell {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Hide team column on very small screens */
+  .teamCol,
+  .teamCell {
+    display: none;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.625rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: 0.75rem;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    padding-right: 0.75rem;
+  }
+
+  .weight {
+    font-size: 0.625rem;
+  }
+
+  .luckValue {
+    font-size: 0.8125rem;
+  }
+}

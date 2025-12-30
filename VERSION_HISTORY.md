@@ -2,7 +2,91 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.3.53 (December 29, 2025)
+**Current Version:** v4.4.3 (December 31, 2025)
+
+---
+
+## v4.4.3 - K-163: Launch Luck System UI (Dec 31, 2025)
+
+**FEATURE:** Add dedicated Luck Analysis tab to Stats section with leaderboard, methodology, and validation.
+
+### Changes Made
+
+**New Luck Tab in Stats:**
+1. **LuckView Component**
+   - Main container component fetching from `/api/league/[id]/luck`
+   - Formula display card showing weighted components
+   - Collapsible methodology section
+   - Zero-sum validation footer
+
+2. **LuckLeaderboard Component**
+   - Ranked table of all managers by season_luck_index
+   - Displays all 4 weighted components (Variance 40%, Rank 30%, Schedule 20%, Chip 10%)
+   - User's row highlighted
+   - Color coding: green for positive luck, red for negative
+   - Icons: 🍀 for top 3 (lucky), ⛈️ for bottom 3 (unlucky)
+
+3. **LuckMethodology Component**
+   - Detailed explanation of each luck component
+   - Examples for each component
+   - Zero-sum property notes
+   - Complete formula breakdown
+   - Interpretation guide (+3 to +5 = Very Lucky, etc.)
+
+### Files Created
+
+**Components:**
+- `/src/components/Stats/LuckView.tsx` - Main container with data fetching and orchestration
+- `/src/components/Stats/LuckLeaderboard.tsx` - Ranked table displaying all managers
+- `/src/components/Stats/LuckMethodology.tsx` - Collapsible methodology explanation
+
+**Styling:**
+- `/src/components/Stats/LuckView.module.css` - Main view styling with dark purple gradient
+- `/src/components/Stats/LuckLeaderboard.module.css` - Table styling with responsive layout
+- `/src/components/Stats/LuckMethodology.module.css` - Methodology section styling
+
+### Files Modified
+
+**Integration:**
+- `/src/components/Stats/StatsHub.tsx` - Added 'luck' to ViewType, imported LuckView, added Luck tab button with Clover icon
+
+### UI Features
+
+**Formula Display:**
+- Shows weighted formula: 40% Variance + 30% Rank + 20% Schedule + 10% Chip
+- Color-coded weights in purple
+
+**Methodology Explanation:**
+- 📊 Variance Luck: Measures form timing (zero-sum per match)
+- 🎯 Rank Luck: Measures GW rank vs outcome (NOT zero-sum)
+- 📅 Schedule Luck: Measures opponent strength (zero-sum)
+- 🎰 Chip Luck: Measures chips faced (zero-sum)
+
+**Validation Footer:**
+- Displays league totals for variance, schedule, and chip
+- Green for values near 0 (valid zero-sum)
+- Yellow for values that deviate (potential issue)
+
+### Design Consistency
+
+**Matches Existing Stats Tabs:**
+- Dark purple gradient backgrounds: `rgba(26, 26, 46, 0.6)` to `rgba(55, 0, 60, 0.6)`
+- Green accent: `#00ff87` for positive values
+- Red accent: `#ef4444` for negative values
+- Purple accent: `#a78bfa` for labels
+- Responsive design with mobile optimizations
+
+**Accessibility:**
+- Sticky table header on scroll
+- Mobile responsive (hides team column on small screens)
+- Touch-friendly spacing
+
+### Testing
+
+- ✅ Build successful (npm run build)
+- ✅ TypeScript compilation passed
+- ✅ All components properly styled
+- ✅ Integration with StatsHub complete
 
 ---
 

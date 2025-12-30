@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
-import { RotateCw, Home, BarChart2, Trophy, Shirt } from 'lucide-react';
+import { RotateCw, Home, BarChart2, Trophy, Shirt, Clover } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -13,8 +13,9 @@ import { GWRankingsModal } from './GWRankingsModal';
 import { SeasonView } from './SeasonView';
 import { MyTeamView } from './MyTeamView';
 import { PlayersTab } from '@/components/Players/PlayersTab';
+import LuckView from './LuckView';
 
-type ViewType = 'myteam' | 'gameweek' | 'season' | 'players';
+type ViewType = 'myteam' | 'gameweek' | 'season' | 'players' | 'luck';
 
 export interface GameweekStats {
   event: number;
@@ -174,6 +175,13 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
           <Shirt size={16} />
           Players
         </button>
+        <button
+          className={`${styles.subTab} ${view === 'luck' ? styles.subTabActive : ''}`}
+          onClick={() => setView('luck')}
+        >
+          <Clover size={16} />
+          Luck
+        </button>
       </div>
 
       {/* K-94: Second bar - GW selector (only for gameweek view) */}
@@ -270,6 +278,11 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
       {/* Players View */}
       {view === 'players' && (
         <PlayersTab />
+      )}
+
+      {/* Luck View */}
+      {view === 'luck' && (
+        <LuckView leagueId={parseInt(leagueId)} myTeamId={parseInt(myTeamId)} />
       )}
 
       {/* GW Rankings Modal */}

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.3.53** (December 29, 2025)
+**v4.4.3** (December 31, 2025)
 
-FEATURE (K-163a Part 2): Completed luck display implementation across all frontend locations. Added match-specific luck to H2H Match Preview and Match Detail Modal with ×10 format (e.g., +26, -18) and color coding (green for positive, red for negative). Luck now displays in H2H section below "Last meeting" showing both players' luck from that matchup. All 7 API endpoints and all 7 frontend displays now complete.
+FEATURE (K-163): Launched Luck System UI to Stats section. Added dedicated Luck Analysis tab with leaderboard showing all managers ranked by Season Luck Index, collapsible methodology explanation with examples, and zero-sum validation footer. Displays all 4 weighted components (Variance 40%, Rank 30%, Schedule 20%, Chip 10%) with color coding (green/red). Includes icons (🍀 for top 3, ⛈️ for bottom 3) and detailed interpretation guide.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

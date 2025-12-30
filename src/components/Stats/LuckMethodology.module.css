@@ -1,0 +1,266 @@
+.container {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.intro {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+/* Component Explanations */
+.components {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.component {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.componentHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.componentTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  flex: 1;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a78bfa;
+  background: rgba(167, 139, 250, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.componentDesc {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0 0 0.75rem 0;
+}
+
+.example {
+  background: rgba(0, 255, 135, 0.05);
+  border-left: 3px solid #00ff87;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.example strong {
+  color: #00ff87;
+  font-weight: 600;
+}
+
+.property {
+  background: rgba(167, 139, 250, 0.05);
+  border-left: 3px solid #a78bfa;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+}
+
+.property strong {
+  color: #a78bfa;
+  font-weight: 600;
+}
+
+/* Formula Section */
+.formulaSection {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.formulaTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.formulaBox {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 0.75rem;
+}
+
+.formulaLine {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+}
+
+.formulaLine strong {
+  color: #00ff87;
+  font-weight: 700;
+}
+
+.formulaNote {
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Interpretation Guide */
+.interpretation {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.interpretationTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.interpretationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.interpretationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.interpretationRange {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Courier New', monospace;
+}
+
+.interpretationLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+
+  .intro {
+    font-size: 0.875rem;
+  }
+
+  .component {
+    padding: 1rem;
+  }
+
+  .componentHeader {
+    flex-wrap: wrap;
+  }
+
+  .icon {
+    font-size: 1.25rem;
+  }
+
+  .componentTitle {
+    font-size: 0.9375rem;
+  }
+
+  .badge {
+    font-size: 0.6875rem;
+  }
+
+  .componentDesc {
+    font-size: 0.8125rem;
+  }
+
+  .example,
+  .property {
+    font-size: 0.75rem;
+    padding: 0.625rem;
+  }
+
+  .formulaSection,
+  .interpretation {
+    padding: 1rem;
+  }
+
+  .formulaBox {
+    padding: 0.75rem;
+  }
+
+  .formulaLine {
+    font-size: 0.75rem;
+  }
+
+  .interpretationGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .interpretationItem {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .interpretationRange,
+  .interpretationLabel {
+    font-size: 0.8125rem;
+  }
+}
