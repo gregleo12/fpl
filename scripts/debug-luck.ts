@@ -136,7 +136,7 @@ async function debugLuck(leagueId: number, entryId: number) {
 
     totalLuck += gwLuck;
 
-    // Manual calculation for breakdown (K-163b: 20/60/20 weights)
+    // Manual calculation for breakdown (K-163b: 20/60/20 weights, K-163c: zero-sum variance)
     const outscored = otherTeamsPoints.filter(p => yourPoints > p).length;
     const drawn = otherTeamsPoints.filter(p => yourPoints === p).length;
     const expected = otherTeamsPoints.length > 0
@@ -149,15 +149,7 @@ async function debugLuck(leagueId: number, entryId: number) {
     const theirSwing = opponentPoints - opponentAvg;
     const netSwing = yourSwing - theirSwing;
     const normalized = Math.max(-1, Math.min(1, netSwing / 30));
-    let varianceLuck = 0;
-    if (result === 'win') {
-      varianceLuck = Math.max(0, -normalized);
-    } else if (result === 'loss') {
-      varianceLuck = Math.min(0, normalized);
-    } else {
-      varianceLuck = -normalized * 0.5;
-    }
-    varianceLuck = varianceLuck * 10 * 0.6; // K-163b: 0.6 weight
+    const varianceLuck = normalized * 10 * 0.6; // K-163c: zero-sum (no result checking)
 
     const chipLuck = !opponentPlayedChip ? 0 : result === 'win' ? 2 : result === 'loss' ? -2 : 0;
 

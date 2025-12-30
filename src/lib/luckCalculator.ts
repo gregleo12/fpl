@@ -48,13 +48,14 @@ export function calculateRankLuck(
 
 /**
  * Component 2: Variance Luck (60% weight) [K-163b]
+ * K-163c: Zero-sum calculation (your luck + opponent luck = 0)
  * "Did timing of form swings hurt/help you?"
  *
  * @param yourScore Your points this GW
  * @param yourSeasonAvg Your season average (recalculates each GW)
  * @param theirScore Opponent's points this GW
  * @param theirSeasonAvg Opponent's season average
- * @param result Match result
+ * @param result Match result (unused, kept for backward compatibility)
  * @returns Variance luck (-6 to +6)
  */
 export function calculateVarianceLuck(
@@ -71,26 +72,11 @@ export function calculateVarianceLuck(
   // Normalize to -1 to +1 (30 pts = extreme swing)
   const normalized = Math.max(-1, Math.min(1, netSwing / 30));
 
-  // Apply result context:
-  // - Negative swing + Loss = Unlucky (negative)
-  // - Negative swing + Win = Lucky (positive)
-  // - Positive swing + Win = Expected (zero)
-  // - Positive swing + Loss = Unlucky (negative)
-
-  let luck = 0;
-  if (result === 'win') {
-    // Won despite negative swing = lucky
-    luck = Math.max(0, -normalized);
-  } else if (result === 'loss') {
-    // Lost with negative swing = unlucky
-    luck = Math.min(0, normalized);
-  } else {
-    // Draw: half impact
-    luck = -normalized * 0.5;
-  }
-
-  // Scale: × 10 × 0.6 = -6 to +6 [K-163b: increased from 0.3]
-  return luck * 10 * 0.6;
+  // K-163c: Zero-sum calculation
+  // Positive normalized = you outperformed relative to averages = positive luck
+  // Negative normalized = they outperformed relative to averages = negative luck
+  // Your luck + opponent's luck = normalized + (-normalized) = 0
+  return normalized * 10 * 0.6;
 }
 
 /**
