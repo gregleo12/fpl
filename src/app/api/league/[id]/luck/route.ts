@@ -129,11 +129,32 @@ export async function GET(
     });
 
     const chipsByManager: Record<number, number> = {}; // count of chips played by each manager
-    const chipsFacedByManager: Record<number, number> = {}; // count of chips faced
     chips.forEach(chip => {
       const chipEntryId = parseInt(String(chip.entry_id));
       chipsByManager[chipEntryId] = (chipsByManager[chipEntryId] || 0) + 1;
     });
+
+    // Pre-calculate chips faced by each manager for correct zero-sum average
+    const chipsFacedByManager: Record<number, number> = {};
+    for (const match of matches) {
+      const gw = match.event;
+      const entry1Id = parseInt(String(match.entry_1_id));
+      const entry2Id = parseInt(String(match.entry_2_id));
+
+      // Check if entry1 faced a chip from entry2
+      if (chipsByGW[gw]?.has(entry2Id)) {
+        chipsFacedByManager[entry1Id] = (chipsFacedByManager[entry1Id] || 0) + 1;
+      }
+
+      // Check if entry2 faced a chip from entry1
+      if (chipsByGW[gw]?.has(entry1Id)) {
+        chipsFacedByManager[entry2Id] = (chipsFacedByManager[entry2Id] || 0) + 1;
+      }
+    }
+
+    // Calculate correct average chips faced (for zero-sum)
+    const totalChipsFaced = Object.values(chipsFacedByManager).reduce((sum, count) => sum + count, 0);
+    const avgChipsFaced = managers.length > 0 ? totalChipsFaced / managers.length : 0;
 
     // Calculate managers' luck components
     const managersData: any[] = [];
@@ -255,15 +276,11 @@ export async function GET(
       const scheduleLuck = (theoreticalOppAvg - avgOppStrength) * managerMatches.length;
 
       // 4. CHIP LUCK (seasonal only, zero-sum)
-      const totalChipsPlayed = chips.length;
       const yourChipsPlayed = chipsByManager[entryId] || 0;
-      const othersChipsPlayed = totalChipsPlayed - yourChipsPlayed;
-      const avgChipsFaced = managers.length > 1 ? othersChipsPlayed / (managers.length - 1) : 0;
+      const chipsFaced = chipsFacedByManager[entryId] || 0;
 
-      // Count chips actually faced
-      let chipsFaced = 0;
+      // Get chip faced details for display
       const chipsFacedDetail: any[] = [];
-
       for (const match of managerMatches) {
         const gw = match.event;
         const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
@@ -271,7 +288,6 @@ export async function GET(
         const oppName = isEntry1 ? match.entry_2_name : match.entry_1_name;
 
         if (chipsByGW[gw]?.has(oppId)) {
-          chipsFaced++;
           const chipName = chips.find(c => parseInt(String(c.entry_id)) === oppId && c.event === gw)?.chip_name || 'chip';
           chipsFacedDetail.push({
             gw,
@@ -281,6 +297,9 @@ export async function GET(
         }
       }
 
+      // Chip luck = (average - your_faced) × scale factor
+      // Positive = faced fewer chips than average (lucky)
+      // Negative = faced more chips than average (unlucky)
       const chipLuck = (avgChipsFaced - chipsFaced) * 7; // Scale factor: 7 points per chip
 
       // Calculate indexes
