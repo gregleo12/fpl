@@ -65,7 +65,8 @@ interface ManagerData {
   schedule_luck: {
     value: number;
     avg_opp_strength: number;
-    league_avg_opp_strength: number;
+    theoretical_opp_avg: number;
+    your_season_avg: number;
     opponents: OpponentStrength[];
   };
   chip_luck: {
@@ -321,14 +322,18 @@ export default function LuckDebugPage() {
               {/* Schedule Luck */}
               <div className="mb-6">
                 <h3 className="font-semibold mb-2">3. Schedule Luck (Seasonal)</h3>
-                <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
+                <div className="grid grid-cols-4 gap-4 mb-4 text-sm">
                   <div className="p-3 bg-gray-50 rounded">
-                    <div className="text-gray-600">Your Avg Opp Strength</div>
-                    <div className="text-xl font-bold">{manager.schedule_luck.avg_opp_strength.toFixed(2)}</div>
+                    <div className="text-gray-600">Your Season Avg</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.your_season_avg.toFixed(2)}</div>
                   </div>
                   <div className="p-3 bg-gray-50 rounded">
-                    <div className="text-gray-600">League Avg Opp Strength</div>
-                    <div className="text-xl font-bold">{manager.schedule_luck.league_avg_opp_strength.toFixed(2)}</div>
+                    <div className="text-gray-600">Theoretical Opp Avg</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.theoretical_opp_avg.toFixed(2)}</div>
+                  </div>
+                  <div className="p-3 bg-gray-50 rounded">
+                    <div className="text-gray-600">Actual Opp Avg</div>
+                    <div className="text-xl font-bold">{manager.schedule_luck.avg_opp_strength.toFixed(2)}</div>
                   </div>
                   <div className="p-3 bg-green-50 rounded">
                     <div className="text-gray-600">Schedule Luck</div>

@@ -75,11 +75,12 @@ export async function GET(
     `, [leagueId]);
     const chips = chipsResult.rows;
 
-    // Build data structures
+    // Build data structures (convert entry_id to number for consistent typing)
     const pointsByGW: Record<number, Record<number, number>> = {};
     allGWPoints.forEach(row => {
       if (!pointsByGW[row.event]) pointsByGW[row.event] = {};
-      pointsByGW[row.event][row.entry_id] = row.points;
+      const entryIdNum = parseInt(String(row.entry_id));
+      pointsByGW[row.event][entryIdNum] = row.points;
     });
 
     const allGWs = Object.keys(pointsByGW).map(Number).sort((a, b) => a - b);
@@ -90,7 +91,7 @@ export async function GET(
     for (const gw of allGWs) {
       seasonAvgsByGW[gw] = {};
       const allEntryIds = new Set<number>();
-      allGWPoints.forEach(row => allEntryIds.add(row.entry_id));
+      allGWPoints.forEach(row => allEntryIds.add(parseInt(String(row.entry_id))));
 
       for (const entryId of Array.from(allEntryIds)) {
         const pointsUpToGW: number[] = [];
@@ -111,8 +112,8 @@ export async function GET(
       const mEntryId = parseInt(String(manager.entry_id));
       const points: number[] = [];
       for (const gw of allGWs) {
-        if (pointsByGW[gw]?.[manager.entry_id] !== undefined) {
-          points.push(pointsByGW[gw][manager.entry_id]);
+        if (pointsByGW[gw]?.[mEntryId] !== undefined) {
+          points.push(pointsByGW[gw][mEntryId]);
         }
       }
       if (points.length > 0) {
@@ -240,24 +241,18 @@ export async function GET(
         ? totalOppStrength / managerMatches.length
         : 0;
 
-      // Calculate league average opponent strength
-      let leagueAvgOppStrength = 0;
-      for (const m of managers) {
-        const mEntryId = parseInt(String(m.entry_id));
-        const mMatches = matches.filter(match =>
-          parseInt(String(match.entry_1_id)) === mEntryId || parseInt(String(match.entry_2_id)) === mEntryId
-        );
-        let mOppTotal = 0;
-        for (const match of mMatches) {
-          const isE1 = parseInt(String(match.entry_1_id)) === mEntryId;
-          const oppId = parseInt(String(isE1 ? match.entry_2_id : match.entry_1_id));
-          mOppTotal += finalSeasonAvgs[oppId] || 0;
-        }
-        leagueAvgOppStrength += mMatches.length > 0 ? mOppTotal / mMatches.length : 0;
-      }
-      leagueAvgOppStrength /= managers.length;
+      // Calculate this manager's theoretical opponent pool
+      // (sum of all managers' averages minus their own, divided by n-1)
+      const yourSeasonAvg = finalSeasonAvgs[entryId] || 0;
+      const totalAllAvgs = Object.values(finalSeasonAvgs).reduce((sum, avg) => sum + avg, 0);
+      const theoreticalOppAvg = managers.length > 1
+        ? (totalAllAvgs - yourSeasonAvg) / (managers.length - 1)
+        : 0;
 
-      const scheduleLuck = (leagueAvgOppStrength - avgOppStrength) * managerMatches.length;
+      // Schedule luck = (theoretical - actual) × games played
+      // Positive = faced weaker opponents than expected (lucky)
+      // Negative = faced stronger opponents than expected (unlucky)
+      const scheduleLuck = (theoreticalOppAvg - avgOppStrength) * managerMatches.length;
 
       // 4. CHIP LUCK (seasonal only, zero-sum)
       const totalChipsPlayed = chips.length;
@@ -321,7 +316,8 @@ export async function GET(
         schedule_luck: {
           value: parseFloat(scheduleLuck.toFixed(2)),
           avg_opp_strength: parseFloat(avgOppStrength.toFixed(2)),
-          league_avg_opp_strength: parseFloat(leagueAvgOppStrength.toFixed(2)),
+          theoretical_opp_avg: parseFloat(theoreticalOppAvg.toFixed(2)),
+          your_season_avg: parseFloat(yourSeasonAvg.toFixed(2)),
           opponents: opponentsStrengths
         },
 
