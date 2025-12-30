@@ -207,12 +207,20 @@ export async function GET(
         const winner = match.winner ? parseInt(String(match.winner)) : null;
 
         // Calculate GW rank
-        const gwPoints = pointsByGW[gw];
-        const sortedPoints = Object.entries(gwPoints || {})
-          .map(([id, pts]) => ({ id: parseInt(id), pts }))
+        // Create a copy to avoid mutating pointsByGW
+        const gwPoints = { ...(pointsByGW[gw] || {}) };
+
+        // If this manager's points aren't in pointsByGW (missing from manager_gw_history),
+        // add them using their match points as fallback
+        if (gwPoints[entryId] === undefined && yourPoints > 0) {
+          gwPoints[entryId] = yourPoints;
+        }
+
+        const sortedPoints = Object.entries(gwPoints)
+          .map(([id, pts]) => ({ id: Number(id), pts: Number(pts) }))
           .sort((a, b) => b.pts - a.pts);
 
-        const yourRank = sortedPoints.findIndex(p => p.id === entryId) + 1;
+        const yourRank = sortedPoints.findIndex(p => p.id === Number(entryId)) + 1;
         const totalManagers = sortedPoints.length;
 
         // Expected win probability based on rank
