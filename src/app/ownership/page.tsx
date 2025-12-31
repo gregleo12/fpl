@@ -7,7 +7,7 @@
 import OwnershipPage from '@/components/Ownership/OwnershipPage';
 
 export const metadata = {
-  title: 'Top 500 Ownership | RivalFPL',
+  title: 'Top 10K Ownership | RivalFPL',
   description: 'See what player combinations elite FPL managers are choosing',
 };
 

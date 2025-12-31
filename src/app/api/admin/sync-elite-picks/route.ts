@@ -13,10 +13,10 @@ import fs from 'fs';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 600; // 10 minutes max
+export const maxDuration = 300; // 5 minutes max (Railway limit)
 
-const SAMPLE_TIER = 'top500';
-const TOTAL_PAGES = 10; // 500 teams
+const SAMPLE_TIER = 'top10k';
+const TOTAL_PAGES = 200; // 10,000 teams
 const DELAY_BETWEEN_REQUESTS = 150;
 const BATCH_SIZE = 50;
 const PAUSE_BETWEEN_BATCHES = 3000;

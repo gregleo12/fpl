@@ -12,8 +12,8 @@
 import { getDatabase } from '../lib/db';
 
 // Configuration
-const SAMPLE_TIER = 'top500'; // Week 1: top500 sample
-const TOTAL_PAGES = 10; // 10 pages × 50 teams = 500 teams
+const SAMPLE_TIER = 'top10k'; // Full 10K sample
+const TOTAL_PAGES = 200; // 200 pages × 50 teams = 10,000 teams
 const DELAY_BETWEEN_REQUESTS = 150; // 150ms = ~6-7 requests/sec
 const BATCH_SIZE = 50; // Process 50 teams at a time
 const PAUSE_BETWEEN_BATCHES = 3000; // 3 seconds between batches

@@ -55,7 +55,7 @@ export default function OwnershipPage() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/ownership/combinations?team=${selectedTeamId}&tier=top500`);
+        const response = await fetch(`/api/ownership/combinations?team=${selectedTeamId}&tier=top10k`);
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -77,7 +77,7 @@ export default function OwnershipPage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.title}>🎯 Top 500 Ownership Combinations</h1>
+        <h1 className={styles.title}>🎯 Top 10K Ownership Combinations</h1>
         <p className={styles.subtitle}>
           See what player combinations elite FPL managers own together from each team
         </p>
@@ -150,7 +150,7 @@ export default function OwnershipPage() {
 
           {/* Info Footer */}
           <div className={styles.infoFooter}>
-            ℹ️ Data from {data.sample_size.toLocaleString()} managers in top 500 overall (by total points)
+            ℹ️ Data from {data.sample_size.toLocaleString()} managers in top 10K overall (by total points)
           </div>
         </>
       )}
