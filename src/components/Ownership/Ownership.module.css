@@ -1,0 +1,327 @@
+/* K-200: Ownership Page Styles */
+
+.container {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 0.5rem 0;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Team Selector */
+.selectorContainer {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.selectorLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.teamSelect {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: white;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.teamSelect:hover {
+  border-color: #00ff87;
+}
+
+.teamSelect:focus {
+  outline: none;
+  border-color: #00ff87;
+}
+
+/* Singles Section */
+.singlesSection {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+}
+
+.singlesBar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.singleItem {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.singleItem .playerName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.singleItem .ownership {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+/* Section */
+.section {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #00ff87;
+  margin: 0 0 0.5rem 0;
+}
+
+.count {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.sectionDesc {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 1rem 0;
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.table th {
+  padding: 1rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.rankCol {
+  width: 60px;
+  text-align: center !important;
+}
+
+.comboCol {
+  min-width: 300px;
+}
+
+.countCol {
+  width: 100px;
+  text-align: right !important;
+}
+
+.pctCol {
+  width: 120px;
+  text-align: right !important;
+}
+
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s ease;
+}
+
+.row:hover {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.table td {
+  padding: 0.875rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.rankCell {
+  text-align: center;
+  font-weight: 600;
+  color: #a78bfa;
+}
+
+.comboCell {
+  font-weight: 600;
+}
+
+.playerName {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.playerOwnership {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-left: 0.25rem;
+}
+
+.plus {
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 400;
+}
+
+.countCell {
+  text-align: right;
+  font-weight: 700;
+  color: white;
+}
+
+.pctCell {
+  text-align: right;
+  font-weight: 600;
+  color: #00ff87;
+}
+
+/* Loading & Error */
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem 2rem;
+  font-size: 1rem;
+}
+
+.loading {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.errorHint {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: rgba(239, 68, 68, 0.7);
+}
+
+.noData {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9375rem;
+}
+
+/* Info Footer */
+.infoFooter {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem 0.75rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .selectorContainer {
+    padding: 1rem;
+    flex-direction: column;
+  }
+
+  .teamSelect {
+    width: 100%;
+  }
+
+  .singlesBar {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .comboCol {
+    min-width: 200px;
+  }
+
+  .playerOwnership {
+    display: block;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "4.4.3",
+  "version": "4.4.4",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -25,7 +25,9 @@
     "sync:all-leagues": "npx tsx src/scripts/sync/bulk-sync-all-leagues.ts",
     "fix:incomplete-history": "npx tsx src/scripts/archive/fix-incomplete-manager-history.ts",
     "test:provisional-bonus": "npx tsx src/scripts/utils/test-provisional-bonus.ts",
-    "test:team-totals": "npx tsx src/scripts/utils/test-team-totals.ts"
+    "test:team-totals": "npx tsx src/scripts/utils/test-team-totals.ts",
+    "migrate:elite-picks": "npx tsx src/scripts/run-elite-picks-migration.ts",
+    "sync:elite-picks": "npx tsx src/scripts/sync-elite-picks.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
