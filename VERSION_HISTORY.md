@@ -2,7 +2,84 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.11 (January 2, 2026)
+**Current Version:** v4.4.12 (January 2, 2026)
+
+---
+
+## v4.4.12 - K-166c: Full Revert - Restore Original My Team UI (Jan 2, 2026)
+
+**REVERT (K-166c):** Complete rollback of K-166 - restored original My Team layout
+**REASON:** K-166 implementation had significant UI/UX issues - reverting to stable state
+
+### K-166c: Full Revert of K-166
+
+Full reversion of K-166 changes to restore the original, working My Team UI.
+
+**Reverted Changes:**
+
+1. **My Team Tab Restored to Original**
+   - Back to 3 stat boxes: GW PTS, GW RANK, TRANSFERS (removed Form box)
+   - PitchView unchanged
+   - Team Value / Bank row unchanged
+   - Original StatsPanel for GW Transfers (not collapsible wrapper)
+   - No collapsible sections (Position History, Chips, Match History removed from My Team)
+
+2. **Stats Tab Team View Restored**
+   - "Team" sub-tab restored in Stats section
+   - Stats now shows: **Team**, GW, Season, Players, Luck (5 tabs)
+   - Team tab contains: Position History, Chips Played, Chips Faced, Match History
+   - Default view back to "myteam" (Team tab)
+
+3. **Deleted K-166 Components**
+   - Removed entire `src/components/MyTeam/` folder
+   - Deleted files:
+     - `CollapsibleSection.tsx` + `.module.css`
+     - `FormStatBox.tsx` + `.module.css`
+     - `FormModal.tsx` + `.module.css`
+     - `GWTransfersSection.tsx` + `.module.css`
+     - `ChipsSection.tsx` + `.module.css`
+     - `MatchHistorySection.tsx` + `.module.css`
+
+4. **Restored Original Files**
+   - `MyTeamTab.tsx` - reverted to commit c803504 (pre-K-166)
+   - `StatsHub.tsx` - reverted to commit c803504 (restored Team tab)
+   - `PositionHistory.tsx` - reverted to commit c803504 (removed hideTitle prop)
+
+**Final Layout:**
+
+**My Team Tab:**
+```
+├── GameweekSelector
+├── StatBoxes (3 boxes): GW PTS, GW RANK, TRANSFERS
+├── PitchView
+├── Team Value / Bank row
+└── GWTransfers (original StatsPanel layout)
+```
+
+**Stats Tab:**
+```
+├── Team (restored) ← Position History, Chips, Match History
+├── GW
+├── Season
+├── Players
+└── Luck
+```
+
+**Technical Notes:**
+- Dashboard bundle size: 71.9 kB (was 64.5 kB in K-166b)
+- All original functionality preserved
+- No breaking changes
+- Clean revert via git checkout to commit c803504
+
+**Lessons Learned:**
+- K-166 concept (consolidate Stats/Team into My Team) may still be valid
+- Future attempts should include:
+  - Proper design mockups first
+  - Incremental approach (one section at a time)
+  - Better styling that matches existing FPL theme
+  - User testing before full deployment
+
+**Status:** Original stable UI restored, ready for production
 
 ---
 

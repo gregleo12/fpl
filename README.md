@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.11** (January 2, 2026)
+**v4.4.12** (January 2, 2026)
 
-HOTFIX (K-166b): Fixed K-166 UI regressions. Reverted GW Transfers to always-visible (removed collapsible wrapper), fixed Form stat box styling to match other boxes exactly (gradient backgrounds, proper sizing, neon green glows), updated collapsible section headers with FPL purple theme and neon green titles. Restored professional appearance and consistent theming throughout.
+REVERT (K-166c): Full rollback of K-166 changes to restore original My Team UI. Restored 3 stat boxes (GW PTS, GW RANK, TRANSFERS), original StatsPanel for GW Transfers, and Stats/Team tab. Deleted all K-166 components (CollapsibleSection, FormStatBox, FormModal, GWTransfersSection, ChipsSection, MatchHistorySection). My Team and Stats tabs back to original stable state.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
