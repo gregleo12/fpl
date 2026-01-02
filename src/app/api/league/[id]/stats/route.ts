@@ -183,15 +183,14 @@ async function calculateRankChange(entryId: number, leagueId: number, currentRan
   return { rankChange, previousRank };
 }
 
-// K-163a Part 2: Calculate luck using 3-component formula
-async function calculateLuck(matches: any[], upToGW: number, db: any, leagueId: number) {
-  // Step 1: Group points by gameweek to get all teams' points per GW
-  const pointsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> points }
+// K-163N: Calculate 4-component weighted season luck index (matches Luck API formula)
+async function calculateSeasonLuckIndex(matches: any[], upToGW: number, db: any, leagueId: number) {
+  // Step 1: Group points by gameweek
+  const pointsByGW: Record<number, Record<number, number>> = {};
   const managerIds = new Set<number>();
 
   matches.forEach((match: any) => {
     if (match.event > upToGW) return;
-
     const gw = Number(match.event);
     const entry1 = Number(match.entry_1_id);
     const entry2 = Number(match.entry_2_id);
@@ -199,113 +198,153 @@ async function calculateLuck(matches: any[], upToGW: number, db: any, leagueId: 
     const entry2Points = Number(match.entry_2_points);
 
     if (!pointsByGW[gw]) pointsByGW[gw] = {};
-
     pointsByGW[gw][entry1] = entry1Points;
     pointsByGW[gw][entry2] = entry2Points;
-
     managerIds.add(entry1);
     managerIds.add(entry2);
   });
 
-  // Step 2: Get progressive season averages for all managers
-  // For each GW, calculate average of all GWs up to and including that GW
-  const seasonAvgsByGW: Record<number, Record<number, number>> = {}; // gw -> { entryId -> avgPoints }
+  // Step 2: Progressive season averages
+  const seasonAvgsByGW: Record<number, Record<number, number>> = {};
+  const getProgressiveAverage = (entryId: number, upToGw: number): number => {
+    let total = 0;
+    let count = 0;
+    for (let g = 1; g <= upToGw; g++) {
+      if (pointsByGW[g]?.[entryId] !== undefined) {
+        total += pointsByGW[g][entryId];
+        count++;
+      }
+    }
+    return count > 0 ? total / count : 0;
+  };
 
   for (const gw of Object.keys(pointsByGW).map(Number).sort((a, b) => a - b)) {
     seasonAvgsByGW[gw] = {};
-
-    // For each manager, calculate average up to this GW
     for (const entryId of Array.from(managerIds)) {
-      const pointsUpToGW: number[] = [];
-
-      for (let g = 1; g <= gw; g++) {
-        if (pointsByGW[g] && pointsByGW[g][entryId] !== undefined) {
-          pointsUpToGW.push(pointsByGW[g][entryId]);
-        }
-      }
-
-      if (pointsUpToGW.length > 0) {
-        seasonAvgsByGW[gw][entryId] = pointsUpToGW.reduce((a, b) => a + b, 0) / pointsUpToGW.length;
-      }
+      seasonAvgsByGW[gw][entryId] = getProgressiveAverage(entryId, gw);
     }
   }
 
-  // Step 3: Get chip usage for all GWs
+  // Step 3: Get chip usage
   const chipsResult = await db.query(`
     SELECT entry_id, event
     FROM manager_chips
     WHERE league_id = $1 AND event <= $2
   `, [leagueId, upToGW]);
 
-  const chipsByGW: Record<number, Set<number>> = {}; // gw -> Set of entryIds who played chips
+  const chipsByGW: Record<number, Set<number>> = {};
+  const chipsByManager: Record<number, number> = {};
   chipsResult.rows.forEach((row: any) => {
     const gw = row.event;
+    const entryId = Number(row.entry_id);
     if (!chipsByGW[gw]) chipsByGW[gw] = new Set();
-    chipsByGW[gw].add(row.entry_id);
+    chipsByGW[gw].add(entryId);
+    chipsByManager[entryId] = (chipsByManager[entryId] || 0) + 1;
   });
 
-  // Step 4: Initialize luck for all managers
-  const luck: Record<number, number> = {};
-  managerIds.forEach(entryId => {
-    luck[entryId] = 0;
-  });
+  // Step 4: Calculate 4 components for each manager
+  const luckIndex: Record<number, number> = {};
 
-  // Step 5: Calculate luck for each match using 3-component formula
-  matches.forEach((match: any) => {
-    if (match.event > upToGW) return;
-
-    const gw = Number(match.event);
-    const entry1 = Number(match.entry_1_id);
-    const entry2 = Number(match.entry_2_id);
-    const entry1Points = Number(match.entry_1_points);
-    const entry2Points = Number(match.entry_2_points);
-    const winner = match.winner ? Number(match.winner) : null;
-
-    // Get all teams' points for this GW
-    const allGWPoints = pointsByGW[gw];
-    if (!allGWPoints) return;
-
-    // For entry1: get all OTHER teams' points
-    const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
-      .filter(([id]) => Number(id) !== entry1)
-      .map(([, pts]) => Number(pts));
-
-    // For entry2: get all OTHER teams' points
-    const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
-      .filter(([id]) => Number(id) !== entry2)
-      .map(([, pts]) => Number(pts));
-
-    // Get season averages for this GW
-    const entry1Avg = seasonAvgsByGW[gw]?.[entry1] || entry1Points;
-    const entry2Avg = seasonAvgsByGW[gw]?.[entry2] || entry2Points;
-
-    // Check if opponent played chip this GW
-    const entry1PlayedChip = chipsByGW[gw]?.has(entry1) || false;
-    const entry2PlayedChip = chipsByGW[gw]?.has(entry2) || false;
-
-    // Determine match result from each manager's perspective
-    const entry1Result: 'win' | 'draw' | 'loss' =
-      winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
-    const entry2Result: 'win' | 'draw' | 'loss' =
-      winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
-
-    // K-163a Part 2: Calculate luck using 3-component formula
-    const entry1Luck = calculateGWLuck(
-      entry1Points, otherTeamsPointsForEntry1,
-      entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
-      entry1Result
-    );
-    const entry2Luck = calculateGWLuck(
-      entry2Points, otherTeamsPointsForEntry2,
-      entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
-      entry2Result
+  for (const entryId of Array.from(managerIds)) {
+    const managerMatches = matches.filter((m: any) =>
+      m.event <= upToGW && (Number(m.entry_1_id) === entryId || Number(m.entry_2_id) === entryId)
     );
 
-    luck[entry1] = (luck[entry1] || 0) + entry1Luck;
-    luck[entry2] = (luck[entry2] || 0) + entry2Luck;
-  });
+    // 1. VARIANCE LUCK (totalVariance)
+    let totalVariance = 0;
+    for (const match of managerMatches) {
+      const gw = match.event;
+      const isEntry1 = Number(match.entry_1_id) === entryId;
+      const yourPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
+      const oppPoints = isEntry1 ? match.entry_2_points : match.entry_1_points;
+      const oppId = Number(isEntry1 ? match.entry_2_id : match.entry_1_id);
 
-  return luck;
+      const yourAvg = seasonAvgsByGW[gw]?.[entryId] || yourPoints;
+      const oppAvg = seasonAvgsByGW[gw]?.[oppId] || oppPoints;
+
+      const varianceLuck = (yourPoints - yourAvg) - (oppPoints - oppAvg);
+      totalVariance += varianceLuck;
+    }
+
+    // 2. RANK LUCK (totalRank)
+    let totalRank = 0;
+    for (const match of managerMatches) {
+      const gw = match.event;
+      const isEntry1 = Number(match.entry_1_id) === entryId;
+      const yourPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
+      const winner = match.winner ? Number(match.winner) : null;
+
+      const gwPoints = pointsByGW[gw] || {};
+      const sortedPoints = Object.entries(gwPoints)
+        .map(([id, pts]) => ({ id: Number(id), pts: Number(pts) }))
+        .sort((a, b) => b.pts - a.pts);
+
+      const yourRank = sortedPoints.findIndex(p => p.id === entryId) + 1;
+      const totalManagers = sortedPoints.length;
+
+      const opponentsWouldBeat = totalManagers - yourRank;
+      const expectedWin = totalManagers > 1 ? opponentsWouldBeat / (totalManagers - 1) : 0;
+
+      let actualResult = 0.5;
+      if (winner === entryId) actualResult = 1;
+      else if (winner && winner !== entryId) actualResult = 0;
+
+      const rankLuck = actualResult - expectedWin;
+      totalRank += rankLuck;
+    }
+
+    // 3. SCHEDULE LUCK (scheduleLuck)
+    let totalOppStrength = 0;
+    let theoreticalTotal = 0;
+
+    for (const match of managerMatches) {
+      const gw = match.event;
+      const isEntry1 = Number(match.entry_1_id) === entryId;
+      const oppId = Number(isEntry1 ? match.entry_2_id : match.entry_1_id);
+
+      // Opponent's progressive average at time of match
+      const oppAvg = getProgressiveAverage(oppId, gw);
+      totalOppStrength += oppAvg;
+
+      // Theoretical: average of all OTHER managers' progressive averages
+      let sumOfOtherAvgs = 0;
+      let countOthers = 0;
+      for (const otherId of Array.from(managerIds)) {
+        if (otherId !== entryId) {
+          sumOfOtherAvgs += getProgressiveAverage(otherId, gw);
+          countOthers++;
+        }
+      }
+      theoreticalTotal += countOthers > 0 ? sumOfOtherAvgs / countOthers : 0;
+    }
+
+    const avgOppStrength = managerMatches.length > 0 ? totalOppStrength / managerMatches.length : 0;
+    const theoreticalOppAvg = managerMatches.length > 0 ? theoreticalTotal / managerMatches.length : 0;
+    const scheduleLuck = (theoreticalOppAvg - avgOppStrength) * managerMatches.length;
+
+    // 4. CHIP LUCK (chipLuck)
+    const chipsFaced = managerMatches.filter(m => {
+      const gw = m.event;
+      const isEntry1 = Number(m.entry_1_id) === entryId;
+      const oppId = Number(isEntry1 ? m.entry_2_id : m.entry_1_id);
+      return chipsByGW[gw]?.has(oppId);
+    }).length;
+
+    const totalChips = Object.values(chipsByManager).reduce((sum, count) => sum + count, 0);
+    const avgChipsFaced = managerIds.size > 0 ? totalChips / managerIds.size : 0;
+    const chipLuck = (avgChipsFaced - chipsFaced) * 7;
+
+    // SEASON LUCK INDEX: 4-component weighted formula
+    const seasonLuck =
+      0.4 * (totalVariance / 10) +
+      0.3 * totalRank +
+      0.2 * (scheduleLuck / 5) +
+      0.1 * (chipLuck / 3);
+
+    luckIndex[entryId] = seasonLuck;
+  }
+
+  return luckIndex;
 }
 
 function rebuildStandingsFromMatches(matches: any[], managers: any[], upToGW: number) {
@@ -610,25 +649,8 @@ export async function GET(
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(matchesWithLiveScores, managers, currentGW);
 
-    // K-163N: Fetch season luck index from Luck API (4-component weighted formula)
-    // This ensures League Rankings shows the SAME luck values as Stats > Luck tab
-    let luckIndexByManager: Record<number, number> = {};
-    try {
-      const luckResponse = await fetch(`${request.url.split('/api')[0]}/api/league/${leagueId}/luck`, {
-        headers: { 'Cache-Control': 'no-cache' }
-      });
-      if (luckResponse.ok) {
-        const luckData = await luckResponse.json();
-        luckData.managers.forEach((m: any) => {
-          luckIndexByManager[m.entry_id] = m.season_luck_index; // Raw value (-6 to +4)
-        });
-      }
-    } catch (error) {
-      console.error('[K-163N] Error fetching luck data:', error);
-      // Fallback to old calculation if luck API fails
-      const luckValues = await calculateLuck(matchesWithLiveScores, currentGW, db, leagueId);
-      luckIndexByManager = luckValues;
-    }
+    // K-163N: Calculate season luck index using 4-component weighted formula (matches Luck API)
+    const luckIndexByManager = await calculateSeasonLuckIndex(matchesWithLiveScores, currentGW, db, leagueId);
 
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = standings.map((standing: any) => {

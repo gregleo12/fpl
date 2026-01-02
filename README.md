@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.8** (January 2, 2026)
+**v4.5.9** (January 3, 2026)
 
-K-163N CRITICAL Fix: Fixed League Rankings table (Rank Tab) to use the SAME 4-component weighted luck formula as the Luck Leaderboard. Was using wrong calculation (simple GW sum) instead of proper season luck index. Jean Boes now correctly shows +40.0 instead of +13. All luck values across the app now match perfectly.
+K-163N FINAL Fix: Implemented direct 4-component weighted season luck calculation in Stats API. Previous v4.5.8 fetch-based approach was failing silently. Now calculates variance + rank + schedule + chip luck directly using the exact same formula as the Luck Leaderboard. League Rankings now shows correct values: Jean Boes -6.5, Greg Lienart +9.5, Adriaan Mertens +33.9.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

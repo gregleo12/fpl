@@ -2,7 +2,52 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.8 (January 2, 2026)
+**Current Version:** v4.5.9 (January 3, 2026)
+
+---
+
+## v4.5.9 - K-163N FINAL Fix: League Rankings Luck Calculation (Jan 3, 2026)
+
+**K-163N (FINAL FIX):** Implemented direct 4-component weighted season luck calculation in Stats API
+
+### Problem
+
+v4.5.8 attempted to fix League Rankings by fetching from the Luck API, but the internal HTTP fetch was failing silently, causing it to fall back to the old wrong calculation. League Rankings still showed incorrect values.
+
+### Root Cause
+
+Internal server-to-server `fetch()` in Next.js API routes is unreliable. The fetch to `/api/league/[id]/luck` was failing, and the catch block was silently using the old `calculateLuck()` function which uses the wrong 3-component formula.
+
+### Solution
+
+Instead of trying to fetch from the Luck API, **replicated the exact 4-component weighted calculation** directly in the Stats API:
+
+1. Created new `calculateSeasonLuckIndex()` function in `/src/app/api/league/[id]/stats/route.ts`
+2. Implements the same formula as Luck API:
+   ```
+   seasonLuckIndex = 0.4 × (variance/10) + 0.3 × rank + 0.2 × (schedule/5) + 0.1 × (chip/3)
+   ```
+3. Includes all 4 components:
+   - **Variance Luck:** Timing of form swings
+   - **Rank Luck:** Deserving to win based on GW rank
+   - **Schedule Luck:** Opponent strength (with progressive averages)
+   - **Chip Luck:** Facing chip usage
+
+4. Replaced broken fetch approach with direct calculation
+
+### Impact
+
+League Rankings LUCK column now shows the **exact same values** as Stats > Luck Leaderboard:
+
+| Manager | Expected Luck |
+|---------|---------------|
+| Jean Boes | **-6** or **-7** (from -0.65 × 10) |
+| Greg Lienart | **+9** or **+10** (from +0.95 × 10) |
+| Adriaan Mertens | **+34** (from +3.39 × 10) |
+| Dane Farran | **-12** (from -1.17 × 10) |
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/route.ts` (added `calculateSeasonLuckIndex()` function)
 
 ---
 
