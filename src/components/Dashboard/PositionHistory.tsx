@@ -30,6 +30,7 @@ interface Props {
   entryId: string;
   standings: StandingEntry[];
   myManagerName: string;
+  hideTitle?: boolean; // K-166: Optional prop to hide title when wrapped in CollapsibleSection
 }
 
 // Helper to get ordinal suffix (1st, 2nd, 3rd, 4th, etc.)
@@ -49,7 +50,7 @@ function getOrdinalSuffix(num: number): string {
   return num + 'th';
 }
 
-export default function PositionHistory({ leagueId, entryId, standings, myManagerName }: Props) {
+export default function PositionHistory({ leagueId, entryId, standings, myManagerName, hideTitle = false }: Props) {
   const [data, setData] = useState<PositionHistoryData | null>(null);
   const [opponentData, setOpponentData] = useState<PositionHistoryData | null>(null);
   const [selectedOpponentId, setSelectedOpponentId] = useState<string>('');
@@ -113,7 +114,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
   if (loading) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Position History</h3>
+        {!hideTitle && <h3 className={styles.sectionTitle}>Position History</h3>}
         <div className={styles.emptyState}>Loading...</div>
       </div>
     );
@@ -122,7 +123,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
   if (error || !data) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Position History</h3>
+        {!hideTitle && <h3 className={styles.sectionTitle}>Position History</h3>}
         <div className={styles.emptyState}>
           {error || 'Failed to load position history'}
         </div>
@@ -133,7 +134,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
   if (data.positionHistory.length === 0) {
     return (
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Position History</h3>
+        {!hideTitle && <h3 className={styles.sectionTitle}>Position History</h3>}
         <div className={styles.emptyState}>
           No position history available yet
         </div>
@@ -223,7 +224,7 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
   return (
     <div className={styles.section}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-        <h3 className={styles.sectionTitle} style={{ marginBottom: 0 }}>Position History</h3>
+        {!hideTitle && <h3 className={styles.sectionTitle} style={{ marginBottom: 0 }}>Position History</h3>}
 
         <select
           value={selectedOpponentId}
@@ -236,7 +237,8 @@ export default function PositionHistory({ leagueId, entryId, standings, myManage
             color: '#ffffff',
             fontSize: '0.85rem',
             cursor: 'pointer',
-            outline: 'none'
+            outline: 'none',
+            marginLeft: hideTitle ? 0 : 'auto'
           }}
         >
           <option value="">Compare with...</option>

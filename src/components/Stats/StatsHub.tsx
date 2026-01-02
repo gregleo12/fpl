@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
-import { RotateCw, Home, BarChart2, Trophy, Shirt, Clover } from 'lucide-react';
+// K-166: Removed Home icon import (Team tab removed)
+import { RotateCw, BarChart2, Trophy, Shirt, Clover } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -11,11 +12,11 @@ import { TopPerformers } from './sections/TopPerformers';
 import { GWPointsLeaders, type GWRanking } from './sections/GWPointsLeaders';
 import { GWRankingsModal } from './GWRankingsModal';
 import { SeasonView } from './SeasonView';
-import { MyTeamView } from './MyTeamView';
 import { PlayersTab } from '@/components/Players/PlayersTab';
 import LuckView from './LuckView';
 
-type ViewType = 'myteam' | 'gameweek' | 'season' | 'players' | 'luck';
+// K-166: Removed 'myteam' view - moved to Dashboard/MyTeamTab
+type ViewType = 'gameweek' | 'season' | 'players' | 'luck';
 
 export interface GameweekStats {
   event: number;
@@ -84,7 +85,8 @@ interface Props {
 }
 
 export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId, myTeamName, myManagerName }: Props) {
-  const [view, setView] = useState<ViewType>('myteam');
+  // K-166: Changed default view from 'myteam' to 'gameweek'
+  const [view, setView] = useState<ViewType>('gameweek');
   const [selectedGW, setSelectedGW] = useState(currentGW);
   const [stats, setStats] = useState<GameweekStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,14 +148,8 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
   return (
     <div className={styles.container}>
       {/* K-94: First bar - View toggle with icons (matches Rivals style) */}
+      {/* K-166: Removed Team tab - moved to Dashboard/MyTeamTab */}
       <div className={styles.viewToggleBar}>
-        <button
-          className={`${styles.subTab} ${view === 'myteam' ? styles.subTabActive : ''}`}
-          onClick={() => setView('myteam')}
-        >
-          <Home size={16} />
-          Team
-        </button>
         <button
           className={`${styles.subTab} ${view === 'gameweek' ? styles.subTabActive : ''}`}
           onClick={() => setView('gameweek')}
@@ -260,15 +256,7 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
         </>
       )}
 
-      {/* My Team View */}
-      {view === 'myteam' && (
-        <MyTeamView
-          leagueId={leagueId}
-          myTeamId={myTeamId}
-          myTeamName={myTeamName}
-          myManagerName={myManagerName}
-        />
-      )}
+      {/* K-166: My Team View removed - moved to Dashboard/MyTeamTab */}
 
       {/* Season View */}
       {view === 'season' && (

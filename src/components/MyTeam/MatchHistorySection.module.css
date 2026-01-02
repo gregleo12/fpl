@@ -1,0 +1,116 @@
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+  margin: 0;
+}
+
+.matchHistorySection {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: #f5f5f5;
+}
+
+.table thead th {
+  padding: 12px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.table tbody td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e9e9e9;
+  font-size: 14px;
+  color: #333;
+}
+
+.table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.chipsCell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.chipBadgeSmall {
+  display: inline-block;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.yourChip {
+  background: #00995c;
+  color: white;
+}
+
+.oppChip {
+  background: #cc0000;
+  color: white;
+}
+
+.noChip {
+  color: #999;
+  font-size: 12px;
+}
+
+.positive {
+  color: #00995c;
+  font-weight: 600;
+}
+
+.negative {
+  color: #cc0000;
+  font-weight: 600;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .table thead th {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .table tbody td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .chipBadgeSmall {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .chipsCell {
+    gap: 4px;
+  }
+}

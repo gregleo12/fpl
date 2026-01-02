@@ -3,13 +3,18 @@
 import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { PitchView } from '@/components/PitchView/PitchView';
-import { StatsPanel } from '@/components/PitchView/StatsPanel';
 import { RotateCw } from 'lucide-react';
 import { RankProgressModal } from './RankProgressModal';
 import { PointsAnalysisModal } from './PointsAnalysisModal';
 import { GWPointsModal } from './GWPointsModal';
 import { GWRankModal } from './GWRankModal';
 import { TransfersModal } from './TransfersModal';
+import FormStatBox from '@/components/MyTeam/FormStatBox';
+import GWTransfersSection from '@/components/MyTeam/GWTransfersSection';
+import PositionHistory from './PositionHistory';
+import CollapsibleSection from '@/components/MyTeam/CollapsibleSection';
+import ChipsSection from '@/components/MyTeam/ChipsSection';
+import MatchHistorySection from '@/components/MyTeam/MatchHistorySection';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
@@ -52,11 +57,17 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   // History data for modals
   const [historyData, setHistoryData] = useState<any>(null);
 
+  // K-166: Match history for Form stat box
+  const [matchHistory, setMatchHistory] = useState<any[]>([]);
+
+  // K-166: Standings for Position History
+  const [standings, setStandings] = useState<any[]>([]);
+
   // K-68: Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Fetch current GW and max GW
+  // Fetch current GW, max GW, and standings
   useEffect(() => {
     async function fetchLeagueInfo() {
       try {
@@ -68,6 +79,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         setMaxGW(data.maxGW || 1);
         setIsLiveGW(data.isCurrentGWLive || false);
         setLiveGWNumber(data.liveGameweekNumber || 0);
+        // K-166: Store standings for Position History
+        setStandings(data.standings || []);
       } catch (err: any) {
         console.error('Error fetching league info:', err);
       }
@@ -119,7 +132,7 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
     }
   }, [myTeamId, selectedGW]);
 
-  // Fetch history data for modals
+  // Fetch history data for modals and match history for Form box
   useEffect(() => {
     async function fetchHistory() {
       try {
@@ -127,10 +140,13 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
         const data = await response.json();
         // Always set data, even if empty arrays
         setHistoryData(data);
+        // K-166: Extract match history for Form stat box
+        setMatchHistory(data.matchHistory || []);
       } catch (err: any) {
         console.error('Error fetching history:', err);
         // Set empty data on error so modals still render
         setHistoryData({ history: [], transfers: [] });
+        setMatchHistory([]);
       }
     }
 
@@ -311,6 +327,8 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
               </div>
               <div className={styles.statBoxLabel}>TRANSFERS</div>
             </div>
+            {/* K-166: Form stat box */}
+            <FormStatBox matchHistory={matchHistory} />
           </div>
 
           {/* Row 2: Season Totals */}
@@ -360,14 +378,50 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           </div>
         </div>
 
-        <StatsPanel
-          leagueId={leagueId}
+        {/* K-166: GW Transfers Section (replaces StatsPanel) */}
+        <GWTransfersSection
           myTeamId={myTeamId}
-          myTeamName={myTeamName}
-          myManagerName={myManagerName}
           selectedGW={selectedGW}
-          mode="collapsible-only"
         />
+
+        {/* K-166: Position History */}
+        <CollapsibleSection
+          title="Position History"
+          defaultExpanded={false}
+          storageKey="myteam-position-history-expanded"
+        >
+          <PositionHistory
+            leagueId={leagueId}
+            entryId={myTeamId}
+            standings={standings}
+            myManagerName={myManagerName}
+            hideTitle={true}
+          />
+        </CollapsibleSection>
+
+        {/* K-166: Chips Section (Chips Played + Chips Faced) */}
+        <CollapsibleSection
+          title="Chips"
+          defaultExpanded={false}
+          storageKey="myteam-chips-expanded"
+        >
+          <ChipsSection
+            myTeamId={myTeamId}
+            leagueId={leagueId}
+          />
+        </CollapsibleSection>
+
+        {/* K-166: Match History */}
+        <CollapsibleSection
+          title="Match History"
+          defaultExpanded={false}
+          storageKey="myteam-match-history-expanded"
+        >
+          <MatchHistorySection
+            myTeamId={myTeamId}
+            leagueId={leagueId}
+          />
+        </CollapsibleSection>
       </div>
 
       {/* Modals */}

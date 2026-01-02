@@ -1,0 +1,184 @@
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.noTransfers {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+  margin: 0;
+}
+
+.transfersContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transferRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.transferPlayers {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.playerName {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+}
+
+.label {
+  font-weight: 700;
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 6px;
+}
+
+.points {
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.netGain {
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.positive {
+  background-color: #e8f8f5;
+  color: #00995c;
+}
+
+.negative {
+  background-color: #ffe8e8;
+  color: #cc0000;
+}
+
+.neutral {
+  background-color: #f5f5f5;
+  color: #666;
+}
+
+.hitRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff4e6;
+  border-radius: 8px;
+  border: 1px solid #ffe0b2;
+}
+
+.hitLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff6f00;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.hitValue {
+  font-size: 15px;
+  font-weight: 700;
+  color: #cc0000;
+}
+
+.separator {
+  border: none;
+  border-top: 2px solid #e0e0e0;
+  margin: 4px 0;
+}
+
+.netResult {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #37003c;
+}
+
+.netLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: #37003c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.netValue {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .transferRow {
+    padding: 12px;
+  }
+
+  .playerName {
+    font-size: 13px;
+  }
+
+  .label {
+    font-size: 10px;
+  }
+
+  .points {
+    font-size: 12px;
+  }
+
+  .netGain {
+    font-size: 12px;
+  }
+
+  .hitRow {
+    padding: 10px 12px;
+  }
+
+  .hitLabel {
+    font-size: 12px;
+  }
+
+  .hitValue {
+    font-size: 14px;
+  }
+
+  .netResult {
+    padding: 10px 12px;
+  }
+
+  .netLabel {
+    font-size: 13px;
+  }
+
+  .netValue {
+    font-size: 16px;
+  }
+}

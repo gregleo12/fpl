@@ -2,7 +2,53 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.9 (January 2, 2026)
+**Current Version:** v4.4.10 (January 2, 2026)
+
+---
+
+## v4.4.10 - K-166: Consolidate Stats/Team into My Team (Jan 2, 2026)
+
+**UI IMPROVEMENT (K-166):** Major UI consolidation - merged Stats/Team tab content into My Team tab
+**IMPACT:** Reduced navigation complexity, improved user flow, cleaner Stats section
+
+### K-166: Consolidate Stats/Team into My Team
+
+Complete restructuring of team statistics presentation by consolidating redundant Stats/Team view into the main My Team tab.
+
+**Changes:**
+- **4th Stat Box Added:** Form (last 5 match results as colored dots - W/D/L)
+  - Click to open detailed modal: last 10 matches, W/D/L counts, win rate, current streak
+- **New Collapsible Sections in My Team:**
+  - GW Transfers (default expanded)
+  - Position History (default collapsed, with opponent comparison selector)
+  - Chips (default collapsed, combines Chips Played + Chips Faced tables)
+  - Match History (default collapsed, shows all H2H matches with chips indicators)
+- **Stats Tab Simplified:** Removed "Team" sub-tab, now shows: GW, Season, Players, Luck only
+- **Default View Changed:** Stats tab now opens to "GW" instead of "Team"
+
+**Components Created:**
+- `CollapsibleSection.tsx` - Reusable collapsible container with localStorage persistence
+- `FormStatBox.tsx` + `FormModal.tsx` - Form stat box with detailed modal
+- `GWTransfersSection.tsx` - Transfers wrapped in collapsible section
+- `ChipsSection.tsx` - Combined Chips Played + Chips Faced tables
+- `MatchHistorySection.tsx` - Full match history with chip indicators
+
+**Components Modified:**
+- `MyTeamTab.tsx` - Added 4th stat box, added 4 collapsible sections
+- `StatsHub.tsx` - Removed Team tab, changed default view to gameweek
+- `PositionHistory.tsx` - Added `hideTitle` prop for collapsible wrapper compatibility
+
+**User Experience:**
+- All team statistics now in one place (My Team tab)
+- Less tab switching required
+- Progressive disclosure via collapsible sections (localStorage remembers state)
+- Stats tab focused on league-wide analytics only
+
+**Technical Notes:**
+- All sections use localStorage to persist expanded/collapsed state
+- Form modal shows last 10 matches with comprehensive stats
+- Position History maintains opponent comparison feature when collapsed
+- Chips section shows summary stats for chips faced (won/lost counts)
 
 ---
 

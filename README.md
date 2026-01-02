@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.9** (January 2, 2026)
+**v4.4.10** (January 2, 2026)
 
-FEATURE (K-200c): Players tab in Ownership section with Top 10K elite ownership comparison. Full-featured player database (100% copy of main Players tab) with two new columns: ELITE % (Top 10K ownership from elite_picks table) and DELTA (elite - overall difference with color coding). Shows hidden gems (bold green, +20%), elite favorites (green, +5%), consensus picks (grey), and casual traps (bold red, -20%). Includes Compact/All Stats views, player detail modal, filter system, and search. 760 players sortable by 27 columns.
+UI IMPROVEMENT (K-166): Consolidated Stats/Team tab into My Team tab. Added 4th stat box (Form - last 5 match results), added 4 collapsible sections to My Team (GW Transfers, Position History, Chips, Match History), removed Team sub-tab from Stats. All team statistics now in one place with progressive disclosure via localStorage-persisted collapsible sections. Reduced navigation complexity and improved user flow.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
