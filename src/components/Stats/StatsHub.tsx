@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
 // K-166: Removed Home icon import (Team tab removed)
-import { RotateCw, BarChart2, Trophy, Shirt, Clover } from 'lucide-react';
+// K-166b: Removed Shirt icon import (Players tab removed)
+import { RotateCw, BarChart2, Trophy, Clover } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -12,11 +13,11 @@ import { TopPerformers } from './sections/TopPerformers';
 import { GWPointsLeaders, type GWRanking } from './sections/GWPointsLeaders';
 import { GWRankingsModal } from './GWRankingsModal';
 import { SeasonView } from './SeasonView';
-import { PlayersTab } from '@/components/Players/PlayersTab';
 import LuckView from './LuckView';
 
 // K-166: Removed 'myteam' view - moved to Dashboard/MyTeamTab
-type ViewType = 'gameweek' | 'season' | 'players' | 'luck';
+// K-166b: Removed 'players' view - moved to /ownership system
+type ViewType = 'gameweek' | 'season' | 'luck';
 
 export interface GameweekStats {
   event: number;
@@ -165,13 +166,6 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
           Season
         </button>
         <button
-          className={`${styles.subTab} ${view === 'players' ? styles.subTabActive : ''}`}
-          onClick={() => setView('players')}
-        >
-          <Shirt size={16} />
-          Players
-        </button>
-        <button
           className={`${styles.subTab} ${view === 'luck' ? styles.subTabActive : ''}`}
           onClick={() => setView('luck')}
         >
@@ -263,10 +257,7 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
         <SeasonView leagueId={leagueId} />
       )}
 
-      {/* Players View */}
-      {view === 'players' && (
-        <PlayersTab />
-      )}
+      {/* K-166b: Players View removed - moved to /ownership system */}
 
       {/* Luck View */}
       {view === 'luck' && (
