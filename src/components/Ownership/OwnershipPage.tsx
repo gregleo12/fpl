@@ -185,15 +185,8 @@ export default function OwnershipPage() {
         </button>
       </div>
 
-      {/* Show back link when viewing team detail on combinations tab */}
-      {activeTab === 'combinations' && selectedTeamId !== null && (
-        <button onClick={handleBackToOverview} className={styles.backLink}>
-          ← Back to Team Selector
-        </button>
-      )}
-
-      {/* Team selector - show on combinations tab when no team selected */}
-      {activeTab === 'combinations' && selectedTeamId === null && (
+      {/* Team selector - always show on combinations tab */}
+      {activeTab === 'combinations' && (
         <TeamSelector selectedTeamId={selectedTeamId} onChange={handleTeamSelect} />
       )}
 
