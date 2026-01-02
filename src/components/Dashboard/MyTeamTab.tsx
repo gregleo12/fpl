@@ -378,13 +378,14 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           </div>
         </div>
 
-        {/* K-166: GW Transfers Section (replaces StatsPanel) */}
+        {/* K-166: GW Transfers - NOT collapsible, always visible */}
         <GWTransfersSection
           myTeamId={myTeamId}
           selectedGW={selectedGW}
         />
 
-        {/* K-166: Position History */}
+        {/* K-166: Collapsible Sections */}
+        {/* Position History */}
         <CollapsibleSection
           title="Position History"
           defaultExpanded={false}

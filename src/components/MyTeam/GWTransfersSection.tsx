@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import CollapsibleSection from './CollapsibleSection';
 import styles from './GWTransfersSection.module.css';
 
 interface Transfer {
@@ -51,22 +50,16 @@ export default function GWTransfersSection({ myTeamId, selectedGW }: Props) {
 
   if (isLoading) {
     return (
-      <CollapsibleSection
-        title={`GW${selectedGW} Transfers`}
-        defaultExpanded={true}
-        storageKey="myteam-transfers-expanded"
-      >
+      <div className={styles.transfersSection}>
+        <h3 className={styles.sectionTitle}>GW{selectedGW} Transfers</h3>
         <div className={styles.loading}>Loading transfers...</div>
-      </CollapsibleSection>
+      </div>
     );
   }
 
   return (
-    <CollapsibleSection
-      title={`GW${currentGW || selectedGW} Transfers`}
-      defaultExpanded={true}
-      storageKey="myteam-transfers-expanded"
-    >
+    <div className={styles.transfersSection}>
+      <h3 className={styles.sectionTitle}>GW{currentGW || selectedGW} Transfers</h3>
       {currentGWTransfers.length === 0 ? (
         <p className={styles.noTransfers}>No transfers made</p>
       ) : (
@@ -125,6 +118,6 @@ export default function GWTransfersSection({ myTeamId, selectedGW }: Props) {
           })()}
         </div>
       )}
-    </CollapsibleSection>
+    </div>
   );
 }

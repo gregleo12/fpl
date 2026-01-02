@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.10** (January 2, 2026)
+**v4.4.11** (January 2, 2026)
 
-UI IMPROVEMENT (K-166): Consolidated Stats/Team tab into My Team tab. Added 4th stat box (Form - last 5 match results), added 4 collapsible sections to My Team (GW Transfers, Position History, Chips, Match History), removed Team sub-tab from Stats. All team statistics now in one place with progressive disclosure via localStorage-persisted collapsible sections. Reduced navigation complexity and improved user flow.
+HOTFIX (K-166b): Fixed K-166 UI regressions. Reverted GW Transfers to always-visible (removed collapsible wrapper), fixed Form stat box styling to match other boxes exactly (gradient backgrounds, proper sizing, neon green glows), updated collapsible section headers with FPL purple theme and neon green titles. Restored professional appearance and consistent theming throughout.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

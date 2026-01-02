@@ -1,3 +1,16 @@
+.transfersSection {
+  margin-top: 12px;
+}
+
+.sectionTitle {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .loading {
   text-align: center;
   padding: 20px;

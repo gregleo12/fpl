@@ -2,7 +2,77 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.10 (January 2, 2026)
+**Current Version:** v4.4.11 (January 2, 2026)
+
+---
+
+## v4.4.11 - K-166b: Fix Collapsible UI & Revert GW Transfers (Jan 2, 2026)
+
+**HOTFIX (K-166b):** Fixed K-166 UI regressions with proper FPL theme styling
+**IMPACT:** Restored professional appearance and consistent theming
+
+### K-166b: Fix Collapsible UI & Revert GW Transfers
+
+Fixed multiple UI issues introduced in K-166 to restore professional appearance and FPL theme consistency.
+
+**Fixes Applied:**
+
+1. **GW Transfers Reverted to Original UX**
+   - Removed CollapsibleSection wrapper - now always visible below pitch
+   - Restored original clean table layout with IN/OUT rows
+   - Added green section title to match FPL theme
+
+2. **Form Stat Box Styling Fixed**
+   - Now matches existing stat boxes exactly:
+     - Same gradient background: `rgba(26, 26, 46, 0.6)` to `rgba(55, 0, 60, 0.6)`
+     - Same border: `1px solid rgba(255, 255, 255, 0.1)`
+     - Same border-radius: 16px
+     - Same padding: 14px 12px
+     - Same hover effects with neon green glow
+   - Colored dots properly sized (10px) with glows:
+     - W = green (#00ff87) with green glow
+     - D = grey (#666)
+     - L = red (#ff0000) with red glow
+   - Label matches other stat boxes: `0.6rem`, white with 60% opacity
+
+3. **Collapsible Section FPL Theme**
+   - Headers now have purple tint: `rgba(55, 0, 60, 0.6)`
+   - Border: `1px solid rgba(255, 255, 255, 0.1)`
+   - Title color: Neon green (#00ff87) with uppercase transform
+   - Arrow color: White with 60% opacity
+   - Hover state: Darker purple `rgba(55, 0, 60, 0.8)`
+   - Content padding reduced to 12px for tighter layout
+
+4. **Section Spacing & Layout**
+   - Consistent 12px gap between all sections
+   - GW Transfers has 12px top margin
+   - Collapsible sections properly spaced
+
+**Visual Changes:**
+```
+Before (broken):                After (fixed):
+┌──────────────────┐           ┌──────────────────┐
+│ No transfers     │           │    ● ● ○ ● ●     │  ← Matches other boxes
+│     FORM         │           │      FORM        │
+└──────────────────┘           └──────────────────┘
+
+┌─────────────────┐            ┌─────────────────────────────┐
+│ Position History│            │ POSITION HISTORY         ▼  │  ← FPL purple/green
+└─────────────────┘            └─────────────────────────────┘
+```
+
+**Files Modified:**
+- `GWTransfersSection.tsx` - Removed CollapsibleSection wrapper
+- `GWTransfersSection.module.css` - Added section title styling
+- `FormStatBox.module.css` - Matched existing stat box styles exactly
+- `CollapsibleSection.module.css` - FPL purple theme with green titles
+- `MyTeamTab.tsx` - Updated comments for clarity
+
+**Technical Notes:**
+- Form stat box dots now 10px (was 16px) with proper glows
+- Collapsible headers use FPL purple gradient on hover
+- All animations preserved (slideDown, arrow rotation)
+- Mobile responsiveness maintained with smaller sizing
 
 ---
 
