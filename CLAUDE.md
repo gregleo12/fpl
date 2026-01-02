@@ -96,57 +96,97 @@ git push origin main
 
 ## 🔀 Managing Multiple Claude Code Conversations
 
-When working on multiple features simultaneously in different Claude Code conversations, use feature branches to avoid conflicts.
+### The Problem
 
-### Branch Strategy
+Running multiple Claude Code conversations in parallel on the same branch causes conflicts:
 
 ```
-main (production)
-  ├── staging (pre-production testing)
-  ├── feature/k164-bulletproof-gw (Claude conversation #1)
-  ├── feature/k200b-ownership (Claude conversation #2)
-  └── feature/k-xxx-new-feature (Claude conversation #3)
+❌ BAD: Both conversations push to main
+Conversation #1: K-164 → commits to main → pushes
+Conversation #2: K-200b → commits to main → pushes
+Result: Code conflicts, Railway hangs, production breaks
 ```
 
-### Workflow for Each Conversation
+**It's like two people editing the same Google Doc simultaneously** - changes overwrite each other.
 
-**1. Start of Conversation - Create Feature Branch:**
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/k164-bulletproof-gw
+### The Solution: One Conversation = One Feature Branch
+
+Each conversation gets its own workspace (feature branch):
+
+```
+✅ GOOD: Each conversation has its own branch
+main (production - live website)
+  ├── staging (testing environment)
+  ├── feature/k164-bulletproof-gw ← Conversation #1 works here
+  ├── feature/k200b-ownership ← Conversation #2 works here
+  └── feature/k-xxx-new-feature ← Conversation #3 works here
 ```
 
-**Tell Claude Code:**
+**Benefits:**
+- No conflicts between conversations
+- Test each feature independently on staging
+- Choose which features deploy and in what order
+- Production stays stable
+
+### The Simple Rule
+
+**At the START of EVERY new Claude Code conversation, tell Claude:**
+
 > "We're working on K-164. Please use branch `feature/k164-bulletproof-gw` for all commits."
 
-**2. During Development:**
-- All commits go to feature branch
-- Push feature branch regularly: `git push origin feature/k164-bulletproof-gw`
-- Never merge to main directly
+**That's it!** Claude will:
+1. Create the feature branch
+2. Make all commits to that branch (NOT main)
+3. Keep work isolated from other conversations
 
-**3. Testing - Merge to Staging:**
+### Real Example: Working on 3 Tasks Today
+
+**Task 1 - Bug Fix (Conversation #1):**
+```
+You: "We're working on K-164 bug fix. Use branch feature/k164-bug-fix"
+Claude: [creates branch, makes changes, commits to feature/k164-bug-fix]
+```
+
+**Task 2 - New Feature (Conversation #2, different tab):**
+```
+You: "We're working on K-200b ownership. Use branch feature/k200b-ownership"
+Claude: [creates branch, makes changes, commits to feature/k200b-ownership]
+```
+
+**Task 3 - Documentation (Conversation #3, yet another tab):**
+```
+You: "We're working on docs update. Use branch feature/update-docs"
+Claude: [creates branch, makes changes, commits to feature/update-docs]
+```
+
+No conflicts! Each conversation isolated.
+
+### Deploying Features to Production
+
+After conversations finish, YOU decide the order:
+
+**1. Test on Staging:**
 ```bash
 git checkout staging
-git pull origin staging
-git merge feature/k164-bulletproof-gw
+git merge feature/k164-bug-fix  # Test this one first
 git push origin staging
 # Verify on: https://fpl-staging-production.up.railway.app
 ```
 
-**4. Production Deploy - After Greg's Approval:**
+**2. Deploy to Production (after approval):**
 ```bash
 git checkout main
-git pull origin main
-git merge feature/k164-bulletproof-gw
+git merge feature/k164-bug-fix
 git push origin main
 # Deploys to: https://rivalfpl.com
 ```
 
-**5. Cleanup:**
+**3. Repeat for other features** - one at a time, in your preferred order.
+
+**4. Cleanup (optional):**
 ```bash
-git branch -d feature/k164-bulletproof-gw
-git push origin --delete feature/k164-bulletproof-gw
+git branch -d feature/k164-bug-fix
+git push origin --delete feature/k164-bug-fix
 ```
 
 ### What NOT to Do
