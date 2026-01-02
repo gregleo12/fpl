@@ -71,13 +71,14 @@ export async function GET(
     }
 
     // Calculate scores using shared calculator for consistency
+    // K-164: Use 'live' status for consistency with new GW status logic
     const score1 = calculateScoreFromData(
       parseInt(entryId1),
       picks1Data,
       liveData,
       bootstrapData,
       fixturesData,
-      'in_progress'
+      'live'
     );
 
     const score2 = calculateScoreFromData(
@@ -86,7 +87,7 @@ export async function GET(
       liveData,
       bootstrapData,
       fixturesData,
-      'in_progress'
+      'live'
     );
 
     return NextResponse.json({
