@@ -1,6 +1,6 @@
 {
   "name": "fpl-h2h-analytics",
-  "version": "4.4.7",
+  "version": "4.4.8",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -27,7 +27,8 @@
     "test:provisional-bonus": "npx tsx src/scripts/utils/test-provisional-bonus.ts",
     "test:team-totals": "npx tsx src/scripts/utils/test-team-totals.ts",
     "migrate:elite-picks": "npx tsx src/scripts/run-elite-picks-migration.ts",
-    "sync:elite-picks": "npx tsx src/scripts/sync-elite-picks.ts"
+    "sync:elite-picks": "npx tsx src/scripts/sync-elite-picks.ts",
+    "migrate:league-gw-sync": "npx tsx src/scripts/run-league-gw-sync-migration.ts"
   },
   "dependencies": {
     "axios": "^1.7.0",
