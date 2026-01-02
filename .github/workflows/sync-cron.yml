@@ -12,13 +12,9 @@ jobs:
     steps:
       - name: Trigger sync endpoint
         run: |
-          curl -L -X GET "https://www.rivalfpl.com/api/cron/sync-completed-gws" \
-            -H "Content-Type: application/json" \
-            --fail \
-            --silent \
-            --show-error \
-            --max-time 120
-          echo "Sync triggered successfully"
+          curl -sSL --max-time 120 \
+            "https://www.rivalfpl.com/api/cron/sync-completed-gws"
+          echo "✅ Sync triggered successfully"
 
   # Uncomment to also sync staging:
   # sync-staging:
