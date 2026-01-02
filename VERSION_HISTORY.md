@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.12 (January 2, 2026)
+**Current Version:** v4.4.13 (January 2, 2026)
+
+---
+
+## v4.4.13 - K-166d: Move Stats/Team Content to My Team (Simple Stack) (Jan 2, 2026)
+
+**K-166d:** Moved Stats/Team content to My Team as simple vertical stack - no collapsible UI, no Form box
+
+### Changes
+
+1. **My Team Tab Enhanced**
+   - Added Position History chart below StatsPanel
+   - Added Chips Played table
+   - Added Chips Faced table with win/loss summary
+   - Added Match History table with chip indicators
+   - All sections always visible (no collapsible UI)
+   - Simple vertical stack layout
+
+2. **Stats Tab Simplified**
+   - Removed "Team" tab from Stats section
+   - Stats now shows: GW, Season, Players, Luck (4 tabs)
+   - Default view changed to "gameweek" (was "myteam")
+
+3. **Technical Changes**
+   - Added `playerData` and `standings` state to MyTeamTab
+   - Added `getChipAbbreviation()` helper function to MyTeamTab
+   - Fetch player data from `/api/player/${myTeamId}?leagueId=${leagueId}` in useEffect
+   - Reused existing PositionHistory component
+   - Copied Chips/Match History JSX from MyTeamView (no new components)
+
+**Final My Team Layout:**
+```
+├── Header (Team name, GW selector, refresh button)
+├── Stat Boxes (GW PTS, GW RANK, TRANSFERS / TOTAL PTS, OVERALL RANK)
+├── PitchView
+├── Team Value / Bank
+├── StatsPanel (collapsible)
+├── Position History (chart)
+├── Chips Played (table)
+├── Chips Faced (table with summary)
+└── Match History (table)
+```
+
+**Final Stats Layout:**
+```
+├── View Toggle: [GW] [Season] [Players] [Luck]
+└── Content for selected view
+```
+
+**What Was NOT Included:**
+- Performance section (PTS/WIN/DRW/LOSS/AVG/HIGH/LOW/RANK/LUCK boxes) - intentionally excluded per user request
+- Form section (last 5 matches with W/D/L circles) - intentionally excluded
+- CollapsibleSection wrapper - keeping content always visible
+- FormStatBox - not needed for this implementation
 
 ---
 

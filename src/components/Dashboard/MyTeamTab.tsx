@@ -10,12 +10,27 @@ import { PointsAnalysisModal } from './PointsAnalysisModal';
 import { GWPointsModal } from './GWPointsModal';
 import { GWRankModal } from './GWRankModal';
 import { TransfersModal } from './TransfersModal';
+import PositionHistory from './PositionHistory';
+import { shortenManagerName } from '@/lib/nameUtils';
 
 // Format large numbers for readability
 function formatRank(num: number): string {
   if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
   if (num >= 1000) return Math.round(num / 1000) + 'K';
   return num.toString();
+}
+
+// Helper to get chip abbreviation
+function getChipAbbreviation(chipName: string): string {
+  const chipMap: { [key: string]: string } = {
+    'wildcard': 'WC',
+    'bboost': 'BB',
+    '3xc': 'TC',
+    'freehit': 'FH'
+  };
+
+  const normalized = chipName.toLowerCase().replace(/\s+/g, '');
+  return chipMap[normalized] || chipName;
 }
 
 interface Props {
@@ -56,6 +71,10 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // K-166d: Stats/Team data
+  const [playerData, setPlayerData] = useState<any>(null);
+  const [standings, setStandings] = useState<any[]>([]);
+
   // Fetch current GW and max GW
   useEffect(() => {
     async function fetchLeagueInfo() {
@@ -75,6 +94,29 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
 
     fetchLeagueInfo();
   }, [leagueId]);
+
+  // K-166d: Fetch player data and standings for Stats/Team sections
+  useEffect(() => {
+    async function fetchPlayerData() {
+      try {
+        const [leagueResponse, playerResponse] = await Promise.all([
+          fetch(`/api/league/${leagueId}/stats`),
+          fetch(`/api/player/${myTeamId}?leagueId=${leagueId}`)
+        ]);
+
+        if (leagueResponse.ok && playerResponse.ok) {
+          const leagueData = await leagueResponse.json();
+          const player = await playerResponse.json();
+          setStandings(leagueData.standings || []);
+          setPlayerData(player);
+        }
+      } catch (err: any) {
+        console.error('Error fetching player data:', err);
+      }
+    }
+
+    fetchPlayerData();
+  }, [leagueId, myTeamId]);
 
   // Fetch stats for stat boxes
   useEffect(() => {
@@ -368,6 +410,196 @@ export default function MyTeamTab({ leagueId, myTeamId, myManagerName, myTeamNam
           selectedGW={selectedGW}
           mode="collapsible-only"
         />
+
+        {/* K-166d: Stats/Team Content - Simple Stack */}
+        {playerData && (
+          <>
+            {/* Position History */}
+            <PositionHistory
+              leagueId={leagueId}
+              entryId={myTeamId}
+              standings={standings}
+              myManagerName={myManagerName}
+            />
+
+            {/* Chips Played */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Chips Played</h3>
+              {playerData.chipsPlayed.length > 0 ? (
+                <div className={styles.table}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Chip</th>
+                        <th>GW</th>
+                        <th>Opponent</th>
+                        <th>Score</th>
+                        <th>Result</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {playerData.chipsPlayed.map((chip: any) => {
+                        const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
+                        return (
+                          <tr key={chip.event}>
+                            <td><span className={styles.chipBadge}>{getChipAbbreviation(chip.name)}</span></td>
+                            <td>{chip.event}</td>
+                            <td>{match?.opponentName ? shortenManagerName(match.opponentName) : '-'}</td>
+                            <td>
+                              {match ? `${match.playerPoints}-${match.opponentPoints}` : '-'}
+                            </td>
+                            <td>
+                              {match && (
+                                <span className={`${styles.resultBadge} ${
+                                  match.result === 'W' ? styles.resultWin :
+                                  match.result === 'D' ? styles.resultDraw :
+                                  styles.resultLoss
+                                }`}>
+                                  {match.result}
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className={styles.emptyState}>No chips played yet</p>
+              )}
+            </div>
+
+            {/* Chips Faced */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Chips Faced</h3>
+              {playerData.chipsFaced.length > 0 ? (
+                <>
+                  <div className={styles.chipsSummary}>
+                    <span>Faced <strong>{playerData.chipsFaced.length}</strong> chips total - </span>
+                    <span className={styles.positive}>
+                      Won {playerData.chipsFaced.filter((c: any) => c.result === 'W').length}
+                    </span>
+                    <span> / </span>
+                    <span className={styles.negative}>
+                      Lost {playerData.chipsFaced.filter((c: any) => c.result === 'L').length}
+                    </span>
+                  </div>
+                  <div className={styles.table}>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Chip</th>
+                          <th>GW</th>
+                          <th>Opponent</th>
+                          <th>Score</th>
+                          <th>Result</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {playerData.chipsFaced
+                          .sort((a: any, b: any) => a.event - b.event)
+                          .map((chip: any, idx: number) => {
+                          const match = playerData.matchHistory.find((m: any) => m.event === chip.event);
+                          const yourScore = match?.playerPoints || 0;
+                          return (
+                            <tr key={idx}>
+                              <td>
+                                <span className={`${styles.chipBadge} ${
+                                  chip.result === 'W' ? styles.chipWin :
+                                  chip.result === 'L' ? styles.chipLoss :
+                                  ''
+                                }`}>
+                                  {getChipAbbreviation(chip.chipName)}
+                                </span>
+                              </td>
+                              <td>{chip.event}</td>
+                              <td>{shortenManagerName(chip.opponentName)}</td>
+                              <td>
+                                {yourScore}-{chip.opponentPoints}
+                              </td>
+                              <td>
+                                <span className={`${styles.resultBadge} ${
+                                  chip.result === 'W' ? styles.resultWin :
+                                  chip.result === 'D' ? styles.resultDraw :
+                                  styles.resultLoss
+                                }`}>
+                                  {chip.result}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <p className={styles.emptyState}>No chips faced yet</p>
+              )}
+            </div>
+
+            {/* Match History */}
+            <div className={styles.section}>
+              <h3 className={styles.sectionTitle}>Match History</h3>
+              <div className={styles.table}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>GW</th>
+                      <th>Opponent</th>
+                      <th>Score</th>
+                      <th>Chips</th>
+                      <th>Result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {playerData.matchHistory.slice().reverse().map((match: any) => {
+                      // Check if you played a chip in this GW
+                      const yourChip = playerData.chipsPlayed.find((c: any) => c.event === match.event);
+                      // Check if opponent played a chip in this GW
+                      const oppChip = playerData.chipsFaced.find((c: any) => c.event === match.event);
+
+                      return (
+                        <tr key={match.event}>
+                          <td>{match.event}</td>
+                          <td>{shortenManagerName(match.opponentName)}</td>
+                          <td>{match.playerPoints}-{match.opponentPoints}</td>
+                          <td>
+                            <div className={styles.chipsCell}>
+                              {yourChip && (
+                                <span className={`${styles.chipBadgeSmall} ${styles.yourChip}`}>
+                                  {getChipAbbreviation(yourChip.name)}
+                                </span>
+                              )}
+                              {oppChip && (
+                                <span className={`${styles.chipBadgeSmall} ${styles.oppChip}`}>
+                                  {getChipAbbreviation(oppChip.chipName)}
+                                </span>
+                              )}
+                              {!yourChip && !oppChip && (
+                                <span className={styles.noChip}>-</span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={
+                              match.result === 'W' ? styles.positive :
+                              match.result === 'L' ? styles.negative :
+                              ''
+                            }>
+                              {match.result} {match.margin > 0 ? `+${match.margin}` : match.margin}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Modals */}

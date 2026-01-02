@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.12** (January 2, 2026)
+**v4.4.13** (January 2, 2026)
 
-REVERT (K-166c): Full rollback of K-166 changes to restore original My Team UI. Restored 3 stat boxes (GW PTS, GW RANK, TRANSFERS), original StatsPanel for GW Transfers, and Stats/Team tab. Deleted all K-166 components (CollapsibleSection, FormStatBox, FormModal, GWTransfersSection, ChipsSection, MatchHistorySection). My Team and Stats tabs back to original stable state.
+K-166d: Moved Stats/Team content to My Team as simple vertical stack. Added Position History, Chips Played, Chips Faced, and Match History sections below GW Transfers. Removed Team tab from Stats (now shows GW, Season, Players, Luck). No collapsible UI, no Form stat box - clean implementation of user's simplified design.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
