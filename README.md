@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.7** (January 2, 2026)
+**v4.5.8** (January 2, 2026)
 
-K-163N Fix: Fixed League Rankings table (Rank Tab) LUCK column to show 10× weighted values for consistency with all other luck displays. Values now range from ~-65 to +40 instead of old integers like +13, +10, -9. Uses shared `formatLuckValue()` utility for consistent formatting.
+K-163N CRITICAL Fix: Fixed League Rankings table (Rank Tab) to use the SAME 4-component weighted luck formula as the Luck Leaderboard. Was using wrong calculation (simple GW sum) instead of proper season luck index. Jean Boes now correctly shows +40.0 instead of +13. All luck values across the app now match perfectly.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

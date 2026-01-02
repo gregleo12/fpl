@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.7 (January 2, 2026)
+**Current Version:** v4.5.8 (January 2, 2026)
+
+---
+
+## v4.5.8 - K-163N CRITICAL Fix: League Rankings Using Wrong Luck Formula (Jan 2, 2026)
+
+**K-163N (CRITICAL HOTFIX):** Fixed League Rankings to use the SAME 4-component weighted luck calculation as the Luck Leaderboard
+
+### Root Cause
+
+The League Rankings table (Rank Tab) was using a **completely different luck formula** than the Luck Leaderboard:
+
+**League Rankings (WRONG):**
+- Used simple sum of GW luck values (3-component: variance + rank + chip)
+- Jean Boes: +13, Greg Lienart: +10, Dane Farran: -11
+
+**Luck Leaderboard (CORRECT):**
+- Uses 4-component weighted season formula:
+  ```
+  seasonLuckIndex = 0.4 × (variance/10) + 0.3 × rank + 0.2 × (schedule/5) + 0.1 × (chip/3)
+  ```
+- Jean Boes: +4.0, Greg Lienart: +1.8, Dane Farran: -10.8
+
+These formulas produce **completely different numbers**, causing massive confusion!
+
+### Solution
+
+Changed `/api/league/[id]/stats/route.ts` to fetch season luck index from the Luck API (`/api/league/[id]/luck`) instead of calculating its own version:
+
+```tsx
+// BEFORE (wrong formula)
+const luckValues = await calculateLuck(matchesWithLiveScores, currentGW, db, leagueId);
+luck: Math.round((luckValues[standing.entry_id] || 0) * 10)
+
+// AFTER (correct - fetches from Luck API)
+const luckResponse = await fetch(`/api/league/${leagueId}/luck`);
+luckIndexByManager[m.entry_id] = m.season_luck_index;
+luck: Math.round((luckIndexByManager[standing.entry_id] || 0) * 10)
+```
+
+### Impact
+
+League Rankings LUCK column now shows the **exact same values** as Stats > Luck Leaderboard:
+
+| Manager | Old (Wrong) | New (Correct) |
+|---------|------------|---------------|
+| Jean Boes | +13 ❌ | **+40.0** ✓ |
+| Greg Lienart | +10 ❌ | **+18.0** ✓ |
+| Dane Farran | -11 ❌ | **-10.8** ✓ |
+| Antoine Mouchati | ? | **+38.8** ✓ |
+| Adriaan Mertens | +9 ❌ | **+38.8** ✓ |
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/route.ts`
 
 ---
 

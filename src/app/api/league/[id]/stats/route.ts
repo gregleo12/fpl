@@ -610,8 +610,25 @@ export async function GET(
     // Rebuild standings for the current GW
     const standings = rebuildStandingsFromMatches(matchesWithLiveScores, managers, currentGW);
 
-    // K-163a Part 2: Calculate luck for all managers using 3-component formula
-    const luckValues = await calculateLuck(matchesWithLiveScores, currentGW, db, leagueId);
+    // K-163N: Fetch season luck index from Luck API (4-component weighted formula)
+    // This ensures League Rankings shows the SAME luck values as Stats > Luck tab
+    let luckIndexByManager: Record<number, number> = {};
+    try {
+      const luckResponse = await fetch(`${request.url.split('/api')[0]}/api/league/${leagueId}/luck`, {
+        headers: { 'Cache-Control': 'no-cache' }
+      });
+      if (luckResponse.ok) {
+        const luckData = await luckResponse.json();
+        luckData.managers.forEach((m: any) => {
+          luckIndexByManager[m.entry_id] = m.season_luck_index; // Raw value (-6 to +4)
+        });
+      }
+    } catch (error) {
+      console.error('[K-163N] Error fetching luck data:', error);
+      // Fallback to old calculation if luck API fails
+      const luckValues = await calculateLuck(matchesWithLiveScores, currentGW, db, leagueId);
+      luckIndexByManager = luckValues;
+    }
 
     // Calculate form, streak, and rank change for each manager
     const standingsWithForm = standings.map((standing: any) => {
@@ -630,7 +647,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) // K-163N: Display as ×10 for consistency
+        luck: Math.round((luckIndexByManager[standing.entry_id] || 0) * 10) // K-163N: Display season luck index ×10
       };
     });
 
