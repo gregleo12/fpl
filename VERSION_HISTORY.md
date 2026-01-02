@@ -2,7 +2,73 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.9 (January 3, 2026)
+**Current Version:** v4.5.10 (January 3, 2026)
+
+---
+
+## v4.5.10 - K-163N COMPLETE: Consolidated Season Luck Calculations (Jan 3, 2026)
+
+**K-163N (FINAL IMPLEMENTATION):** Extracted 4-component season luck calculation into shared function used by all three APIs
+
+### Problem
+
+Three different APIs were calculating season luck with **three different formulas**, showing three different values for the same managers:
+
+| Manager | League Rankings | Luck Modal | Stats Leaderboard |
+|---------|----------------|------------|-------------------|
+| Jean Boes | +17.0 ❌ | +20.0 ❌ | +4.0 ✓ |
+| Greg Lienart | +3.0 ❌ | +60.0 ❌ | +1.8 ✓ |
+| Adriaan Mertens | +39.0 ❌ | +180.0 ❌ | +38.8 ✓ |
+
+**Root Causes:**
+1. **League Rankings** (`/api/league/[id]/stats`) - v4.5.9 added buggy `calculateSeasonLuckIndex()` with implementation errors
+2. **Luck Modal** (`/api/league/[id]/stats/season`) - Used old 3-component GW luck sum instead of 4-component weighted formula
+3. **Stats Leaderboard** (`/api/league/[id]/luck`) - Only correct implementation ✓
+
+### Solution
+
+Created **single source of truth** by extracting the correct calculation into a shared function:
+
+1. **New Shared Function:** `/src/lib/luckCalculator.ts`
+   ```typescript
+   export async function calculateSeasonLuckIndex(
+     leagueId: number,
+     db: any
+   ): Promise<Map<number, SeasonLuckResult>>
+   ```
+
+2. **Formula (4-component weighted):**
+   ```
+   seasonLuckIndex = 0.4 × (variance/10) + 0.3 × rank + 0.2 × (schedule/5) + 0.1 × (chip/3)
+   ```
+
+3. **All APIs Updated:**
+   - `/api/league/[id]/luck` - Refactored to use shared function (was correct, now consolidated)
+   - `/api/league/[id]/stats` - Removed buggy function, uses shared function
+   - `/api/league/[id]/stats/season` - Removed GW sum, uses shared function
+
+### Impact
+
+All three displays now show **identical values**:
+
+| Manager | League Rankings | Luck Modal | Stats Leaderboard |
+|---------|----------------|------------|-------------------|
+| Jean Boes | **+4.0** ✓ | **+4.0** ✓ | **+4.0** ✓ |
+| Greg Lienart | **+1.8** ✓ | **+1.8** ✓ | **+1.8** ✓ |
+| Adriaan Mertens | **+38.8** ✓ | **+38.8** ✓ | **+38.8** ✓ |
+| Dane Farran | **-10.8** ✓ | **-10.8** ✓ | **-10.8** ✓ |
+
+**Files Modified:**
+- `/src/lib/luckCalculator.ts` (added `calculateSeasonLuckIndex()` shared function)
+- `/src/app/api/league/[id]/luck/route.ts` (refactored to use shared function)
+- `/src/app/api/league/[id]/stats/route.ts` (removed buggy function, uses shared)
+- `/src/app/api/league/[id]/stats/season/route.ts` (removed GW sum, uses shared)
+
+**Benefits:**
+- ✅ Single source of truth for season luck calculations
+- ✅ Guaranteed consistency across all UIs
+- ✅ Easier to maintain and test
+- ✅ No code duplication
 
 ---
 

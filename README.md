@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.9** (January 3, 2026)
+**v4.5.10** (January 3, 2026)
 
-K-163N FINAL Fix: Implemented direct 4-component weighted season luck calculation in Stats API. Previous v4.5.8 fetch-based approach was failing silently. Now calculates variance + rank + schedule + chip luck directly using the exact same formula as the Luck Leaderboard. League Rankings now shows correct values: Jean Boes -6.5, Greg Lienart +9.5, Adriaan Mertens +33.9.
+K-163N COMPLETE: Consolidated all season luck calculations into a single shared function. All three UIs (League Rankings, Luck Modal, Stats Leaderboard) now use the exact same 4-component weighted formula, guaranteeing identical luck values across the entire app. Jean Boes +4.0, Greg Lienart +1.8, Adriaan Mertens +38.8.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

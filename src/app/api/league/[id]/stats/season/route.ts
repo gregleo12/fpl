@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
-import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula
+import { calculateGWLuck, calculateSeasonLuckIndex } from '@/lib/luckCalculator'; // K-163: Correct luck formula, K-163N: Shared season luck
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -1451,88 +1451,16 @@ async function calculateLuckIndex(db: any, leagueId: number, completedGameweeks:
       count: matchesResult.rows.length
     });
 
-    // Step 5: Calculate luck for each manager using 3-component formula (K-163a Part 2)
-    const luck: Record<number, number> = {};
+    // K-163N: Use shared 4-component season luck calculation (single source of truth)
+    const luckResultsMap = await calculateSeasonLuckIndex(leagueId, db);
 
-    // Initialize all managers with 0 luck
-    managerIds.forEach(entryId => {
-      luck[entryId] = 0;
-    });
-
-    // Process each match
-    matchesResult.rows.forEach((match: any) => {
-      const gw = match.event;
-      const entry1 = match.entry_1_id;
-      const entry2 = match.entry_2_id;
-      const entry1Points = match.entry_1_points;
-      const entry2Points = match.entry_2_points;
-      const winner = match.winner;
-
-      // Get all teams' points for this GW
-      const allGWPoints = pointsByGW[gw];
-      if (!allGWPoints) return;
-
-      // For entry1: get all OTHER teams' points
-      const otherTeamsPointsForEntry1 = Object.entries(allGWPoints)
-        .filter(([id]) => Number(id) !== entry1)
-        .map(([, pts]) => Number(pts));
-
-      // For entry2: get all OTHER teams' points
-      const otherTeamsPointsForEntry2 = Object.entries(allGWPoints)
-        .filter(([id]) => Number(id) !== entry2)
-        .map(([, pts]) => Number(pts));
-
-      // Get season averages for this GW
-      const entry1Avg = seasonAvgsByGW[gw]?.[entry1] || entry1Points;
-      const entry2Avg = seasonAvgsByGW[gw]?.[entry2] || entry2Points;
-
-      // Check chip usage
-      const entry1PlayedChip = chipsByGW[gw]?.has(entry1) || false;
-      const entry2PlayedChip = chipsByGW[gw]?.has(entry2) || false;
-
-      // Determine match result from each manager's perspective
-      const entry1Result: 'win' | 'draw' | 'loss' =
-        winner === entry1 ? 'win' : winner === null ? 'draw' : 'loss';
-      const entry2Result: 'win' | 'draw' | 'loss' =
-        winner === entry2 ? 'win' : winner === null ? 'draw' : 'loss';
-
-      // K-163a Part 2: Calculate luck using 3-component formula
-      const entry1Luck = calculateGWLuck(
-        entry1Points, otherTeamsPointsForEntry1,
-        entry1Avg, entry2Avg, entry2Points, entry2PlayedChip,
-        entry1Result
-      );
-      const entry2Luck = calculateGWLuck(
-        entry2Points, otherTeamsPointsForEntry2,
-        entry2Avg, entry1Avg, entry1Points, entry1PlayedChip,
-        entry2Result
-      );
-
-      luck[entry1] = (luck[entry1] || 0) + entry1Luck;
-      luck[entry2] = (luck[entry2] || 0) + entry2Luck;
-    });
-
-    // Step 4: Get manager names and format response
-    const managersResult = await db.query(`
-      SELECT entry_id, player_name, team_name
-      FROM managers
-      WHERE entry_id = ANY($1)
-    `, [Array.from(managerIds)]);
-
-    const managerMap: Record<number, { player_name: string; team_name: string }> = {};
-    managersResult.rows.forEach((row: any) => {
-      managerMap[row.entry_id] = {
-        player_name: row.player_name,
-        team_name: row.team_name
-      };
-    });
-
-    const luckIndex = Object.entries(luck)
-      .map(([entryId, luckValue]) => ({
-        entry_id: parseInt(entryId),
-        player_name: managerMap[parseInt(entryId)]?.player_name || 'Unknown',
-        team_name: managerMap[parseInt(entryId)]?.team_name || 'Unknown',
-        luck_index: Math.round(luckValue) // K-163a Part 2: Already scaled -10 to +10
+    // Format results for response (raw values, UI will apply ×10)
+    const luckIndex = Array.from(luckResultsMap.values())
+      .map(result => ({
+        entry_id: result.entry_id,
+        player_name: result.name,
+        team_name: result.team_name,
+        luck_index: result.season_luck_index // Raw value like 0.3965, NOT scaled
       }))
       .sort((a, b) => b.luck_index - a.luck_index);
 
