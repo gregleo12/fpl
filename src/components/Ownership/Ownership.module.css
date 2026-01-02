@@ -266,6 +266,103 @@
   font-size: 0.9375rem;
 }
 
+/* Stacking Summary Table */
+.teamNameCol {
+  min-width: 150px;
+}
+
+.stackPctCol {
+  width: 140px;
+  text-align: center !important;
+}
+
+.topComboCol {
+  min-width: 250px;
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background: rgba(0, 255, 135, 0.1) !important;
+}
+
+.teamNameCell {
+  font-weight: 700;
+}
+
+.teamName {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.stackPctCell {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.stackPct {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #00ff87;
+}
+
+.stackCount {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.noTriples {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1rem;
+}
+
+.topComboCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.comboPlayers {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.comboPct {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.noCombo {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  font-size: 0.875rem;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00ff87;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 255, 135, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 135, 0.2);
+  transition: all 0.2s ease;
+}
+
+.backLink:hover {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: #00ff87;
+}
+
 /* Info Footer */
 .infoFooter {
   background: rgba(0, 0, 0, 0.2);

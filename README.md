@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.7** (January 2, 2026)
+**v4.4.9** (January 2, 2026)
 
-FEATURE (K-200): Launched Top 10K Ownership Combinations page at `/ownership`. See what player combinations elite FPL managers own together from each team. Features team selector (all 20 PL teams), singles ownership bar, doubles/triples combination tables with counts and percentages. Full pipeline includes database tables, sync script (10K teams, 150K picks), API endpoint, and mobile-responsive UI. Data synced weekly post-deadline.
+FEATURE (K-200b Phase 2): Team Stacking Summary landing page at `/ownership`. Shows overview of all 20 PL teams sorted by stacking popularity with double-up %, triple-up %, and top combo for each. Click teams to drill into detailed combinations. Example: Arsenal → 74.1% own 2+, Top: Raya + Saka (22.7%). ALSO INCLUDES: K-164 bulletproof data source rules - fixed recurring 0-points bug by only using database when NEXT gameweek starts, giving sync 5+ days to complete.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
