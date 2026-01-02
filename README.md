@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.6** (January 2, 2026)
+**v4.5.7** (January 2, 2026)
 
-K-163N: Applied 10× weighted display format to ALL luck displays across the app (Season tab, Awards, GW Rankings modal, Luck Leaderboard). Created shared formatting utility (`luckFormatting.ts`) to ensure consistent display and reduce code duplication. All luck values now show in the same scale (~-65 to +40) with consistent formatting.
+K-163N Fix: Fixed League Rankings table (Rank Tab) LUCK column to show 10× weighted values for consistency with all other luck displays. Values now range from ~-65 to +40 instead of old integers like +13, +10, -9. Uses shared `formatLuckValue()` utility for consistent formatting.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

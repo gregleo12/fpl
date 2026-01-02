@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import styles from './Dashboard.module.css';
 import { shortenTeamName, shortenManagerName } from '@/lib/nameUtils';
+import { formatLuckValue } from '@/lib/luckFormatting';
 
 interface Props {
   data: any;
@@ -169,7 +170,7 @@ export default function LeagueTab({ data: initialData, myTeamId, leagueId, onTea
                         luck < 0 ? styles.luckNegative :
                         styles.luckNeutral
                       }`}>
-                        {luck > 0 ? `+${luck}` : luck}
+                        {formatLuckValue(luck)}
                       </span>
                     </td>
                     <td className={styles.ptsCol}><strong>{team.total}</strong></td>

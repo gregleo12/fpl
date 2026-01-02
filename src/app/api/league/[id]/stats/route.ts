@@ -630,7 +630,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round(luckValues[standing.entry_id] || 0) // K-163a Part 2: Already scaled -10 to +10
+        luck: Math.round((luckValues[standing.entry_id] || 0) * 10) // K-163N: Display as ×10 for consistency
       };
     });
 

@@ -2,7 +2,44 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.6 (January 2, 2026)
+**Current Version:** v4.5.7 (January 2, 2026)
+
+---
+
+## v4.5.7 - K-163N Fix: League Rankings Luck Column (Jan 2, 2026)
+
+**K-163N (HOTFIX):** Fixed League Rankings table (Rank Tab) to show 10× weighted luck values for consistency
+
+### Problem
+
+After v4.5.6 unified luck displays, the **League Rankings table (Rank Tab)** still showed old integer values (+13, +10, -9) instead of the new 10× weighted format (+40.0, +18.0, -10.8).
+
+**Affected Component:** Dashboard > Rank Tab > LUCK column
+
+### Solution
+
+Updated `/api/league/[id]/stats/route.ts` to multiply luck by 10 before sending to frontend:
+```tsx
+// BEFORE
+luck: Math.round(luckValues[standing.entry_id] || 0) // Shows +13
+
+// AFTER
+luck: Math.round((luckValues[standing.entry_id] || 0) * 10) // Shows +40.0
+```
+
+Also updated `LeagueTab.tsx` to use shared `formatLuckValue()` utility for consistent decimal formatting.
+
+### Impact
+
+- League Rankings LUCK column now shows same scale as all other luck displays (~-65 to +40)
+- Expected value changes:
+  - Jean Boes: +13 → **+40.0** ✓
+  - Greg Lienart: +10 → **+18.0** ✓
+  - Dane Farran: -11 → **-10.8** ✓
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/route.ts` (API calculation)
+- `/src/components/Dashboard/LeagueTab.tsx` (display formatting)
 
 ---
 
