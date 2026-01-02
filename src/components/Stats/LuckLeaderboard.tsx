@@ -48,10 +48,21 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
 
               // K-163k: Calculate NORMALIZED components for display (not weighted)
               // Component columns show normalized values, Luck Index shows weighted total
-              const varianceNormalized = manager.variance_luck.total / 10;
-              const rankNormalized = manager.rank_luck.total;
-              const scheduleNormalized = manager.schedule_luck.value / 5;
-              const chipNormalized = manager.chip_luck.value / 3;
+              const varianceNormalized = manager.variance_luck?.total ? manager.variance_luck.total / 10 : 0;
+              const rankNormalized = manager.rank_luck?.total ?? 0;
+              const scheduleNormalized = manager.schedule_luck?.value ? manager.schedule_luck.value / 5 : 0;
+              const chipNormalized = manager.chip_luck?.value ? manager.chip_luck.value / 3 : 0;
+
+              // Debug logging for first manager
+              if (idx === 0) {
+                console.log('[K-163k Debug] First manager:', {
+                  name: manager.name,
+                  schedule_luck: manager.schedule_luck,
+                  scheduleValue: manager.schedule_luck?.value,
+                  scheduleNormalized,
+                  fullManager: manager
+                });
+              }
 
               return (
                 <tr
