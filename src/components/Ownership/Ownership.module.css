@@ -276,6 +276,17 @@
   text-align: center !important;
 }
 
+.stackCountNumCol {
+  width: 120px;
+  text-align: right !important;
+}
+
+.stackCountNumCell {
+  text-align: right;
+  font-weight: 700;
+  color: #00ff87;
+}
+
 .topComboCol {
   min-width: 250px;
 }
@@ -340,6 +351,46 @@
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
   font-size: 0.875rem;
+}
+
+/* Tab Navigation */
+.tabNav {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.6) 0%, rgba(55, 0, 60, 0.6) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab {
+  flex: 1;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.activeTab {
+  color: #00ff87;
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+}
+
+.activeTab:hover {
+  color: #00ff87;
+  background: rgba(0, 255, 135, 0.2);
 }
 
 .backLink {

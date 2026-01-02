@@ -7,7 +7,7 @@ import CombinationTable from './CombinationTable';
 import StackingSummary from './StackingSummary';
 import TemplateCores from './TemplateCores';
 
-type TabType = 'stacking' | 'templates';
+type TabType = 'combinations' | 'stacking' | 'templates';
 
 interface Player {
   id: number;
@@ -73,8 +73,8 @@ interface SummaryData {
 }
 
 export default function OwnershipPage() {
-  const [activeTab, setActiveTab] = useState<TabType>('stacking');
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null); // null = show summary
+  const [activeTab, setActiveTab] = useState<TabType>('combinations');
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null); // null = show team selector
   const [data, setData] = useState<CombinationsData | null>(null);
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,11 +82,22 @@ export default function OwnershipPage() {
 
   useEffect(() => {
     async function fetchData() {
+      // Only fetch when on combinations tab with selected team, or on stacking tab
+      if (activeTab === 'combinations' && selectedTeamId === null) {
+        setLoading(false);
+        return;
+      }
+
+      if (activeTab === 'templates') {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
       try {
-        if (selectedTeamId === null) {
+        if (activeTab === 'stacking') {
           // Fetch summary for all teams
           const response = await fetch(`/api/ownership/summary?tier=top10k`);
 
@@ -98,7 +109,7 @@ export default function OwnershipPage() {
           const result = await response.json();
           setSummaryData(result);
           setData(null);
-        } else {
+        } else if (activeTab === 'combinations' && selectedTeamId !== null) {
           // Fetch combinations for specific team
           const response = await fetch(`/api/ownership/combinations?team=${selectedTeamId}&tier=top10k`);
 
@@ -119,7 +130,7 @@ export default function OwnershipPage() {
     }
 
     fetchData();
-  }, [selectedTeamId]);
+  }, [activeTab, selectedTeamId]);
 
   const handleTeamSelect = (teamId: number | null) => {
     setSelectedTeamId(teamId);
@@ -143,33 +154,46 @@ export default function OwnershipPage() {
         )}
       </header>
 
-      {/* Tab Navigation - only show when on summary view */}
-      {selectedTeamId === null && (
-        <div className={styles.tabNav}>
-          <button
-            className={`${styles.tab} ${activeTab === 'stacking' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('stacking')}
-          >
-            Team Stacking
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'templates' ? styles.activeTab : ''}`}
-            onClick={() => setActiveTab('templates')}
-          >
-            Template Cores
-          </button>
-        </div>
-      )}
+      {/* Tab Navigation */}
+      <div className={styles.tabNav}>
+        <button
+          className={`${styles.tab} ${activeTab === 'combinations' ? styles.activeTab : ''}`}
+          onClick={() => {
+            setActiveTab('combinations');
+            setSelectedTeamId(null);
+          }}
+        >
+          Team Combinations
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'stacking' ? styles.activeTab : ''}`}
+          onClick={() => {
+            setActiveTab('stacking');
+            setSelectedTeamId(null);
+          }}
+        >
+          Team Stacking
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'templates' ? styles.activeTab : ''}`}
+          onClick={() => {
+            setActiveTab('templates');
+            setSelectedTeamId(null);
+          }}
+        >
+          Template Cores
+        </button>
+      </div>
 
-      {/* Show back link when viewing team detail */}
-      {selectedTeamId !== null && (
+      {/* Show back link when viewing team detail on combinations tab */}
+      {activeTab === 'combinations' && selectedTeamId !== null && (
         <button onClick={handleBackToOverview} className={styles.backLink}>
-          ← Back to Overview
+          ← Back to Team Selector
         </button>
       )}
 
-      {/* Team selector - only show on detail view */}
-      {selectedTeamId !== null && (
+      {/* Team selector - show on combinations tab when no team selected */}
+      {activeTab === 'combinations' && selectedTeamId === null && (
         <TeamSelector selectedTeamId={selectedTeamId} onChange={handleTeamSelect} />
       )}
 
@@ -186,11 +210,13 @@ export default function OwnershipPage() {
         </div>
       )}
 
-      {/* Stacking Tab Content */}
+      {/* Team Stacking Tab Content */}
       {!loading && !error && summaryData && activeTab === 'stacking' && (
         <>
-          {/* Summary View */}
-          <StackingSummary teams={summaryData.teams} onTeamClick={handleTeamSelect} />
+          <StackingSummary teams={summaryData.teams} onTeamClick={(teamId) => {
+            setActiveTab('combinations');
+            setSelectedTeamId(teamId);
+          }} />
 
           {/* Info Footer */}
           <div className={styles.infoFooter}>
@@ -200,11 +226,12 @@ export default function OwnershipPage() {
       )}
 
       {/* Template Cores Tab Content */}
-      {!loading && !error && activeTab === 'templates' && selectedTeamId === null && (
+      {!loading && !error && activeTab === 'templates' && (
         <TemplateCores />
       )}
 
-      {!loading && !error && data && (
+      {/* Team Combinations Tab - Detail View */}
+      {!loading && !error && data && activeTab === 'combinations' && (
         <>
           {/* Detail View */}
           {/* Singles Bar */}
