@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { calculateTeamGameweekScore } from '@/lib/teamCalculator';
 import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
 import { getDatabase } from '@/lib/db';
-import { checkDatabaseHasTeamGWData } from '@/lib/k142-auto-sync';
+import { getGWStatus } from '@/lib/fpl-api';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -29,40 +29,31 @@ export async function GET(
     }
 
 
-    // K-136: Determine GW status from FPL API FIRST
+    // K-164: Bulletproof GW status - only use DB when next GW has started
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     if (!bootstrapResponse.ok) {
       return NextResponse.json({ error: 'Failed to fetch gameweek status' }, { status: 500 });
     }
 
     const bootstrapData = await bootstrapResponse.json();
-    const currentEvent = bootstrapData.events.find((e: any) => e.id === gameweek);
+    const events = bootstrapData.events;
 
-    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
-    if (currentEvent) {
-      // K-142: Check database validity for completed GWs
-      if (currentEvent.finished) {
-        const hasValidData = await checkDatabaseHasTeamGWData(entryId, gameweek);
-        if (hasValidData) {
-          status = 'completed';
-        } else {
-          status = 'in_progress';
-        }
-      } else if (currentEvent.is_current || currentEvent.data_checked) {
-        status = 'in_progress';
-      }
-    }
+    // K-164: Use new bulletproof status logic
+    // Only uses DB when next GW has started (gives days for sync to complete)
+    const status = getGWStatus(gameweek, events);
+
+    console.log(`[K-164] Team ${entryId} GW${gameweek} status: ${status}`);
 
 
     // Fetch entry data for overall stats
     const entryResponse = await fetch(`https://fantasy.premierleague.com/api/entry/${teamId}/`);
     const entryData = entryResponse.ok ? await entryResponse.json() : null;
 
-    // K-136: Use appropriate calculator based on status
+    // K-136 + K-164: Use appropriate calculator based on status
     let teamScore: any;
     let liveSquadData: any = null;
 
-    if (status === 'in_progress' || status === 'upcoming') {
+    if (status === 'live' || status === 'upcoming') {
       const liveResult = await calculateManagerLiveScore(entryId, gameweek, status);
       teamScore = {
         points: {
@@ -77,10 +68,11 @@ export async function GET(
         auto_subs: liveResult.autoSubs?.substitutions || [],
         active_chip: liveResult.chip || null,
         captain_name: liveResult.captain?.name || null,
-        status: status as 'in_progress'
+        status: status
       };
       liveSquadData = liveResult.squad;  // Use squad data from live calculation
     } else {
+      // K-164: completed status means next GW started, safe to use DB
       teamScore = await calculateTeamGameweekScore(entryId, gameweek);
     }
 

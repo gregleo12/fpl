@@ -141,3 +141,76 @@ export class FPLApiClient {
 }
 
 export const fplApi = new FPLApiClient();
+
+// ============ K-164: BULLETPROOF GW STATUS HELPERS ============
+
+/**
+ * K-164: Determines if it's safe to use database for a given GW
+ *
+ * CRITICAL RULE: Only use database when the NEXT gameweek has started.
+ * This gives us days (not hours) for sync to complete, preventing the
+ * recurring bug where GW finishes (Sunday night) but DB hasn't synced yet.
+ *
+ * Timeline Example:
+ * - Sunday 8pm: GW19 finishes, marked finished=true → Continue using FPL API ✅
+ * - Monday-Friday: GW19 still uses FPL API, sync has days to complete ✅
+ * - Saturday 3pm: GW20 starts (is_current=true) → NOW safe to use DB for GW19 ✅
+ *
+ * @param gw - The gameweek to check
+ * @param events - Array of all events from bootstrap-static
+ * @returns true if safe to use database, false if should use FPL API
+ */
+export function safeToUseDatabase(gw: number, events: Event[]): boolean {
+  const event = events.find(e => e.id === gw);
+  const nextEvent = events.find(e => e.id === gw + 1);
+
+  // GW must be finished
+  if (!event?.finished) return false;
+
+  // Next GW must have started (is_current = true means it's active)
+  // This is the KEY DIFFERENCE from old logic - we wait for next GW to start
+  if (!nextEvent?.is_current) return false;
+
+  // Safe to use database - next GW has started, so we had 5+ days for sync
+  return true;
+}
+
+/**
+ * K-164: Get gameweek status with bulletproof logic
+ *
+ * Returns:
+ * - 'completed': Next GW has started, safe to use database
+ * - 'live': GW is current OR GW finished but next GW hasn't started yet (use FPL API)
+ * - 'upcoming': GW hasn't started yet
+ *
+ * @param gw - The gameweek to check
+ * @param events - Array of all events from bootstrap-static
+ * @returns Status string for determining data source
+ */
+export function getGWStatus(gw: number, events: Event[]): 'completed' | 'live' | 'upcoming' {
+  const event = events.find(e => e.id === gw);
+
+  if (!event) {
+    console.warn(`[K-164] No event found for GW${gw}`);
+    return 'upcoming';
+  }
+
+  // Current/live GW - always use FPL API
+  if (event.is_current && !event.finished) {
+    return 'live';
+  }
+
+  // K-164: Only mark as completed if NEXT GW has started
+  // This ensures we have days (not hours) for sync to complete
+  if (safeToUseDatabase(gw, events)) {
+    return 'completed';  // Safe to use database
+  }
+
+  // GW finished but next GW hasn't started yet
+  // Stay on API to be safe (prevents 0-point bug)
+  if (event.finished) {
+    return 'live';  // Treat as live = use FPL API
+  }
+
+  return 'upcoming';
+}

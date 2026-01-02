@@ -522,7 +522,7 @@ export async function GET(
           ));
 
           // Determine gameweek status for the calculator
-          let status: 'upcoming' | 'in_progress' | 'completed' = 'in_progress';
+          let status: 'upcoming' | 'live' | 'completed' = 'live';
 
           // Check if we have FPL data to determine status more accurately
           try {
@@ -548,7 +548,7 @@ export async function GET(
             try {
               let score: number;
 
-              if (status === 'in_progress' || status === 'upcoming') {
+              if (status === 'live' || status === 'upcoming') {
                 // K-137: Use FPL API for live/upcoming GWs
                 const liveResult = await calculateManagerLiveScore(entryId, currentGW, status);
                 score = liveResult.score;
