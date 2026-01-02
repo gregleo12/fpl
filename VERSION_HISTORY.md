@@ -2,7 +2,138 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.7 (January 2, 2026)
+**Current Version:** v4.4.9 (January 2, 2026)
+
+---
+
+## v4.4.9 - K-200b Phase 2: Stacking Summary + K-164 Bulletproof Data Rules (Jan 2, 2026)
+
+**FEATURE (K-200b Phase 2):** Team Stacking Summary landing page
+**ENHANCEMENT (K-164):** Bulletproof gameweek data source rules
+
+### K-200b Phase 2: Stacking Summary
+New landing page at `/ownership` showing stacking overview for all 20 teams.
+
+**Landing Page Features:**
+- Summary table showing all teams sorted by stacking popularity
+- Double-up % (managers owning 2+ from team)
+- Triple-up % (managers owning 3+ from team)
+- Top combo for each team with ownership %
+- Click any row to drill into detailed combinations
+- Back button to return to overview
+
+**Example:**
+- Arsenal → 74.1% own 2+, 32.8% own 3+, Top: Raya + Saka (22.7%)
+- Liverpool → 68.2% own 2+, 28.4% own 3+, Top: Salah + TAA (31.2%)
+
+**Page Flow:**
+1. Initial load → Summary table (all 20 teams)
+2. Click team → Detail view (singles, doubles, triples)
+3. Back button → Return to summary
+
+**Technical:**
+- New endpoint: `/api/ownership/summary`
+- New component: `StackingSummary.tsx`
+- Efficient parallel queries (~1-2s for all 20 teams)
+
+**Files Added:**
+- `src/app/api/ownership/summary/route.ts`
+- `src/components/Ownership/StackingSummary.tsx`
+
+**Files Modified:**
+- `src/components/Ownership/OwnershipPage.tsx` - Dual view logic
+- `src/components/Ownership/TeamSelector.tsx` - Handle null selection
+- `src/components/Ownership/Ownership.module.css` - Summary table styles
+
+### K-164: Bulletproof GW Data Source Rules
+
+**CRITICAL BUG FIX:** Fixed recurring 0-points bug after gameweeks complete by implementing bulletproof data source logic.
+
+### The Problem
+Same bug kept recurring after every gameweek:
+1. GW finishes (Sunday night) → FPL API marks `finished: true`
+2. App immediately switches to database
+3. Database has stale/zero data (sync failed or didn't run yet)
+4. Users see 0 points in My Team and H2H Rivals
+
+### Previous Failed Fixes
+- K-141: Temp fix (use API if finished but still current) - didn't work
+- K-142: Auto-sync after 10 hours - didn't work
+- K-142b: Validate non-zero points in DB - didn't work
+- Manual admin fixes required for GW18 and GW19
+
+### The Root Cause
+Relied on timing/sync triggers which are unreliable. Database sync needs to complete within hours after GW finishes, but this often failed.
+
+### K-164 Solution: Only Use DB When NEXT GW Has Started
+
+**New Rule:** Don't use database until the NEXT gameweek has started.
+
+```
+Current State              → Data Source for GW N
+────────────────────────────────────────────────
+GW N is live/current       → FPL API (always)
+GW N+1 hasn't started yet  → FPL API (stay safe)
+GW N+1 has started         → Database OK for GW N
+```
+
+**Why This Works:**
+- Sunday 8pm: GW19 finishes → Continue using FPL API ✅
+- Monday-Friday: GW19 still uses FPL API → Sync has days to complete ✅
+- Saturday 3pm: GW20 starts → NOW safe to use DB for GW19 ✅
+- Gives 5+ days (not 10 hours) for sync to complete
+
+### Changes Made
+
+**New Helper Functions** (`src/lib/fpl-api.ts`):
+- `safeToUseDatabase(gw, events)` - Returns true only when next GW has started
+- `getGWStatus(gw, events)` - Returns 'completed' | 'live' | 'upcoming'
+
+**Updated Status Logic:**
+- Changed from 'in_progress' to 'live' throughout codebase
+- Status 'completed' now means next GW started (safe to use DB)
+- Status 'live' includes current GW AND finished GW (until next GW starts)
+
+**Files Modified:**
+- `src/lib/fpl-api.ts` - Added K-164 helper functions
+- `src/lib/scoreCalculator.ts` - Updated all status types to use 'live'
+- `src/app/api/league/[id]/fixtures/[gw]/route.ts` - Use getGWStatus()
+- `src/app/api/team/[teamId]/gameweek/[gw]/route.ts` - Use getGWStatus()
+- `src/app/api/league/[id]/stats/gameweek/[gw]/rankings/route.ts` - Use getGWStatus()
+- `src/app/api/gw/[gw]/team/[teamId]/route.ts` - Use getGWStatus()
+- `src/app/api/league/[id]/fixtures/[gw]/live/route.ts` - Updated to 'live' status
+- `src/app/api/league/[id]/stats/gameweek/[gw]/route.ts` - Updated to 'live' status
+- `src/app/api/league/[id]/stats/route.ts` - Updated to 'live' status
+
+### Impact
+- ✅ No more 0-point display immediately after GW finishes
+- ✅ Users see correct points from FPL API until next GW starts
+- ✅ Sync has days (not hours) to complete
+- ✅ If sync fails, we have days to notice and fix manually
+- ✅ Simpler rule: "next GW started? → DB, else → API"
+
+---
+
+## v4.4.8 - K-200b Phase 1: Add "% of All" Column (Jan 2, 2026)
+
+**ENHANCEMENT:** Added "% of All" column to ownership combination tables for better context.
+
+### Changes
+- **API Updated**: `/api/ownership/combinations` now returns both `percentOfStackers` (% of managers with 2+/3+ from team) and `percentOfAll` (% of all 10K managers)
+- **UI Enhanced**: Combination tables show both percentages
+  - "% of 2+/3+" column (muted grey) - shows percentage among stackers
+  - "% of All" column (highlighted green) - shows percentage among all managers
+- **Better Context**: Users can now see true ownership rates across the entire sample
+
+### Example
+- Before: "Raya + Saka: 2,267 (30.6%)" - unclear if 30.6% is of all managers or just stackers
+- After: "Raya + Saka: 2,267 | 30.6% of 2+ | 22.7% of All" - clear that 22.7% of ALL 10K own this combo
+
+### Files Modified
+- `src/app/api/ownership/combinations/route.ts` - API calculation logic
+- `src/components/Ownership/CombinationTable.tsx` - Table display
+- `src/components/Ownership/OwnershipPage.tsx` - TypeScript interfaces
+- `src/components/Ownership/Ownership.module.css` - Column styling
 
 ---
 

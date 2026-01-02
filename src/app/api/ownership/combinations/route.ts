@@ -24,7 +24,8 @@ interface Combination {
     ownership: number;
   }[];
   count: number;
-  percentage: number;
+  percentOfStackers: number;  // % of managers with 2+ (or 3+) from this team
+  percentOfAll: number;        // % of all managers in sample
 }
 
 interface SingleOwnership {
@@ -178,7 +179,8 @@ export async function GET(request: NextRequest) {
         return {
           players,
           count,
-          percentage: (count / multiOwners.length) * 100,
+          percentOfStackers: multiOwners.length > 0 ? (count / multiOwners.length) * 100 : 0,
+          percentOfAll: (count / sampleSize) * 100,
         };
       })
       .sort((a, b) => b.count - a.count)
@@ -199,7 +201,8 @@ export async function GET(request: NextRequest) {
         return {
           players,
           count,
-          percentage: (count / tripleOwners.length) * 100,
+          percentOfStackers: tripleOwners.length > 0 ? (count / tripleOwners.length) * 100 : 0,
+          percentOfAll: (count / sampleSize) * 100,
         };
       })
       .sort((a, b) => b.count - a.count)

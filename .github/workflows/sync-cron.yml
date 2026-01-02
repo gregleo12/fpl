@@ -1,0 +1,34 @@
+name: Sync Completed Gameweeks
+
+on:
+  schedule:
+    # Every 4 hours at :00
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync-production:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sync endpoint
+        run: |
+          curl -X GET "https://rivalfpl.com/api/cron/sync-completed-gws" \
+            -H "Content-Type: application/json" \
+            --fail \
+            --silent \
+            --show-error \
+            --max-time 120
+          echo "Sync triggered successfully"
+
+  # Uncomment to also sync staging:
+  # sync-staging:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Trigger staging sync endpoint
+  #       run: |
+  #         curl -X GET "https://fpl-staging-production.up.railway.app/api/cron/sync-completed-gws" \
+  #           -H "Content-Type: application/json" \
+  #           --fail \
+  #           --silent \
+  #           --show-error \
+  #           --max-time 120

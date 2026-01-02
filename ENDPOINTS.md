@@ -71,6 +71,16 @@
 | POST | `/api/admin/track` | Track new league | DB + FPL API |
 | POST | `/api/admin/aggregate` | Aggregate daily stats | DB |
 | POST | `/api/admin/sync/players` | Sync all player data | DB + FPL API |
+| GET | `/api/admin/sync-status` | **K-165b:** View sync status for all leagues/GWs | DB |
+| POST | `/api/admin/sync-status` | **K-165b:** Trigger sync actions (reset, retry) | DB |
+
+### Cron Endpoints (K-165b)
+
+| Method | Endpoint | Description | Schedule |
+|--------|----------|-------------|----------|
+| GET | `/api/cron/sync-completed-gws` | **K-165b:** Auto-sync all completed GWs | Every 2 hours |
+
+**Note:** Cron endpoints are called by Railway cron scheduler, not by frontend.
 
 ---
 
@@ -662,6 +672,143 @@ See `src/lib/scoreCalculator.ts:75-119` for the correct pattern.
 
 ---
 
+## 🔄 K-165b Sync Endpoints
+
+### GET /api/cron/sync-completed-gws
+
+**Purpose:** Scheduled cron endpoint that auto-syncs all completed gameweeks for all leagues.
+
+**Schedule:** Every 2 hours (configured in Railway dashboard)
+
+**Access:** Called by Railway cron scheduler (not frontend)
+
+**What it does:**
+1. Resets any stuck syncs (in_progress >10 minutes)
+2. Scans all tracked leagues from database
+3. Identifies completed GWs that passed 10-hour safety buffer
+4. Skips GWs already synced or currently syncing
+5. Triggers `syncLeagueGWWithRetry()` for each GW needing sync
+6. Returns summary of sync results
+
+**Response:**
+```json
+{
+  "success": true,
+  "timestamp": "2026-01-02T12:00:00.000Z",
+  "duration_ms": 15234,
+  "stats": {
+    "leagues_checked": 10,
+    "gameweeks_checked": 19,
+    "synced": 2,
+    "skipped": 188,
+    "failed": 0,
+    "stuck_syncs_reset": 0
+  },
+  "results": [
+    {
+      "league_id": 804742,
+      "gameweek": 19,
+      "status": "synced"
+    }
+  ]
+}
+```
+
+**Configuration:**
+- Railway Cron Schedule: `0 */2 * * *` (every 2 hours)
+- Max Duration: 300 seconds (5 minutes)
+- Timeout handling: Automatic reset for stuck syncs
+
+---
+
+### GET /api/admin/sync-status
+
+**Purpose:** Admin dashboard to monitor sync status for all leagues/gameweeks.
+
+**Access:** Admin panel (no authentication currently)
+
+**Query Parameters:**
+- `action=reset_stuck` - Reset syncs stuck in "in_progress" for >10 minutes
+
+**Response:**
+```json
+{
+  "summary": {
+    "total_records": 190,
+    "by_status": {
+      "pending": 0,
+      "in_progress": 1,
+      "completed": 187,
+      "failed": 2
+    },
+    "stuck_syncs": 0
+  },
+  "stuck": [],
+  "failed": [
+    {
+      "league_id": 804742,
+      "gameweek": 18,
+      "retry_count": 3,
+      "error_message": "Failed to fetch FPL API",
+      "updated_at": "2026-01-02T10:30:00.000Z"
+    }
+  ],
+  "pending": [],
+  "recent": [
+    {
+      "league_id": 804742,
+      "gameweek": 19,
+      "status": "completed",
+      "started_at": "2026-01-02T12:00:00.000Z",
+      "completed_at": "2026-01-02T12:00:15.000Z",
+      "retry_count": 0
+    }
+  ],
+  "league_stats": [
+    {
+      "league_id": 804742,
+      "total_syncs": 19,
+      "completed": 18,
+      "failed": 1,
+      "in_progress": 0,
+      "pending": 0,
+      "success_rate": 95,
+      "last_sync": "2026-01-02T12:00:15.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### POST /api/admin/sync-status
+
+**Purpose:** Trigger admin actions on sync records.
+
+**Request Body:**
+```json
+{
+  "action": "reset_specific",
+  "league_id": 804742,
+  "gameweek": 18
+}
+```
+
+**Actions:**
+- `reset_stuck` - Reset all syncs stuck >10 minutes to "pending"
+- `reset_specific` - Reset specific league/GW to "pending"
+- `mark_completed` - Manually mark specific league/GW as "completed"
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Reset sync for league 804742 GW18 to pending"
+}
+```
+
+---
+
 ## 📝 Adding New Endpoints
 
 When adding a new endpoint:
@@ -683,7 +830,10 @@ src/app/api/
 │   ├── leagues/route.ts
 │   ├── stats/route.ts
 │   ├── sync/players/route.ts
+│   ├── sync-status/route.ts (K-165b)
 │   └── track/route.ts
+├── cron/
+│   └── sync-completed-gws/route.ts (K-165b)
 ├── fixtures/[gw]/route.ts
 ├── league/[id]/
 │   ├── route.ts
@@ -719,4 +869,4 @@ src/app/api/
 
 ---
 
-**Total Endpoints:** 31
+**Total Endpoints:** 34 (including 3 K-165b endpoints)

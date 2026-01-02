@@ -185,6 +185,23 @@ These tables cache FPL API data for completed gameweeks to reduce API calls.
 | `daily_stats` | Aggregated daily statistics |
 | `league_metadata` | League tracking and metrics |
 
+### K-165b Sync Management Tables
+
+**Implemented:** v4.5.0+
+**Purpose:** Track sync status for scheduled auto-sync system
+
+| Table | Purpose | Key Columns |
+|-------|---------|-------------|
+| `league_gw_sync` | Tracks sync status per league/gameweek | league_id, gameweek, status, retry_count, error_message |
+
+**Status Values:**
+- `pending` - Not started yet
+- `in_progress` - Currently syncing
+- `completed` - Successfully synced
+- `failed` - Failed after all retries (max 3)
+
+**Migration:** `npm run migrate:league-gw-sync`
+
 ---
 
 ## 🔄 Data Source Rules
@@ -409,6 +426,41 @@ CREATE TABLE pl_fixtures (
   minutes INTEGER DEFAULT 0
 );
 ```
+
+### league_gw_sync (K-165b)
+
+**Purpose:** Track sync status for each league/gameweek combination
+
+```sql
+CREATE TABLE IF NOT EXISTS league_gw_sync (
+  id SERIAL PRIMARY KEY,
+  league_id INTEGER NOT NULL,
+  gameweek INTEGER NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  -- Status values: pending, in_progress, completed, failed
+  started_at TIMESTAMP,
+  completed_at TIMESTAMP,
+  error_message TEXT,
+  retry_count INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(league_id, gameweek)
+);
+
+CREATE INDEX IF NOT EXISTS idx_league_gw_sync_status
+  ON league_gw_sync(league_id, gameweek, status);
+
+CREATE INDEX IF NOT EXISTS idx_league_gw_sync_failed
+  ON league_gw_sync(status, updated_at)
+  WHERE status = 'failed';
+```
+
+**Columns:**
+- `status` - pending | in_progress | completed | failed
+- `retry_count` - Number of retry attempts (max 3)
+- `error_message` - Last error message if failed
+- `started_at` - When sync started
+- `completed_at` - When sync finished successfully
 
 ---
 

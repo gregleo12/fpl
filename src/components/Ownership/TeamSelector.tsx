@@ -1,8 +1,8 @@
 import styles from './Ownership.module.css';
 
 interface TeamSelectorProps {
-  selectedTeamId: number;
-  onChange: (teamId: number) => void;
+  selectedTeamId: number | null;
+  onChange: (teamId: number | null) => void;
 }
 
 // Team IDs from database - all 20 current PL teams (2025/26 season)
@@ -38,8 +38,8 @@ export default function TeamSelector({ selectedTeamId, onChange }: TeamSelectorP
       <select
         id="team-select"
         className={styles.teamSelect}
-        value={selectedTeamId}
-        onChange={(e) => onChange(parseInt(e.target.value))}
+        value={selectedTeamId ?? ''}
+        onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : null)}
       >
         {TEAMS.map(team => (
           <option key={team.id} value={team.id}>
