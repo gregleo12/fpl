@@ -6,7 +6,62 @@
 
 ---
 
-## v4.4.9 - K-200b Phase 2: Stacking Summary + K-164 Bulletproof Data Rules (Jan 2, 2026)
+## v4.4.9 - K-200c: Players Tab with Elite Ownership Comparison (Jan 2, 2026)
+
+**FEATURE (K-200c):** Players tab in Ownership section with Top 10K ownership comparison
+**TECHNICAL:** Full-featured player database with elite ownership delta analysis
+
+### K-200c: Players Tab with Elite Ownership
+Fourth tab in Ownership section showing all 760 FPL players with elite ownership comparison.
+
+**Tab Features:**
+- **100% copy** of main app Players tab with elite ownership columns ADDED
+- Compact Stats view (6 columns: £, %, ELITE, Δ, PT, FORM)
+- All Stats view (27 columns including elite comparison)
+- Player click → Full detail modal with stats/matches/history/past seasons
+- Filter modal (price range, positions, teams, availability)
+- Search by player name or team
+- Sortable columns
+
+**Elite Ownership Columns:**
+- **ELITE %**: Top 10K ownership percentage from `elite_picks` table
+- **DELTA (Δ)**: Elite - Overall ownership difference with color coding:
+  - ≥ +20%: **Bold green** (hidden gems - elites love them)
+  - +5% to +20%: Green (elites favor)
+  - -5% to +5%: Grey (consensus picks)
+  - -5% to -20%: Red (casuals over-own)
+  - ≤ -20%: **Bold red** (trap players)
+
+**Example Insights:**
+- Player with 5% overall, 25% elite → +20% Δ (bold green) = elite secret
+- Player with 40% overall, 20% elite → -20% Δ (bold red) = casual trap
+
+**Technical Implementation:**
+- Copied entire Players component system to Ownership folder
+- All imports updated to local copies (no impact on main app)
+- API extended with `includeElite=true` parameter
+- Fetches from `elite_picks` table (Top 10K sample)
+- Backward compatible (main Players tab unchanged)
+
+**Files Added:**
+- `src/components/Ownership/OwnershipPlayers.tsx` - Main component
+- `src/components/Ownership/OwnershipPlayersTable.tsx` - Table rendering
+- `src/components/Ownership/OwnershipPlayerRow.tsx` - Row with delta styling
+- `src/components/Ownership/OwnershipPlayerCell.tsx` - Player info cell
+- `src/components/Ownership/OwnershipFilterModal.tsx` - Filter modal
+- `src/components/Ownership/OwnershipPlayerDetailModal.tsx` - Detail modal
+- `src/components/Ownership/OwnershipColumns.ts` - Column defs with elite columns
+- `src/components/Ownership/OwnershipPlayers.module.css` - Styling + delta colors
+- `src/components/Ownership/OwnershipFilterModal.module.css` - Filter styling
+- `src/components/Ownership/OwnershipPlayerDetailModal.module.css` - Modal styling
+
+**Files Modified:**
+- `src/components/Ownership/OwnershipPage.tsx` - Added Players tab
+- `src/app/api/players/route.ts` - Added `includeElite` parameter (backward compatible)
+
+---
+
+## v4.4.8 - K-200b Phase 2: Stacking Summary + K-164 Bulletproof Data Rules (Jan 2, 2026)
 
 **FEATURE (K-200b Phase 2):** Team Stacking Summary landing page
 **ENHANCEMENT (K-164):** Bulletproof gameweek data source rules

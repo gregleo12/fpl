@@ -49,7 +49,7 @@ npm run build
 
 **v4.4.9** (January 2, 2026)
 
-FEATURE (K-200b Phase 2): Team Stacking Summary landing page at `/ownership`. Shows overview of all 20 PL teams sorted by stacking popularity with double-up %, triple-up %, and top combo for each. Click teams to drill into detailed combinations. Example: Arsenal → 74.1% own 2+, Top: Raya + Saka (22.7%). ALSO INCLUDES: K-164 bulletproof data source rules - fixed recurring 0-points bug by only using database when NEXT gameweek starts, giving sync 5+ days to complete.
+FEATURE (K-200c): Players tab in Ownership section with Top 10K elite ownership comparison. Full-featured player database (100% copy of main Players tab) with two new columns: ELITE % (Top 10K ownership from elite_picks table) and DELTA (elite - overall difference with color coding). Shows hidden gems (bold green, +20%), elite favorites (green, +5%), consensus picks (grey), and casual traps (bold red, -20%). Includes Compact/All Stats views, player detail modal, filter system, and search. 760 players sortable by 27 columns.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
