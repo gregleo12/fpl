@@ -66,6 +66,16 @@ export async function GET(
     `, [leagueId]);
     const allGWPoints = gwPointsResult.rows;
 
+    // K-163k Debug: Log data counts
+    console.log('[K-163k API Debug]', {
+      leagueId,
+      managersCount: managers.length,
+      matchesCount: matches.length,
+      gwPointsCount: allGWPoints.length,
+      sampleMatch: matches[0],
+      sampleGWPoints: allGWPoints[0]
+    });
+
     // Get chip data
     const chipsResult = await db.query(`
       SELECT entry_id, event, chip_name
@@ -282,6 +292,20 @@ export async function GET(
       // Positive = faced weaker opponents than expected (lucky)
       // Negative = faced stronger opponents than expected (unlucky)
       const scheduleLuck = (theoreticalOppAvg - avgOppStrength) * managerMatches.length;
+
+      // K-163k Debug: Log first manager's schedule calculation
+      if (manager === managers[0]) {
+        console.log('[K-163k Schedule Debug]', {
+          managerName: manager.player_name,
+          matchesCount: managerMatches.length,
+          yourSeasonAvg,
+          avgOppStrength,
+          theoreticalOppAvg,
+          scheduleLuck,
+          finalSeasonAvgsCount: Object.keys(finalSeasonAvgs).length,
+          sampleFinalSeasonAvg: Object.entries(finalSeasonAvgs)[0]
+        });
+      }
 
       // 4. CHIP LUCK (seasonal only, zero-sum)
       const yourChipsPlayed = chipsByManager[entryId] || 0;
