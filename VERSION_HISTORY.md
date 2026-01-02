@@ -2,7 +2,79 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.16 (January 2, 2026)
+**Current Version:** v4.5.0 (January 2, 2026)
+
+---
+
+## v4.5.0 - Stats Navigation Redesign & Modal Fixes (Jan 2, 2026)
+
+**Production Release:** Combines K-167 (modal bug fixes) and K-168 (Stats navigation redesign) into v4.5.0 minor version bump
+
+### Major Changes
+
+**1. Stats Navigation Restructure (K-168)**
+
+Complete redesign of Stats section navigation:
+- Removed Players tab from Stats sub-navigation
+- Added Awards as 4th tab in Stats (GW | Season | Luck | Awards)
+- Awards uses award medal icon (🏅) from lucide-react
+- Players functionality still exists at `/ownership` route
+
+**2. Season View Simplification (K-168)**
+
+Removed redundant Leaderboards/Awards toggle:
+- Awards now accessible via Stats sub-navigation
+- Season view simplified to always show leaderboards
+- Removed toggle button UI and view state management
+- Cleaner component with single content display
+
+**3. Stat Box Modal Bug Fixes (K-167)**
+
+**GW Rank Modal - Stale Data Fix:**
+- Fixed "Worst GW Rank" showing outdated value (e.g., 3.4M from GW1 when current live GW was 9.2M)
+- Root cause: FPL API history endpoint only returns completed GWs
+- Solution: Check if current GW rank exists but isn't in history, add to calculations
+- Now correctly includes live GW in best/worst/average rank calculations
+
+**Points Analysis Modal - Column Display Fix:**
+- Fixed concatenated column display (e.g., "331152" instead of "33 | 1,152")
+- Added 16px grid gap to table header and rows
+- Right-aligned rank column for better readability
+- Added `.toLocaleString()` for thousand separators
+
+### Files Modified
+
+**K-168 Changes:**
+1. `src/components/Stats/StatsHub.tsx` - Removed Players, added Awards tab
+2. `src/components/Stats/SeasonView.tsx` - Removed toggle, simplified rendering
+3. `src/components/Stats/AwardsTab.tsx` - Deleted (no longer needed)
+4. `src/data/changelog.json` - Added v4.5.0 entry
+
+**K-167 Changes:**
+1. `src/app/api/team/[teamId]/gw-rank-stats/route.ts` - Include live GW in calculations
+2. `src/components/Dashboard/RankModals.module.css` - Added grid gap and alignment
+3. `src/components/Dashboard/PointsAnalysisModal.tsx` - Added number formatting
+
+### Navigation Changes
+
+**Before:**
+```
+Main Nav: My Team | Rank | Rivals | Stats | Settings
+Stats Sub-tabs: GW | Season | Players | Luck
+Season View: [Leaderboards | Awards] toggle
+```
+
+**After:**
+```
+Main Nav: My Team | Rank | Rivals | Stats | Settings (unchanged)
+Stats Sub-tabs: GW | Season | Luck | Awards
+Season View: Leaderboards only (no toggle)
+```
+
+### Bundle Size Impact
+
+- Dashboard page: 62.9 kB (down from 71 kB)
+- 8.1 kB reduction from removing PlayersTab from Stats bundle
 
 ---
 

@@ -1,5 +1,18 @@
 [
   {
+    "version": "4.5.0",
+    "date": "2026-01-02",
+    "title": "Stats Navigation Redesign & Modal Fixes",
+    "changes": [
+      "NEW: Awards tab now accessible directly from Stats navigation (GW | Season | Luck | Awards)",
+      "Removed Players tab from Stats - now available at /ownership route",
+      "Simplified Season view by removing redundant Leaderboards/Awards toggle",
+      "Fixed GW Rank modal showing stale worst rank data for live gameweeks",
+      "Fixed Points Analysis modal column spacing (no more concatenated numbers)",
+      "Improved number formatting with thousand separators in modals"
+    ]
+  },
+  {
     "version": "4.3.0",
     "date": "2024-12-26",
     "title": "Monthly Awards",
