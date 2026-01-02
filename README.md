@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.14** (January 2, 2026)
+**v4.4.15** (January 2, 2026)
 
-K-167: Fixed stat box modal data & display bugs. GW Rank modal now includes live GW in best/worst/average calculations (fixes stale "worst rank" issue). Points Analysis modal added column gap and proper formatting to prevent visual concatenation of Pts/Total columns.
+K-168: Removed Players tab from Stats, added Awards to main navigation. Main nav now shows: My Team | Rank | Rivals | Stats | Awards | Settings. Stats section simplified to: GW | Season | Luck. Awards now accessible as dedicated main tab with trophy icon.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
