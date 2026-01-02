@@ -41,6 +41,7 @@ export default function TeamSelector({ selectedTeamId, onChange }: TeamSelectorP
         value={selectedTeamId ?? ''}
         onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : null)}
       >
+        <option value="">Select Team</option>
         {TEAMS.map(team => (
           <option key={team.id} value={team.id}>
             {team.name}
