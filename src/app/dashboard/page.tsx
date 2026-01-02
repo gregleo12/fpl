@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shirt, BarChart3, Target, TrendingUp, Trophy, Settings as SettingsIcon } from 'lucide-react';
+import { Shirt, BarChart3, Target, TrendingUp, Settings as SettingsIcon } from 'lucide-react';
 import { loadState, SavedState, updateLastFetched } from '@/lib/storage';
 import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import { useNewVersionBadge } from '@/hooks/useNewVersionBadge';
@@ -13,11 +13,10 @@ import LeagueTab from '@/components/Dashboard/LeagueTab';
 import MyTeamTab from '@/components/Dashboard/MyTeamTab';
 import FixturesTab from '@/components/Fixtures/FixturesTab';
 import StatsTab from '@/components/Stats/StatsTab';
-import AwardsTab from '@/components/Stats/AwardsTab';
 import SettingsTab from '@/components/Settings/SettingsTab';
 import styles from './dashboard.module.css';
 
-type TabType = 'league' | 'fixtures' | 'myteam' | 'stats' | 'awards' | 'settings';
+type TabType = 'league' | 'fixtures' | 'myteam' | 'stats' | 'settings';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -361,17 +360,6 @@ export default function DashboardPage() {
             <span className={styles.tabLabel}>Stats</span>
           </button>
           <button
-            className={`${styles.tab} ${activeTab === 'awards' ? styles.active : ''}`}
-            onClick={() => setActiveTab('awards')}
-          >
-            <Trophy
-              size={24}
-              color={activeTab === 'awards' ? '#00ff87' : 'rgba(255, 255, 255, 0.5)'}
-              className={styles.tabIcon}
-            />
-            <span className={styles.tabLabel}>Awards</span>
-          </button>
-          <button
             className={`${styles.tab} ${activeTab === 'settings' ? styles.active : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -443,11 +431,6 @@ export default function DashboardPage() {
             myTeamName={state.myTeamName}
             myManagerName={state.myManagerName}
           />
-        )}
-        {activeTab === 'awards' && (
-          <div className={styles.dashboardTabWrapper}>
-            <AwardsTab leagueId={state.leagueId} />
-          </div>
         )}
         {activeTab === 'settings' && (
           <SettingsTab

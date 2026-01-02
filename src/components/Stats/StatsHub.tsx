@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import styles from './StatsHub.module.css';
-import { RotateCw, BarChart2, Trophy, Clover } from 'lucide-react';
+import { RotateCw, BarChart2, Trophy, Clover, Award } from 'lucide-react';
 import { CaptainPicks } from './sections/CaptainPicks';
 import { ChipsPlayed } from './sections/ChipsPlayed';
 import { HitsTaken } from './sections/HitsTaken';
@@ -12,8 +12,9 @@ import { GWPointsLeaders, type GWRanking } from './sections/GWPointsLeaders';
 import { GWRankingsModal } from './GWRankingsModal';
 import { SeasonView } from './SeasonView';
 import LuckView from './LuckView';
+import { Awards } from './season/Awards';
 
-type ViewType = 'gameweek' | 'season' | 'luck';
+type ViewType = 'gameweek' | 'season' | 'luck' | 'awards';
 
 export interface GameweekStats {
   event: number;
@@ -93,9 +94,14 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
   // K-68: Refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // K-168: Awards state
+  const [completedGameweeks, setCompletedGameweeks] = useState<number>(0);
+
   useEffect(() => {
     if (view === 'gameweek') {
       fetchGameweekStats(selectedGW);
+    } else if (view === 'awards') {
+      fetchCompletedGameweeks();
     }
   }, [selectedGW, leagueId, view]);
 
@@ -126,6 +132,27 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load stats');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // K-168: Fetch completed gameweeks for Awards view
+  async function fetchCompletedGameweeks() {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`/api/league/${leagueId}/stats/season`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch season stats');
+      }
+
+      const data = await response.json();
+      setCompletedGameweeks(data.completedGameweeks || 0);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load awards data');
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +192,13 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
         >
           <Clover size={16} />
           Luck
+        </button>
+        <button
+          className={`${styles.subTab} ${view === 'awards' ? styles.subTabActive : ''}`}
+          onClick={() => setView('awards')}
+        >
+          <Award size={16} />
+          Awards
         </button>
       </div>
 
@@ -252,6 +286,17 @@ export function StatsHub({ leagueId, currentGW, maxGW, isCurrentGWLive, myTeamId
       {/* Luck View */}
       {view === 'luck' && (
         <LuckView leagueId={parseInt(leagueId)} myTeamId={parseInt(myTeamId)} />
+      )}
+
+      {/* Awards View */}
+      {view === 'awards' && (
+        <>
+          {isLoading && <div className={styles.loading}>Loading awards...</div>}
+          {error && <div className={styles.error}>{error}</div>}
+          {!isLoading && !error && (
+            <Awards leagueId={leagueId} completedGameweeks={completedGameweeks} />
+          )}
+        </>
       )}
 
       {/* GW Rankings Modal */}

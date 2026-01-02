@@ -49,7 +49,7 @@ npm run build
 
 **v4.4.15** (January 2, 2026)
 
-K-168: Removed Players tab from Stats, added Awards to main navigation. Main nav now shows: My Team | Rank | Rivals | Stats | Awards | Settings. Stats section simplified to: GW | Season | Luck. Awards now accessible as dedicated main tab with trophy icon.
+K-168: Removed Players tab from Stats, added Awards to Stats navigation. Main nav unchanged: My Team | Rank | Rivals | Stats | Settings. Stats section now shows: GW | Season | Luck | Awards (4 tabs). Awards accessible within Stats with award medal icon.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

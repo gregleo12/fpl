@@ -6,9 +6,9 @@
 
 ---
 
-## v4.4.15 - K-168: Remove Players Tab, Add Awards to Nav Bar (Jan 2, 2026)
+## v4.4.15 - K-168: Remove Players Tab, Add Awards to Stats Nav (Jan 2, 2026)
 
-**K-168:** UI restructure - removed Players from Stats, added Awards as main navigation item
+**K-168:** UI restructure - removed Players from Stats, added Awards to Stats sub-navigation
 
 ### Changes
 
@@ -21,22 +21,19 @@ Removed Players tab from Stats sub-navigation:
   - Removed PlayersTab import
   - Removed Players button from view toggle
   - Removed Players view rendering
-- Stats section now shows: **GW | Season | Luck** (3 tabs)
 - Players functionality still exists at `/ownership` route
 
-**2. Added Awards to Main Navigation**
+**2. Added Awards to Stats Sub-Navigation**
 
-Created Awards as standalone main tab:
-- `src/components/Stats/AwardsTab.tsx`: New wrapper component
-  - Fetches season data to get completedGameweeks
-  - Passes data to Awards component
-  - Handles loading/error states
-- `src/app/dashboard/page.tsx`:
-  - Added 'awards' to TabType
-  - Imported Trophy icon from lucide-react
-  - Added AwardsTab component import
-  - Added Awards navigation button (between Stats and Settings)
-  - Added Awards content rendering
+Added Awards as 4th tab in Stats section:
+- `src/components/Stats/StatsHub.tsx`:
+  - Added 'awards' to ViewType (`'gameweek' | 'season' | 'luck' | 'awards'`)
+  - Imported Award icon from lucide-react
+  - Imported Awards component
+  - Added `completedGameweeks` state
+  - Added `fetchCompletedGameweeks()` function
+  - Added Awards button to view toggle (after Luck)
+  - Added Awards view rendering with loading/error states
 
 **3. Navigation Changes**
 
@@ -48,31 +45,27 @@ Stats Sub-tabs: GW | Season | Players | Luck
 
 **After:**
 ```
-Main Nav: My Team | Rank | Rivals | Stats | Awards | Settings
-Stats Sub-tabs: GW | Season | Luck
+Main Nav: My Team | Rank | Rivals | Stats | Settings (unchanged)
+Stats Sub-tabs: GW | Season | Luck | Awards
 ```
 
 **Awards Details:**
-- Icon: Trophy 🏆 (Lucide Trophy component)
-- Position: Between Stats and Settings
+- Icon: 🏅 Award medal (Lucide Award component)
+- Position: 4th tab in Stats, after Luck
 - Content: Reuses existing Awards component from Stats/Season
 - Renders monthly awards (Player of the Month, Team of the Month, etc.)
-
-**Mobile Considerations:**
-- Main nav now has 6 items (was 5)
-- Existing responsive nav design accommodates the addition
-- Awards tab uses same `dashboardTabWrapper` styling as other tabs
+- Fetches `completedGameweeks` from `/api/league/${leagueId}/stats/season`
 
 ### Files Modified
 
-1. `src/components/Stats/StatsHub.tsx` - Removed Players tab
-2. `src/components/Stats/AwardsTab.tsx` - Created new wrapper component
-3. `src/app/dashboard/page.tsx` - Added Awards to main navigation
+1. `src/components/Stats/StatsHub.tsx` - Removed Players, added Awards
+2. `src/app/dashboard/page.tsx` - No changes (Awards not in main nav)
+3. `src/components/Stats/AwardsTab.tsx` - Deleted (no longer needed)
 
 ### Bundle Size Impact
 
-- Dashboard page: 63 kB (down from 71 kB)
-- Reduction due to removing PlayersTab from Stats bundle
+- Dashboard page: 62.9 kB (down from 71 kB)
+- 8.1 kB reduction due to removing PlayersTab from Stats bundle
 
 ---
 
