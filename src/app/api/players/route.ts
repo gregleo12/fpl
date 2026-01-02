@@ -19,13 +19,14 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 1000);
     const search = searchParams.get('search');
+    const includeElite = searchParams.get('includeElite') === 'true';
 
     // Validate sort field (whitelist to prevent SQL injection)
     const allowedSorts = [
       'total_points', 'form', 'now_cost', 'goals_scored', 'assists',
       'clean_sheets', 'bonus', 'bps', 'minutes', 'ict_index',
       'expected_goals', 'expected_assists', 'selected_by_percent',
-      'points_per_game', 'web_name'
+      'points_per_game', 'web_name', 'elite_ownership', 'elite_delta'
     ];
     const sortField = allowedSorts.includes(sort) ? sort : 'total_points';
     const sortOrder = order === 'asc' ? 'ASC' : 'DESC';
@@ -162,8 +163,51 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // K-200c: Add elite ownership data if requested
+    let playersWithElite = players;
+    if (includeElite) {
+      try {
+        // Get current gameweek for elite data
+        const currentGW = await getCurrentGameweek();
+
+        // Fetch elite ownership from elite_picks table
+        const eliteResult = await db.query(`
+          SELECT
+            player_id,
+            COUNT(DISTINCT entry_id) as owner_count
+          FROM elite_picks
+          WHERE gameweek = $1 AND sample_tier = 'top10k'
+          GROUP BY player_id
+        `, [currentGW]);
+
+        // Build elite ownership map
+        const sampleSize = 10000; // Top 10K sample
+        const eliteMap = new Map<number, number>();
+        eliteResult.rows.forEach(row => {
+          const elitePercent = (parseInt(row.owner_count) / sampleSize) * 100;
+          eliteMap.set(row.player_id, elitePercent);
+        });
+
+        // Merge elite data into players
+        playersWithElite = players.map(p => {
+          const eliteOwnership = eliteMap.get(p.id) || 0;
+          const overallOwnership = parseFloat(p.selected_by_percent || '0');
+          const delta = eliteOwnership - overallOwnership;
+
+          return {
+            ...p,
+            elite_ownership: eliteOwnership,
+            elite_delta: delta
+          };
+        });
+      } catch (eliteErr) {
+        console.error('[Players API] Elite data fetch error:', eliteErr);
+        // Continue without elite data - graceful degradation
+      }
+    }
+
     return NextResponse.json({
-      players,
+      players: playersWithElite,
       pagination: {
         page,
         limit,

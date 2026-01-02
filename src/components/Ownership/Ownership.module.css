@@ -429,6 +429,133 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* K-200c: Players Tab Styles */
+.playersHeader {
+  margin-bottom: 1.5rem;
+}
+
+.playersControls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  color: white;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ff87;
+}
+
+.viewModeToggle {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.viewMode,
+.viewModeActive {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewMode {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.viewMode:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.viewModeActive {
+  background: rgba(0, 255, 135, 0.15);
+  color: #00ff87;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s;
+}
+
+.sortable:hover {
+  color: #00ff87;
+}
+
+.playerRow {
+  transition: background 0.2s;
+}
+
+.playerRow:hover {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.playerNameCell {
+  min-width: 150px;
+}
+
+.playerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.playerName {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.playerMeta {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.eliteCell {
+  color: #00ff87;
+  font-weight: 600;
+}
+
+.deltaStrongPositive {
+  color: #00ff87;
+  font-weight: bold;
+}
+
+.deltaPositive {
+  color: #00ff87;
+}
+
+.deltaNeutral {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.deltaNegative {
+  color: #ff6b6b;
+}
+
+.deltaStrongNegative {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
