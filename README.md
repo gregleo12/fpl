@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.3** (December 31, 2025)
+**v4.4.7** (January 2, 2026)
 
-FEATURE (K-163): Launched Luck System UI to Stats section. Added dedicated Luck Analysis tab with leaderboard showing all managers ranked by Season Luck Index, collapsible methodology explanation with examples, and zero-sum validation footer. Displays all 4 weighted components (Variance 40%, Rank 30%, Schedule 20%, Chip 10%) with color coding (green/red). Includes icons (🍀 for top 3, ⛈️ for bottom 3) and detailed interpretation guide.
+FEATURE (K-200): Launched Top 10K Ownership Combinations page at `/ownership`. See what player combinations elite FPL managers own together from each team. Features team selector (all 20 PL teams), singles ownership bar, doubles/triples combination tables with counts and percentages. Full pipeline includes database tables, sync script (10K teams, 150K picks), API endpoint, and mobile-responsive UI. Data synced weekly post-deadline.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

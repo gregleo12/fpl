@@ -2,7 +2,225 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.3 (December 31, 2025)
+**Current Version:** v4.4.7 (January 2, 2026)
+
+---
+
+## v4.4.7 - K-200 BUG FIX: Add Missing 3 Teams to Selector (Jan 2, 2026)
+
+**BUG FIX:** Team selector only showing 17 teams instead of 20.
+
+### The Bug
+- Burnley (id=3), Leeds (id=11), Sunderland (id=17) missing from dropdown
+- Incorrectly removed in v4.4.6 thinking they were relegated
+- All 3 teams are active in 2025/26 season with GW19 player data
+
+### The Fix
+- Added back all 20 current Premier League teams
+- Verified all teams have active player data in database
+
+---
+
+## v4.4.6 - K-200 BUG FIX: Team Selector Showing Wrong Teams (Jan 2, 2026)
+
+**BUG FIX:** Selecting a team showed incorrect data (team below it in dropdown).
+
+### The Bug
+- TEAMS array had wrong database IDs
+- Example: Liverpool was id=13 (should be 12), Spurs was id=19 (should be 18)
+- Selecting Arsenal showed Aston Villa data
+
+### Root Cause
+- Hardcoded team IDs without checking actual database schema
+- Database uses different IDs than expected
+
+### The Fix
+- Updated TEAMS array to match actual database team IDs
+- Verified against `SELECT id, name FROM teams` query
+- Now Arsenal (id=1) correctly shows Arsenal data
+
+---
+
+## v4.4.5 - K-200: Scale to Top 10K Sample (Jan 2, 2026)
+
+**FEATURE:** Scaled ownership combinations from 500 to 10,000 manager sample.
+
+### Changes
+- Updated sync script: SAMPLE_TIER='top10k', TOTAL_PAGES=200
+- Changed UI from "Top 500" to "Top 10K"
+- API endpoint now queries 'top10k' tier by default
+- Sync time: ~60-90 minutes for full 10K (vs 6 min for 500)
+
+### Data Scale
+- 10,000 teams fetched from top 10K by total points
+- 150,000 player picks stored (~15 per team)
+- More accurate ownership percentages
+- More double/triple combinations discovered
+
+---
+
+## v4.4.4 - K-200: Top 500 Ownership Combinations (Week 1 MVP) (Jan 2, 2026)
+
+**FEATURE:** New standalone page showing player combinations from elite FPL managers.
+
+### Overview
+Built complete ownership analysis pipeline:
+- Database tables for storing elite manager picks
+- Sync script for fetching data from FPL API
+- API endpoint for combination calculations
+- UI page at `/ownership` with team selector
+
+### Database Schema
+
+**elite_picks table:**
+- Stores individual player picks from elite managers
+- Columns: gameweek, sample_tier, entry_id, player_id, is_captain, multiplier
+- Indexes on gameweek, tier, player_id for fast queries
+
+**elite_sync_status table:**
+- Tracks sync progress and status
+- Columns: gameweek, tier, teams_fetched, status, started_at, completed_at
+
+### Sync Script
+
+**File:** `src/scripts/sync-elite-picks.ts`
+
+**Process:**
+1. Fetch current gameweek from FPL API
+2. Get top 500 team IDs from Overall League (League 314, pages 1-10)
+3. For each team, fetch picks from `/api/entry/{id}/event/{gw}/picks/`
+4. Store in elite_picks table with upsert (ON CONFLICT)
+5. Update sync status
+
+**Rate Limiting:**
+- 150ms delay between requests (~6-7 req/sec)
+- Batch processing: 50 teams at a time
+- 3 second pause between batches
+- Retry logic with exponential backoff for 429 errors
+
+**Performance:**
+- 500 teams: ~6 minutes
+- No failures (100% success rate)
+
+### API Endpoint
+
+**Route:** `GET /api/ownership/combinations`
+
+**Query Parameters:**
+- `team` (required): PL team ID (1-20)
+- `tier` (optional): Sample tier (default: 'top500')
+- `gw` (optional): Gameweek (default: current)
+
+**Response:**
+```json
+{
+  "team": { "id": 1, "name": "Arsenal", "short_name": "ARS" },
+  "gameweek": 19,
+  "sample_tier": "top500",
+  "sample_size": 500,
+  "last_updated": "2026-01-02T12:00:00Z",
+  "multi_owners": { "doubles": 245, "triples": 45 },
+  "triples": [
+    {
+      "players": [
+        { "id": 302, "name": "Saka", "ownership": 58.0 },
+        { "id": 7, "name": "Raya", "ownership": 36.6 },
+        { "id": 355, "name": "J.Timber", "ownership": 33.8 }
+      ],
+      "count": 23,
+      "percentage": 51.1
+    }
+  ],
+  "doubles": [...],
+  "singles": [...]
+}
+```
+
+**Combination Calculation Logic:**
+1. Get all picks for team's players from elite_picks
+2. Filter to managers owning 2+ players from team
+3. Generate all 2-player combinations (doubles)
+4. Generate all 3-player combinations (triples)
+5. Count and sort by popularity
+6. Calculate percentages relative to multi-owners
+
+### UI Components
+
+**Page:** `/ownership`
+
+**Components:**
+- `OwnershipPage.tsx` - Main container with data fetching
+- `TeamSelector.tsx` - Dropdown for 20 PL teams
+- `CombinationTable.tsx` - Reusable table for doubles/triples
+- `Ownership.module.css` - Dark purple gradient styling
+
+**Features:**
+- Team selector dropdown (all 20 PL teams)
+- Singles bar showing individual ownership %
+- Doubles section with combination counts
+- Triples section (if 3+ ownership exists)
+- Info footer showing sample size
+- Loading/error states
+- Mobile responsive
+
+**Styling:**
+- Matches RivalFPL brand (dark purple gradient)
+- Green accents for ownership percentages
+- Responsive grid layout
+- Touch-friendly on mobile
+
+### Admin Endpoint
+
+**Route:** `POST /api/admin/sync-elite-picks`
+
+**Purpose:** One-click sync trigger for Railway deployment
+
+**Process:**
+1. Check if tables exist, run migration if needed
+2. Get current gameweek
+3. Fetch top 500 team IDs
+4. Sync all picks in batches
+5. Return progress logs
+
+**Limitation:** 5-minute Railway timeout (use for 500, CLI for 10K)
+
+### Package.json Scripts
+
+```json
+{
+  "migrate:elite-picks": "npx tsx src/scripts/run-elite-picks-migration.ts",
+  "sync:elite-picks": "npx tsx src/scripts/sync-elite-picks.ts"
+}
+```
+
+### Files Created
+- `src/db/migrations/create-elite-picks.sql`
+- `src/scripts/run-elite-picks-migration.ts`
+- `src/scripts/sync-elite-picks.ts`
+- `src/scripts/verify-elite-data.ts`
+- `src/app/api/ownership/combinations/route.ts`
+- `src/app/api/admin/sync-elite-picks/route.ts`
+- `src/app/ownership/page.tsx`
+- `src/components/Ownership/OwnershipPage.tsx`
+- `src/components/Ownership/TeamSelector.tsx`
+- `src/components/Ownership/CombinationTable.tsx`
+- `src/components/Ownership/Ownership.module.css`
+
+### Sample Data (Top 500, Arsenal, GW19)
+- Saka: 58.0% (290/500 managers)
+- Raya: 36.6% (GK)
+- J.Timber: 33.8% (DEF)
+- Rice: 26.6% (MID)
+- Gabriel: 25.6% (DEF)
+
+**Most Popular Double:** Saka + Timber (38.1%)
+
+### Future Enhancements (Out of Scope)
+- Top 1K / Top 100K tiers
+- Historical GW comparison
+- Cross-team combinations
+- Captain analysis
+- Integration with RivalFPL dashboard
 
 ---
 
