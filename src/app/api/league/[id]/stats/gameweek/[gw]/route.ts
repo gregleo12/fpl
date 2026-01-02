@@ -27,8 +27,8 @@ export async function GET(
       fetchBootstrapData(),
     ]);
 
-    // Determine gameweek status from FPL API
-    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
+    // K-164: Determine gameweek status from FPL API
+    let status: 'completed' | 'live' | 'upcoming' = 'upcoming';
     if (bootstrapData && bootstrapData.events) {
       const currentEvent = bootstrapData.events.find((e: any) => e.id === gw);
       if (currentEvent) {
@@ -38,10 +38,10 @@ export async function GET(
           if (hasValidData) {
             status = 'completed';
           } else {
-            status = 'in_progress';
+            status = 'live';
           }
         } else if (currentEvent.is_current || currentEvent.data_checked) {
-          status = 'in_progress';
+          status = 'live';
         }
       }
     }
@@ -94,7 +94,7 @@ async function fetchCaptainPicks(
   leagueId: number,
   gw: number,
   managers: any[],
-  status: 'completed' | 'in_progress' | 'upcoming'
+  status: 'completed' | 'live' | 'upcoming'
 ) {
   // For completed gameweeks, use database
   if (status === 'completed') {
@@ -222,7 +222,7 @@ async function fetchChipsPlayed(
   db: any,
   leagueId: number,
   gw: number,
-  status: 'completed' | 'in_progress' | 'upcoming'
+  status: 'completed' | 'live' | 'upcoming'
 ) {
   const CHIP_NAMES: Record<string, string> = {
     'bboost': 'BB',
@@ -312,10 +312,10 @@ async function fetchScores(
   leagueId: number,
   gw: number,
   managersData: any[],
-  status: 'completed' | 'in_progress' | 'upcoming'
+  status: 'completed' | 'live' | 'upcoming'
 ) {
   // K-27: For in-progress or upcoming gameweeks, use FPL API
-  if (status === 'in_progress' || status === 'upcoming') {
+  if (status === 'live' || status === 'upcoming') {
 
     try {
       // Calculate scores for all managers in parallel using live calculator

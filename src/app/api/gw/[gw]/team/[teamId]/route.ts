@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateTeamTotal, type ManagerPick, type PlayerData, type ChipType } from '@/lib/teamCalculator';
 import { calculateManagerLiveScore } from '@/lib/scoreCalculator';
-import { checkDatabaseHasTeamGWData } from '@/lib/k142-auto-sync';
+import { getGWStatus } from '@/lib/fpl-api';
 
 // Force dynamic rendering for fresh data
 export const dynamic = 'force-dynamic';
@@ -39,33 +39,23 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid team ID' }, { status: 400 });
     }
 
-    // K-136: Determine GW status from FPL API FIRST
+    // K-164: Bulletproof GW status - only use DB when next GW has started
     const bootstrapResponse = await fetch('https://fantasy.premierleague.com/api/bootstrap-static/');
     if (!bootstrapResponse.ok) {
       return NextResponse.json({ error: 'Failed to fetch gameweek status' }, { status: 500 });
     }
 
     const bootstrapData = await bootstrapResponse.json();
-    const currentEvent = bootstrapData.events.find((e: any) => e.id === gameweek);
+    const events = bootstrapData.events;
 
-    let status: 'completed' | 'in_progress' | 'upcoming' = 'upcoming';
-    if (currentEvent) {
-      // K-142: Check database validity for completed GWs
-      if (currentEvent.finished) {
-        const hasValidData = await checkDatabaseHasTeamGWData(entry_id, gameweek);
-        if (hasValidData) {
-          status = 'completed';
-        } else {
-          status = 'in_progress';
-        }
-      } else if (currentEvent.is_current || currentEvent.data_checked) {
-        status = 'in_progress';
-      }
-    }
+    // K-164: Use new bulletproof status logic
+    const status = getGWStatus(gameweek, events);
+
+    console.log(`[K-164] K-108c endpoint - GW${gameweek} team ${entry_id} status: ${status}`);
 
 
-    // K-136: For live/upcoming GWs, use FPL API
-    if (status === 'in_progress' || status === 'upcoming') {
+    // K-164: For live/upcoming GWs, use FPL API
+    if (status === 'live' || status === 'upcoming') {
       const liveResult = await calculateManagerLiveScore(entry_id, gameweek, status);
 
 

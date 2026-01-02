@@ -72,8 +72,9 @@ function processFixturesData(fixturesRaw: any[], liveData: any): any[] {
 
 /**
  * Fetch manager picks - tries database first for completed GWs, falls back to FPL API
+ * K-164: Status 'completed' now means next GW has started (safe to use DB)
  */
-async function fetchManagerPicks(entryId: number, gameweek: number, status: 'upcoming' | 'in_progress' | 'completed'): Promise<any> {
+async function fetchManagerPicks(entryId: number, gameweek: number, status: 'upcoming' | 'live' | 'completed'): Promise<any> {
   // For completed gameweeks, try database first
   if (status === 'completed') {
     try {
@@ -267,7 +268,7 @@ async function fetchFixturesFromDB(gameweek: number): Promise<any[] | null> {
 /**
  * Fetch all data needed for score calculation
  */
-async function fetchScoreData(entryId: number, gameweek: number, status: 'upcoming' | 'in_progress' | 'completed') {
+async function fetchScoreData(entryId: number, gameweek: number, status: 'upcoming' | 'live' | 'completed') {
   // For completed GWs, try database first for player stats and fixtures
   if (status === 'completed') {
     console.time('[Perf] Total completed GW fetch');
@@ -344,7 +345,7 @@ async function fetchScoreData(entryId: number, gameweek: number, status: 'upcomi
 export async function calculateManagerLiveScore(
   entryId: number,
   gameweek: number,
-  status: 'upcoming' | 'in_progress' | 'completed'
+  status: 'upcoming' | 'live' | 'completed'
 ): Promise<ManagerScoreResult> {
   const { picksData, liveData, bootstrapData, fixturesData } = await fetchScoreData(entryId, gameweek, status);
 
@@ -361,7 +362,7 @@ export function calculateScoreFromData(
   liveData: any,
   bootstrapData: any,
   fixturesData: any[],
-  status: 'upcoming' | 'in_progress' | 'completed'
+  status: 'upcoming' | 'live' | 'completed'
 ): ManagerScoreResult {
   const transferCost = picksData.entry_history?.event_transfers_cost || 0;
   const activeChip = picksData.active_chip;
@@ -442,7 +443,7 @@ export function calculateScoreFromData(
 export async function calculateMultipleManagerScores(
   entryIds: number[],
   gameweek: number,
-  status: 'upcoming' | 'in_progress' | 'completed'
+  status: 'upcoming' | 'live' | 'completed'
 ): Promise<Map<number, ManagerScoreResult>> {
   // Fetch shared data once
   const [liveResponse, bootstrapResponse, fixturesResponse] = await Promise.all([
