@@ -1,0 +1,766 @@
+/* Container */
+.container {
+  padding: 1rem;
+}
+
+/* K-100: Removed .header, .headerTop, .title (no longer used) */
+
+/* K-100: Controls Row - View Toggle + Filter Button */
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 255, 135, 0.1);
+  border: 2px solid rgba(0, 255, 135, 0.3);
+  border-radius: 8px;
+  color: #00ff87;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filterButton:hover {
+  background: rgba(0, 255, 135, 0.2);
+  border-color: rgba(0, 255, 135, 0.5);
+  transform: translateY(-2px);
+}
+
+.filterButton:active {
+  transform: translateY(0);
+}
+
+/* K-100: Player count below controls row */
+.subtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+/* Search Container */
+.searchContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 10px 40px 10px 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #00ff87;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.searchInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.clearSearch {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.clearSearch:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* K-100: View Toggle - now inside controlsRow */
+.viewToggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewToggle button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewToggle button:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.viewToggle button.active {
+  background: #00ff87;
+  color: #1a1a2e;
+  border-color: #00ff87;
+}
+
+.viewToggle button.active:hover {
+  background: #00e077;
+  border-color: #00e077;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+}
+
+.error {
+  color: #ff4444;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error p {
+  margin: 0;
+}
+
+.retryButton {
+  padding: 0.5rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #00ff87;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.retryButton:hover {
+  background: #00e077;
+}
+
+.retryButton:active {
+  background: #00d070;
+}
+
+/* Table Container with Horizontal Scroll */
+.tableContainer {
+  overflow-x: auto;
+  overflow-y: visible;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Table */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Header Row */
+.headerRow {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.playerHeader {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: #0e0a1f; /* Solid background - prevent content showing through */
+  width: 140px;
+  max-width: 140px;
+  min-width: 140px;
+  padding: 12px 8px;
+  text-align: left;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #00ff87;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statHeader {
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  min-width: 70px;
+  position: relative;
+}
+
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.sortable:hover {
+  color: #00ff87;
+  background: rgba(0, 255, 135, 0.05);
+}
+
+.activeSort {
+  color: #00ff87;
+  border-bottom-color: #00ff87;
+}
+
+.headerContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.sortIndicator {
+  font-size: 0.75rem;
+  margin-left: 2px;
+}
+
+/* Row */
+.row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+
+.row:hover {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+/* Clickable Row */
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.clickableRow:active {
+  background: rgba(0, 255, 135, 0.1);
+}
+
+/* Mobile tap highlight */
+@media (hover: none) {
+  .clickableRow {
+    -webkit-tap-highlight-color: rgba(0, 255, 135, 0.2);
+  }
+}
+
+/* Sticky Player Cell */
+.playerCell {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: #1a1a2e;
+  width: 140px;
+  max-width: 140px;
+  min-width: 140px;
+  padding: 12px 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Shadow to indicate more content on scroll */
+.playerCell::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -8px;
+  bottom: 0;
+  width: 8px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  pointer-events: none;
+  opacity: 1;
+}
+
+/* On hover, maintain solid background */
+.row:hover .playerCell {
+  background: #1a1a2e; /* Fully opaque - prevent content showing through */
+}
+
+/* Player Info Layout */
+.playerInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jersey {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.playerDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerName {
+  display: block;
+  max-width: 80px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playerMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* Position Badge */
+.positionBadge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.positionGKP {
+  background: #f4d03f;
+  color: #000;
+}
+
+.positionDEF {
+  background: #00ff87;
+  color: #000;
+}
+
+.positionMID {
+  background: #05f0ff;
+  color: #000;
+}
+
+.positionFWD {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.teamName {
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+/* Stats Cells */
+.statsCell {
+  padding: 12px 8px;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  background: #1a1a2e;
+}
+
+.row:hover .statsCell {
+  background: #1a1a2e; /* Fully opaque */
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem 0.25rem;
+  }
+
+  .playerHeader {
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
+    padding: 10px 6px;
+    font-size: 0.75rem;
+  }
+
+  .statHeader {
+    padding: 10px 6px;
+    font-size: 0.75rem;
+    min-width: 60px;
+  }
+
+  .playerCell {
+    width: 120px;
+    max-width: 120px;
+    min-width: 120px;
+    padding: 10px 6px;
+  }
+
+  .statsCell {
+    padding: 10px 6px;
+    font-size: 0.8125rem;
+  }
+
+  .jersey {
+    width: 32px;
+    height: 32px;
+  }
+
+  .playerName {
+    max-width: 70px;
+    font-size: 0.85rem;
+  }
+
+  .playerMeta {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .subtitle {
+    font-size: 0.8125rem;
+  }
+
+  /* K-102: Tighter columns for mobile - fit all 5 columns on 390px */
+  .playerHeader {
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+    padding: 8px 4px;
+  }
+
+  .playerCell {
+    width: 90px;
+    max-width: 90px;
+    min-width: 90px;
+    padding: 8px 4px;
+  }
+
+  .playerInfo {
+    gap: 6px;
+  }
+
+  .jersey {
+    width: 26px;
+    height: 26px;
+  }
+
+  .playerName {
+    max-width: 70px;
+    font-size: 0.8125rem;
+  }
+
+  .positionBadge {
+    font-size: 0.625rem;
+    padding: 1px 4px;
+  }
+
+  /* K-102: Compact data columns for mobile fit - all 5 columns visible */
+  .statHeader {
+    padding: 6px 3px;
+    font-size: 0.625rem;
+    min-width: 45px;
+  }
+
+  .statsCell {
+    padding: 6px 3px;
+    font-size: 0.7rem;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  .searchInput {
+    font-size: 16px;
+  }
+
+  /* Touch-friendly targets */
+  .filterButton,
+  .viewToggle button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Loading Container */
+.loadingContainer {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.loadingContainer p {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
+/* Spinner */
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 255, 135, 0.1);
+  border-top-color: #00ff87;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Skeleton Loading */
+.skeletonContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.skeletonJersey {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeletonText {
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeletonStats {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.skeletonStat {
+  width: 50px;
+  height: 14px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error State */
+.errorState {
+  text-align: center;
+  padding: 4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.errorIcon {
+  color: #ff4444;
+}
+
+.errorTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.errorMessage {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  max-width: 400px;
+}
+
+.retryButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #00ff87;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.retryButton:hover {
+  background: #00e077;
+  transform: translateY(-2px);
+}
+
+.retryButton:active {
+  background: #00d070;
+  transform: translateY(0);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 4rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.emptyIcon {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.emptyHint {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+  max-width: 300px;
+}
+
+.resetButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #00ff87;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.resetButton:hover {
+  background: #00e077;
+  transform: translateY(-2px);
+}
+
+.resetButton:active {
+  background: #00d070;
+  transform: translateY(0);
+}
+
+/* Delta color coding for elite ownership difference */
+.deltaStrongPositive {
+  color: #00ff87;
+  font-weight: bold;
+}
+
+.deltaPositive {
+  color: #00ff87;
+}
+
+.deltaNeutral {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.deltaNegative {
+  color: #ff6b6b;
+}
+
+.deltaStrongNegative {
+  color: #ff6b6b;
+  font-weight: bold;
+}
