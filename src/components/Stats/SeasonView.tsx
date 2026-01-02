@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import styles from './SeasonView.module.css';
-import { BarChart3, Award } from 'lucide-react';
 import { CaptainLeaderboard } from './season/CaptainLeaderboard';
 import { ChipPerformance, type ChipPerformanceData } from './season/ChipPerformance';
 import { Streaks, type StreakData } from './season/Streaks';
@@ -13,7 +12,6 @@ import { FormRankings, type FormRankingsData } from './season/FormRankings';
 import { Consistency, type ConsistencyData } from './season/Consistency';
 import { LuckIndex, type LuckIndexData } from './season/LuckIndex';
 import { ClassicPts, type ClassicPtsData } from './season/ClassicPts';
-import { Awards } from './season/Awards';
 
 export interface SeasonStats {
   completedGameweeks: number;
@@ -78,10 +76,7 @@ interface Props {
   leagueId: string;
 }
 
-type SeasonViewType = 'leaderboards' | 'awards';
-
 export function SeasonView({ leagueId }: Props) {
-  const [view, setView] = useState<SeasonViewType>('leaderboards');
   const [data, setData] = useState<SeasonStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -129,28 +124,9 @@ export function SeasonView({ leagueId }: Props) {
         {data.completedGameweeks} GWs Completed
       </div>
 
-      {/* K-125: Leaderboards/Awards toggle */}
-      <div className={styles.viewToggleBar}>
-        <button
-          className={`${styles.toggleButton} ${view === 'leaderboards' ? styles.toggleButtonActive : ''}`}
-          onClick={() => setView('leaderboards')}
-        >
-          <BarChart3 size={16} />
-          Leaderboards
-        </button>
-        <button
-          className={`${styles.toggleButton} ${view === 'awards' ? styles.toggleButtonActive : ''}`}
-          onClick={() => setView('awards')}
-        >
-          <Award size={16} />
-          Awards
-        </button>
-      </div>
-
-      {/* K-125 + K-143: Conditional rendering based on view */}
-      {view === 'leaderboards' ? (
-        <div className={styles.section}>
-          <div className={styles.leaderboards}>
+      {/* K-168: Removed Leaderboards/Awards toggle - Awards now in Stats sub-nav */}
+      <div className={styles.section}>
+        <div className={styles.leaderboards}>
             {/* K-143: Section order: Form → Luck → Captain → Chips → Streak → GW Records → Classic Pts → Team Value → Bench Points */}
 
             {/* 1. Form - Recent performance */}
@@ -195,11 +171,8 @@ export function SeasonView({ leagueId }: Props) {
             {data.benchPoints && data.benchPoints.length > 0 && (
               <BenchPoints data={data.benchPoints} />
             )}
-          </div>
         </div>
-      ) : (
-        <Awards leagueId={leagueId} completedGameweeks={data.completedGameweeks} />
-      )}
+      </div>
     </div>
   );
 }

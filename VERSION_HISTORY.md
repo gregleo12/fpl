@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.15 (January 2, 2026)
+**Current Version:** v4.4.16 (January 2, 2026)
+
+---
+
+## v4.4.16 - K-168: Remove Redundant Leaderboards/Awards Toggle (Jan 2, 2026)
+
+**K-168 Follow-up:** Removed redundant toggle from Season view since Awards is now in Stats sub-navigation
+
+### Changes
+
+**1. Removed Leaderboards/Awards Toggle**
+
+With Awards now accessible via Stats sub-navigation (GW | Season | Luck | Awards), the toggle buttons in Season view were redundant:
+- `src/components/Stats/SeasonView.tsx`:
+  - Removed `BarChart3` and `Award` icon imports
+  - Removed `Awards` component import
+  - Removed `SeasonViewType` type definition
+  - Removed `view` state variable
+  - Removed toggle button UI (`viewToggleBar` div)
+  - Removed conditional rendering based on view state
+  - Now always displays leaderboards content directly
+
+**Before:**
+```tsx
+<div className={styles.viewToggleBar}>
+  <button>Leaderboards</button>
+  <button>Awards</button>
+</div>
+
+{view === 'leaderboards' ? (
+  <div className={styles.leaderboards}>...</div>
+) : (
+  <Awards />
+)}
+```
+
+**After:**
+```tsx
+<div className={styles.section}>
+  <div className={styles.leaderboards}>
+    {/* All leaderboard sections */}
+  </div>
+</div>
+```
+
+**Rationale:**
+- Awards is now accessible via Stats sub-navigation as 4th tab
+- No need for duplicate navigation within Season view
+- Simplified component - Season view is now leaderboards-only
+- Awards remains accessible at Stats > Awards tab
+
+### Files Modified
+
+1. `src/components/Stats/SeasonView.tsx` - Removed toggle, simplified to always show leaderboards
 
 ---
 

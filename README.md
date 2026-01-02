@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.15** (January 2, 2026)
+**v4.4.16** (January 2, 2026)
 
-K-168: Removed Players tab from Stats, added Awards to Stats navigation. Main nav unchanged: My Team | Rank | Rivals | Stats | Settings. Stats section now shows: GW | Season | Luck | Awards (4 tabs). Awards accessible within Stats with award medal icon.
+K-168: Removed redundant Leaderboards/Awards toggle from Season view. Awards now accessible via Stats sub-navigation (GW | Season | Luck | Awards), so the toggle in Season view was no longer needed. Season view now always displays leaderboards content.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
