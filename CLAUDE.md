@@ -200,13 +200,36 @@ git push origin --delete feature/k164-bug-fix
 ❌ **DON'T** merge feature branches without Greg's approval
 ❌ **DON'T** forget to tell Claude Code which branch to use at start of conversation
 
+### Important: Conversations Are Independent
+
+**Claude Code conversations don't know about each other.**
+
+If you push K-200b to staging in Terminal #2, Claude in Terminal #1 has **no idea**. Each conversation is isolated.
+
+**Why this works:**
+- **YOU are the orchestrator** - You know what's been pushed where across all terminals
+- **Feature branches are isolated** - K-164 and K-200b work on separate branches
+- **Git handles the rest** - Conflicts are detected and resolved during merge
+
+**Practical implication:**
+When you tell Claude "merge to staging", Claude will pull latest staging first:
+```bash
+git checkout staging
+git pull origin staging  # Gets changes from other terminals
+git merge feature/k164   # Merges your feature
+```
+
+This ensures changes from other terminals are incorporated before merging.
+
 ### Handling Conflicts
 
 If two feature branches modify the same files:
-1. Merge them to staging one at a time
+1. Merge them to staging one at a time (you decide the order)
 2. Test each one separately
 3. Resolve conflicts in staging before merging to main
 4. Always prefer: Test → Approve → Deploy (one feature at a time)
+
+**You are the conductor** - tell each Claude conversation what to do and when.
 
 ---
 
