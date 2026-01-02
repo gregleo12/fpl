@@ -5,6 +5,9 @@ import styles from './Ownership.module.css';
 import TeamSelector from './TeamSelector';
 import CombinationTable from './CombinationTable';
 import StackingSummary from './StackingSummary';
+import TemplateCores from './TemplateCores';
+
+type TabType = 'stacking' | 'templates';
 
 interface Player {
   id: number;
@@ -70,6 +73,7 @@ interface SummaryData {
 }
 
 export default function OwnershipPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('stacking');
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null); // null = show summary
   const [data, setData] = useState<CombinationsData | null>(null);
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
@@ -139,6 +143,24 @@ export default function OwnershipPage() {
         )}
       </header>
 
+      {/* Tab Navigation - only show when on summary view */}
+      {selectedTeamId === null && (
+        <div className={styles.tabNav}>
+          <button
+            className={`${styles.tab} ${activeTab === 'stacking' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('stacking')}
+          >
+            Team Stacking
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'templates' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('templates')}
+          >
+            Template Cores
+          </button>
+        </div>
+      )}
+
       {/* Show back link when viewing team detail */}
       {selectedTeamId !== null && (
         <button onClick={handleBackToOverview} className={styles.backLink}>
@@ -164,7 +186,8 @@ export default function OwnershipPage() {
         </div>
       )}
 
-      {!loading && !error && summaryData && (
+      {/* Stacking Tab Content */}
+      {!loading && !error && summaryData && activeTab === 'stacking' && (
         <>
           {/* Summary View */}
           <StackingSummary teams={summaryData.teams} onTeamClick={handleTeamSelect} />
@@ -174,6 +197,11 @@ export default function OwnershipPage() {
             ℹ️ Data from {summaryData.sampleSize.toLocaleString()} managers in top 10K overall (by total points)
           </div>
         </>
+      )}
+
+      {/* Template Cores Tab Content */}
+      {!loading && !error && activeTab === 'templates' && selectedTeamId === null && (
+        <TemplateCores />
       )}
 
       {!loading && !error && data && (
