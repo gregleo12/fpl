@@ -315,6 +315,10 @@
   align-items: center;
 }
 
+.stackPctCellSimple {
+  text-align: center;
+}
+
 .stackPct {
   font-size: 1rem;
   font-weight: 700;

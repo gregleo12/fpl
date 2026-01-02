@@ -40,6 +40,7 @@ export default function StackingSummary({ teams, onTeamClick }: StackingSummaryP
               <tr>
                 <th className={styles.teamNameCol}>Team</th>
                 <th className={styles.stackPctCol}>% of Sample</th>
+                <th className={styles.stackCountNumCol}>Managers</th>
                 <th className={styles.topComboCol}>Top Combo</th>
               </tr>
             </thead>
@@ -53,26 +54,21 @@ export default function StackingSummary({ teams, onTeamClick }: StackingSummaryP
                   <td className={styles.teamNameCell}>
                     <span className={styles.teamName}>{teamSummary.team.name}</span>
                   </td>
-                  <td className={styles.stackPctCell}>
+                  <td className={styles.stackPctCellSimple}>
                     <span className={styles.stackPct}>
                       {teamSummary.doubleUpPercent.toFixed(1)}%
                     </span>
-                    <span className={styles.stackCount}>
-                      ({teamSummary.doubleUpCount.toLocaleString()})
-                    </span>
+                  </td>
+                  <td className={styles.stackCountNumCell}>
+                    {teamSummary.doubleUpCount.toLocaleString()}
                   </td>
                   <td className={styles.topComboCell}>
                     {teamSummary.topCombo ? (
-                      <>
-                        <span className={styles.comboPlayers}>
-                          {teamSummary.topCombo.players.join(' + ')}
-                        </span>
-                        <span className={styles.comboPct}>
-                          ({teamSummary.topCombo.percent.toFixed(1)}%)
-                        </span>
-                      </>
+                      <span className={styles.comboPlayers}>
+                        {teamSummary.topCombo.players.join(' + ')}
+                      </span>
                     ) : (
-                      <span className={styles.noCombo}>No 2+ owners</span>
+                      <span className={styles.noCombo}>—</span>
                     )}
                   </td>
                 </tr>
@@ -98,6 +94,7 @@ export default function StackingSummary({ teams, onTeamClick }: StackingSummaryP
                 <th className={styles.teamNameCol}>Team</th>
                 <th className={styles.stackPctCol}>% of Sample</th>
                 <th className={styles.stackCountNumCol}>Managers</th>
+                <th className={styles.topComboCol}>Top Combo</th>
               </tr>
             </thead>
             <tbody>
@@ -112,13 +109,22 @@ export default function StackingSummary({ teams, onTeamClick }: StackingSummaryP
                     <td className={styles.teamNameCell}>
                       <span className={styles.teamName}>{teamSummary.team.name}</span>
                     </td>
-                    <td className={styles.stackPctCell}>
+                    <td className={styles.stackPctCellSimple}>
                       <span className={styles.stackPct}>
                         {teamSummary.tripleUpPercent.toFixed(1)}%
                       </span>
                     </td>
                     <td className={styles.stackCountNumCell}>
                       {teamSummary.tripleUpCount.toLocaleString()}
+                    </td>
+                    <td className={styles.topComboCell}>
+                      {teamSummary.topCombo ? (
+                        <span className={styles.comboPlayers}>
+                          {teamSummary.topCombo.players.join(' + ')} + ...
+                        </span>
+                      ) : (
+                        <span className={styles.noCombo}>—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
