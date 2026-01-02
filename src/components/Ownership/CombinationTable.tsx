@@ -9,7 +9,8 @@ interface Player {
 interface Combination {
   players: Player[];
   count: number;
-  percentage: number;
+  percentOfStackers: number;  // % of managers with 2+ (or 3+) from this team
+  percentOfAll: number;        // % of all managers in sample
 }
 
 interface CombinationTableProps {
@@ -31,6 +32,7 @@ export default function CombinationTable({ combinations, type }: CombinationTabl
             <th className={styles.comboCol}>Combination</th>
             <th className={styles.countCol}>Count</th>
             <th className={styles.pctCol}>% of {type === 'doubles' ? '2+' : '3+'}</th>
+            <th className={styles.pctAllCol}>% of All</th>
           </tr>
         </thead>
         <tbody>
@@ -47,7 +49,8 @@ export default function CombinationTable({ combinations, type }: CombinationTabl
                 ))}
               </td>
               <td className={styles.countCell}>{combo.count.toLocaleString()}</td>
-              <td className={styles.pctCell}>{combo.percentage.toFixed(1)}%</td>
+              <td className={styles.pctCell}>{combo.percentOfStackers.toFixed(1)}%</td>
+              <td className={styles.pctAllCell}>{combo.percentOfAll.toFixed(1)}%</td>
             </tr>
           ))}
         </tbody>

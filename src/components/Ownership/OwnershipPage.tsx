@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react';
 import styles from './Ownership.module.css';
 import TeamSelector from './TeamSelector';
 import CombinationTable from './CombinationTable';
+import StackingSummary from './StackingSummary';
+import TemplateCores from './TemplateCores';
+
+type TabType = 'stacking' | 'templates';
 
 interface Player {
   id: number;
@@ -14,7 +18,8 @@ interface Player {
 interface Combination {
   players: Player[];
   count: number;
-  percentage: number;
+  percentOfStackers: number;  // % of managers with 2+ (or 3+) from this team
+  percentOfAll: number;        // % of all managers in sample
 }
 
 interface SingleOwnership {
@@ -43,9 +48,35 @@ interface CombinationsData {
   singles: SingleOwnership[];
 }
 
+interface TeamSummary {
+  team: {
+    id: number;
+    name: string;
+    short_name: string;
+  };
+  doubleUpCount: number;
+  doubleUpPercent: number;
+  tripleUpCount: number;
+  tripleUpPercent: number;
+  topCombo: {
+    players: string[];
+    count: number;
+    percent: number;
+  } | null;
+}
+
+interface SummaryData {
+  gameweek: number;
+  lastUpdated: string;
+  sampleSize: number;
+  teams: TeamSummary[];
+}
+
 export default function OwnershipPage() {
-  const [selectedTeamId, setSelectedTeamId] = useState<number>(1); // Default: Arsenal
+  const [activeTab, setActiveTab] = useState<TabType>('stacking');
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null); // null = show summary
   const [data, setData] = useState<CombinationsData | null>(null);
+  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -55,15 +86,31 @@ export default function OwnershipPage() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/ownership/combinations?team=${selectedTeamId}&tier=top10k`);
+        if (selectedTeamId === null) {
+          // Fetch summary for all teams
+          const response = await fetch(`/api/ownership/summary?tier=top10k`);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to load data');
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to load summary');
+          }
+
+          const result = await response.json();
+          setSummaryData(result);
+          setData(null);
+        } else {
+          // Fetch combinations for specific team
+          const response = await fetch(`/api/ownership/combinations?team=${selectedTeamId}&tier=top10k`);
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to load data');
+          }
+
+          const result = await response.json();
+          setData(result);
+          setSummaryData(null);
         }
-
-        const result = await response.json();
-        setData(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -74,6 +121,14 @@ export default function OwnershipPage() {
     fetchData();
   }, [selectedTeamId]);
 
+  const handleTeamSelect = (teamId: number | null) => {
+    setSelectedTeamId(teamId);
+  };
+
+  const handleBackToOverview = () => {
+    setSelectedTeamId(null);
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -81,14 +136,42 @@ export default function OwnershipPage() {
         <p className={styles.subtitle}>
           See what player combinations elite FPL managers own together from each team
         </p>
-        {data && (
+        {(data || summaryData) && (
           <div className={styles.meta}>
-            Last updated: GW{data.gameweek} • {new Date(data.last_updated).toLocaleDateString()} • {data.sample_size.toLocaleString()} teams
+            Last updated: GW{data?.gameweek || summaryData?.gameweek} • {new Date(data?.last_updated || summaryData?.lastUpdated || '').toLocaleDateString()} • {data?.sample_size || summaryData?.sampleSize || 0} teams
           </div>
         )}
       </header>
 
-      <TeamSelector selectedTeamId={selectedTeamId} onChange={setSelectedTeamId} />
+      {/* Tab Navigation - only show when on summary view */}
+      {selectedTeamId === null && (
+        <div className={styles.tabNav}>
+          <button
+            className={`${styles.tab} ${activeTab === 'stacking' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('stacking')}
+          >
+            Team Stacking
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'templates' ? styles.activeTab : ''}`}
+            onClick={() => setActiveTab('templates')}
+          >
+            Template Cores
+          </button>
+        </div>
+      )}
+
+      {/* Show back link when viewing team detail */}
+      {selectedTeamId !== null && (
+        <button onClick={handleBackToOverview} className={styles.backLink}>
+          ← Back to Overview
+        </button>
+      )}
+
+      {/* Team selector - only show on detail view */}
+      {selectedTeamId !== null && (
+        <TeamSelector selectedTeamId={selectedTeamId} onChange={handleTeamSelect} />
+      )}
 
       {loading && (
         <div className={styles.loading}>Loading ownership data...</div>
@@ -103,8 +186,27 @@ export default function OwnershipPage() {
         </div>
       )}
 
+      {/* Stacking Tab Content */}
+      {!loading && !error && summaryData && activeTab === 'stacking' && (
+        <>
+          {/* Summary View */}
+          <StackingSummary teams={summaryData.teams} onTeamClick={handleTeamSelect} />
+
+          {/* Info Footer */}
+          <div className={styles.infoFooter}>
+            ℹ️ Data from {summaryData.sampleSize.toLocaleString()} managers in top 10K overall (by total points)
+          </div>
+        </>
+      )}
+
+      {/* Template Cores Tab Content */}
+      {!loading && !error && activeTab === 'templates' && selectedTeamId === null && (
+        <TemplateCores />
+      )}
+
       {!loading && !error && data && (
         <>
+          {/* Detail View */}
           {/* Singles Bar */}
           <div className={styles.singlesSection}>
             <h3 className={styles.sectionTitle}>📊 Single Ownership</h3>
