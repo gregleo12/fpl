@@ -94,6 +94,78 @@ git push origin main
 
 ---
 
+## 🔀 Managing Multiple Claude Code Conversations
+
+When working on multiple features simultaneously in different Claude Code conversations, use feature branches to avoid conflicts.
+
+### Branch Strategy
+
+```
+main (production)
+  ├── staging (pre-production testing)
+  ├── feature/k164-bulletproof-gw (Claude conversation #1)
+  ├── feature/k200b-ownership (Claude conversation #2)
+  └── feature/k-xxx-new-feature (Claude conversation #3)
+```
+
+### Workflow for Each Conversation
+
+**1. Start of Conversation - Create Feature Branch:**
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/k164-bulletproof-gw
+```
+
+**Tell Claude Code:**
+> "We're working on K-164. Please use branch `feature/k164-bulletproof-gw` for all commits."
+
+**2. During Development:**
+- All commits go to feature branch
+- Push feature branch regularly: `git push origin feature/k164-bulletproof-gw`
+- Never merge to main directly
+
+**3. Testing - Merge to Staging:**
+```bash
+git checkout staging
+git pull origin staging
+git merge feature/k164-bulletproof-gw
+git push origin staging
+# Verify on: https://fpl-staging-production.up.railway.app
+```
+
+**4. Production Deploy - After Greg's Approval:**
+```bash
+git checkout main
+git pull origin main
+git merge feature/k164-bulletproof-gw
+git push origin main
+# Deploys to: https://rivalfpl.com
+```
+
+**5. Cleanup:**
+```bash
+git branch -d feature/k164-bulletproof-gw
+git push origin --delete feature/k164-bulletproof-gw
+```
+
+### What NOT to Do
+
+❌ **DON'T** work on `main` in multiple conversations simultaneously
+❌ **DON'T** push directly to `main` without testing on `staging` first
+❌ **DON'T** merge feature branches without Greg's approval
+❌ **DON'T** forget to tell Claude Code which branch to use at start of conversation
+
+### Handling Conflicts
+
+If two feature branches modify the same files:
+1. Merge them to staging one at a time
+2. Test each one separately
+3. Resolve conflicts in staging before merging to main
+4. Always prefer: Test → Approve → Deploy (one feature at a time)
+
+---
+
 ## 📍 Quick Reference
 
 ### URLs
