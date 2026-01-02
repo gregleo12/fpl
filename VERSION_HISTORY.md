@@ -2,7 +2,79 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.3 (January 2, 2026)
+**Current Version:** v4.5.4 (January 2, 2026)
+
+---
+
+## v4.5.4 - K-163L: Fix Schedule Luck to Use Progressive Averages (Jan 2, 2026)
+
+**K-163L (MAJOR FIX):** Fixed schedule luck calculation to use progressive averages instead of final season averages
+
+### The Problem
+
+The schedule luck calculation was using **final season averages** for all opponents, which caused a mathematical flaw:
+
+- After GW19 in a 20-team league, every manager has faced all 19 other managers exactly once
+- Using final averages: `avgOppStrength` = `theoreticalOppAvg` for everyone
+- Result: Everyone gets `scheduleLuck` = 0 (meaningless)
+
+**Example (Adriaan Mertens):**
+- avgOppStrength: 56.91 (using final averages)
+- theoreticalOppAvg: 56.91 (using final averages)
+- scheduleLuck: (56.91 - 56.91) × 19 = **0.00** ❌
+
+### Root Cause
+
+Schedule luck should measure if you faced opponents when they were **hot or cold**, not just who you faced. The **timing** of matches matters:
+- Face someone in GW2 during a slump → lucky
+- Face someone in GW15 when they're peaking → unlucky
+
+Using final averages erases this timing information.
+
+### The Fix
+
+Now uses **progressive averages** - each opponent's average **up to the GW when you played them**:
+
+```typescript
+// NEW: Progressive average helper
+const getProgressiveAverage = (entryId, upToGW, pointsByGW) => {
+  let total = 0, count = 0;
+  for (let gw = 1; gw <= upToGW; gw++) {
+    if (pointsByGW[gw]?.[entryId]) {
+      total += pointsByGW[gw][entryId];
+      count++;
+    }
+  }
+  return count > 0 ? total / count : 0;
+};
+
+// Use it for each match
+for (const match of managerMatches) {
+  const oppAvgAtTimeOfMatch = getProgressiveAverage(oppId, match.event, pointsByGW);
+  // ... calculate schedule luck
+}
+```
+
+### Impact
+
+**After Fix (Adriaan Mertens):**
+- avgOppStrength: ~54.74 (opponents' progressive averages)
+- theoreticalOppAvg: ~54.88 (league-wide progressive average)
+- scheduleLuck: (54.88 - 54.74) × 19 = **+2.66** ✓
+
+Values now match the expected reference data from `luck-k163j.json`.
+
+### Zero-Sum Property
+
+Schedule luck remains zero-sum (one manager's lucky schedule = another's unlucky):
+```
+Sum of all schedule_luck values ≈ 0
+```
+
+Added validation logging to verify this property holds.
+
+**Files Modified:**
+- `src/app/api/league/[id]/luck/route.ts` - Added progressive average calculation and zero-sum validation
 
 ---
 

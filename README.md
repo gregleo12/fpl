@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.3** (January 2, 2026)
+**v4.5.4** (January 2, 2026)
 
-K-163k: Fixed schedule_luck calculation returning ~0 for all managers. Root cause was mismatched GW ranges between h2h_matches (18 GWs) and manager_gw_history (19 GWs). Now calculates season averages using only GWs that have completed h2h matches.
+K-163L: Fixed schedule luck to use progressive averages instead of final season averages. This ensures the TIMING of when you face opponents matters - facing someone during a slump vs when they're hot. The fix resolves the issue where everyone showed scheduleLuck = 0 after facing all opponents once.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -116,9 +116,29 @@ export async function GET(
       }
     }
 
-    // K-163k Fix: Calculate final season averages using ONLY GWs that have h2h_matches
-    // (not all GWs from manager_gw_history, which may include incomplete GWs)
+    // K-163L: Helper function to calculate progressive average up to a specific GW
+    // This fixes the schedule luck calculation to use each opponent's average AT THE TIME you played them
+    const getProgressiveAverage = (
+      entryId: number,
+      upToGW: number,
+      pointsByGW: Record<number, Record<number, number>>
+    ): number => {
+      let total = 0;
+      let count = 0;
+
+      for (let gw = 1; gw <= upToGW; gw++) {
+        if (pointsByGW[gw]?.[entryId] !== undefined) {
+          total += pointsByGW[gw][entryId];
+          count++;
+        }
+      }
+
+      return count > 0 ? total / count : 0;
+    };
+
     const matchGWs = Array.from(new Set(matches.map(m => m.event))).sort((a, b) => a - b);
+
+    // Still calculate final season averages for other luck components (variance, rank)
     const finalSeasonAvgs: Record<number, number> = {};
     for (const manager of managers) {
       const mEntryId = parseInt(String(manager.entry_id));
@@ -279,36 +299,27 @@ export async function GET(
       }
 
       // 3. SCHEDULE LUCK (seasonal only, zero-sum)
+      // K-163L: Use PROGRESSIVE averages - each opponent's average UP TO the GW you played them
       const opponentsStrengths: any[] = [];
       let totalOppStrength = 0;
 
-      // K-163k Debug: Track first manager's opponent lookups
-      const debugOppLookups: any[] = [];
+      // Get this manager's final season average for display purposes
+      const yourSeasonAvg = finalSeasonAvgs[entryId] || 0;
 
       for (const match of managerMatches) {
         const gw = match.event;
         const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
         const oppId = parseInt(String(isEntry1 ? match.entry_2_id : match.entry_1_id));
         const oppName = isEntry1 ? match.entry_2_name : match.entry_1_name;
-        const oppSeasonAvg = finalSeasonAvgs[oppId] || 0;
 
-        // K-163k Debug: Log first 3 opponent lookups for first manager
-        if (manager === managers[0] && debugOppLookups.length < 3) {
-          debugOppLookups.push({
-            gw,
-            oppId,
-            oppName,
-            oppSeasonAvgFromLookup: oppSeasonAvg,
-            finalSeasonAvgsHasOppId: oppId in finalSeasonAvgs,
-            actualValueInFinalSeasonAvgs: finalSeasonAvgs[oppId]
-          });
-        }
+        // K-163L FIX: Use opponent's progressive average up to this GW, not final average
+        const oppAvgAtTimeOfMatch = getProgressiveAverage(oppId, gw, pointsByGW);
 
-        totalOppStrength += oppSeasonAvg;
+        totalOppStrength += oppAvgAtTimeOfMatch;
         opponentsStrengths.push({
           gw,
           opponent: oppName,
-          opp_season_avg: parseFloat(oppSeasonAvg.toFixed(2))
+          opp_season_avg: parseFloat(oppAvgAtTimeOfMatch.toFixed(2))
         });
       }
 
@@ -316,12 +327,31 @@ export async function GET(
         ? totalOppStrength / managerMatches.length
         : 0;
 
-      // Calculate this manager's theoretical opponent pool
-      // (sum of all managers' averages minus their own, divided by n-1)
-      const yourSeasonAvg = finalSeasonAvgs[entryId] || 0;
-      const totalAllAvgs = Object.values(finalSeasonAvgs).reduce((sum, avg) => sum + avg, 0);
-      const theoreticalOppAvg = managers.length > 1
-        ? (totalAllAvgs - yourSeasonAvg) / (managers.length - 1)
+      // K-163L: Calculate theoretical opponent average using progressive averages
+      // For each GW, calculate what the "fair" opponent average should have been
+      let theoreticalTotal = 0;
+
+      for (const match of managerMatches) {
+        const gw = match.event;
+
+        // For this GW, calculate the average of all OTHER managers' progressive averages
+        let sumOfOtherAvgs = 0;
+        let countOthers = 0;
+
+        for (const otherManager of managers) {
+          const otherEntryId = parseInt(String(otherManager.entry_id));
+          if (otherEntryId !== entryId) {
+            sumOfOtherAvgs += getProgressiveAverage(otherEntryId, gw, pointsByGW);
+            countOthers++;
+          }
+        }
+
+        const theoreticalForThisGW = countOthers > 0 ? sumOfOtherAvgs / countOthers : 0;
+        theoreticalTotal += theoreticalForThisGW;
+      }
+
+      const theoreticalOppAvg = managerMatches.length > 0
+        ? theoreticalTotal / managerMatches.length
         : 0;
 
       // Schedule luck = (theoretical - actual) × games played
@@ -329,21 +359,18 @@ export async function GET(
       // Negative = faced stronger opponents than expected (unlucky)
       const scheduleLuck = (theoreticalOppAvg - avgOppStrength) * managerMatches.length;
 
-      // K-163k Debug: Log first manager's schedule calculation
+      // K-163L Debug: Log first manager's schedule calculation with progressive averages
       if (manager === managers[0]) {
-        console.log('[K-163k Schedule Debug]', {
+        console.log('[K-163L Schedule Debug]', {
           managerName: manager.player_name,
           entryId,
           matchesCount: managerMatches.length,
-          yourSeasonAvg,
-          totalOppStrength,
-          avgOppStrength,
-          totalAllAvgs,
-          theoreticalOppAvg,
-          scheduleLuck,
-          debugOppLookups,
-          finalSeasonAvgsCount: Object.keys(finalSeasonAvgs).length,
-          sampleFinalSeasonAvg: Object.entries(finalSeasonAvgs)[0]
+          totalOppStrength: parseFloat(totalOppStrength.toFixed(2)),
+          avgOppStrength: parseFloat(avgOppStrength.toFixed(2)),
+          theoreticalOppAvg: parseFloat(theoreticalOppAvg.toFixed(2)),
+          scheduleLuck: parseFloat(scheduleLuck.toFixed(2)),
+          sampleOpponents: opponentsStrengths.slice(0, 3),
+          note: 'Now using PROGRESSIVE averages - each opponent avg UP TO the GW played'
         });
       }
 
@@ -453,6 +480,24 @@ export async function GET(
         gw,
         variance_sum: parseFloat(gwVarianceSum.toFixed(2)),
         rank_sum: parseFloat(gwRankSum.toFixed(4))
+      });
+    }
+
+    // K-163L: Validate zero-sum property for schedule luck
+    const totalScheduleLuck = managersData.reduce((sum, m) => sum + m.schedule_luck.value, 0);
+    const scheduleLuckIsZeroSum = Math.abs(totalScheduleLuck) < 0.01;
+
+    console.log('[K-163L Zero-Sum Validation]', {
+      totalScheduleLuck: parseFloat(totalScheduleLuck.toFixed(4)),
+      isZeroSum: scheduleLuckIsZeroSum,
+      expectedSum: 0,
+      tolerance: 0.01
+    });
+
+    if (!scheduleLuckIsZeroSum) {
+      console.warn('[K-163L] WARNING: Schedule luck does not sum to zero!', {
+        totalScheduleLuck,
+        expected: 0
       });
     }
 
