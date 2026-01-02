@@ -2,7 +2,53 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.4 (January 2, 2026)
+**Current Version:** v4.5.5 (January 2, 2026)
+
+---
+
+## v4.5.5 - K-163M: 10× Weighted Luck Display (Jan 2, 2026)
+
+**K-163M (UI FIX):** Changed Luck Leaderboard to show weighted values × 10 so component columns visually sum to Luck Index
+
+### Problem
+
+Component columns showed normalized values that didn't sum to the Luck Index, causing user confusion:
+
+**Before (confusing):**
+| Manager | Index | Variance | Rank | Schedule | Chip |
+|---------|-------|----------|------|----------|------|
+| Antoine | +3.88 | +6.84 | +0.87 | +4.55 | -0.23 |
+
+User thinks: "6.84 + 0.87 + 4.55 - 0.23 = 12.03, not 3.88" ❌
+
+### Solution
+
+Show **weighted values × 10** so columns visually sum to the index:
+
+**After (clear):**
+| Manager | Index | Variance | Rank | Schedule | Chip |
+|---------|-------|----------|------|----------|------|
+| Antoine | +38.8 | +27.4 | +2.6 | +9.1 | -0.2 |
+
+Now: 27.4 + 2.6 + 9.1 - 0.2 = 38.9 ≈ 38.8 ✓
+
+### Changes
+
+- **Variance column:** `normalized × 0.4 × 10 = normalized × 4`
+- **Rank column:** `normalized × 0.3 × 10 = normalized × 3`
+- **Schedule column:** `normalized × 0.2 × 10 = normalized × 2`
+- **Chip column:** `normalized × 0.1 × 10 = normalized × 1`
+- **Luck Index:** `index × 10`
+- **Headers:** Removed weight percentages (40%, 30%, 20%, 10%) since weights are now baked into values
+
+### Impact
+
+- Values are 10× larger (range: ~-65 to +40 instead of -6.5 to +4)
+- Component columns now sum to Luck Index (within rounding)
+- Clearer visual relationship between components and total
+
+**Files Modified:**
+- `src/components/Stats/LuckLeaderboard.tsx` - Updated display calculations and headers
 
 ---
 

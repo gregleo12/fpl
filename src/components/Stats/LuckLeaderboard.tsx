@@ -34,10 +34,10 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
               <th className={styles.nameCol}>Manager</th>
               <th className={styles.teamCol}>Team</th>
               <th className={styles.luckCol}>Luck Index</th>
-              <th className={styles.componentCol}>Variance<br/><span className={styles.weight}>(40%)</span></th>
-              <th className={styles.componentCol}>Rank<br/><span className={styles.weight}>(30%)</span></th>
-              <th className={styles.componentCol}>Schedule<br/><span className={styles.weight}>(20%)</span></th>
-              <th className={styles.componentCol}>Chip<br/><span className={styles.weight}>(10%)</span></th>
+              <th className={styles.componentCol}>Variance</th>
+              <th className={styles.componentCol}>Rank</th>
+              <th className={styles.componentCol}>Schedule</th>
+              <th className={styles.componentCol}>Chip</th>
             </tr>
           </thead>
           <tbody>
@@ -46,21 +46,37 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
               const isMe = manager.entry_id === myTeamId;
               const icon = getRankIcon(rank, managers.length);
 
-              // K-163k: Calculate NORMALIZED components for display (not weighted)
-              // Component columns show normalized values, Luck Index shows weighted total
+              // K-163M: Calculate WEIGHTED × 10 components for display
+              // Component columns now show (normalized × weight × 10) so they sum to Luck Index × 10
               const varianceNormalized = manager.variance_luck?.total ? manager.variance_luck.total / 10 : 0;
               const rankNormalized = manager.rank_luck?.total ?? 0;
               const scheduleNormalized = manager.schedule_luck?.value ? manager.schedule_luck.value / 5 : 0;
               const chipNormalized = manager.chip_luck?.value ? manager.chip_luck.value / 3 : 0;
 
-              // Debug logging for first manager
+              // Apply weights and multiply by 10 for display
+              const displayVariance = varianceNormalized * weights.variance * 10; // × 4
+              const displayRank = rankNormalized * weights.rank * 10; // × 3
+              const displaySchedule = scheduleNormalized * weights.schedule * 10; // × 2
+              const displayChip = chipNormalized * weights.chip * 10; // × 1
+              const displayIndex = manager.season_luck_index * 10;
+
+              // K-163M Debug: Log first manager's display values
               if (idx === 0) {
-                console.log('[K-163k Debug] First manager:', {
+                console.log('[K-163M Display Debug] First manager:', {
                   name: manager.name,
-                  schedule_luck: manager.schedule_luck,
-                  scheduleValue: manager.schedule_luck?.value,
+                  index: manager.season_luck_index,
+                  displayIndex,
+                  varianceNormalized,
+                  displayVariance,
+                  rankNormalized,
+                  displayRank,
                   scheduleNormalized,
-                  fullManager: manager
+                  displaySchedule,
+                  chipNormalized,
+                  displayChip,
+                  sum: (displayVariance + displayRank + displaySchedule + displayChip).toFixed(2),
+                  shouldEqual: displayIndex.toFixed(2),
+                  matches: Math.abs((displayVariance + displayRank + displaySchedule + displayChip) - displayIndex) < 0.1
                 });
               }
 
@@ -77,20 +93,20 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
                   <td className={styles.teamCell}>{manager.team_name}</td>
                   <td className={`${styles.luckCell} ${getLuckClass(manager.season_luck_index, styles)}`}>
                     <span className={styles.luckValue}>
-                      {formatLuck(manager.season_luck_index)}
+                      {formatLuck(displayIndex)}
                     </span>
                   </td>
                   <td className={`${styles.componentCell} ${getLuckClass(varianceNormalized, styles)}`}>
-                    {formatLuck(varianceNormalized)}
+                    {formatLuck(displayVariance)}
                   </td>
                   <td className={`${styles.componentCell} ${getLuckClass(rankNormalized, styles)}`}>
-                    {formatLuck(rankNormalized)}
+                    {formatLuck(displayRank)}
                   </td>
                   <td className={`${styles.componentCell} ${getLuckClass(scheduleNormalized, styles)}`}>
-                    {formatLuck(scheduleNormalized)}
+                    {formatLuck(displaySchedule)}
                   </td>
                   <td className={`${styles.componentCell} ${getLuckClass(chipNormalized, styles)}`}>
-                    {formatLuck(chipNormalized)}
+                    {formatLuck(displayChip)}
                   </td>
                 </tr>
               );

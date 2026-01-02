@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.4** (January 2, 2026)
+**v4.5.5** (January 2, 2026)
 
-K-163L: Fixed schedule luck to use progressive averages instead of final season averages. This ensures the TIMING of when you face opponents matters - facing someone during a slump vs when they're hot. The fix resolves the issue where everyone showed scheduleLuck = 0 after facing all opponents once.
+K-163M: Updated Luck Leaderboard display to show weighted values × 10, so component columns (Variance, Rank, Schedule, Chip) visually sum to the Luck Index. This makes the table easier to understand - values range from roughly -65 to +40 instead of -6.5 to +4.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
