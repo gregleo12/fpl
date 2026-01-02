@@ -94,72 +94,76 @@ git push origin main
 
 ---
 
-## 🔀 Managing Multiple Claude Code Conversations
+## 🔀 Managing Multiple Tasks in Parallel (Terminal Sessions)
 
 ### The Problem
 
-Running multiple Claude Code conversations in parallel on the same branch causes conflicts:
+Working on multiple tasks in parallel (different terminal sessions) on the same branch causes conflicts:
 
 ```
-❌ BAD: Both conversations push to main
-Conversation #1: K-164 → commits to main → pushes
-Conversation #2: K-200b → commits to main → pushes
+❌ BAD: Both terminals push to main
+Terminal #1 (general app): K-164 work → commits to main → pushes
+Terminal #2 (K-200 project): K-200b work → commits to main → pushes
 Result: Code conflicts, Railway hangs, production breaks
 ```
 
 **It's like two people editing the same Google Doc simultaneously** - changes overwrite each other.
 
-### The Solution: One Conversation = One Feature Branch
+### The Solution: One Task = One Feature Branch
 
-Each conversation gets its own workspace (feature branch):
+Each ongoing task gets its own workspace (feature branch):
 
 ```
-✅ GOOD: Each conversation has its own branch
+✅ GOOD: Each task has its own branch
 main (production - live website)
   ├── staging (testing environment)
-  ├── feature/k164-bulletproof-gw ← Conversation #1 works here
-  ├── feature/k200b-ownership ← Conversation #2 works here
-  └── feature/k-xxx-new-feature ← Conversation #3 works here
+  ├── feature/k164-bulletproof-gw ← Terminal #1 working on this
+  ├── feature/k200b-ownership ← Terminal #2 stays on this
+  └── feature/k-xxx-new-feature ← Terminal #1 switches to this later
 ```
 
 **Benefits:**
-- No conflicts between conversations
+- No conflicts between parallel work
 - Test each feature independently on staging
 - Choose which features deploy and in what order
 - Production stays stable
+- Keep terminal sessions alive for context continuity
 
 ### The Simple Rule
 
-**At the START of EVERY new Claude Code conversation, tell Claude:**
+**When starting work on a new task (or when you open a terminal session), tell Claude:**
 
 > "We're working on K-164. Please use branch `feature/k164-bulletproof-gw` for all commits."
 
 **That's it!** Claude will:
-1. Create the feature branch
+1. Create the feature branch (or switch to it if it exists)
 2. Make all commits to that branch (NOT main)
-3. Keep work isolated from other conversations
+3. Keep work isolated from other tasks
 
-### Real Example: Working on 3 Tasks Today
+### Real Example: Your Typical Workflow
 
-**Task 1 - Bug Fix (Conversation #1):**
+**Terminal Session #1 - General App Work (stays open, switches tasks):**
 ```
+Session start:
 You: "We're working on K-164 bug fix. Use branch feature/k164-bug-fix"
 Claude: [creates branch, makes changes, commits to feature/k164-bug-fix]
+
+Later same session, different task:
+You: "Done with K-164. Now working on K-165. Use branch feature/k165-new-feature"
+Claude: [switches to new branch, makes changes, commits to feature/k165-new-feature]
 ```
 
-**Task 2 - New Feature (Conversation #2, different tab):**
+**Terminal Session #2 - K-200 Project (stays open, dedicated to K-200):**
 ```
+Session start:
 You: "We're working on K-200b ownership. Use branch feature/k200b-ownership"
-Claude: [creates branch, makes changes, commits to feature/k200b-ownership]
+Claude: [creates/switches to branch, makes changes, stays on this branch]
+
+Next day, same session:
+[Continues working on feature/k200b-ownership]
 ```
 
-**Task 3 - Documentation (Conversation #3, yet another tab):**
-```
-You: "We're working on docs update. Use branch feature/update-docs"
-Claude: [creates branch, makes changes, commits to feature/update-docs]
-```
-
-No conflicts! Each conversation isolated.
+No conflicts! Each task isolated, terminal sessions stay alive.
 
 ### Deploying Features to Production
 
