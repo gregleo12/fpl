@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.4.13** (January 2, 2026)
+**v4.4.14** (January 2, 2026)
 
-K-166d: Moved Stats/Team content to My Team as simple vertical stack. Added Position History, Chips Played, Chips Faced, and Match History sections below GW Transfers. Removed Team tab from Stats (now shows GW, Season, Players, Luck). No collapsible UI, no Form stat box - clean implementation of user's simplified design.
+K-167: Fixed stat box modal data & display bugs. GW Rank modal now includes live GW in best/worst/average calculations (fixes stale "worst rank" issue). Points Analysis modal added column gap and proper formatting to prevent visual concatenation of Pts/Total columns.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

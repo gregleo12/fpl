@@ -184,7 +184,7 @@ export function PointsAnalysisModal({ isOpen, onClose, data }: Props) {
               <span className={styles.colGW}>GW{gw.event}</span>
               <span className={styles.colPts}>{gw.points}</span>
               <span className={styles.colRank}>
-                {chartData.find(d => d.event === gw.event)?.cumulative}
+                {chartData.find(d => d.event === gw.event)?.cumulative.toLocaleString()}
               </span>
               <span className={`${styles.colChange} ${diff > 0 ? styles.up : diff < 0 ? styles.down : ''}`}>
                 {diff > 0 ? `+${Math.round(diff)}` : diff < 0 ? Math.round(diff) : '—'}

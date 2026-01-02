@@ -120,6 +120,7 @@
 .tableHeader {
   display: grid;
   grid-template-columns: 60px 1fr 1fr 80px;
+  gap: 16px;
   padding: 12px 16px;
   background: rgba(26, 26, 46, 0.98);
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
@@ -137,6 +138,7 @@
 .tableRow {
   display: grid;
   grid-template-columns: 60px 1fr 1fr 80px;
+  gap: 16px;
   padding: 14px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.9rem;
@@ -154,10 +156,12 @@
 
 .colRank {
   color: #fff;
+  text-align: right;
 }
 
 .colChange {
   color: rgba(255, 255, 255, 0.6);
+  text-align: right;
 }
 
 .colChange.up {
@@ -350,6 +354,7 @@
 
   .tableHeader, .tableRow {
     grid-template-columns: 50px 1fr 90px 60px;
+    gap: 12px;
     padding: 10px 12px;
     font-size: 0.85rem;
   }

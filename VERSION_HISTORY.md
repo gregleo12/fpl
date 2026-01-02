@@ -2,7 +2,75 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.4.13 (January 2, 2026)
+**Current Version:** v4.4.14 (January 2, 2026)
+
+---
+
+## v4.4.14 - K-167: Fix Stat Box Modal Data & Display Bugs (Jan 2, 2026)
+
+**K-167:** Fixed GW Rank modal stale data and Points Analysis modal column display issues
+
+### Bug Fixes
+
+**Bug 1: GW Rank Modal - Stale "Worst Rank"**
+
+**Problem:**
+- GW Rank modal showed Worst GW Rank: 3.4M (GW1) when current GW19 rank was 9.2M
+- Live GW rank should have been the worst, but wasn't included in calculations
+
+**Root Cause:** (`src/app/api/team/[teamId]/gw-rank-stats/route.ts`)
+- Endpoint only used `gwHistory` from FPL API's `/entry/{id}/history/` endpoint
+- This history endpoint contains ONLY completed GWs
+- Current live GW19 rank (9.2M) wasn't in the history yet
+- Best/worst/average calculations only looked at GW1-18, missing GW19
+
+**Fix:**
+- Check if current GW rank exists but isn't in history (indicates live GW)
+- Add current live GW rank to `allRanks` array for calculations
+- Include in best rank, worst rank, average rank, and top 1M count
+- Now correctly shows GW19's 9.2M as worst rank when it's truly the worst
+
+**Changes:**
+```typescript
+// Create allRanks array with history
+const allRanks = [...gwHistory];
+
+// If current GW rank exists but isn't in history yet (live GW), add it
+if (currentRank > 0 && !currentGWEntry) {
+  allRanks.push({
+    event: currentGW,
+    overall_rank: currentRank
+  });
+}
+
+// Use allRanks for all calculations (best/worst/average/topMillion)
+```
+
+**Bug 2: Points Analysis Modal - Concatenated Column Display**
+
+**Problem:**
+- "PTSTOTAL" column showed values like "331152" (concatenated)
+- Should display as two clear columns: "33" (Pts) | "1,152" (Total)
+- Visual concatenation made data unreadable
+
+**Root Cause:** (`src/components/Dashboard/RankModals.module.css`)
+- Grid layout had no `gap` property between columns
+- `.colPts` was right-aligned, `.colRank` was left-aligned (default)
+- Adjacent numbers touched: "33|1152" appeared as "331152"
+- No comma formatting on cumulative totals
+
+**Fix:**
+- Added `gap: 16px` to desktop grid layout (`.tableHeader` and `.tableRow`)
+- Added `gap: 12px` to mobile grid layout
+- Changed `.colRank` to `text-align: right` for consistent alignment
+- Changed `.colChange` to `text-align: right` for better readability
+- Added `.toLocaleString()` to cumulative totals in PointsAnalysisModal
+- Now displays clearly: "33    1,152    +5" with proper spacing
+
+**Files Modified:**
+1. `src/app/api/team/[teamId]/gw-rank-stats/route.ts` - Include live GW in calculations
+2. `src/components/Dashboard/RankModals.module.css` - Add grid gap and right-align columns
+3. `src/components/Dashboard/PointsAnalysisModal.tsx` - Add toLocaleString() formatting
 
 ---
 

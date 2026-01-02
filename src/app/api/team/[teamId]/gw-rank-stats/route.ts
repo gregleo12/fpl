@@ -72,13 +72,25 @@ export async function GET(
     // Calculate top %
     const topPercent = (currentRank / totalPlayers) * 100;
 
+    // K-167: Include current live GW rank in calculations
+    // FPL history endpoint only has completed GWs, need to add live GW manually
+    const allRanks = [...gwHistory];
+
+    // If current GW rank exists but isn't in history yet (live GW), add it
+    if (currentRank > 0 && !currentGWEntry) {
+      allRanks.push({
+        event: currentGW,
+        overall_rank: currentRank
+      });
+    }
+
     // Find best (lowest) and worst (highest) GW ranks
     let bestRank = { rank: Infinity, gw: 0 };
     let worstRank = { rank: 0, gw: 0 };
     let totalRank = 0;
     let topMillionCount = 0;
 
-    gwHistory.forEach((h: any) => {
+    allRanks.forEach((h: any) => {
       const rank = h.overall_rank;
       const gw = h.event;
 
@@ -102,7 +114,7 @@ export async function GET(
     });
 
     // Calculate average rank
-    const averageRank = Math.round(totalRank / gwHistory.length);
+    const averageRank = Math.round(totalRank / allRanks.length);
 
     return NextResponse.json({
       currentRank: currentRank,
@@ -112,7 +124,7 @@ export async function GET(
       averageRank: averageRank,
       topMillionCount: {
         count: topMillionCount,
-        total: gwHistory.length
+        total: allRanks.length
       }
     });
   } catch (error: any) {
