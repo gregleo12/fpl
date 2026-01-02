@@ -282,12 +282,27 @@ export async function GET(
       const opponentsStrengths: any[] = [];
       let totalOppStrength = 0;
 
+      // K-163k Debug: Track first manager's opponent lookups
+      const debugOppLookups: any[] = [];
+
       for (const match of managerMatches) {
         const gw = match.event;
         const isEntry1 = parseInt(String(match.entry_1_id)) === entryId;
         const oppId = parseInt(String(isEntry1 ? match.entry_2_id : match.entry_1_id));
         const oppName = isEntry1 ? match.entry_2_name : match.entry_1_name;
         const oppSeasonAvg = finalSeasonAvgs[oppId] || 0;
+
+        // K-163k Debug: Log first 3 opponent lookups for first manager
+        if (manager === managers[0] && debugOppLookups.length < 3) {
+          debugOppLookups.push({
+            gw,
+            oppId,
+            oppName,
+            oppSeasonAvgFromLookup: oppSeasonAvg,
+            finalSeasonAvgsHasOppId: oppId in finalSeasonAvgs,
+            actualValueInFinalSeasonAvgs: finalSeasonAvgs[oppId]
+          });
+        }
 
         totalOppStrength += oppSeasonAvg;
         opponentsStrengths.push({
@@ -318,11 +333,15 @@ export async function GET(
       if (manager === managers[0]) {
         console.log('[K-163k Schedule Debug]', {
           managerName: manager.player_name,
+          entryId,
           matchesCount: managerMatches.length,
           yourSeasonAvg,
+          totalOppStrength,
           avgOppStrength,
+          totalAllAvgs,
           theoreticalOppAvg,
           scheduleLuck,
+          debugOppLookups,
           finalSeasonAvgsCount: Object.keys(finalSeasonAvgs).length,
           sampleFinalSeasonAvg: Object.entries(finalSeasonAvgs)[0]
         });
