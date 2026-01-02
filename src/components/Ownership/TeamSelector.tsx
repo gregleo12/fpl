@@ -5,10 +5,11 @@ interface TeamSelectorProps {
   onChange: (teamId: number) => void;
 }
 
-// Team IDs from database (includes relegated teams)
+// Team IDs from database - all 20 current PL teams (2025/26 season)
 const TEAMS = [
   { id: 1, name: 'Arsenal' },
   { id: 2, name: 'Aston Villa' },
+  { id: 3, name: 'Burnley' },
   { id: 4, name: 'Bournemouth' },
   { id: 5, name: 'Brentford' },
   { id: 6, name: 'Brighton' },
@@ -16,11 +17,13 @@ const TEAMS = [
   { id: 8, name: 'Crystal Palace' },
   { id: 9, name: 'Everton' },
   { id: 10, name: 'Fulham' },
+  { id: 11, name: 'Leeds' },
   { id: 12, name: 'Liverpool' },
   { id: 13, name: 'Man City' },
   { id: 14, name: 'Man Utd' },
   { id: 15, name: 'Newcastle' },
   { id: 16, name: 'Nott\'m Forest' },
+  { id: 17, name: 'Sunderland' },
   { id: 18, name: 'Spurs' },
   { id: 19, name: 'West Ham' },
   { id: 20, name: 'Wolves' },
