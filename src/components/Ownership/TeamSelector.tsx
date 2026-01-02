@@ -5,6 +5,7 @@ interface TeamSelectorProps {
   onChange: (teamId: number) => void;
 }
 
+// Team IDs from database (includes relegated teams)
 const TEAMS = [
   { id: 1, name: 'Arsenal' },
   { id: 2, name: 'Aston Villa' },
@@ -15,17 +16,14 @@ const TEAMS = [
   { id: 8, name: 'Crystal Palace' },
   { id: 9, name: 'Everton' },
   { id: 10, name: 'Fulham' },
-  { id: 11, name: 'Ipswich' },
-  { id: 12, name: 'Leicester' },
-  { id: 13, name: 'Liverpool' },
-  { id: 14, name: 'Man City' },
-  { id: 15, name: 'Man Utd' },
-  { id: 16, name: 'Newcastle' },
-  { id: 17, name: 'Nott\'m Forest' },
-  { id: 18, name: 'Southampton' },
-  { id: 19, name: 'Spurs' },
-  { id: 20, name: 'West Ham' },
-  { id: 21, name: 'Wolves' },
+  { id: 12, name: 'Liverpool' },
+  { id: 13, name: 'Man City' },
+  { id: 14, name: 'Man Utd' },
+  { id: 15, name: 'Newcastle' },
+  { id: 16, name: 'Nott\'m Forest' },
+  { id: 18, name: 'Spurs' },
+  { id: 19, name: 'West Ham' },
+  { id: 20, name: 'Wolves' },
 ];
 
 export default function TeamSelector({ selectedTeamId, onChange }: TeamSelectorProps) {
