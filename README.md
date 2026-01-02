@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.2** (January 2, 2026)
+**v4.5.3** (January 2, 2026)
 
-K-163k (Debug): Added extensive debug logging to trace why schedule_luck calculation returns 0 for all managers despite database having correct data. Next step is to analyze logs and implement actual fix.
+K-163k: Fixed schedule_luck calculation returning ~0 for all managers. Root cause was mismatched GW ranges between h2h_matches (18 GWs) and manager_gw_history (19 GWs). Now calculates season averages using only GWs that have completed h2h matches.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

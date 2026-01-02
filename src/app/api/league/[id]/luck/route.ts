@@ -116,12 +116,14 @@ export async function GET(
       }
     }
 
-    // Calculate final season averages (for schedule luck)
+    // K-163k Fix: Calculate final season averages using ONLY GWs that have h2h_matches
+    // (not all GWs from manager_gw_history, which may include incomplete GWs)
+    const matchGWs = Array.from(new Set(matches.map(m => m.event))).sort((a, b) => a - b);
     const finalSeasonAvgs: Record<number, number> = {};
     for (const manager of managers) {
       const mEntryId = parseInt(String(manager.entry_id));
       const points: number[] = [];
-      for (const gw of allGWs) {
+      for (const gw of matchGWs) {
         if (pointsByGW[gw]?.[mEntryId] !== undefined) {
           points.push(pointsByGW[gw][mEntryId]);
         }
@@ -135,6 +137,8 @@ export async function GET(
     console.log('[K-163k Season Avgs Debug]', {
       allGWsCount: allGWs.length,
       allGWs: allGWs,
+      matchGWsCount: matchGWs.length,
+      matchGWs: matchGWs,
       pointsByGWKeys: Object.keys(pointsByGW),
       sampleGW1Data: pointsByGW[1],
       sampleGW19Data: pointsByGW[19],

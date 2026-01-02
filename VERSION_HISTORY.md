@@ -2,7 +2,51 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.2 (January 2, 2026)
+**Current Version:** v4.5.3 (January 2, 2026)
+
+---
+
+## v4.5.3 - K-163k: Fix Schedule Luck Calculation Using Wrong GWs (Jan 2, 2026)
+
+**K-163k (FIX):** Fixed schedule_luck returning ~0 for all managers due to mismatched gameweek ranges
+
+### Root Cause
+
+The bug had two data sources using different GW ranges:
+1. **h2h_matches** query filtered by `entry_1_points > 0 OR entry_2_points > 0` → returned 18 GWs (GW19 had no completed matches yet)
+2. **manager_gw_history** query had NO filter → returned all 19 GWs
+
+Result: Season averages calculated from 19 GWs, but schedule luck used opponents from only 18 GWs → wrong averages → schedule luck ≈ 0 for everyone.
+
+### The Fix
+
+Changed `finalSeasonAvgs` calculation to use **only GWs that have h2h_matches**:
+
+```typescript
+// BEFORE (broken):
+for (const gw of allGWs) {  // Used all GWs from manager_gw_history
+  if (pointsByGW[gw]?.[mEntryId] !== undefined) {
+    points.push(pointsByGW[gw][mEntryId]);
+  }
+}
+
+// AFTER (fixed):
+const matchGWs = Array.from(new Set(matches.map(m => m.event))).sort((a, b) => a - b);
+for (const gw of matchGWs) {  // Use only GWs with h2h matches
+  if (pointsByGW[gw]?.[mEntryId] !== undefined) {
+    points.push(pointsByGW[gw][mEntryId]);
+  }
+}
+```
+
+### Impact
+
+- Schedule column now shows correct values (+0.96, -0.95, etc.) instead of +0.00 for all managers
+- Season averages now match the opponent list length
+- Values match the expected reference data from static JSON file
+
+**Files Modified:**
+- `src/app/api/league/[id]/luck/route.ts` - Fixed finalSeasonAvgs calculation to use matchGWs instead of allGWs
 
 ---
 
