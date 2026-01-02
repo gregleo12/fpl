@@ -2,7 +2,31 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.1 (January 2, 2026)
+**Current Version:** v4.5.2 (January 2, 2026)
+
+---
+
+## v4.5.2 - K-163k: Add Debug Logging for Schedule Luck Calculation (Jan 2, 2026)
+
+**K-163k (Debug):** Added extensive debug logging to trace why schedule_luck.value returns 0 for all managers
+
+### Changes
+
+**Backend Debug Logging (`src/app/api/league/[id]/luck/route.ts`):**
+- Added debug logging after finalSeasonAvgs calculation to verify:
+  - How many GWs are being processed
+  - Sample data from pointsByGW structure
+  - How many managers have season averages calculated
+  - Whether all season averages are incorrectly 0
+  - Total sum of all season averages
+
+**Purpose:**
+- Trace the data flow from database query → pointsByGW → finalSeasonAvgs
+- Identify why schedule_luck calculation returns 0 despite database having 378 rows of data
+- Next step: Analyze logs to find root cause and implement actual fix
+
+**Files Modified:**
+- `src/app/api/league/[id]/luck/route.ts` - Added K-163k Season Avgs Debug logging
 
 ---
 

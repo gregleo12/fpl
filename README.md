@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.1** (January 2, 2026)
+**v4.5.2** (January 2, 2026)
 
-K-163k: Fixed Schedule Luck display in Luck Analysis table. Component columns now show normalized values (÷5, ÷10, ÷3) instead of weighted values. Schedule column now correctly displays values like +0.96 or -0.95 instead of +0.00 for all managers.
+K-163k (Debug): Added extensive debug logging to trace why schedule_luck calculation returns 0 for all managers despite database having correct data. Next step is to analyze logs and implement actual fix.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

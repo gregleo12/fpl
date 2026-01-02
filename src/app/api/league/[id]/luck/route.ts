@@ -131,6 +131,23 @@ export async function GET(
       }
     }
 
+    // K-163k Debug: Verify finalSeasonAvgs is populated correctly
+    console.log('[K-163k Season Avgs Debug]', {
+      allGWsCount: allGWs.length,
+      allGWs: allGWs,
+      pointsByGWKeys: Object.keys(pointsByGW),
+      sampleGW1Data: pointsByGW[1],
+      sampleGW19Data: pointsByGW[19],
+      managersCount: managers.length,
+      finalSeasonAvgsCount: Object.keys(finalSeasonAvgs).length,
+      sampleSeasonAvgs: Object.entries(finalSeasonAvgs).slice(0, 3).map(([id, avg]) => ({
+        entry_id: id,
+        avg: avg.toFixed(2)
+      })),
+      allSeasonAvgsZero: Object.values(finalSeasonAvgs).every(v => v === 0),
+      totalAllAvgs: Object.values(finalSeasonAvgs).reduce((sum, avg) => sum + avg, 0)
+    });
+
     // Process chips
     const chipsByGW: Record<number, Set<number>> = {};
     chips.forEach(chip => {
