@@ -1,4 +1,5 @@
 import styles from './LuckLeaderboard.module.css';
+import { formatSeasonLuck, formatLuckValue, getLuckClass as getSharedLuckClass, type ManagerLuck } from '@/lib/luckFormatting';
 
 interface Manager {
   entry_id: number;
@@ -46,39 +47,14 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
               const isMe = manager.entry_id === myTeamId;
               const icon = getRankIcon(rank, managers.length);
 
-              // K-163M: Calculate WEIGHTED × 10 components for display
-              // Component columns now show (normalized × weight × 10) so they sum to Luck Index × 10
+              // K-163N: Use shared formatting utility for consistent luck display
+              const formatted = formatSeasonLuck(manager as unknown as ManagerLuck);
+
+              // For color classes, use normalized values (before × 10)
               const varianceNormalized = manager.variance_luck?.total ? manager.variance_luck.total / 10 : 0;
               const rankNormalized = manager.rank_luck?.total ?? 0;
               const scheduleNormalized = manager.schedule_luck?.value ? manager.schedule_luck.value / 5 : 0;
               const chipNormalized = manager.chip_luck?.value ? manager.chip_luck.value / 3 : 0;
-
-              // Apply weights and multiply by 10 for display
-              const displayVariance = varianceNormalized * weights.variance * 10; // × 4
-              const displayRank = rankNormalized * weights.rank * 10; // × 3
-              const displaySchedule = scheduleNormalized * weights.schedule * 10; // × 2
-              const displayChip = chipNormalized * weights.chip * 10; // × 1
-              const displayIndex = manager.season_luck_index * 10;
-
-              // K-163M Debug: Log first manager's display values
-              if (idx === 0) {
-                console.log('[K-163M Display Debug] First manager:', {
-                  name: manager.name,
-                  index: manager.season_luck_index,
-                  displayIndex,
-                  varianceNormalized,
-                  displayVariance,
-                  rankNormalized,
-                  displayRank,
-                  scheduleNormalized,
-                  displaySchedule,
-                  chipNormalized,
-                  displayChip,
-                  sum: (displayVariance + displayRank + displaySchedule + displayChip).toFixed(2),
-                  shouldEqual: displayIndex.toFixed(2),
-                  matches: Math.abs((displayVariance + displayRank + displaySchedule + displayChip) - displayIndex) < 0.1
-                });
-              }
 
               return (
                 <tr
@@ -91,22 +67,22 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
                   </td>
                   <td className={styles.nameCell}>{manager.name}</td>
                   <td className={styles.teamCell}>{manager.team_name}</td>
-                  <td className={`${styles.luckCell} ${getLuckClass(manager.season_luck_index, styles)}`}>
+                  <td className={`${styles.luckCell} ${getSharedLuckClass(manager.season_luck_index, styles)}`}>
                     <span className={styles.luckValue}>
-                      {formatLuck(displayIndex)}
+                      {formatLuckValue(formatted.index)}
                     </span>
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(varianceNormalized, styles)}`}>
-                    {formatLuck(displayVariance)}
+                  <td className={`${styles.componentCell} ${getSharedLuckClass(varianceNormalized, styles)}`}>
+                    {formatLuckValue(formatted.variance)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(rankNormalized, styles)}`}>
-                    {formatLuck(displayRank)}
+                  <td className={`${styles.componentCell} ${getSharedLuckClass(rankNormalized, styles)}`}>
+                    {formatLuckValue(formatted.rank)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(scheduleNormalized, styles)}`}>
-                    {formatLuck(displaySchedule)}
+                  <td className={`${styles.componentCell} ${getSharedLuckClass(scheduleNormalized, styles)}`}>
+                    {formatLuckValue(formatted.schedule)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(chipNormalized, styles)}`}>
-                    {formatLuck(displayChip)}
+                  <td className={`${styles.componentCell} ${getSharedLuckClass(chipNormalized, styles)}`}>
+                    {formatLuckValue(formatted.chip)}
                   </td>
                 </tr>
               );
@@ -116,18 +92,6 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
       </div>
     </div>
   );
-}
-
-function formatLuck(val: number): string {
-  const absVal = Math.abs(val);
-  const formatted = absVal < 10 ? absVal.toFixed(2) : absVal.toFixed(1);
-  return val >= 0 ? `+${formatted}` : `-${formatted}`;
-}
-
-function getLuckClass(val: number, styles: any): string {
-  if (val > 0.5) return styles.lucky;
-  if (val < -0.5) return styles.unlucky;
-  return styles.neutral;
 }
 
 function getRankIcon(rank: number, total: number): string {

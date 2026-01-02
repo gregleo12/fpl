@@ -2,7 +2,45 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.5 (January 2, 2026)
+**Current Version:** v4.5.6 (January 2, 2026)
+
+---
+
+## v4.5.6 - K-163N: Unified 10× Weighted Luck Display (Jan 2, 2026)
+
+**K-163N (REFACTOR):** Applied 10× weighted display format to ALL luck displays across the app for consistency
+
+### Problem
+
+After K-163M updated the Luck Leaderboard to show 10× weighted values, other luck displays (Season tab, Awards, GW Rankings) still showed raw values, creating inconsistency.
+
+### Solution
+
+1. **Created shared formatting utility** (`src/lib/luckFormatting.ts`):
+   - `formatSeasonLuck()` - formats 4-component season luck (variance, rank, schedule, chip)
+   - `formatGWLuck()` - formats 2-component GW luck (variance, rank)
+   - `formatLuckValue()` - consistent display formatting (always shows sign, 1 decimal)
+   - `getLuckClass()` - color classes based on luck value
+
+2. **Updated all luck displays:**
+   - **Season tab** (`LuckIndex.tsx`) - multiplied by 10, uses `formatLuckValue()`
+   - **Awards tab** (`awards/[month]/route.ts`) - multiplied by 10, uses `formatLuckValue()`
+   - **GW Rankings modal** (`GWRankingsModal.tsx`) - multiplied by 10, uses `formatLuckValue()`
+   - **Luck Leaderboard** (`LuckLeaderboard.tsx`) - refactored to use shared `formatSeasonLuck()` utility
+
+### Impact
+
+- All luck displays now show consistent 10× weighted format
+- Values across the app now in same scale (~-65 to +40)
+- Shared utility ensures consistent formatting and reduces code duplication
+- Easier to understand relationship between components and total
+
+**Files Modified:**
+- `/src/lib/luckFormatting.ts` (NEW - shared utilities)
+- `/src/components/Stats/season/LuckIndex.tsx`
+- `/src/app/api/league/[id]/stats/awards/[month]/route.ts`
+- `/src/components/Stats/GWRankingsModal.tsx`
+- `/src/components/Stats/LuckLeaderboard.tsx`
 
 ---
 

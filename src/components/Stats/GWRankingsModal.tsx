@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import type { GWRanking } from './sections/GWPointsLeaders';
 import styles from './GWRankingsModal.module.css';
+import { formatLuckValue } from '@/lib/luckFormatting';
 
 interface Props {
   isOpen: boolean;
@@ -75,14 +76,23 @@ export function GWRankingsModal({ isOpen, onClose, gameweek, rankings, myTeamId 
                       <div className={styles.ptsLabel}>pts</div>
                     </div>
                     <div className={styles.luckColumn}>
-                      <div className={`${styles.luck} ${
-                        (ranking as any).gw_luck > 0 ? styles.luckPositive :
-                        (ranking as any).gw_luck < 0 ? styles.luckNegative :
-                        styles.luckNeutral
-                      }`}>
-                        {(ranking as any).gw_luck > 0 ? `+${(ranking as any).gw_luck}` : (ranking as any).gw_luck || 0}
-                      </div>
-                      <div className={styles.luckLabel}>luck</div>
+                      {(() => {
+                        // K-163N: Display GW luck × 10 for consistency with other luck displays
+                        const gwLuck = (ranking as any).gw_luck || 0;
+                        const displayValue = gwLuck * 10;
+                        return (
+                          <>
+                            <div className={`${styles.luck} ${
+                              displayValue > 0 ? styles.luckPositive :
+                              displayValue < 0 ? styles.luckNegative :
+                              styles.luckNeutral
+                            }`}>
+                              {formatLuckValue(displayValue)}
+                            </div>
+                            <div className={styles.luckLabel}>luck</div>
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 );

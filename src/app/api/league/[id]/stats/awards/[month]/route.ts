@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/db';
 import { calculateGWLuck } from '@/lib/luckCalculator'; // K-163: Correct luck formula for awards
+import { formatLuckValue } from '@/lib/luckFormatting'; // K-163N: Shared luck formatting
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -428,12 +429,14 @@ async function calculateLuck(
       .map(([entryId, luck]) => {
         const manager = managersMap.get(parseInt(entryId));
         const roundedLuck = Math.round(luck); // K-163a Part 2: Already scaled -10 to +10
+        // K-163N: Display luck × 10 for consistency with other luck displays
+        const displayValue = roundedLuck * 10;
         return {
           entry_id: parseInt(entryId),
           player_name: manager?.player_name || 'Unknown',
           team_name: manager?.team_name || 'Unknown',
           value: roundedLuck,
-          formatted_value: roundedLuck > 0 ? `+${roundedLuck}` : `${roundedLuck}`
+          formatted_value: formatLuckValue(displayValue)
         };
       })
       .sort((a, b) => b.value - a.value);

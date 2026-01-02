@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.5** (January 2, 2026)
+**v4.5.6** (January 2, 2026)
 
-K-163M: Updated Luck Leaderboard display to show weighted values × 10, so component columns (Variance, Rank, Schedule, Chip) visually sum to the Luck Index. This makes the table easier to understand - values range from roughly -65 to +40 instead of -6.5 to +4.
+K-163N: Applied 10× weighted display format to ALL luck displays across the app (Season tab, Awards, GW Rankings modal, Luck Leaderboard). Created shared formatting utility (`luckFormatting.ts`) to ensure consistent display and reduce code duplication. All luck values now show in the same scale (~-65 to +40) with consistent formatting.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

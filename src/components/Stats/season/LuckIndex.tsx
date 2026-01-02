@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import styles from './Leaderboard.module.css';
 import { FullRankingModal } from './FullRankingModal';
+import { formatLuckValue } from '@/lib/luckFormatting';
 
 export interface LuckIndexData {
   entry_id: number;
@@ -55,8 +56,9 @@ export function LuckIndex({ data, myTeamId }: Props) {
   // Render function for items (used by both card and modal)
   const renderItem = (item: LuckIndexData, index: number) => {
     const isMyTeam = myTeamId && item.entry_id.toString() === myTeamId;
-    const sign = item.luck_index >= 0 ? '+' : '';
-    const color = item.luck_index >= 0 ? '#00ff87' : '#ff4444';
+    // K-163N: Display luck × 10 for consistency with other luck displays
+    const displayValue = item.luck_index * 10;
+    const color = displayValue >= 0 ? '#00ff87' : '#ff4444';
 
     return (
       <div className={styles.listItem}>
@@ -69,7 +71,7 @@ export function LuckIndex({ data, myTeamId }: Props) {
         </div>
         <div className={styles.stats}>
           <div className={styles.statValue} style={{ color }}>
-            {sign}{Math.round(item.luck_index)}
+            {formatLuckValue(displayValue)}
           </div>
         </div>
       </div>
