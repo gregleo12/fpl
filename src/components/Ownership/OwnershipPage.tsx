@@ -6,8 +6,9 @@ import TeamSelector from './TeamSelector';
 import CombinationTable from './CombinationTable';
 import StackingSummary from './StackingSummary';
 import TemplateCores from './TemplateCores';
+import OwnershipPlayers from './OwnershipPlayers';
 
-type TabType = 'combinations' | 'stacking' | 'templates';
+type TabType = 'combinations' | 'stacking' | 'templates' | 'players';
 
 interface Player {
   id: number;
@@ -183,6 +184,15 @@ export default function OwnershipPage() {
         >
           Template Cores
         </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'players' ? styles.activeTab : ''}`}
+          onClick={() => {
+            setActiveTab('players');
+            setSelectedTeamId(null);
+          }}
+        >
+          Players
+        </button>
       </div>
 
       {/* Team selector - always show on combinations tab */}
@@ -221,6 +231,11 @@ export default function OwnershipPage() {
       {/* Template Cores Tab Content */}
       {!loading && !error && activeTab === 'templates' && (
         <TemplateCores />
+      )}
+
+      {/* Players Tab Content */}
+      {activeTab === 'players' && (
+        <OwnershipPlayers />
       )}
 
       {/* Team Combinations Tab - Detail View */}
