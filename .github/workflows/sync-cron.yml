@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Trigger sync endpoint
         run: |
-          curl -X GET "https://rivalfpl.com/api/cron/sync-completed-gws" \
+          curl -L -X GET "https://www.rivalfpl.com/api/cron/sync-completed-gws" \
             -H "Content-Type: application/json" \
             --fail \
             --silent \
