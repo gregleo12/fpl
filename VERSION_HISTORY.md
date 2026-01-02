@@ -2,7 +2,94 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.0 (January 2, 2026)
+**Current Version:** v4.5.1 (January 2, 2026)
+
+---
+
+## v4.5.1 - K-163k: Fix Schedule Luck Display in Luck Table (Jan 2, 2026)
+
+**K-163k:** Fixed Schedule column showing +0.00 for all managers in Luck Analysis table
+
+### Problem
+
+The Luck Analysis leaderboard table showed `+0.00` for ALL managers in the Schedule column, despite correct values existing in the JSON API data.
+
+**Before (Broken):**
+| Manager | Schedule |
+|---------|----------|
+| Jean Boes | +0.19 ❌ |
+| Greg Lienart | +0.19 ❌ |
+| Vanaka | -0.19 ❌ |
+
+**After (Fixed):**
+| Manager | Schedule |
+|---------|----------|
+| Jean Boes | +0.96 ✓ |
+| Greg Lienart | +0.94 ✓ |
+| Vanaka | -0.95 ✓ |
+
+### Root Cause
+
+The component was displaying **weighted values** instead of **normalized values** in ALL component columns (Variance, Rank, Schedule, Chip).
+
+**Old logic:**
+```typescript
+const scheduleWeighted = manager.schedule_luck.value / 5 * weights.schedule;
+// Example: 4.80 / 5 * 0.2 = 0.192 (displayed as +0.19)
+```
+
+**New logic:**
+```typescript
+const scheduleNormalized = manager.schedule_luck.value / 5;
+// Example: 4.80 / 5 = 0.96 (displayed as +0.96)
+```
+
+### Fix Applied
+
+Changed `LuckLeaderboard.tsx` to calculate and display **normalized values** in component columns:
+- **Variance:** `total / 10` (was: `total / 10 * 0.4`)
+- **Rank:** `total * 1` (was: `total * 0.3`)
+- **Schedule:** `value / 5` (was: `value / 5 * 0.2`) ← **THIS WAS THE BUG**
+- **Chip:** `value / 3` (was: `value / 3 * 0.1`)
+
+The **Luck Index** column continues to show the weighted total (from API), which is correct.
+
+### Table Display Logic
+
+**Component Columns** (Variance, Rank, Schedule, Chip):
+- Show **normalized values** (raw values divided by normalization factors)
+- Allow managers to see the actual impact of each luck component
+- Example: Schedule +0.96 means you faced opponents averaging 0.96 points easier than expected
+
+**Luck Index Column**:
+- Shows **weighted total** (sum of normalized values × weights)
+- This is the overall luck score: `0.4×Variance + 0.3×Rank + 0.2×Schedule + 0.1×Chip`
+- Used for ranking managers by overall luck
+
+### Expected Values After Fix
+
+| Manager | Raw Schedule | Normalized (÷5) | Displayed |
+|---------|--------------|-----------------|-----------|
+| Jean Boes | 4.80 | 0.96 | +0.96 |
+| Olivier Dufrasne | 4.78 | 0.956 | +0.96 |
+| Greg Lienart | 4.70 | 0.94 | +0.94 |
+| Grégoire Bryssinck | 2.70 | 0.54 | +0.54 |
+| Adriaan Mertens | 2.49 | 0.498 | +0.50 |
+| ... | ... | ... | ... |
+| Alexis Renard | -3.47 | -0.694 | -0.69 |
+| Slim Ben Dekhil | -3.71 | -0.742 | -0.74 |
+| Vanaka Chhem-Kieth | -4.75 | -0.95 | -0.95 |
+
+### Files Modified
+
+1. `src/components/Stats/LuckLeaderboard.tsx` - Changed component value calculations from weighted to normalized
+
+### Impact
+
+- **Schedule column** now displays meaningful values ranging from +0.96 to -0.95
+- **All component columns** now show normalized values for easier interpretation
+- **Luck Index** remains unchanged (weighted total from API)
+- Users can now see the actual impact of each luck component before weighting
 
 ---
 

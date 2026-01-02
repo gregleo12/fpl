@@ -46,11 +46,12 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
               const isMe = manager.entry_id === myTeamId;
               const icon = getRankIcon(rank, managers.length);
 
-              // Calculate weighted components
-              const varianceWeighted = manager.variance_luck.total / 10 * weights.variance;
-              const rankWeighted = manager.rank_luck.total * weights.rank;
-              const scheduleWeighted = manager.schedule_luck.value / 5 * weights.schedule;
-              const chipWeighted = manager.chip_luck.value / 3 * weights.chip;
+              // K-163k: Calculate NORMALIZED components for display (not weighted)
+              // Component columns show normalized values, Luck Index shows weighted total
+              const varianceNormalized = manager.variance_luck.total / 10;
+              const rankNormalized = manager.rank_luck.total;
+              const scheduleNormalized = manager.schedule_luck.value / 5;
+              const chipNormalized = manager.chip_luck.value / 3;
 
               return (
                 <tr
@@ -68,17 +69,17 @@ export default function LuckLeaderboard({ managers, myTeamId, weights }: LuckLea
                       {formatLuck(manager.season_luck_index)}
                     </span>
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(varianceWeighted, styles)}`}>
-                    {formatLuck(varianceWeighted)}
+                  <td className={`${styles.componentCell} ${getLuckClass(varianceNormalized, styles)}`}>
+                    {formatLuck(varianceNormalized)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(rankWeighted, styles)}`}>
-                    {formatLuck(rankWeighted)}
+                  <td className={`${styles.componentCell} ${getLuckClass(rankNormalized, styles)}`}>
+                    {formatLuck(rankNormalized)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(scheduleWeighted, styles)}`}>
-                    {formatLuck(scheduleWeighted)}
+                  <td className={`${styles.componentCell} ${getLuckClass(scheduleNormalized, styles)}`}>
+                    {formatLuck(scheduleNormalized)}
                   </td>
-                  <td className={`${styles.componentCell} ${getLuckClass(chipWeighted, styles)}`}>
-                    {formatLuck(chipWeighted)}
+                  <td className={`${styles.componentCell} ${getLuckClass(chipNormalized, styles)}`}>
+                    {formatLuck(chipNormalized)}
                   </td>
                 </tr>
               );
