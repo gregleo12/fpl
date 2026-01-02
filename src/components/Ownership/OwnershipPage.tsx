@@ -15,7 +15,8 @@ interface Player {
 interface Combination {
   players: Player[];
   count: number;
-  percentage: number;
+  percentOfStackers: number;  // % of managers with 2+ (or 3+) from this team
+  percentOfAll: number;        // % of all managers in sample
 }
 
 interface SingleOwnership {
