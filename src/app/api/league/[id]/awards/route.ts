@@ -421,10 +421,10 @@ export async function GET(
         m.player_name,
         m.team_name
       FROM manager_picks mp
-      JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.gameweek
+      JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.event
       JOIN managers m ON m.entry_id = mp.entry_id
       WHERE mp.league_id = $1
-        AND mp.gameweek <= 19
+        AND mp.event <= 19
         AND mp.is_captain = true
       GROUP BY mp.entry_id, m.player_name, m.team_name
       ORDER BY captain_bonus_points DESC
