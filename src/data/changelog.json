@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.18",
+    "date": "Jan 3, 2026",
+    "title": "🏆 Medal Tally & 💀 Wall of Shame",
+    "changes": [
+      "NEW: Medal Tally table showing podium finishes in positive awards",
+      "NEW: Wall of Shame table showing podium finishes in dubious awards",
+      "Weighted scoring (Gold × 3 + Silver × 2 + Bronze × 1)",
+      "Top 3 highlighted in each table, your team gets a badge"
+    ]
+  },
+  {
     "version": "4.7.17",
     "date": "Jan 3, 2026",
     "title": "Rocket Man Moved to H2H Battle",

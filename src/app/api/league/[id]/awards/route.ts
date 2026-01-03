@@ -28,6 +28,18 @@ interface AwardCategory {
   awards: Award[];
 }
 
+interface MedalCount {
+  entry_id: number;
+  player_name: string;
+  team_name: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+  score: number;
+  rank: number;
+}
+
 // Helper function for ordinal suffixes (1st, 2nd, 3rd, etc.)
 function getSuffix(rank: number): string {
   const j = rank % 10;
@@ -1798,12 +1810,94 @@ export async function GET(
       awards: funAwards
     });
 
+    // ==========================================
+    // 🏆 MEDAL TALLY & 💀 WALL OF SHAME
+    // ==========================================
+
+    // Define which awards are "shame" awards (negative achievements)
+    const SHAME_AWARDS = new Set([
+      'Nightmare Week',
+      'Rock Bottom',
+      'Falling Star',
+      'Wild Ride',
+      'Point Chaser',
+      'Cursed Soul',
+      'The Struggle Bus',
+      'Close But No Cigar',
+      'Slow Starter',
+      'Bench Warmer',
+      'Mr. Average'
+    ]);
+
+    // Initialize tallies for all managers
+    const medalTally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
+    const shameTally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
+
+    allLeagueManagers.rows.forEach((m: any) => {
+      const base = {
+        entry_id: m.entry_id,
+        player_name: m.player_name,
+        team_name: m.team_name,
+        gold: 0,
+        silver: 0,
+        bronze: 0
+      };
+      medalTally[m.entry_id] = { ...base };
+      shameTally[m.entry_id] = { ...base };
+    });
+
+    // Count medals for all awards
+    categories.forEach(category => {
+      category.awards.forEach(award => {
+        const isShame = SHAME_AWARDS.has(award.title);
+        const tally = isShame ? shameTally : medalTally;
+
+        // Gold (1st place)
+        if (award.winner) {
+          tally[award.winner.entry_id].gold++;
+        }
+
+        // Silver (2nd place)
+        if (award.runner_up) {
+          tally[award.runner_up.entry_id].silver++;
+        }
+
+        // Bronze (3rd place)
+        if (award.third_place) {
+          tally[award.third_place.entry_id].bronze++;
+        }
+      });
+    });
+
+    // Convert to sorted arrays
+    const sortTally = (tally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>>): MedalCount[] => {
+      return Object.values(tally)
+        .map(m => ({
+          ...m,
+          total: m.gold + m.silver + m.bronze,
+          score: (m.gold * 3) + (m.silver * 2) + (m.bronze * 1)
+        }))
+        .filter(m => m.total > 0) // Only include managers with at least one medal
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (b.gold !== a.gold) return b.gold - a.gold;
+          if (b.silver !== a.silver) return b.silver - a.silver;
+          return b.bronze - a.bronze;
+        })
+        .map((m, index) => ({ ...m, rank: index + 1 }));
+    };
+
+    const sortedMedalTally = sortTally(medalTally);
+    const sortedShameTally = sortTally(shameTally);
+
     return NextResponse.json({
       success: true,
       data: {
         league_id: leagueId,
         period: 'GW1-19',
-        categories
+        categories,
+        medalTally: sortedMedalTally,
+        shameTally: sortedShameTally
       }
     });
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.17** (January 3, 2026)
+**v4.7.18** (January 3, 2026)
 
-**Rocket Man Moved to H2H Battle** - Moved the Rocket Man award from "The Big Ones" section to "H2H Battle" section where it belongs, as it tracks the biggest climb in H2H league standings.
+**K-201j: Medal Tally & Wall of Shame** - Added two leaderboard tables at the bottom of the Awards page: Medal Tally (🏆) for positive awards and Wall of Shame (💀) for dubious honors. Features weighted scoring, top 3 highlights, and mobile-responsive design.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

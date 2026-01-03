@@ -1,0 +1,219 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 48px;
+  padding-bottom: 32px;
+}
+
+.container {
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(55, 0, 60, 0.4) 0%, rgba(45, 0, 50, 0.3) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Shame variant - red theme */
+.shame {
+  background: linear-gradient(135deg, rgba(60, 0, 0, 0.3) 0%, rgba(50, 0, 0, 0.2) 100%);
+  border-color: rgba(255, 68, 68, 0.2);
+}
+
+.title {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin: 0 0 20px 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  padding: 12px 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: left;
+}
+
+.thRank {
+  width: 50px;
+}
+
+.thManager {
+  min-width: 200px;
+}
+
+.thNumber {
+  width: 80px;
+  text-align: center !important;
+}
+
+.table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Top 3 highlight - green for medals */
+.medals .topThree {
+  background: rgba(0, 255, 135, 0.05);
+}
+
+/* Top 3 highlight - red for shame */
+.shame .topThree {
+  background: rgba(255, 68, 68, 0.05);
+}
+
+/* My team highlight */
+.myTeam {
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+.rank {
+  color: rgba(255, 255, 255, 0.5);
+  width: 50px;
+  font-weight: 500;
+}
+
+.manager {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  color: #ffffff;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.youBadge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+/* Score color - green for medals */
+.medals .score {
+  color: #00ff87;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Score color - red for shame */
+.shame .score {
+  color: #ff4444;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.total {
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  font-weight: 500;
+}
+
+.gold {
+  color: #ffd700;
+  text-align: center;
+  font-weight: 600;
+}
+
+.silver {
+  color: #c0c0c0;
+  text-align: center;
+  font-weight: 600;
+}
+
+.bronze {
+  color: #cd7f32;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .wrapper {
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 4px;
+    font-size: 0.875rem;
+  }
+
+  .team {
+    display: none;
+  }
+
+  .thManager {
+    min-width: 120px;
+  }
+
+  .thNumber {
+    width: 60px;
+  }
+
+  .youBadge {
+    font-size: 8px;
+    padding: 1px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table th,
+  .table td {
+    padding: 6px 2px;
+    font-size: 0.8rem;
+  }
+
+  .score,
+  .total,
+  .gold,
+  .silver,
+  .bronze {
+    font-size: 0.9rem !important;
+  }
+
+  .thNumber {
+    width: 50px;
+  }
+}

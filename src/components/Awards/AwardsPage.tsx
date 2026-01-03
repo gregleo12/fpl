@@ -12,6 +12,7 @@ import {
   Bomb, Trophy, Frown, HeartCrack, Timer,
   Coffee, FastForward, Armchair, Meh
 } from 'lucide-react';
+import MedalTally from './MedalTally';
 
 interface Award {
   title: string;
@@ -43,10 +44,24 @@ interface AwardCategory {
   awards: Award[];
 }
 
+interface MedalEntry {
+  rank: number;
+  entry_id: number;
+  player_name: string;
+  team_name: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+  total: number;
+  score: number;
+}
+
 interface AwardsData {
   league_id: number;
   period: string;
   categories: AwardCategory[];
+  medalTally?: MedalEntry[];
+  shameTally?: MedalEntry[];
 }
 
 interface Props {
@@ -218,6 +233,15 @@ export function AwardsPage({ leagueId }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Medal Tally & Wall of Shame */}
+      {awardsData.medalTally && awardsData.shameTally && (
+        <MedalTally
+          medalTally={awardsData.medalTally}
+          shameTally={awardsData.shameTally}
+          myTeamId={myTeamId}
+        />
+      )}
     </div>
   );
 }
