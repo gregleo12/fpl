@@ -26,6 +26,16 @@ interface AwardCategory {
   awards: Award[];
 }
 
+// Helper function for ordinal suffixes (1st, 2nd, 3rd, etc.)
+function getSuffix(rank: number): string {
+  const j = rank % 10;
+  const k = rank % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -105,45 +115,97 @@ export async function GET(
       });
     }
 
-    // 3. Biggest Climber
-    const climbers = await db.query(
-      `WITH FirstLast AS (
-        SELECT entry_id,
-               FIRST_VALUE(rank) OVER (PARTITION BY entry_id ORDER BY event ASC) as first_rank,
-               FIRST_VALUE(rank) OVER (PARTITION BY entry_id ORDER BY event DESC) as last_rank
-        FROM manager_gw_history
-        WHERE league_id = $1 AND event <= 19
-      )
-      SELECT DISTINCT fl.entry_id,
-             fl.first_rank,
-             fl.last_rank,
-             (fl.first_rank - fl.last_rank) as rank_change,
-             m.player_name,
-             m.team_name
-      FROM FirstLast fl
-      JOIN managers m ON m.entry_id = fl.entry_id
-      ORDER BY rank_change DESC
-      LIMIT 2`,
+    // 3. Biggest Climber (H2H League Rank: GW5 → GW19)
+    // Calculate H2H league standings at GW5 and GW19
+    const calculateH2HRank = async (upToGW: number) => {
+      const standings = await db.query(
+        `SELECT ls.entry_id, ls.total
+         FROM league_standings ls
+         WHERE ls.league_id = $1`,
+        [leagueId]
+      );
+
+      // Get matches up to the specified GW
+      const matches = await db.query(
+        `SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, winner
+         FROM h2h_matches
+         WHERE league_id = $1 AND event <= $2
+         ORDER BY event`,
+        [leagueId, upToGW]
+      );
+
+      // Calculate points for each manager
+      const points = new Map<number, number>();
+      standings.rows.forEach((s: any) => points.set(s.entry_id, 0));
+
+      matches.rows.forEach((m: any) => {
+        const p1 = points.get(m.entry_1_id) || 0;
+        const p2 = points.get(m.entry_2_id) || 0;
+
+        if (m.winner === m.entry_1_id) {
+          points.set(m.entry_1_id, p1 + 3);
+        } else if (m.winner === m.entry_2_id) {
+          points.set(m.entry_2_id, p2 + 3);
+        } else if (m.winner === null) {
+          // Draw
+          points.set(m.entry_1_id, p1 + 1);
+          points.set(m.entry_2_id, p2 + 1);
+        }
+      });
+
+      // Rank by points (descending)
+      const ranked = Array.from(points.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([entry_id], index) => ({ entry_id, rank: index + 1 }));
+
+      return new Map(ranked.map(r => [r.entry_id, r.rank]));
+    };
+
+    const gw5Ranks = await calculateH2HRank(5);
+    const gw19Ranks = await calculateH2HRank(19);
+
+    // Get all managers and calculate rank change
+    const allLeagueManagers = await db.query(
+      `SELECT m.entry_id, m.player_name, m.team_name
+       FROM managers m
+       JOIN league_standings ls ON ls.entry_id = m.entry_id
+       WHERE ls.league_id = $1`,
       [leagueId]
     );
 
-    if (climbers.rows.length > 0 && climbers.rows[0].rank_change > 0) {
+    const climbers = allLeagueManagers.rows
+      .map((m: any) => {
+        const gw5Rank = gw5Ranks.get(m.entry_id) || 999;
+        const gw19Rank = gw19Ranks.get(m.entry_id) || 999;
+        const climb = gw5Rank - gw19Rank; // Positive = improved (lower rank number is better)
+        return {
+          entry_id: m.entry_id,
+          player_name: m.player_name,
+          team_name: m.team_name,
+          gw5Rank,
+          gw19Rank,
+          climb
+        };
+      })
+      .sort((a, b) => b.climb - a.climb);
+
+    if (climbers.length > 0 && climbers[0].climb > 0) {
       bigOnesAwards.push({
         title: 'Biggest Climber',
         winner: {
-          entry_id: climbers.rows[0].entry_id,
-          player_name: climbers.rows[0].player_name,
-          team_name: climbers.rows[0].team_name
+          entry_id: climbers[0].entry_id,
+          player_name: climbers[0].player_name,
+          team_name: climbers[0].team_name
         },
-        winner_value: climbers.rows[0].rank_change,
-        runner_up: climbers.rows[1] ? {
-          entry_id: climbers.rows[1].entry_id,
-          player_name: climbers.rows[1].player_name,
-          team_name: climbers.rows[1].team_name
+        winner_value: climbers[0].climb,
+        runner_up: climbers[1] && climbers[1].climb > 0 ? {
+          entry_id: climbers[1].entry_id,
+          player_name: climbers[1].player_name,
+          team_name: climbers[1].team_name
         } : undefined,
-        runner_up_value: climbers.rows[1]?.rank_change,
+        runner_up_value: climbers[1] && climbers[1].climb > 0 ? climbers[1].climb : undefined,
         unit: 'places',
-        description: `Climbed from ${climbers.rows[0].first_rank} to ${climbers.rows[0].last_rank}`
+        description: `${climbers[0].gw5Rank}${getSuffix(climbers[0].gw5Rank)} → ${climbers[0].gw19Rank}${getSuffix(climbers[0].gw19Rank)} (GW5-19)`
       });
     }
 
@@ -270,12 +332,14 @@ export async function GET(
       `SELECT entry_id, event, points FROM manager_gw_history WHERE league_id = $1 AND event <= 19 ORDER BY entry_id, event`,
       [leagueId]
     );
+
+    // Fetch manager names for all entry_ids
+    const entryIds = allManagers.rows.map((m: any) => m.entry_id);
     const managers = await db.query(
-      `SELECT m.entry_id, m.player_name, m.team_name
-       FROM managers m
-       JOIN league_standings ls ON ls.entry_id = m.entry_id
-       WHERE ls.league_id = $1`,
-      [leagueId]
+      `SELECT entry_id, player_name, team_name
+       FROM managers
+       WHERE entry_id = ANY($1)`,
+      [entryIds]
     );
 
     // Calculate league average for each GW
@@ -364,45 +428,32 @@ export async function GET(
       });
     }
 
-    // 5. Biggest Faller
-    const fallers = await db.query(
-      `WITH FirstLast AS (
-        SELECT entry_id,
-               FIRST_VALUE(rank) OVER (PARTITION BY entry_id ORDER BY event ASC) as first_rank,
-               FIRST_VALUE(rank) OVER (PARTITION BY entry_id ORDER BY event DESC) as last_rank
-        FROM manager_gw_history
-        WHERE league_id = $1 AND event <= 19
-      )
-      SELECT DISTINCT fl.entry_id,
-             fl.first_rank,
-             fl.last_rank,
-             (fl.last_rank - fl.first_rank) as rank_change,
-             m.player_name,
-             m.team_name
-      FROM FirstLast fl
-      JOIN managers m ON m.entry_id = fl.entry_id
-      ORDER BY rank_change DESC
-      LIMIT 2`,
-      [leagueId]
-    );
+    // 5. Biggest Faller (H2H League Rank: GW5 → GW19)
+    // Reuse gw5Ranks and gw19Ranks from Biggest Climber calculation
+    const fallers = climbers
+      .map((m) => ({
+        ...m,
+        fall: m.gw19Rank - m.gw5Rank // Positive = dropped (higher rank number is worse)
+      }))
+      .sort((a, b) => b.fall - a.fall);
 
-    if (fallers.rows.length > 0 && fallers.rows[0].rank_change > 0) {
+    if (fallers.length > 0 && fallers[0].fall > 0) {
       performanceAwards.push({
         title: 'Biggest Faller',
         winner: {
-          entry_id: fallers.rows[0].entry_id,
-          player_name: fallers.rows[0].player_name,
-          team_name: fallers.rows[0].team_name
+          entry_id: fallers[0].entry_id,
+          player_name: fallers[0].player_name,
+          team_name: fallers[0].team_name
         },
-        winner_value: fallers.rows[0].rank_change,
-        runner_up: fallers.rows[1] ? {
-          entry_id: fallers.rows[1].entry_id,
-          player_name: fallers.rows[1].player_name,
-          team_name: fallers.rows[1].team_name
+        winner_value: fallers[0].fall,
+        runner_up: fallers[1] && fallers[1].fall > 0 ? {
+          entry_id: fallers[1].entry_id,
+          player_name: fallers[1].player_name,
+          team_name: fallers[1].team_name
         } : undefined,
-        runner_up_value: fallers.rows[1]?.rank_change,
+        runner_up_value: fallers[1] && fallers[1].fall > 0 ? fallers[1].fall : undefined,
         unit: 'places',
-        description: `Fell from ${fallers.rows[0].first_rank} to ${fallers.rows[0].last_rank}`
+        description: `${fallers[0].gw5Rank}${getSuffix(fallers[0].gw5Rank)} → ${fallers[0].gw19Rank}${getSuffix(fallers[0].gw19Rank)} (GW5-19)`
       });
     }
 
@@ -556,7 +607,51 @@ export async function GET(
       });
     }
 
-    // 4. Hit Taker - FIXED
+    // 4. Best Non-Chip Week - NEW AWARD
+    // Get all chip usage
+    const allChips = await db.query(
+      `SELECT entry_id, event FROM manager_chips WHERE league_id = $1`,
+      [leagueId]
+    );
+
+    const chipWeeks = new Set(allChips.rows.map((c: any) => `${c.entry_id}-${c.event}`));
+
+    // Get all GW scores, filter out chip weeks
+    const allGWScores = await db.query(
+      `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       ORDER BY h.points DESC`,
+      [leagueId]
+    );
+
+    // Find highest scores that weren't chip weeks
+    const nonChipScores = allGWScores.rows
+      .filter((s: any) => !chipWeeks.has(`${s.entry_id}-${s.event}`))
+      .slice(0, 2);
+
+    if (nonChipScores.length > 0) {
+      strategyAwards.push({
+        title: 'Best Non-Chip Week',
+        winner: {
+          entry_id: nonChipScores[0].entry_id,
+          player_name: nonChipScores[0].player_name,
+          team_name: nonChipScores[0].team_name
+        },
+        winner_value: nonChipScores[0].points,
+        runner_up: nonChipScores[1] ? {
+          entry_id: nonChipScores[1].entry_id,
+          player_name: nonChipScores[1].player_name,
+          team_name: nonChipScores[1].team_name
+        } : undefined,
+        runner_up_value: nonChipScores[1]?.points,
+        unit: `pts in GW${nonChipScores[0].event}`,
+        description: 'Highest score without using a chip'
+      });
+    }
+
+    // 5. Hit Taker - FIXED
     const hitTaker = await db.query(
       `SELECT h.entry_id, SUM(h.event_transfers_cost) as total_hits, m.player_name, m.team_name
        FROM manager_gw_history h
@@ -892,15 +987,6 @@ export async function GET(
     // ==========================================
     const funAwards: Award[] = [];
 
-    // Fetch all managers in league for name lookups
-    const funManagers = await db.query(
-      `SELECT m.entry_id, m.player_name, m.team_name
-       FROM managers m
-       JOIN league_standings ls ON ls.entry_id = m.entry_id
-       WHERE ls.league_id = $1`,
-      [leagueId]
-    );
-
     // Get all rank history for Fun awards
     const allRankHistory = await db.query(
       `SELECT entry_id, event, rank
@@ -908,6 +994,15 @@ export async function GET(
        WHERE league_id = $1 AND event <= 19
        ORDER BY entry_id, event`,
       [leagueId]
+    );
+
+    // Fetch manager names for all entry_ids in Fun section (reuse allManagers from Performance)
+    const funManagerIds = Array.from(new Set(allRankHistory.rows.map((h: any) => h.entry_id)));
+    const funManagers = await db.query(
+      `SELECT entry_id, player_name, team_name
+       FROM managers
+       WHERE entry_id = ANY($1)`,
+      [funManagerIds]
     );
 
     // 1. The Phoenix (greatest recovery from worst rank)

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.4** (January 3, 2026)
+**v4.7.5** (January 3, 2026)
 
-**HOTFIX: K-201 Final Fixes** - Fixed missing manager names for 4 awards (Hot Streak, The Phoenix, The Underachiever, The Wildcard). Improved visual hierarchy by making runner-up (2nd place) visually smaller and less prominent than winner with reduced fonts, padding, and opacity. Winner now clearly stands out while runner-up provides supporting context.
+**K-201b: Awards Fixes & New Feature** - FINALLY fixed manager names for 4 awards (Hot Streak, Phoenix, Underachiever, Wildcard). Corrected Biggest Climber/Faller to use H2H league rank (GW5→GW19) instead of FPL overall rank. Added new "Best Non-Chip Week" award to Strategy section showing highest score without using a chip.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -1,5 +1,22 @@
 [
   {
+    "version": "4.7.5",
+    "date": "2026-01-03",
+    "title": "K-201b - Awards Calculations Fixed & New Award",
+    "changes": [
+      "FIXED: Manager names now display correctly for Hot Streak, Phoenix, Underachiever, Wildcard (was showing 'Unknown')",
+      "Changed manager lookups to use 'WHERE entry_id = ANY($1)' instead of JOIN with league_standings",
+      "CORRECTED: Biggest Climber now uses H2H league rank (GW5→GW19) instead of FPL overall rank",
+      "Example: '15th → 3rd (+12 places)' instead of '3,050,299 places'",
+      "CORRECTED: Biggest Faller now uses H2H league rank (GW5→GW19) instead of FPL overall rank",
+      "Example: '3rd → 12th (-9 places)' instead of '10,488,659 places'",
+      "NEW AWARD: Best Non-Chip Week - highest single GW score WITHOUT using a chip",
+      "Best Non-Chip Week appears in Strategy section after Best Chip Week",
+      "Added getSuffix() helper for ordinal numbers (1st, 2nd, 3rd, etc.)",
+      "H2H rank calculation based on match wins/draws/losses (3/1/0 points)"
+    ]
+  },
+  {
     "version": "4.7.4",
     "date": "2026-01-03",
     "title": "K-201 Final Fixes - Missing Names & Visual Hierarchy",

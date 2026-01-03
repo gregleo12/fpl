@@ -2,7 +2,89 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.4 (January 3, 2026)
+**Current Version:** v4.7.5 (January 3, 2026)
+
+---
+
+## v4.7.5 - K-201b: Awards Calculations & New Award (Jan 3, 2026)
+
+**MAJOR FIXES + NEW FEATURE:** Fixed manager name lookups, corrected Biggest Climber/Faller metrics to use H2H league rank, and added Best Non-Chip Week award
+
+### What's Fixed
+
+**Manager Names (4 Awards) - FINALLY FIXED**
+- ❌ **Before:** Hot Streak, The Phoenix, The Underachiever, The Wildcard showed "Unknown / Unknown"
+- ✅ **After:** All awards now properly display manager names
+- **Root Cause:** Manager queries were joining with `league_standings`, but awards used entry_ids from `manager_gw_history`. If entry_ids didn't match, lookup failed.
+- **Solution:** Changed to direct lookup from `managers` table using `entry_id = ANY($1)` with array of entry_ids from the award calculations
+
+**Biggest Climber - CORRECTED METRIC**
+- ❌ **Before:** Used FPL overall rank climb (3,050,299 places from 8,771,522 → 5,721,223)
+- ✅ **After:** Uses H2H league rank improvement from GW5 to GW19
+- **Why GW5?** Early gameweeks have volatile rankings. GW5 is when league standings stabilize.
+- **Example:** "15th → 3rd (+12 places)"
+- **Algorithm:**
+  1. Calculate H2H league standings at GW5 and GW19 based on match results
+  2. Award points: 3 for win, 1 for draw, 0 for loss
+  3. Rank managers by accumulated points
+  4. Find biggest positive rank change (lower rank = better)
+
+**Biggest Faller - CORRECTED METRIC**
+- ❌ **Before:** Used FPL overall rank drop (10,488,659 places)
+- ✅ **After:** Uses H2H league rank drop from GW5 to GW19
+- **Example:** "3rd → 12th (-9 places)"
+- **Algorithm:** Same H2H calculation as Biggest Climber, but sorts by negative change (higher rank = worse)
+
+### New Feature
+
+**Best Non-Chip Week (Strategy Section)**
+- ✅ **NEW AWARD:** Highest single GW score WITHOUT using a chip
+- **Display:** "97 pts in GW17"
+- **Subtitle:** "Highest score without using a chip"
+- **Placement:** Strategy section, right after Best Chip Week
+- **Algorithm:**
+  1. Get all chip usage from `manager_chips` table
+  2. Create Set of chip weeks (`${entry_id}-${event}`)
+  3. Query all GW scores ordered by points DESC
+  4. Filter out any score where manager used a chip that week
+  5. Take top 2 for winner and runner-up
+
+**Comparison:**
+| Award | Example |
+|-------|---------|
+| Best Chip Week | 111 pts (Bench Boost GW16) |
+| Best Non-Chip Week | 97 pts in GW17 |
+
+### Technical Changes
+
+**Files Modified:**
+- `/src/app/api/league/[id]/awards/route.ts`
+  - Added `getSuffix()` helper for ordinal numbers (1st, 2nd, 3rd)
+  - Fixed Hot Streak manager query (line 274-281)
+  - Fixed Fun awards manager query (line 906-913)
+  - Added `calculateH2HRank()` function for GW5/GW19 league standings
+  - Rewrote Biggest Climber (line 108-209) with H2H rank calculation
+  - Rewrote Biggest Faller (line 431-458) reusing H2H ranks
+  - Added Best Non-Chip Week (line 610-652)
+
+**Database Queries:**
+- Manager lookups now use `WHERE entry_id = ANY($1)` for reliability
+- H2H rank calculation queries `h2h_matches` up to specific GW
+- Chip week filtering uses Set lookup for performance
+
+### Impact
+
+**Before v4.7.5:**
+- 4 awards showed "Unknown" names
+- Biggest Climber/Faller showed millions of places (FPL overall rank)
+- No Best Non-Chip Week award
+- Confusing metrics that didn't relate to H2H league
+
+**After v4.7.5:**
+- All manager names display correctly ✓
+- Biggest Climber/Faller show H2H league rank changes (e.g., "15th → 3rd")
+- New Best Non-Chip Week award in Strategy section
+- Clear, meaningful metrics relevant to H2H competition
 
 ---
 
