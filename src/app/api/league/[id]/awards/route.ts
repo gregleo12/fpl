@@ -861,8 +861,9 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching awards:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch awards data';
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch awards data' },
+      { success: false, error: errorMessage, details: String(error) },
       { status: 500 }
     );
   }
