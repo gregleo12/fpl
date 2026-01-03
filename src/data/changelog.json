@@ -1,5 +1,22 @@
 [
   {
+    "version": "4.7.3",
+    "date": "2026-01-03",
+    "title": "K-201 Awards Bug Fixes - All Calculations Fixed",
+    "changes": [
+      "FIXED: All awards now show winner + runner-up (2 managers per award)",
+      "FIXED: Top Scorer now uses classic FPL total points (~1,066) instead of H2H points (45)",
+      "FIXED: Best/Worst Gameweek now show actual manager names instead of 'Unknown'",
+      "FIXED: Hot Streak calculates consecutive GWs above league average (was showing 0)",
+      "FIXED: Rollercoaster uses STDDEV for volatility calculation (was showing 0)",
+      "FIXED: All Strategy awards now have real values (Transfer King, Chip Master, Hit Taker, Set & Forget)",
+      "SIMPLIFIED: Luck awards reduced from 4 to 2 (Luckiest/Unluckiest only)",
+      "CLARIFIED: Giant Slayer = wins vs opponents with more cumulative points",
+      "REMOVED: Differential Master, Template Team, The Survivor (unclear definitions)",
+      "Award cards redesigned with dual display: 🥇 1st and 🥈 2nd places"
+    ]
+  },
+  {
     "version": "4.7.0",
     "date": "2026-01-03",
     "title": "Mid-Season Awards Page (K-201)",

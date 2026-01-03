@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.0** (January 3, 2026)
+**v4.7.3** (January 3, 2026)
 
-**NEW FEATURE: Mid-Season Awards Page (K-201)** - Comprehensive awards page celebrating GW1-19 achievements. 26 different awards across 6 categories (The Big Ones, Performance, Strategy, Luck, H2H Battle, Fun). Beautiful full-page experience with purple gradient design, mobile-first responsive layout, and smooth animations. Highlights user's awards with "You!" badge. Accessible via prominent banner in Stats > Awards tab.
+**HOTFIX: K-201 Bug Fixes** - Complete overhaul of all Mid-Season Awards calculations. Fixed Top Scorer metric (now uses classic FPL points instead of H2H points), fixed Best/Worst GW manager names, implemented Hot Streak and Rollercoaster calculations, fixed all Strategy awards (Transfer King, Chip Master, etc.), simplified Luck awards to 2 only, clarified Giant Slayer definition. All awards now show winner + runner-up with dual display format.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

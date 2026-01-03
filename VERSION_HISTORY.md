@@ -2,7 +2,102 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.0 (January 3, 2026)
+**Current Version:** v4.7.3 (January 3, 2026)
+
+---
+
+## v4.7.3 - K-201 Bug Fixes: Awards Calculations Fixed (Jan 3, 2026)
+
+**HOTFIX:** Complete overhaul of all Mid-Season Awards calculations to fix broken metrics and improve display format
+
+### What's Fixed
+
+**Global Changes**
+- ✅ All awards now show **2 managers** (winner + runner-up) instead of just winner
+- ✅ Award cards redesigned with dual display: 🥇 1st and 🥈 2nd places
+- ✅ "You!" badge now highlights if user is winner OR runner-up
+
+**Award Calculation Fixes**
+
+**Top Scorer** (The Big Ones)
+- ❌ **Before:** Used H2H league standings points (wrong metric)
+- ✅ **After:** Uses classic FPL total points (SUM of GW points - transfer costs)
+- Example: Jean Boes now shows ~1,066 pts instead of 45 pts
+
+**Best/Worst Gameweek** (The Big Ones / Performance)
+- ❌ **Before:** Showed "Unknown / Unknown" for manager names
+- ✅ **After:** Proper JOIN with managers table to display player_name and team_name
+
+**Hot Streak** (Performance)
+- ❌ **Before:** Always showed 0 consecutive weeks
+- ✅ **After:** Calculates consecutive GWs scoring above league average
+- Algorithm: For each GW, calculates league average and tracks longest streak above it
+
+**Rollercoaster** (Performance)
+- ❌ **Before:** Always showed 0 volatility
+- ✅ **After:** Uses PostgreSQL STDDEV function for points variance
+- Shows standard deviation of weekly scores (requires minimum 5 GWs)
+
+**All Strategy Awards**
+- ❌ **Before:** Transfer King, Set and Forget, Chip Master, Hit Taker all showed 0 values
+- ✅ **After:** Fixed SQL queries with proper GROUP BY and aggregations
+  - Transfer King: `SUM(event_transfers)` - total transfers made
+  - Set and Forget: Fewest transfers (ORDER BY ASC)
+  - Best Chip Week: Highest score when using any chip (JOIN manager_chips)
+  - Hit Taker: `SUM(event_transfers_cost)` - total points lost to hits
+
+**Luck Awards** (Simplified)
+- ❌ **Before:** 4 awards (Luckiest, Unluckiest, Differential Master, Template Team)
+- ✅ **After:** Simplified to **2 awards only** (Luckiest, Unluckiest)
+- Now uses consolidated luck calculator from K-163N (`calculateSeasonLuckIndex`)
+- Removed Differential Master and Template Team (unclear definitions)
+
+**Giant Slayer** (H2H Battle)
+- ❌ **Before:** Unclear definition
+- ✅ **After:** Precisely defined as "wins against opponents with more cumulative points at time of match"
+- Algorithm: Calculates cumulative points before each GW, counts upset wins
+
+**Removed Awards**
+- ❌ Removed: Differential Master (unclear definition)
+- ❌ Removed: Template Team (unclear definition)
+- ❌ Removed: The Survivor (unclear definition)
+
+### Technical Changes
+
+**Files Modified:**
+- `/src/app/api/league/[id]/awards/route.ts` - Complete rewrite of all 20+ award calculations (1084 lines)
+- `/src/components/Awards/AwardCard.tsx` - Updated to show winner + runner-up
+- `/src/components/Awards/AwardCard.module.css` - New dual-display layout styles
+- `/src/components/Awards/AwardsPage.tsx` - Updated Award interface
+
+**Key Implementation Details:**
+- All award queries now use `LIMIT 2` to fetch winner and runner-up
+- Pre-fetch all data to avoid async operations in map callbacks
+- Use SQL JOINs with managers table for all awards to get player names
+- Added non-null assertions for TypeScript safety after filter operations
+- Consolidated luck calculation using shared `calculateSeasonLuckIndex` function
+
+**Database Queries:**
+- Added JOINs with `managers` table for all awards
+- Using SQL aggregate functions (SUM, AVG, STDDEV) for performance
+- Implemented cumulative points calculation for Giant Slayer
+- All queries filter to GW1-19 only (`WHERE event <= 19`)
+
+### Impact
+
+**Before v4.7.3:**
+- Top Scorer showed 45 pts (wrong metric)
+- Many awards showed "Unknown" managers
+- Strategy awards all showed 0 values
+- Hot Streak and Rollercoaster broken
+- Only winner shown per award
+
+**After v4.7.3:**
+- All awards calculate correctly with real values
+- All manager names displayed properly
+- Every award shows winner + runner-up
+- Clearer award definitions
+- Improved user engagement with dual display
 
 ---
 

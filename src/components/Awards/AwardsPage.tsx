@@ -12,7 +12,13 @@ interface Award {
     player_name: string;
     team_name: string;
   };
-  value: number;
+  winner_value: number;
+  runner_up?: {
+    entry_id: number;
+    player_name: string;
+    team_name: string;
+  };
+  runner_up_value?: number;
   unit: string;
   description: string;
 }
