@@ -68,8 +68,8 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Top 3 highlight - green for medals */
-.medals .topThree {
+/* Top 3 highlight - green for fame */
+.fame .topThree {
   background: rgba(0, 255, 135, 0.05);
 }
 
@@ -119,8 +119,8 @@
   font-size: 0.75rem;
 }
 
-/* Score color - green for medals */
-.medals .score {
+/* Score color - green for fame */
+.fame .score {
   color: #00ff87;
   font-weight: 600;
   font-size: 1.1rem;

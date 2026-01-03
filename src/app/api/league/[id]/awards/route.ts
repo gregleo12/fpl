@@ -1811,7 +1811,7 @@ export async function GET(
     });
 
     // ==========================================
-    // 🏆 MEDAL TALLY & 💀 WALL OF SHAME
+    // 🏆 WALK OF FAME & 💀 WALK OF SHAME
     // ==========================================
 
     // Define which awards are "shame" awards (negative achievements)
@@ -1830,8 +1830,8 @@ export async function GET(
     ]);
 
     // Initialize tallies for all managers
-    const medalTally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
-    const shameTally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
+    const walkOfFame: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
+    const walkOfShame: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
 
     allLeagueManagers.rows.forEach((m: any) => {
       const base = {
@@ -1842,15 +1842,15 @@ export async function GET(
         silver: 0,
         bronze: 0
       };
-      medalTally[m.entry_id] = { ...base };
-      shameTally[m.entry_id] = { ...base };
+      walkOfFame[m.entry_id] = { ...base };
+      walkOfShame[m.entry_id] = { ...base };
     });
 
     // Count medals for all awards
     categories.forEach(category => {
       category.awards.forEach(award => {
         const isShame = SHAME_AWARDS.has(award.title);
-        const tally = isShame ? shameTally : medalTally;
+        const tally = isShame ? walkOfShame : walkOfFame;
 
         // Gold (1st place)
         if (award.winner) {
@@ -1869,7 +1869,7 @@ export async function GET(
       });
     });
 
-    // Convert to sorted arrays
+    // Convert to sorted arrays (include ALL managers, even with 0 medals)
     const sortTally = (tally: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>>): MedalCount[] => {
       return Object.values(tally)
         .map(m => ({
@@ -1877,7 +1877,6 @@ export async function GET(
           total: m.gold + m.silver + m.bronze,
           score: (m.gold * 3) + (m.silver * 2) + (m.bronze * 1)
         }))
-        .filter(m => m.total > 0) // Only include managers with at least one medal
         .sort((a, b) => {
           if (b.score !== a.score) return b.score - a.score;
           if (b.gold !== a.gold) return b.gold - a.gold;
@@ -1887,8 +1886,8 @@ export async function GET(
         .map((m, index) => ({ ...m, rank: index + 1 }));
     };
 
-    const sortedMedalTally = sortTally(medalTally);
-    const sortedShameTally = sortTally(shameTally);
+    const sortedWalkOfFame = sortTally(walkOfFame);
+    const sortedWalkOfShame = sortTally(walkOfShame);
 
     return NextResponse.json({
       success: true,
@@ -1896,8 +1895,8 @@ export async function GET(
         league_id: leagueId,
         period: 'GW1-19',
         categories,
-        medalTally: sortedMedalTally,
-        shameTally: sortedShameTally
+        walkOfFame: sortedWalkOfFame,
+        walkOfShame: sortedWalkOfShame
       }
     });
 

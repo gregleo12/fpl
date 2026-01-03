@@ -1,6 +1,6 @@
 'use client';
 
-import styles from './MedalTally.module.css';
+import styles from './WalkTables.module.css';
 
 interface MedalEntry {
   rank: number;
@@ -14,9 +14,9 @@ interface MedalEntry {
   score: number;
 }
 
-interface MedalTallyProps {
-  medalTally: MedalEntry[];
-  shameTally: MedalEntry[];
+interface WalkTablesProps {
+  fame: MedalEntry[];
+  shame: MedalEntry[];
   myTeamId: string;
 }
 
@@ -24,13 +24,13 @@ function TallyTable({
   entries,
   title,
   subtitle,
-  variant = 'medals',
+  variant = 'fame',
   myTeamId
 }: {
   entries: MedalEntry[];
   title: string;
   subtitle: string;
-  variant?: 'medals' | 'shame';
+  variant?: 'fame' | 'shame';
   myTeamId: string;
 }) {
   return (
@@ -82,19 +82,19 @@ function TallyTable({
   );
 }
 
-export default function MedalTally({ medalTally, shameTally, myTeamId }: MedalTallyProps) {
+export default function WalkTables({ fame, shame, myTeamId }: WalkTablesProps) {
   return (
     <div className={styles.wrapper}>
       <TallyTable
-        entries={medalTally}
-        title="🏆 Medal Tally"
+        entries={fame}
+        title="🏆 Walk of Fame"
         subtitle="Podium finishes in achievement awards"
-        variant="medals"
+        variant="fame"
         myTeamId={myTeamId}
       />
       <TallyTable
-        entries={shameTally}
-        title="💀 Wall of Shame"
+        entries={shame}
+        title="💀 Walk of Shame"
         subtitle="Podium finishes in dubious honor awards"
         variant="shame"
         myTeamId={myTeamId}

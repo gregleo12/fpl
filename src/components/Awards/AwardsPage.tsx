@@ -12,7 +12,8 @@ import {
   Bomb, Trophy, Frown, HeartCrack, Timer,
   Coffee, FastForward, Armchair, Meh
 } from 'lucide-react';
-import MedalTally from './MedalTally';
+import WalkPreview from './WalkPreview';
+import WalkTables from './WalkTables';
 
 interface Award {
   title: string;
@@ -60,8 +61,8 @@ interface AwardsData {
   league_id: number;
   period: string;
   categories: AwardCategory[];
-  medalTally?: MedalEntry[];
-  shameTally?: MedalEntry[];
+  walkOfFame?: MedalEntry[];
+  walkOfShame?: MedalEntry[];
 }
 
 interface Props {
@@ -213,6 +214,15 @@ export function AwardsPage({ leagueId }: Props) {
         <p>Celebrating the best (and most entertaining) performances of the first half of the season!</p>
       </div>
 
+      {/* Walk of Fame & Shame Preview (Top 3) */}
+      {awardsData.walkOfFame && awardsData.walkOfShame && (
+        <WalkPreview
+          fame={awardsData.walkOfFame}
+          shame={awardsData.walkOfShame}
+          myTeamId={myTeamId}
+        />
+      )}
+
       <div className={styles.categories}>
         {awardsData.categories.map((category) => (
           <div key={category.category} className={styles.category}>
@@ -234,11 +244,11 @@ export function AwardsPage({ leagueId }: Props) {
         ))}
       </div>
 
-      {/* Medal Tally & Wall of Shame */}
-      {awardsData.medalTally && awardsData.shameTally && (
-        <MedalTally
-          medalTally={awardsData.medalTally}
-          shameTally={awardsData.shameTally}
+      {/* Walk of Fame & Shame Tables (Full Rankings) */}
+      {awardsData.walkOfFame && awardsData.walkOfShame && (
+        <WalkTables
+          fame={awardsData.walkOfFame}
+          shame={awardsData.walkOfShame}
           myTeamId={myTeamId}
         />
       )}

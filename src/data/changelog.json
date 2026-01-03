@@ -1,13 +1,13 @@
 [
   {
-    "version": "4.7.18",
+    "version": "4.7.19",
     "date": "Jan 3, 2026",
-    "title": "🏆 Medal Tally & 💀 Wall of Shame",
+    "title": "🏆 Walk of Fame & 💀 Walk of Shame",
     "changes": [
-      "NEW: Medal Tally table showing podium finishes in positive awards",
-      "NEW: Wall of Shame table showing podium finishes in dubious awards",
-      "Weighted scoring (Gold × 3 + Silver × 2 + Bronze × 1)",
-      "Top 3 highlighted in each table, your team gets a badge"
+      "NEW: Top-3 preview cards at top of Awards page",
+      "NEW: Walk of Fame table (all 20 managers ranked by positive awards)",
+      "NEW: Walk of Shame table (all 20 managers ranked by dubious honors)",
+      "Weighted scoring with full podium tracking across 29 awards"
     ]
   },
   {

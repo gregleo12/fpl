@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.18** (January 3, 2026)
+**v4.7.19** (January 3, 2026)
 
-**K-201j: Medal Tally & Wall of Shame** - Added two leaderboard tables at the bottom of the Awards page: Medal Tally (🏆) for positive awards and Wall of Shame (💀) for dubious honors. Features weighted scoring, top 3 highlights, and mobile-responsive design.
+**K-201j: Walk of Fame & Walk of Shame** - Added top-3 preview cards at the top of Awards page plus complete leaderboard tables at the bottom. Features Walk of Fame (positive awards) and Walk of Shame (dubious honors) with weighted scoring (🥇×3 + 🥈×2 + 🥉×1) for all 20 managers.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
