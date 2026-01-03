@@ -980,7 +980,7 @@ export async function GET(
        WHERE h.league_id = $1 AND h.event <= 19
        GROUP BY h.entry_id, m.player_name, m.team_name
        ORDER BY total_transfers DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -999,6 +999,12 @@ export async function GET(
           team_name: transferKing.rows[1].team_name
         } : undefined,
         runner_up_value: transferKing.rows[1] ? parseInt(transferKing.rows[1].total_transfers) : undefined,
+        third_place: transferKing.rows[2] ? {
+          entry_id: transferKing.rows[2].entry_id,
+          player_name: transferKing.rows[2].player_name,
+          team_name: transferKing.rows[2].team_name
+        } : undefined,
+        third_place_value: transferKing.rows[2] ? parseInt(transferKing.rows[2].total_transfers) : undefined,
         unit: 'transfers',
         description: 'Most transfers made'
       });
@@ -1012,7 +1018,7 @@ export async function GET(
        WHERE h.league_id = $1 AND h.event <= 19
        GROUP BY h.entry_id, m.player_name, m.team_name
        ORDER BY total_transfers ASC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -1031,6 +1037,12 @@ export async function GET(
           team_name: setAndForget.rows[1].team_name
         } : undefined,
         runner_up_value: setAndForget.rows[1] ? parseInt(setAndForget.rows[1].total_transfers) : undefined,
+        third_place: setAndForget.rows[2] ? {
+          entry_id: setAndForget.rows[2].entry_id,
+          player_name: setAndForget.rows[2].player_name,
+          team_name: setAndForget.rows[2].team_name
+        } : undefined,
+        third_place_value: setAndForget.rows[2] ? parseInt(setAndForget.rows[2].total_transfers) : undefined,
         unit: 'transfers',
         description: 'Fewest transfers made'
       });
@@ -1044,7 +1056,7 @@ export async function GET(
        JOIN managers m ON m.entry_id = c.entry_id
        WHERE c.league_id = $1 AND c.event <= 19
        ORDER BY h.points DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -1070,6 +1082,12 @@ export async function GET(
           team_name: bestChipWeek.rows[1].team_name
         } : undefined,
         runner_up_value: bestChipWeek.rows[1]?.points,
+        third_place: bestChipWeek.rows[2] ? {
+          entry_id: bestChipWeek.rows[2].entry_id,
+          player_name: bestChipWeek.rows[2].player_name,
+          team_name: bestChipWeek.rows[2].team_name
+        } : undefined,
+        third_place_value: bestChipWeek.rows[2]?.points,
         unit: `pts (${chipNames[bestChipWeek.rows[0].chip_name]} GW${bestChipWeek.rows[0].event})`,
         description: 'Highest score in a chip gameweek'
       });
@@ -1097,7 +1115,7 @@ export async function GET(
     // Find highest scores that weren't chip weeks
     const nonChipScores = allGWScores.rows
       .filter((s: any) => !chipWeeks.has(`${s.entry_id}-${s.event}`))
-      .slice(0, 2);
+      .slice(0, 3);
 
     if (nonChipScores.length > 0) {
       strategyAwards.push({
@@ -1114,6 +1132,12 @@ export async function GET(
           team_name: nonChipScores[1].team_name
         } : undefined,
         runner_up_value: nonChipScores[1]?.points,
+        third_place: nonChipScores[2] ? {
+          entry_id: nonChipScores[2].entry_id,
+          player_name: nonChipScores[2].player_name,
+          team_name: nonChipScores[2].team_name
+        } : undefined,
+        third_place_value: nonChipScores[2]?.points,
         unit: `pts in GW${nonChipScores[0].event}`,
         description: 'Highest score without using a chip'
       });
@@ -1127,7 +1151,7 @@ export async function GET(
        WHERE h.league_id = $1 AND h.event <= 19
        GROUP BY h.entry_id, m.player_name, m.team_name
        ORDER BY total_hits DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -1146,6 +1170,12 @@ export async function GET(
           team_name: hitTaker.rows[1].team_name
         } : undefined,
         runner_up_value: hitTaker.rows[1] ? parseInt(hitTaker.rows[1].total_hits) : undefined,
+        third_place: hitTaker.rows[2] ? {
+          entry_id: hitTaker.rows[2].entry_id,
+          player_name: hitTaker.rows[2].player_name,
+          team_name: hitTaker.rows[2].team_name
+        } : undefined,
+        third_place_value: hitTaker.rows[2] ? parseInt(hitTaker.rows[2].total_hits) : undefined,
         unit: 'pts lost to hits',
         description: 'Most points lost to transfer hits'
       });
@@ -1171,6 +1201,7 @@ export async function GET(
       // 1. Luckiest Manager
       const luckiest = sortedLuck[0];
       const secondLuckiest = sortedLuck[1];
+      const thirdLuckiest = sortedLuck.length >= 3 ? sortedLuck[2] : undefined;
       luckAwards.push({
         title: 'Luckiest Manager',
         winner: {
@@ -1185,6 +1216,12 @@ export async function GET(
           team_name: secondLuckiest.team_name
         },
         runner_up_value: parseFloat((secondLuckiest.season_luck_index * 10).toFixed(1)),
+        third_place: thirdLuckiest ? {
+          entry_id: thirdLuckiest.entry_id,
+          player_name: thirdLuckiest.name,
+          team_name: thirdLuckiest.team_name
+        } : undefined,
+        third_place_value: thirdLuckiest ? parseFloat((thirdLuckiest.season_luck_index * 10).toFixed(1)) : undefined,
         unit: 'luck index',
         description: 'Highest season luck index'
       });
@@ -1192,6 +1229,7 @@ export async function GET(
       // 2. Unluckiest Manager
       const unluckiest = sortedLuck[sortedLuck.length - 1];
       const secondUnluckiest = sortedLuck[sortedLuck.length - 2];
+      const thirdUnluckiest = sortedLuck.length >= 3 ? sortedLuck[sortedLuck.length - 3] : undefined;
       luckAwards.push({
         title: 'Unluckiest Manager',
         winner: {
@@ -1206,6 +1244,12 @@ export async function GET(
           team_name: secondUnluckiest.team_name
         },
         runner_up_value: parseFloat((secondUnluckiest.season_luck_index * 10).toFixed(1)),
+        third_place: thirdUnluckiest ? {
+          entry_id: thirdUnluckiest.entry_id,
+          player_name: thirdUnluckiest.name,
+          team_name: thirdUnluckiest.team_name
+        } : undefined,
+        third_place_value: thirdUnluckiest ? parseFloat((thirdUnluckiest.season_luck_index * 10).toFixed(1)) : undefined,
         unit: 'luck index',
         description: 'Lowest season luck index'
       });
@@ -1345,8 +1389,10 @@ export async function GET(
     // 3. Biggest Victory
     let biggestVictory: any = null;
     let secondBiggest: any = null;
+    let thirdBiggest: any = null;
     let maxMargin = 0;
     let secondMargin = 0;
+    let thirdMargin = 0;
 
     allH2HMatches.rows.forEach((match: any) => {
       const margin = Math.abs(match.entry_1_points - match.entry_2_points);
@@ -1355,6 +1401,8 @@ export async function GET(
       const loser = managers.rows.find((m: any) => m.entry_id === loserId);
 
       if (margin > maxMargin) {
+        thirdMargin = secondMargin;
+        thirdBiggest = secondBiggest;
         secondMargin = maxMargin;
         secondBiggest = biggestVictory;
         maxMargin = margin;
@@ -1368,9 +1416,22 @@ export async function GET(
           event: match.event
         };
       } else if (margin > secondMargin) {
+        thirdMargin = secondMargin;
+        thirdBiggest = secondBiggest;
         secondMargin = margin;
         const winner = managers.rows.find((m: any) => m.entry_id === winnerId);
         secondBiggest = {
+          entry_id: winnerId,
+          player_name: winner?.player_name || 'Unknown',
+          team_name: winner?.team_name || 'Unknown',
+          margin,
+          opponent: loser?.team_name || 'Unknown',
+          event: match.event
+        };
+      } else if (margin > thirdMargin) {
+        thirdMargin = margin;
+        const winner = managers.rows.find((m: any) => m.entry_id === winnerId);
+        thirdBiggest = {
           entry_id: winnerId,
           player_name: winner?.player_name || 'Unknown',
           team_name: winner?.team_name || 'Unknown',
@@ -1396,6 +1457,12 @@ export async function GET(
           team_name: secondBiggest.team_name
         } : undefined,
         runner_up_value: secondBiggest?.margin,
+        third_place: thirdBiggest ? {
+          entry_id: thirdBiggest.entry_id,
+          player_name: thirdBiggest.player_name,
+          team_name: thirdBiggest.team_name
+        } : undefined,
+        third_place_value: thirdBiggest?.margin,
         unit: `pts vs ${biggestVictory.opponent}`,
         description: `GW${biggestVictory.event} demolition`
       });
@@ -1488,7 +1555,7 @@ export async function GET(
 
     const bestWinStreak = Array.from(winningStreaks.entries())
       .sort((a, b) => b[1].max - a[1].max)
-      .slice(0, 2);
+      .slice(0, 3);
 
     if (bestWinStreak.length > 0 && bestWinStreak[0][1].max > 0) {
       h2hAwards.push({
@@ -1505,6 +1572,12 @@ export async function GET(
           team_name: bestWinStreak[1][1].team_name
         } : undefined,
         runner_up_value: bestWinStreak[1] && bestWinStreak[1][1].max > 0 ? bestWinStreak[1][1].max : undefined,
+        third_place: bestWinStreak[2] && bestWinStreak[2][1].max > 0 ? {
+          entry_id: bestWinStreak[2][0],
+          player_name: bestWinStreak[2][1].player_name,
+          team_name: bestWinStreak[2][1].team_name
+        } : undefined,
+        third_place_value: bestWinStreak[2] && bestWinStreak[2][1].max > 0 ? bestWinStreak[2][1].max : undefined,
         unit: 'wins',
         description: `GW${bestWinStreak[0][1].startGW}-${bestWinStreak[0][1].endGW}`
       });
@@ -1555,7 +1628,7 @@ export async function GET(
 
     const worstLoseStreak = Array.from(losingStreaks.entries())
       .sort((a, b) => b[1].max - a[1].max)
-      .slice(0, 2);
+      .slice(0, 3);
 
     if (worstLoseStreak.length > 0 && worstLoseStreak[0][1].max > 0) {
       h2hAwards.push({
@@ -1572,6 +1645,12 @@ export async function GET(
           team_name: worstLoseStreak[1][1].team_name
         } : undefined,
         runner_up_value: worstLoseStreak[1] && worstLoseStreak[1][1].max > 0 ? worstLoseStreak[1][1].max : undefined,
+        third_place: worstLoseStreak[2] && worstLoseStreak[2][1].max > 0 ? {
+          entry_id: worstLoseStreak[2][0],
+          player_name: worstLoseStreak[2][1].player_name,
+          team_name: worstLoseStreak[2][1].team_name
+        } : undefined,
+        third_place_value: worstLoseStreak[2] && worstLoseStreak[2][1].max > 0 ? worstLoseStreak[2][1].max : undefined,
         unit: 'losses',
         description: `GW${worstLoseStreak[0][1].startGW}-${worstLoseStreak[0][1].endGW}`
       });
