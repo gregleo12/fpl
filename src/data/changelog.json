@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.7.0",
+    "date": "2026-01-03",
+    "title": "Mid-Season Awards Page (K-201)",
+    "changes": [
+      "NEW: Full-page Mid-Season Awards celebrating GW1-19 achievements",
+      "26 different awards across 6 categories (Big Ones, Performance, Strategy, Luck, H2H, Fun)",
+      "Beautiful purple gradient design with smooth animations",
+      "Your awards highlighted with special 'You!' badge",
+      "Mobile-first responsive layout (1-3 column grid)",
+      "Accessible via prominent banner in Stats > Awards tab",
+      "Awards include: League Winner, Best GW, Hot Streak, Transfer King, Giant Slayer, The Phoenix, and 20 more"
+    ]
+  },
+  {
     "version": "4.6.0",
     "date": "2026-01-03",
     "title": "Revamped Luck System - Single Source of Truth",

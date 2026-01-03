@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './Awards.module.css';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { AwardCard, type AwardData } from './AwardCard';
 
 export interface MonthAwardsData {
@@ -32,6 +33,8 @@ function getMonthFromGW(gw: number): number {
 }
 
 export function Awards({ leagueId, completedGameweeks }: Props) {
+  const router = useRouter();
+
   // Determine current month based on completed GWs
   const currentMonthIndex = getMonthFromGW(completedGameweeks);
 
@@ -93,6 +96,21 @@ export function Awards({ leagueId, completedGameweeks }: Props) {
 
   return (
     <div className={styles.container}>
+      {/* K-201: Mid-Season Awards Banner */}
+      <button
+        className={styles.midSeasonBanner}
+        onClick={() => router.push(`/league/${leagueId}/awards`)}
+      >
+        <div className={styles.bannerIcon}>
+          <Trophy size={24} />
+        </div>
+        <div className={styles.bannerContent}>
+          <h3 className={styles.bannerTitle}>Mid-Season Awards (GW1-19)</h3>
+          <p className={styles.bannerSubtitle}>View all awards from the first half of the season</p>
+        </div>
+        <div className={styles.bannerArrow}>→</div>
+      </button>
+
       {/* Month Selector */}
       <div className={styles.monthSelector}>
         <button

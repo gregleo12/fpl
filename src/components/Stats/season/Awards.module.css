@@ -2,6 +2,85 @@
   width: 100%;
 }
 
+/* K-201: Mid-Season Awards Banner */
+.midSeasonBanner {
+  width: 100%;
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.midSeasonBanner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  border-color: rgba(139, 92, 246, 0.8);
+}
+
+.bannerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.bannerContent {
+  flex: 1;
+  text-align: left;
+}
+
+.bannerTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.25rem 0;
+}
+
+.bannerSubtitle {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.bannerArrow {
+  font-size: 1.5rem;
+  color: #ffffff;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Mobile: Adjust banner */
+@media (max-width: 640px) {
+  .midSeasonBanner {
+    padding: 1rem;
+  }
+
+  .bannerTitle {
+    font-size: 1rem;
+  }
+
+  .bannerSubtitle {
+    font-size: 0.8125rem;
+  }
+
+  .bannerIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .bannerArrow {
+    font-size: 1.25rem;
+  }
+}
+
 /* Month Selector */
 .monthSelector {
   display: flex;

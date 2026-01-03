@@ -2,7 +2,131 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.6.0 (January 3, 2026)
+**Current Version:** v4.7.0 (January 3, 2026)
+
+---
+
+## v4.7.0 - Mid-Season Awards Page (K-201) (Jan 3, 2026)
+
+**NEW FEATURE:** Comprehensive Mid-Season Awards page showcasing the best (and most entertaining) performances from GW1-19
+
+### What's New
+
+**Full-Page Awards Experience**
+- New dedicated route at `/league/[leagueId]/awards`
+- Comprehensive award ceremony for the first half of the season (GW1-19)
+- 26 different awards across 6 categories
+- Beautiful purple gradient design with animations
+- Mobile-first responsive layout
+
+**Award Categories:**
+
+1. **🏆 The Big Ones (4 awards)**
+   - League Winner - Most total points
+   - Top Scorer - Highest total points
+   - Biggest Climber - Greatest rank improvement
+   - Best Gameweek - Highest single GW score
+
+2. **📊 Performance (6 awards)**
+   - Most Consistent - Lowest standard deviation
+   - Best Average - Highest points per GW
+   - Hot Streak - Longest above-average streak
+   - Worst Gameweek - Lowest single GW score
+   - Biggest Faller - Greatest rank decline
+   - Rollercoaster - Most volatile rank movement
+
+3. **🎯 Strategy (4 awards)**
+   - Transfer King/Queen - Most transfers made
+   - Set and Forget - Fewest transfers made
+   - Chip Master - Best chip timing and value
+   - Hit Taker - Most points lost to hits
+
+4. **🍀 Luck (4 awards)**
+   - Luckiest Manager - Most positive luck variance
+   - Unluckiest Manager - Most negative luck variance
+   - Differential Master - Most unique team selections
+   - Template Team - Most similar to consensus
+
+5. **⚔️ H2H Battle (4 awards)**
+   - Win Streak - Longest consecutive wins
+   - Giant Slayer - Most wins vs higher-ranked opponents
+   - Biggest Victory - Largest H2H win margin
+   - Close Call King - Most wins by ≤5 points
+
+6. **🎭 Fun (4 awards)**
+   - The Phoenix - Greatest recovery from worst rank
+   - The Underachiever - Biggest decline from best rank
+   - The Wildcard - Biggest week-to-week points swing
+   - The Survivor - Most below-average weeks survived
+
+### User Experience
+
+**Entry Point**
+- Prominent banner in Stats > Awards tab
+- Click to navigate to full-page experience
+- Trophy icon and clear call-to-action
+
+**Awards Display**
+- Each award shows:
+  - Award title and icon
+  - Winner's name and team
+  - Achievement value with unit
+  - Descriptive subtitle
+- "You!" badge highlights user's awards
+- Hover animations and gradient effects
+
+**Mobile Optimized**
+- Vertical scroll layout
+- Responsive grid (1 column mobile, 2-3 columns desktop)
+- Touch-friendly cards
+- Sticky header with back button
+
+### Technical Implementation
+
+**Backend**
+- New API endpoint: `/api/league/[id]/awards`
+- Comprehensive award calculations using database queries
+- Efficient parallel data fetching
+- Returns structured JSON with all 26 awards
+
+**Frontend**
+- Page route: `/league/[leagueId]/awards/page.tsx`
+- Main component: `AwardsPage.tsx`
+- Reusable card: `AwardCard.tsx`
+- CSS modules for styling
+
+**Files Created:**
+- `/src/app/api/league/[id]/awards/route.ts` (700+ lines)
+- `/src/app/league/[leagueId]/awards/page.tsx`
+- `/src/components/Awards/AwardsPage.tsx`
+- `/src/components/Awards/AwardsPage.module.css`
+- `/src/components/Awards/AwardCard.tsx`
+- `/src/components/Awards/AwardCard.module.css`
+
+**Files Modified:**
+- `/src/components/Stats/season/Awards.tsx` - Added banner link
+- `/src/components/Stats/season/Awards.module.css` - Added banner styles
+
+### Data Sources
+
+All calculations use existing database tables:
+- `manager_gw_history` - Points, ranks, transfers
+- `manager_chips` - Chip usage
+- `h2h_matches` - Match results
+- `league_standings` - Final standings
+- `manager_gw_luck` - Luck variance data
+
+### Benefits
+
+- ✅ **Engagement** - Fun way to celebrate managers' achievements
+- ✅ **Discovery** - Highlights performances users might have missed
+- ✅ **Competition** - Adds friendly competitive element
+- ✅ **Retention** - Gives users reason to check back mid-season
+- ✅ **Mobile-First** - Works beautifully on all devices
+
+### Migration Notes
+
+No database changes required. Feature uses existing cached data. Seamlessly integrated with current Stats navigation.
 
 ---
 
