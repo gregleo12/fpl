@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.15** (January 3, 2026)
+**v4.7.16** (January 3, 2026)
 
-**K-201h: Missing Awards Fix** - Fixed Close Call King and Heartbreaker awards not appearing in H2H Battle section. Awards now calculate correctly by using all league managers instead of only those with completed gameweek data.
+**K-201i: Fun Award Names & Icons** - Renamed all 29 awards with fun, memorable names (e.g., "League Winner" → "King of the Hill", "Best Average" → "Steady Eddie") and added colorful Lucide icons to every award for enhanced visual appeal.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

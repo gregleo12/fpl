@@ -25,6 +25,19 @@
   margin-bottom: 16px;
 }
 
+.titleWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  color: #00ff87;
+  flex-shrink: 0;
+}
+
 .title {
   font-size: 18px;
   font-weight: 600;

@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AwardCard } from './AwardCard';
 import styles from './AwardsPage.module.css';
+import {
+  Crown, Target, Rocket,
+  TrendingUp, Flame, Shield, Zap, CloudLightning, Globe, ArrowDownCircle, Cog, Activity, TrendingDown,
+  RefreshCw, Moon, Gem, Dumbbell, AlertTriangle,
+  Star, Skull,
+  Bomb, Trophy, Frown, HeartCrack, Timer,
+  Coffee, FastForward, Armchair, Meh
+} from 'lucide-react';
 
 interface Award {
   title: string;
@@ -43,6 +51,56 @@ interface AwardsData {
 
 interface Props {
   leagueId: string;
+}
+
+// Icon mapping function
+function getAwardIcon(title: string) {
+  const iconMap: { [key: string]: JSX.Element } = {
+    // The Big Ones
+    'King of the Hill': <Crown size={20} />,
+    'Points Machine': <Target size={20} />,
+    'Rocket Man': <Rocket size={20} />,
+
+    // Performance
+    'Steady Eddie': <TrendingUp size={20} />,
+    'On Fire': <Flame size={20} />,
+    'Captain Fantastic': <Shield size={20} />,
+    'Gameweek God': <Zap size={20} />,
+    'Nightmare Week': <CloudLightning size={20} />,
+    'Falling Star': <TrendingDown size={20} />,
+    'World Beater': <Globe size={20} />,
+    'Rock Bottom': <ArrowDownCircle size={20} />,
+    'Mr. Reliable': <Activity size={20} />,
+    'Wild Ride': <AlertTriangle size={20} />,
+
+    // Strategy
+    'Transfer Addict': <RefreshCw size={20} />,
+    'The Sleeper': <Moon size={20} />,
+    'Chip Wizard': <Gem size={20} />,
+    'Raw Talent': <Dumbbell size={20} />,
+    'Point Chaser': <Cog size={20} />,
+
+    // Luck
+    'Lucky Charm': <Star size={20} />,
+    'Cursed Soul': <Skull size={20} />,
+
+    // H2H Battle
+    'Early Dominator': <Trophy size={20} />,
+    'The Underdog': <Star size={20} />,
+    'Demolition Expert': <Bomb size={20} />,
+    'Nail Biter': <Timer size={20} />,
+    'Unstoppable Force': <Trophy size={20} />,
+    'The Struggle Bus': <Frown size={20} />,
+    'Close But No Cigar': <HeartCrack size={20} />,
+
+    // Fun
+    'Slow Starter': <Coffee size={20} />,
+    'Second Half Surge': <FastForward size={20} />,
+    'Bench Warmer': <Armchair size={20} />,
+    'Mr. Average': <Meh size={20} />,
+  };
+
+  return iconMap[title] || null;
 }
 
 export function AwardsPage({ leagueId }: Props) {
@@ -153,6 +211,7 @@ export function AwardsPage({ leagueId }: Props) {
                   key={award.title}
                   award={award}
                   myTeamId={myTeamId}
+                  icon={getAwardIcon(award.title)}
                 />
               ))}
             </div>

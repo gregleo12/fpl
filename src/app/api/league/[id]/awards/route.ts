@@ -66,7 +66,7 @@ export async function GET(
 
     if (leagueWinner.rows.length > 0) {
       bigOnesAwards.push({
-        title: 'League Winner',
+        title: 'King of the Hill',
         winner: {
           entry_id: leagueWinner.rows[0].entry_id,
           player_name: leagueWinner.rows[0].player_name,
@@ -105,7 +105,7 @@ export async function GET(
 
     if (topScorer.rows.length > 0) {
       bigOnesAwards.push({
-        title: 'Top Scorer',
+        title: 'Points Machine',
         winner: {
           entry_id: topScorer.rows[0].entry_id,
           player_name: topScorer.rows[0].player_name,
@@ -293,7 +293,7 @@ export async function GET(
 
     if (bestClimb.climb > 0) {
       bigOnesAwards.push({
-        title: 'Biggest Climber',
+        title: 'Rocket Man',
         winner: {
           entry_id: bestClimb.entry_id,
           player_name: bestClimb.player_name,
@@ -346,7 +346,7 @@ export async function GET(
 
     if (bestAverage.rows.length > 0) {
       performanceAwards.push({
-        title: 'Best Average',
+        title: 'Steady Eddie',
         winner: {
           entry_id: bestAverage.rows[0].entry_id,
           player_name: bestAverage.rows[0].player_name,
@@ -426,7 +426,7 @@ export async function GET(
 
     if (hotStreaks.length > 0 && hotStreaks[0].max_streak > 0) {
       performanceAwards.push({
-        title: 'Hot Streak',
+        title: 'On Fire',
         winner: {
           entry_id: hotStreaks[0].entry_id,
           player_name: hotStreaks[0].player_name,
@@ -471,7 +471,7 @@ export async function GET(
 
     if (bestCaptainPicks.rows.length > 0) {
       performanceAwards.push({
-        title: 'Best Captain Picks',
+        title: 'Captain Fantastic',
         winner: {
           entry_id: bestCaptainPicks.rows[0].entry_id,
           player_name: bestCaptainPicks.rows[0].player_name,
@@ -508,7 +508,7 @@ export async function GET(
 
     if (bestGW.rows.length > 0) {
       performanceAwards.push({
-        title: 'Best Gameweek',
+        title: 'Gameweek God',
         winner: {
           entry_id: bestGW.rows[0].entry_id,
           player_name: bestGW.rows[0].player_name,
@@ -545,7 +545,7 @@ export async function GET(
 
     if (worstGW.rows.length > 0) {
       performanceAwards.push({
-        title: 'Worst Gameweek',
+        title: 'Nightmare Week',
         winner: {
           entry_id: worstGW.rows[0].entry_id,
           player_name: worstGW.rows[0].player_name,
@@ -666,7 +666,7 @@ export async function GET(
 
     if (biggestFall.fall > 0) {
       performanceAwards.push({
-        title: 'Biggest Faller',
+        title: 'Falling Star',
         winner: {
           entry_id: biggestFall.entry_id,
           player_name: biggestFall.player_name,
@@ -795,7 +795,7 @@ export async function GET(
 
     if (bestGWRank.rows.length > 0) {
       performanceAwards.push({
-        title: 'Best GW Rank',
+        title: 'World Beater',
         winner: {
           entry_id: bestGWRank.rows[0].entry_id,
           player_name: bestGWRank.rows[0].player_name,
@@ -832,7 +832,7 @@ export async function GET(
 
     if (worstGWRank.rows.length > 0) {
       performanceAwards.push({
-        title: 'Worst GW Rank',
+        title: 'Rock Bottom',
         winner: {
           entry_id: worstGWRank.rows[0].entry_id,
           player_name: worstGWRank.rows[0].player_name,
@@ -875,7 +875,7 @@ export async function GET(
 
     if (consistency.rows.length > 0) {
       performanceAwards.push({
-        title: 'Most Consistent',
+        title: 'Mr. Reliable',
         winner: {
           entry_id: consistency.rows[0].entry_id,
           player_name: consistency.rows[0].player_name,
@@ -1010,7 +1010,7 @@ export async function GET(
 
     if (volatility.rows.length > 0) {
       performanceAwards.push({
-        title: 'Rollercoaster',
+        title: 'Wild Ride',
         winner: {
           entry_id: volatility.rows[0].entry_id,
           player_name: volatility.rows[0].player_name,
@@ -1059,7 +1059,7 @@ export async function GET(
 
     if (transferKing.rows.length > 0) {
       strategyAwards.push({
-        title: 'Transfer King/Queen',
+        title: 'Transfer Addict',
         winner: {
           entry_id: transferKing.rows[0].entry_id,
           player_name: transferKing.rows[0].player_name,
@@ -1097,7 +1097,7 @@ export async function GET(
 
     if (setAndForget.rows.length > 0) {
       strategyAwards.push({
-        title: 'Set and Forget',
+        title: 'The Sleeper',
         winner: {
           entry_id: setAndForget.rows[0].entry_id,
           player_name: setAndForget.rows[0].player_name,
@@ -1142,7 +1142,7 @@ export async function GET(
       };
 
       strategyAwards.push({
-        title: 'Best Chip Week',
+        title: 'Chip Wizard',
         winner: {
           entry_id: bestChipWeek.rows[0].entry_id,
           player_name: bestChipWeek.rows[0].player_name,
@@ -1192,7 +1192,7 @@ export async function GET(
 
     if (nonChipScores.length > 0) {
       strategyAwards.push({
-        title: 'Best Non-Chip Week',
+        title: 'Raw Talent',
         winner: {
           entry_id: nonChipScores[0].entry_id,
           player_name: nonChipScores[0].player_name,
@@ -1230,7 +1230,7 @@ export async function GET(
 
     if (hitTaker.rows.length > 0) {
       strategyAwards.push({
-        title: 'Hit Taker',
+        title: 'Point Chaser',
         winner: {
           entry_id: hitTaker.rows[0].entry_id,
           player_name: hitTaker.rows[0].player_name,
@@ -1276,7 +1276,7 @@ export async function GET(
       const secondLuckiest = sortedLuck[1];
       const thirdLuckiest = sortedLuck.length >= 3 ? sortedLuck[2] : undefined;
       luckAwards.push({
-        title: 'Luckiest Manager',
+        title: 'Lucky Charm',
         winner: {
           entry_id: luckiest.entry_id,
           player_name: luckiest.name,
@@ -1304,7 +1304,7 @@ export async function GET(
       const secondUnluckiest = sortedLuck[sortedLuck.length - 2];
       const thirdUnluckiest = sortedLuck.length >= 3 ? sortedLuck[sortedLuck.length - 3] : undefined;
       luckAwards.push({
-        title: 'Unluckiest Manager',
+        title: 'Cursed Soul',
         winner: {
           entry_id: unluckiest.entry_id,
           player_name: unluckiest.name,
@@ -1376,7 +1376,7 @@ export async function GET(
 
     if (winStreaks.length > 0 && winStreaks[0].max_streak > 0) {
       h2hAwards.push({
-        title: 'Win Streak',
+        title: 'Early Dominator',
         winner: {
           entry_id: winStreaks[0].entry_id,
           player_name: winStreaks[0].player_name,
@@ -1441,7 +1441,7 @@ export async function GET(
 
     if (giantSlayers.length > 0 && giantSlayers[0].upsets > 0) {
       h2hAwards.push({
-        title: 'Giant Slayer',
+        title: 'The Underdog',
         winner: {
           entry_id: giantSlayers[0].entry_id,
           player_name: giantSlayers[0].player_name,
@@ -1517,7 +1517,7 @@ export async function GET(
 
     if (biggestVictory) {
       h2hAwards.push({
-        title: 'Biggest Victory',
+        title: 'Demolition Expert',
         winner: {
           entry_id: biggestVictory.entry_id,
           player_name: biggestVictory.player_name,
@@ -1565,7 +1565,7 @@ export async function GET(
 
     if (closeCallCounts.length > 0 && closeCallCounts[0].close_calls > 0) {
       h2hAwards.push({
-        title: 'Close Call King',
+        title: 'Nail Biter',
         winner: {
           entry_id: closeCallCounts[0].entry_id,
           player_name: closeCallCounts[0].player_name,
@@ -1637,7 +1637,7 @@ export async function GET(
 
     if (bestWinStreak.length > 0 && bestWinStreak[0][1].max > 0) {
       h2hAwards.push({
-        title: 'Longest Winning Streak',
+        title: 'Unstoppable Force',
         winner: {
           entry_id: bestWinStreak[0][0],
           player_name: bestWinStreak[0][1].player_name,
@@ -1710,7 +1710,7 @@ export async function GET(
 
     if (worstLoseStreak.length > 0 && worstLoseStreak[0][1].max > 0) {
       h2hAwards.push({
-        title: 'Longest Losing Streak',
+        title: 'The Struggle Bus',
         winner: {
           entry_id: worstLoseStreak[0][0],
           player_name: worstLoseStreak[0][1].player_name,
@@ -1758,7 +1758,7 @@ export async function GET(
 
     if (heartbreakers.length > 0 && heartbreakers[0].narrow_losses > 0) {
       h2hAwards.push({
-        title: 'Heartbreaker',
+        title: 'Close But No Cigar',
         winner: {
           entry_id: heartbreakers[0].entry_id,
           player_name: heartbreakers[0].player_name,

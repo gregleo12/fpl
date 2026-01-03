@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.16",
+    "date": "Jan 3, 2026",
+    "title": "🎭 Fun Award Names & Icons",
+    "changes": [
+      "All 29 awards renamed with fun, memorable names",
+      "Colorful icons added to every award for visual flair",
+      "Examples: League Winner → King of the Hill, Best Average → Steady Eddie",
+      "Awards now have personality while staying clear and descriptive"
+    ]
+  },
+  {
     "version": "4.7.15",
     "date": "Jan 3, 2026",
     "title": "Missing Awards Fix",
