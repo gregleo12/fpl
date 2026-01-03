@@ -1542,7 +1542,7 @@ export async function GET(
     }
 
     // 4. Close Call King
-    const closeCallCounts = allManagers.rows.map((manager: any) => {
+    const closeCallCounts = allLeagueManagers.rows.map((manager: any) => {
       const matches = allH2HMatches.rows.filter(
         (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
       );
@@ -1555,12 +1555,11 @@ export async function GET(
         return margin <= 5 && match.winner === manager.entry_id;
       }).length;
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
       return {
         entry_id: manager.entry_id,
         close_calls: closeCalls,
-        player_name: managerInfo?.player_name || 'Unknown',
-        team_name: managerInfo?.team_name || 'Unknown'
+        player_name: manager.player_name,
+        team_name: manager.team_name
       };
     }).sort((a: any, b: any) => b.close_calls - a.close_calls);
 
@@ -1736,7 +1735,7 @@ export async function GET(
     }
 
     // 7. Heartbreaker (NEW)
-    const heartbreakers = allManagers.rows.map((manager: any) => {
+    const heartbreakers = allLeagueManagers.rows.map((manager: any) => {
       const matches = allH2HMatches.rows.filter(
         (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
       );
@@ -1749,12 +1748,11 @@ export async function GET(
         return margin <= 5 && match.winner !== manager.entry_id && match.winner !== null;
       }).length;
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
       return {
         entry_id: manager.entry_id,
         narrow_losses: narrowLosses,
-        player_name: managerInfo?.player_name || 'Unknown',
-        team_name: managerInfo?.team_name || 'Unknown'
+        player_name: manager.player_name,
+        team_name: manager.team_name
       };
     }).sort((a: any, b: any) => b.narrow_losses - a.narrow_losses);
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.14** (January 3, 2026)
+**v4.7.15** (January 3, 2026)
 
-**K-201g: Awards Podium Alignment** - Fixed visual alignment of manager names across all podium places in award cards. 2nd and 3rd place rows now properly indented to match 1st place, creating cleaner visual hierarchy.
+**K-201h: Missing Awards Fix** - Fixed Close Call King and Heartbreaker awards not appearing in H2H Battle section. Awards now calculate correctly by using all league managers instead of only those with completed gameweek data.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

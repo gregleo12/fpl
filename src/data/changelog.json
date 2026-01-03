@@ -1,5 +1,15 @@
 [
   {
+    "version": "4.7.15",
+    "date": "Jan 3, 2026",
+    "title": "Missing Awards Fix",
+    "changes": [
+      "Fixed Close Call King and Heartbreaker awards not appearing",
+      "Awards now calculate correctly for all league managers",
+      "Both awards now show full podium (1st, 2nd, 3rd place)"
+    ]
+  },
+  {
     "version": "4.7.14",
     "date": "Jan 3, 2026",
     "title": "Awards Podium Alignment",
