@@ -2,58 +2,113 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.12 (January 3, 2026)
+**Current Version:** v4.6.0 (January 3, 2026)
+
+---
+
+## v4.6.0 - Revamped Luck System: Single Source of Truth (Jan 3, 2026)
+
+**MAJOR RELEASE:** Complete overhaul of the luck calculation system to ensure consistency across the entire application
+
+### The Problem
+
+Before v4.6.0, the app had **three different APIs calculating season luck with three different formulas**, resulting in wildly inconsistent values across the UI:
+
+| Manager | League Rankings | Luck Modal | Stats Leaderboard |
+|---------|----------------|------------|-------------------|
+| Jean Boes | +17.0 ❌ | +20.0 ❌ | +4.0 ✓ |
+| Greg Lienart | +3.0 ❌ | +60.0 ❌ | +1.8 ✓ |
+| Adriaan Mertens | +39.0 ❌ | +180.0 ❌ | +38.8 ✓ |
+
+**Why This Happened:**
+1. `/api/league/[id]/stats` (League Rankings) - Buggy implementation with calculation errors
+2. `/api/league/[id]/stats/season` (Luck Modal) - Used old 3-component GW luck sum instead of 4-component weighted formula
+3. `/api/league/[id]/luck` (Stats Leaderboard) - Only correct implementation using the proper 4-component weighted formula
+
+### The Solution
+
+**Created a single source of truth** by extracting the correct 4-component weighted calculation into a shared function that all APIs import and use.
+
+#### Architecture
+
+```typescript
+// NEW: Single shared function in /src/lib/luckCalculator.ts
+export async function calculateSeasonLuckIndex(
+  leagueId: number,
+  db: any
+): Promise<Map<number, SeasonLuckResult>>
+
+// All three APIs now use this shared function:
+/api/league/[id]/luck          → calculateSeasonLuckIndex() ✓
+/api/league/[id]/stats         → calculateSeasonLuckIndex() ✓
+/api/league/[id]/stats/season  → calculateSeasonLuckIndex() ✓
+```
+
+#### The Formula (4-Component Weighted)
+
+```
+seasonLuckIndex = 0.4 × (variance/10) + 0.3 × rank + 0.2 × (schedule/5) + 0.1 × (chip/3)
+```
+
+**Components:**
+1. **Variance Luck (40%)** - Timing of form swings relative to opponent
+2. **Rank Luck (30%)** - Expected win probability based on GW rank vs actual result
+3. **Schedule Luck (20%)** - Opponent strength using progressive averages
+4. **Chip Luck (10%)** - Facing chip usage relative to league average
+
+### The Results
+
+All three displays now show **identical values with 1 decimal precision**:
+
+| Manager | League Rankings | Luck Modal | Stats Leaderboard |
+|---------|----------------|------------|-------------------|
+| Jean Boes | **+4.0** ✓ | **+4.0** ✓ | **+4.0** ✓ |
+| Greg Lienart | **+1.8** ✓ | **+1.8** ✓ | **+1.8** ✓ |
+| Adriaan Mertens | **+38.8** ✓ | **+38.8** ✓ | **+38.8** ✓ |
+| Dane Farran | **-10.8** ✓ | **-10.8** ✓ | **-10.8** ✓ |
+
+### Additional Improvements
+
+**Display Precision (v4.5.11)**
+- Changed League Rankings from rounded integers (+2) to 1 decimal place (+1.8)
+- Now matches the precision of Luck Leaderboard and Luck Modal
+
+**UX Cleanup (v4.5.12)**
+- Removed luck column from GW Points Rankings modal
+- Modal now focuses purely on points scored for cleaner presentation
+
+### Technical Implementation
+
+**Files Created/Modified:**
+- `/src/lib/luckCalculator.ts` - Added `calculateSeasonLuckIndex()` shared function (400+ lines)
+- `/src/app/api/league/[id]/luck/route.ts` - Refactored to use shared function
+- `/src/app/api/league/[id]/stats/route.ts` - Removed buggy function, uses shared
+- `/src/app/api/league/[id]/stats/season/route.ts` - Removed GW sum, uses shared
+- `/src/components/Stats/GWRankingsModal.tsx` - Removed luck column
+
+**Benefits:**
+- ✅ **Single source of truth** - One calculation function for all luck displays
+- ✅ **Guaranteed consistency** - Impossible to have different values across UIs
+- ✅ **Easier maintenance** - Changes to formula only need to happen in one place
+- ✅ **Better UX** - Users see consistent luck metrics throughout the app
+- ✅ **Cleaner code** - Removed 500+ lines of duplicated/buggy calculation logic
+
+### Migration Notes
+
+This release maintains backward compatibility. No database schema changes required. All luck calculations use existing cached data from the database.
 
 ---
 
 ## v4.5.12 - Removed Luck from GW Points Rankings Modal (Jan 3, 2026)
-
-**UX Improvement:** Removed luck column from GW XX Points Rankings modal
-
-### Rationale
-
-The GW Points Rankings modal is focused on showing who scored the most points in a specific gameweek. The luck metric doesn't add value in this context and clutters the display.
-
-### Changes
-
-Removed the luck column from the GW Points Rankings modal. Now displays only:
-- Rank (with medals for top 3)
-- Manager name and team
-- Points scored
-
-**Files Modified:**
-- `/src/components/Stats/GWRankingsModal.tsx` (removed luck column)
-
----
+*[Incorporated into v4.6.0]*
 
 ## v4.5.11 - League Rankings: Show 1 Decimal Place for Luck (Jan 3, 2026)
-
-**Minor Fix:** Changed League Rankings luck display from rounded integers to 1 decimal place
-
-### Problem
-
-League Rankings was rounding luck values to whole numbers:
-- Greg Lienart: +2.0 (should be +1.8)
-- Adriaan Mertens: +39.0 (should be +38.8)
-- Dane Farran: -11.0 (should be -10.8)
-
-### Solution
-
-Changed `Math.round(seasonLuck * 10)` to `parseFloat((seasonLuck * 10).toFixed(1))` in `/api/league/[id]/stats`
-
-### Impact
-
-League Rankings now shows exact values with 1 decimal place, matching Luck Leaderboard and Luck Modal:
-- Greg Lienart: **+1.8** ✓
-- Adriaan Mertens: **+38.8** ✓
-- Dane Farran: **-10.8** ✓
-
-**Files Modified:**
-- `/src/app/api/league/[id]/stats/route.ts`
-
----
+*[Incorporated into v4.6.0]*
 
 ## v4.5.10 - K-163N COMPLETE: Consolidated Season Luck Calculations (Jan 3, 2026)
+*[Incorporated into v4.6.0]*
+
+---
 
 **K-163N (FINAL IMPLEMENTATION):** Extracted 4-component season luck calculation into shared function used by all three APIs
 

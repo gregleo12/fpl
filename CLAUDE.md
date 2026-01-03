@@ -1,7 +1,7 @@
 # RivalFPL - Claude Code Context
 
-**Current Version:** v4.3.45
-**Last Updated:** December 29, 2025
+**Current Version:** v4.6.0
+**Last Updated:** January 3, 2026
 **Project:** FPL H2H Analytics Web App
 
 ---
@@ -79,6 +79,16 @@ Never return picks without also fetching GW history (caused v2.7.1 bug).
 - FPL API bootstrap-static uses `element.team`, but database query `SELECT * FROM players` returns `team_id`
 - **ALWAYS verify actual column names in DATABASE.md before writing queries**
 - **NEVER assume database columns match FPL API property names**
+
+### Calculation Consistency Rule (v4.6.0)
+**NEVER duplicate complex calculations across multiple files**
+- ✅ Extract calculation logic into shared functions in `/src/lib/`
+- ✅ All APIs displaying the same metric MUST use the same calculation function
+- ❌ DON'T copy-paste calculation logic across API routes
+- ❌ DON'T implement "similar but slightly different" versions of the same formula
+- **Example:** Season luck calculation had 3 different implementations showing 3 different values (v4.5.x bug)
+- **Solution:** Created shared `calculateSeasonLuckIndex()` in `/src/lib/luckCalculator.ts` (v4.6.0)
+- **Why:** Guarantees consistency across all UIs, easier to maintain, single source of truth
 
 ### Deployment Rules
 - ✅ Push to `staging` freely - no approval needed

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.12** (January 3, 2026)
+**v4.6.0** (January 3, 2026)
 
-UX improvement: Removed luck column from GW Points Rankings modal. The modal now focuses purely on points scored, displaying only rank, manager info, and points for a cleaner, more focused view.
+**MAJOR RELEASE: Revamped Luck System** - Complete overhaul of luck calculations to ensure consistency across the entire app. Consolidated three different calculation methods into a single source of truth using the 4-component weighted formula (Variance 40% + Rank 30% + Schedule 20% + Chip 10%). All displays (League Rankings, Luck Modal, Stats Leaderboard) now show identical values with 1 decimal precision. Removed 500+ lines of duplicated code, ensuring luck metrics are consistent, accurate, and maintainable.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
