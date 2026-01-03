@@ -509,7 +509,7 @@ export async function GET(
         ...formData,
         rankChange,
         previousRank: standing.rank - rankChange,
-        luck: Math.round(seasonLuck * 10) // K-163N: Display season luck index ×10
+        luck: parseFloat((seasonLuck * 10).toFixed(1)) // K-163N: Display season luck index ×10 with 1 decimal
       };
     });
 

@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.10** (January 3, 2026)
+**v4.5.11** (January 3, 2026)
 
-K-163N COMPLETE: Consolidated all season luck calculations into a single shared function. All three UIs (League Rankings, Luck Modal, Stats Leaderboard) now use the exact same 4-component weighted formula, guaranteeing identical luck values across the entire app. Jean Boes +4.0, Greg Lienart +1.8, Adriaan Mertens +38.8.
+Minor fix: League Rankings now displays luck values with 1 decimal place precision (e.g., +1.8, +38.8, -10.8) instead of rounding to whole numbers, matching the exact format shown in Luck Leaderboard and Luck Modal.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

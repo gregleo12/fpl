@@ -2,7 +2,34 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.10 (January 3, 2026)
+**Current Version:** v4.5.11 (January 3, 2026)
+
+---
+
+## v4.5.11 - League Rankings: Show 1 Decimal Place for Luck (Jan 3, 2026)
+
+**Minor Fix:** Changed League Rankings luck display from rounded integers to 1 decimal place
+
+### Problem
+
+League Rankings was rounding luck values to whole numbers:
+- Greg Lienart: +2.0 (should be +1.8)
+- Adriaan Mertens: +39.0 (should be +38.8)
+- Dane Farran: -11.0 (should be -10.8)
+
+### Solution
+
+Changed `Math.round(seasonLuck * 10)` to `parseFloat((seasonLuck * 10).toFixed(1))` in `/api/league/[id]/stats`
+
+### Impact
+
+League Rankings now shows exact values with 1 decimal place, matching Luck Leaderboard and Luck Modal:
+- Greg Lienart: **+1.8** ✓
+- Adriaan Mertens: **+38.8** ✓
+- Dane Farran: **-10.8** ✓
+
+**Files Modified:**
+- `/src/app/api/league/[id]/stats/route.ts`
 
 ---
 
