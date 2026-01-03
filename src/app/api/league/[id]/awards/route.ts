@@ -271,8 +271,11 @@ export async function GET(
       [leagueId]
     );
     const managers = await db.query(
-      `SELECT entry_id, player_name, team_name FROM managers WHERE entry_id = ANY($1)`,
-      [allManagers.rows.map((m: any) => m.entry_id)]
+      `SELECT m.entry_id, m.player_name, m.team_name
+       FROM managers m
+       JOIN league_standings ls ON ls.entry_id = m.entry_id
+       WHERE ls.league_id = $1`,
+      [leagueId]
     );
 
     // Calculate league average for each GW
@@ -889,6 +892,15 @@ export async function GET(
     // ==========================================
     const funAwards: Award[] = [];
 
+    // Fetch all managers in league for name lookups
+    const funManagers = await db.query(
+      `SELECT m.entry_id, m.player_name, m.team_name
+       FROM managers m
+       JOIN league_standings ls ON ls.entry_id = m.entry_id
+       WHERE ls.league_id = $1`,
+      [leagueId]
+    );
+
     // Get all rank history for Fun awards
     const allRankHistory = await db.query(
       `SELECT entry_id, event, rank
@@ -918,7 +930,7 @@ export async function GET(
       const finalRank = rankHistory[rankHistory.length - 1]?.rank || worstRank;
       const recovery = worstRank - finalRank;
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
+      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
       return {
         entry_id: manager.entry_id,
         recovery,
@@ -972,7 +984,7 @@ export async function GET(
       const finalRank = rankHistory[rankHistory.length - 1]?.rank || bestRank;
       const decline = finalRank - bestRank;
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
+      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
       return {
         entry_id: manager.entry_id,
         decline,
@@ -1020,7 +1032,7 @@ export async function GET(
         maxSwing = Math.max(maxSwing, swing);
       }
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
+      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
       return {
         entry_id: manager.entry_id,
         max_swing: maxSwing,

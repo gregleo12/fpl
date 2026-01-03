@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.3** (January 3, 2026)
+**v4.7.4** (January 3, 2026)
 
-**HOTFIX: K-201 Bug Fixes** - Complete overhaul of all Mid-Season Awards calculations. Fixed Top Scorer metric (now uses classic FPL points instead of H2H points), fixed Best/Worst GW manager names, implemented Hot Streak and Rollercoaster calculations, fixed all Strategy awards (Transfer King, Chip Master, etc.), simplified Luck awards to 2 only, clarified Giant Slayer definition. All awards now show winner + runner-up with dual display format.
+**HOTFIX: K-201 Final Fixes** - Fixed missing manager names for 4 awards (Hot Streak, The Phoenix, The Underachiever, The Wildcard). Improved visual hierarchy by making runner-up (2nd place) visually smaller and less prominent than winner with reduced fonts, padding, and opacity. Winner now clearly stands out while runner-up provides supporting context.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

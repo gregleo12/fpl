@@ -2,7 +2,60 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.3 (January 3, 2026)
+**Current Version:** v4.7.4 (January 3, 2026)
+
+---
+
+## v4.7.4 - K-201 Final Fixes: Missing Names & Visual Hierarchy (Jan 3, 2026)
+
+**HOTFIX:** Final polish for Mid-Season Awards - fixed missing manager names and improved visual hierarchy
+
+### What's Fixed
+
+**Manager Names (4 Awards)**
+- ❌ **Before:** Hot Streak, The Phoenix, The Underachiever, and The Wildcard showed "Unknown / Unknown" for manager names
+- ✅ **After:** All awards now properly fetch and display manager names using JOIN with league_standings table
+- **Technical:** Added dedicated manager queries for Performance and Fun sections to ensure all entry_ids have name lookups
+
+**Visual Hierarchy**
+- ✅ Runner-up (2nd place) now visually smaller and less prominent than winner
+- Changes applied:
+  - Reduced padding: 8px vs 12px for winner
+  - Smaller fonts: playerName 13px vs 15px, value 16px vs 20px
+  - Lighter weight: font-weight 400 vs 600
+  - Lower opacity: 0.7 overall on runner-up row
+  - Lighter background: rgba opacity 0.03 vs 0.1
+  - Added subtle border-top separator
+  - Smaller place badge: 14px vs 18px font
+
+**Visual Result:**
+```
+Winner:    🥇 1st  [Large, Bold Name]    [Big Value]
+Runner-up: 🥈 2nd  [Smaller, Muted Name] [Smaller Value]
+```
+
+### Technical Changes
+
+**Files Modified:**
+- `/src/app/api/league/[id]/awards/route.ts`
+  - Added `funManagers` query with JOIN to league_standings (line 893-899)
+  - Updated Hot Streak manager query to use JOIN (line 273-279)
+  - Updated Phoenix, Underachiever, Wildcard to use funManagers
+- `/src/components/Awards/AwardCard.module.css`
+  - Added `.runnerUp` specific styles for all child elements
+  - Implemented visual hierarchy with smaller fonts, padding, opacity
+
+### Impact
+
+**Before v4.7.4:**
+- 4 awards showed "Unknown / Unknown" names
+- Winner and runner-up had equal visual weight
+- Hard to distinguish 1st from 2nd at a glance
+
+**After v4.7.4:**
+- All awards show proper manager names
+- Clear visual hierarchy: winner stands out, runner-up is supporting info
+- Improved scannability and user experience
 
 ---
 

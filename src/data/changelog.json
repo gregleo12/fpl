@@ -1,5 +1,20 @@
 [
   {
+    "version": "4.7.4",
+    "date": "2026-01-03",
+    "title": "K-201 Final Fixes - Missing Names & Visual Hierarchy",
+    "changes": [
+      "FIXED: Hot Streak, The Phoenix, The Underachiever, The Wildcard now show actual manager names (were showing 'Unknown')",
+      "Added dedicated manager queries with JOIN to league_standings for all sections",
+      "IMPROVED: Runner-up (2nd place) now visually smaller and less prominent than winner",
+      "Smaller fonts for 2nd place: names 13px vs 15px, values 16px vs 20px",
+      "Reduced padding and opacity for runner-up row (70% opacity)",
+      "Lighter background and font weight for 2nd place",
+      "Winner now clearly stands out, runner-up provides supporting context",
+      "Better visual hierarchy makes awards easier to scan at a glance"
+    ]
+  },
+  {
     "version": "4.7.3",
     "date": "2026-01-03",
     "title": "K-201 Awards Bug Fixes - All Calculations Fixed",
