@@ -1041,15 +1041,6 @@ export async function GET(
     });
 
     // ==========================================
-    // 🎉 FUN
-    // ==========================================
-    categories.push({
-      category: 'Fun',
-      icon: '🎉',
-      awards: funAwards
-    });
-
-    // ==========================================
     // 🎯 STRATEGY
     // ==========================================
     const strategyAwards: Award[] = [];
@@ -1799,7 +1790,14 @@ export async function GET(
       awards: h2hAwards
     });
 
-    // Fun section removed - awards based on FPL overall rank not meaningful for H2H league
+    // ==========================================
+    // 🎉 FUN
+    // ==========================================
+    categories.push({
+      category: 'Fun',
+      icon: '🎉',
+      awards: funAwards
+    });
 
     return NextResponse.json({
       success: true,
