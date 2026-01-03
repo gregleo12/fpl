@@ -477,68 +477,66 @@ export async function GET(
     // ==========================================
     const luckAwards: Award[] = [];
 
-    // Get luck data from the luck API calculation
-    const luckData = await db.query(
-      `SELECT entry_id,
-              SUM(CASE WHEN variance_luck > 0 THEN variance_luck ELSE 0 END) as positive_variance,
-              SUM(CASE WHEN variance_luck < 0 THEN ABS(variance_luck) ELSE 0 END) as negative_variance
-       FROM manager_gw_luck
-       WHERE league_id = $1 AND event <= 19
-       GROUP BY entry_id`,
-      [leagueId]
+    // Calculate luck based on points variance vs opponents
+    const luckScores = managersData.map((m: any) => {
+      const managerHistory = getGWHistory(m.entry_id);
+      const managerMatches = getMatches(m.entry_id);
+
+      let luckScore = 0;
+
+      // Calculate luck based on close matches and upsets
+      managerMatches.forEach((match: any) => {
+        const opponentId = match.entry_1_id === m.entry_id ? match.entry_2_id : match.entry_1_id;
+        const myPoints = match.entry_1_id === m.entry_id ? match.entry_1_points : match.entry_2_points;
+        const oppPoints = match.entry_1_id === m.entry_id ? match.entry_2_points : match.entry_1_points;
+
+        const margin = myPoints - oppPoints;
+
+        // Lucky: Won by small margin (1-5 pts)
+        if (margin > 0 && margin <= 5) luckScore += 2;
+        // Unlucky: Lost by small margin
+        if (margin < 0 && margin >= -5) luckScore -= 2;
+        // Very lucky: Won when shouldn't have (based on rank)
+        const myRank = standingsData.find((s: any) => s.entry_id === m.entry_id)?.rank || 999;
+        const oppRank = standingsData.find((s: any) => s.entry_id === opponentId)?.rank || 999;
+        if (match.winner === m.entry_id && oppRank < myRank) luckScore += 1;
+        if (match.winner === opponentId && myRank < oppRank) luckScore -= 1;
+      });
+
+      return { ...m, luckScore };
+    });
+
+    // 1. Luckiest Manager
+    const luckiest = luckScores.reduce((max: any, current: any) =>
+      current.luckScore > max.luckScore ? current : max
     );
+    luckAwards.push({
+      title: 'Luckiest Manager',
+      winner: {
+        entry_id: luckiest.entry_id,
+        player_name: luckiest.player_name,
+        team_name: luckiest.team_name
+      },
+      value: Math.abs(luckiest.luckScore),
+      unit: 'luck points',
+      description: 'Most fortunate results'
+    });
 
-    if (luckData.rows.length > 0) {
-      // 1. Luckiest Manager
-      const luckiest = luckData.rows.reduce((max: any, current: any) =>
-        current.positive_variance > max.positive_variance ? current : max
-      );
-      const luckiestManager = getManager(luckiest.entry_id);
-      luckAwards.push({
-        title: 'Luckiest Manager',
-        winner: {
-          entry_id: luckiest.entry_id,
-          player_name: luckiestManager?.player_name || 'Unknown',
-          team_name: luckiestManager?.team_name || 'Unknown'
-        },
-        value: parseFloat(luckiest.positive_variance.toFixed(1)),
-        unit: 'luck points',
-        description: 'Most positive luck variance'
-      });
-
-      // 2. Unluckiest Manager
-      const unluckiest = luckData.rows.reduce((max: any, current: any) =>
-        current.negative_variance > max.negative_variance ? current : max
-      );
-      const unluckiestManager = getManager(unluckiest.entry_id);
-      luckAwards.push({
-        title: 'Unluckiest Manager',
-        winner: {
-          entry_id: unluckiest.entry_id,
-          player_name: unluckiestManager?.player_name || 'Unknown',
-          team_name: unluckiestManager?.team_name || 'Unknown'
-        },
-        value: parseFloat(unluckiest.negative_variance.toFixed(1)),
-        unit: 'luck points',
-        description: 'Most negative luck variance'
-      });
-    } else {
-      // Fallback if no luck data
-      luckAwards.push({
-        title: 'Luckiest Manager',
-        winner: { entry_id: 0, player_name: 'N/A', team_name: 'N/A' },
-        value: 0,
-        unit: 'luck points',
-        description: 'No luck data available'
-      });
-      luckAwards.push({
-        title: 'Unluckiest Manager',
-        winner: { entry_id: 0, player_name: 'N/A', team_name: 'N/A' },
-        value: 0,
-        unit: 'luck points',
-        description: 'No luck data available'
-      });
-    }
+    // 2. Unluckiest Manager
+    const unluckiest = luckScores.reduce((min: any, current: any) =>
+      current.luckScore < min.luckScore ? current : min
+    );
+    luckAwards.push({
+      title: 'Unluckiest Manager',
+      winner: {
+        entry_id: unluckiest.entry_id,
+        player_name: unluckiest.player_name,
+        team_name: unluckiest.team_name
+      },
+      value: Math.abs(unluckiest.luckScore),
+      unit: 'luck points',
+      description: 'Most unfortunate results'
+    });
 
     // 3. Differential Master
     // This would require ownership data - for now use transfer activity as proxy
