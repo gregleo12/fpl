@@ -25,6 +25,23 @@ interface Props {
   myTeamId: string;
 }
 
+function formatCompactNumber(value: number | undefined, unit: string): string {
+  if (value === undefined) return '';
+
+  // Only format GW Rank values (detect by unit starting with "in GW")
+  if (!unit.startsWith('in GW')) {
+    return value.toLocaleString();
+  }
+
+  // Compact format for ranks
+  if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(1) + 'm';
+  } else if (value >= 1_000) {
+    return (value / 1_000).toFixed(1) + 'k';
+  }
+  return value.toString();
+}
+
 export function AwardCard({ award, myTeamId }: Props) {
   const isWinnerMe = award.winner.entry_id.toString() === myTeamId;
   const isRunnerUpMe = award.runner_up?.entry_id.toString() === myTeamId;
@@ -45,7 +62,7 @@ export function AwardCard({ award, myTeamId }: Props) {
           <div className={styles.teamName}>{award.winner.team_name}</div>
         </div>
         <div className={styles.valueCompact}>
-          <span className={styles.number}>{award.winner_value.toLocaleString()}</span>
+          <span className={styles.number}>{formatCompactNumber(award.winner_value, award.unit)}</span>
           <span className={styles.unit}>{award.unit}</span>
         </div>
       </div>
@@ -59,7 +76,7 @@ export function AwardCard({ award, myTeamId }: Props) {
             <div className={styles.teamName}>{award.runner_up.team_name}</div>
           </div>
           <div className={styles.valueCompact}>
-            <span className={styles.number}>{award.runner_up_value?.toLocaleString()}</span>
+            <span className={styles.number}>{formatCompactNumber(award.runner_up_value, award.unit)}</span>
             <span className={styles.unit}>{award.unit}</span>
           </div>
         </div>
@@ -74,7 +91,7 @@ export function AwardCard({ award, myTeamId }: Props) {
             <div className={styles.teamName}>{award.third_place.team_name}</div>
           </div>
           <div className={styles.valueCompact}>
-            <span className={styles.number}>{award.third_place_value?.toLocaleString()}</span>
+            <span className={styles.number}>{formatCompactNumber(award.third_place_value, award.unit)}</span>
             <span className={styles.unit}>{award.unit}</span>
           </div>
         </div>
