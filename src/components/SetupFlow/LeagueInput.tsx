@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getRecentLeagues } from '@/lib/storage';
 import { SyncProgress } from '@/components/SyncProgress/SyncProgress';
 import { FPLError } from '@/lib/fpl-errors';
+import ClassicWaitlistBanner from '@/components/ClassicWaitlist/ClassicWaitlistBanner';
 import styles from './SetupFlow.module.css';
 
 export default function LeagueInput() {
@@ -354,6 +355,9 @@ export default function LeagueInput() {
           </div>
         )}
       </div>
+
+      {/* Classic League Waitlist Banner */}
+      <ClassicWaitlistBanner />
 
       {/* Sync Progress Modal */}
       {showSyncProgress && (
