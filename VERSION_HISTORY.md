@@ -2,7 +2,119 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.5 (January 3, 2026)
+**Current Version:** v4.7.6 (January 3, 2026)
+
+---
+
+## v4.7.6 - K-201b v2: Fix Hot Streak, Remove Fun, Add 4 New Awards (Jan 3, 2026)
+
+**MAJOR UPDATE:** Fixed Hot Streak manager names, removed Fun section (FPL rank not meaningful), added 4 new H2H-relevant awards
+
+### What's Fixed
+
+**Hot Streak - FINALLY WORKING**
+- ❌ **Before:** Showed "Unknown / Unknown" despite correct calculation
+- ✅ **After:** Louis de Clippele / Don't ask, don't Tel (correct names displayed)
+- **Root Cause:** Type mismatch in entry_id comparison
+- **Solution:** Added explicit parseInt() conversion: `parseInt(m.entry_id) === parseInt(manager.entry_id)`
+
+### Awards Removed
+
+**Fun Section - DELETED**
+- ❌ **Removed:** The Phoenix (FPL overall rank rise)
+- ❌ **Removed:** The Underachiever (FPL overall rank drop)
+- ❌ **Removed:** The Wildcard (week-to-week points swing)
+- **Reason:** FPL overall rank not meaningful for H2H leagues - focuses on wrong metric
+
+### New Awards Added
+
+**1. Best GW Rank (Performance Section)**
+- **Definition:** Best FPL overall GW rank achieved by any manager in a single gameweek
+- **Display:** "15,234 in GW12"
+- **Subtitle:** "Best FPL rank in a single GW"
+- **Algorithm:** `SELECT MIN(rank) WHERE rank > 0` from manager_gw_history
+
+**2. Worst GW Rank (Performance Section)**
+- **Definition:** Worst FPL overall GW rank achieved by any manager in a single gameweek
+- **Display:** "8,500,000 in GW3"
+- **Subtitle:** "Worst FPL rank in a single GW"
+- **Algorithm:** `SELECT MAX(rank)` from manager_gw_history
+
+**3. Longest Winning Streak (H2H Battle Section)**
+- **Definition:** Most consecutive H2H wins by any manager
+- **Display:** "7 wins GW5-11"
+- **Subtitle:** "Longest H2H winning streak"
+- **Algorithm:** Track consecutive wins from h2h_matches, reset on loss or draw
+
+**4. Longest Losing Streak (H2H Battle Section)**
+- **Definition:** Most consecutive H2H losses by any manager
+- **Display:** "6 losses GW8-13"
+- **Subtitle:** "Longest H2H losing streak"
+- **Algorithm:** Track consecutive losses from h2h_matches, reset on win or draw
+
+### Section Layout After Changes
+
+**Performance Section (8 awards)**
+1. Most Consistent ✅
+2. Best Average ✅
+3. Hot Streak (FIXED) ✅
+4. Worst Gameweek ✅
+5. Biggest Faller ✅
+6. Rollercoaster ✅
+7. **Best GW Rank** 🆕
+8. **Worst GW Rank** 🆕
+
+**H2H Battle Section (5 awards)**
+1. Biggest Victory ✅
+2. Win Streak ✅
+3. Giant Slayer ✅
+4. Close Call King ✅
+5. **Longest Winning Streak** 🆕
+6. **Longest Losing Streak** 🆕
+
+**Fun Section**
+- ❌ Removed entirely
+
+### Technical Changes
+
+**Files Modified:**
+- `/src/app/api/league/[id]/awards/route.ts`
+  - Fixed Hot Streak: Added parseInt() for entry_id comparison (line 371)
+  - Removed entire Fun section (200+ lines deleted)
+  - Added Best GW Rank query (line 496-525)
+  - Added Worst GW Rank query (line 527-556)
+  - Added Longest Winning Streak calculation (line 1041-1105)
+  - Added Longest Losing Streak calculation (line 1107-1172)
+
+**Streak Tracking Logic:**
+```typescript
+// For each GW, track wins/losses
+for (let gw = 1; gw <= 19; gw++) {
+  gwMatches.forEach(match => {
+    if (winner === entry1) {
+      winningStreaks.get(entry1).current++;
+      losingStreaks.get(entry2).current++;
+      // Reset opponent's winning streak, own losing streak
+    } else if (draw) {
+      // Reset both streaks
+    }
+  });
+}
+```
+
+### Impact
+
+**Before v4.7.6:**
+- Hot Streak showed "Unknown" manager names
+- Fun section had 3 awards based on irrelevant FPL overall rank
+- No way to see winning/losing streaks
+- No way to see best/worst FPL GW performance
+
+**After v4.7.6:**
+- All awards show correct manager names ✓
+- Fun section removed - cleaner focus on H2H competition ✓
+- Streaks tracked: see who's on fire or struggling ✓
+- GW rank awards: celebrate individual GW excellence ✓
 
 ---
 

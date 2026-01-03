@@ -1,5 +1,22 @@
 [
   {
+    "version": "4.7.6",
+    "date": "2026-01-03",
+    "title": "K-201b v2 - Hot Streak Fixed & Award Restructure",
+    "changes": [
+      "FIXED: Hot Streak now shows manager names correctly (was still showing 'Unknown' in v4.7.5)",
+      "Root cause: Type mismatch in entry_id comparison (string vs number) - added parseInt() conversion",
+      "REMOVED: Fun section completely (Phoenix, Underachiever, Wildcard) - FPL overall rank not meaningful for H2H leagues",
+      "NEW AWARD: Best GW Rank - shows best FPL overall GW rank achieved (e.g., '3,422nd in GW7')",
+      "NEW AWARD: Worst GW Rank - shows worst FPL overall GW rank achieved",
+      "NEW AWARD: Longest Winning Streak - most consecutive H2H wins with GW range (e.g., '5 wins (GW3-7)')",
+      "NEW AWARD: Longest Losing Streak - most consecutive H2H losses with GW range",
+      "Performance section now has 8 awards (was 6): added Best/Worst GW Rank",
+      "H2H Battle section now has 6 awards (was 4): added Winning/Losing Streak",
+      "Streak tracking algorithm iterates GW-by-GW to find longest consecutive runs"
+    ]
+  },
+  {
     "version": "4.7.5",
     "date": "2026-01-03",
     "title": "K-201b - Awards Calculations Fixed & New Award",

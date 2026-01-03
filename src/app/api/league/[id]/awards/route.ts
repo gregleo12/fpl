@@ -368,7 +368,7 @@ export async function GET(
         }
       });
 
-      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
+      const managerInfo = managers.rows.find((m: any) => parseInt(m.entry_id) === parseInt(manager.entry_id));
       return {
         entry_id: manager.entry_id,
         max_streak: maxStreak,
@@ -490,6 +490,68 @@ export async function GET(
         runner_up_value: volatility.rows[1] ? parseFloat(parseFloat(volatility.rows[1].std_dev).toFixed(1)) : undefined,
         unit: 'σ variance',
         description: 'Most volatile weekly scores'
+      });
+    }
+
+    // 7. Best GW Rank (Best FPL overall GW rank achieved)
+    const bestGWRank = await db.query(
+      `SELECT h.entry_id, h.event, h.rank, m.player_name, m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.rank IS NOT NULL AND h.rank > 0 AND h.event <= 19
+       ORDER BY h.rank ASC
+       LIMIT 2`,
+      [leagueId]
+    );
+
+    if (bestGWRank.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Best GW Rank',
+        winner: {
+          entry_id: bestGWRank.rows[0].entry_id,
+          player_name: bestGWRank.rows[0].player_name,
+          team_name: bestGWRank.rows[0].team_name
+        },
+        winner_value: bestGWRank.rows[0].rank,
+        runner_up: bestGWRank.rows[1] ? {
+          entry_id: bestGWRank.rows[1].entry_id,
+          player_name: bestGWRank.rows[1].player_name,
+          team_name: bestGWRank.rows[1].team_name
+        } : undefined,
+        runner_up_value: bestGWRank.rows[1]?.rank,
+        unit: `in GW${bestGWRank.rows[0].event}`,
+        description: 'Best FPL rank in a single GW'
+      });
+    }
+
+    // 8. Worst GW Rank (Worst FPL overall GW rank achieved)
+    const worstGWRank = await db.query(
+      `SELECT h.entry_id, h.event, h.rank, m.player_name, m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.rank IS NOT NULL AND h.rank > 0 AND h.event <= 19
+       ORDER BY h.rank DESC
+       LIMIT 2`,
+      [leagueId]
+    );
+
+    if (worstGWRank.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Worst GW Rank',
+        winner: {
+          entry_id: worstGWRank.rows[0].entry_id,
+          player_name: worstGWRank.rows[0].player_name,
+          team_name: worstGWRank.rows[0].team_name
+        },
+        winner_value: worstGWRank.rows[0].rank,
+        runner_up: worstGWRank.rows[1] ? {
+          entry_id: worstGWRank.rows[1].entry_id,
+          player_name: worstGWRank.rows[1].player_name,
+          team_name: worstGWRank.rows[1].team_name
+        } : undefined,
+        runner_up_value: worstGWRank.rows[1]?.rank,
+        unit: `in GW${worstGWRank.rows[0].event}`,
+        description: 'Worst FPL rank in a single GW'
       });
     }
 
@@ -976,194 +1038,146 @@ export async function GET(
       });
     }
 
+    // 5. Longest Winning Streak
+    const allH2HManagerIds = allLeagueManagers.rows.map((m: any) => m.entry_id);
+    const winningStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
+
+    allLeagueManagers.rows.forEach((m: any) => {
+      winningStreaks.set(m.entry_id, { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
+    });
+
+    for (let gw = 1; gw <= 19; gw++) {
+      const gwMatches = allH2HMatches.rows.filter((m: any) => m.event === gw);
+
+      gwMatches.forEach((match: any) => {
+        const entry1 = parseInt(match.entry_1_id);
+        const entry2 = parseInt(match.entry_2_id);
+        const winner = match.winner ? parseInt(match.winner) : null;
+
+        if (winner === entry1) {
+          const s = winningStreaks.get(entry1)!;
+          s.current++;
+          if (s.current > s.max) {
+            s.max = s.current;
+            s.endGW = gw;
+            s.startGW = gw - s.max + 1;
+          }
+          winningStreaks.get(entry2)!.current = 0;
+        } else if (winner === entry2) {
+          const s = winningStreaks.get(entry2)!;
+          s.current++;
+          if (s.current > s.max) {
+            s.max = s.current;
+            s.endGW = gw;
+            s.startGW = gw - s.max + 1;
+          }
+          winningStreaks.get(entry1)!.current = 0;
+        } else {
+          // Draw - reset both streaks
+          winningStreaks.get(entry1)!.current = 0;
+          winningStreaks.get(entry2)!.current = 0;
+        }
+      });
+    }
+
+    const bestWinStreak = Array.from(winningStreaks.entries())
+      .sort((a, b) => b[1].max - a[1].max)
+      .slice(0, 2);
+
+    if (bestWinStreak.length > 0 && bestWinStreak[0][1].max > 0) {
+      h2hAwards.push({
+        title: 'Longest Winning Streak',
+        winner: {
+          entry_id: bestWinStreak[0][0],
+          player_name: bestWinStreak[0][1].player_name,
+          team_name: bestWinStreak[0][1].team_name
+        },
+        winner_value: bestWinStreak[0][1].max,
+        runner_up: bestWinStreak[1] && bestWinStreak[1][1].max > 0 ? {
+          entry_id: bestWinStreak[1][0],
+          player_name: bestWinStreak[1][1].player_name,
+          team_name: bestWinStreak[1][1].team_name
+        } : undefined,
+        runner_up_value: bestWinStreak[1] && bestWinStreak[1][1].max > 0 ? bestWinStreak[1][1].max : undefined,
+        unit: 'wins',
+        description: `GW${bestWinStreak[0][1].startGW}-${bestWinStreak[0][1].endGW}`
+      });
+    }
+
+    // 6. Longest Losing Streak
+    const losingStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
+
+    allLeagueManagers.rows.forEach((m: any) => {
+      losingStreaks.set(m.entry_id, { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
+    });
+
+    for (let gw = 1; gw <= 19; gw++) {
+      const gwMatches = allH2HMatches.rows.filter((m: any) => m.event === gw);
+
+      gwMatches.forEach((match: any) => {
+        const entry1 = parseInt(match.entry_1_id);
+        const entry2 = parseInt(match.entry_2_id);
+        const winner = match.winner ? parseInt(match.winner) : null;
+
+        if (winner === entry1) {
+          // entry2 loses
+          const s = losingStreaks.get(entry2)!;
+          s.current++;
+          if (s.current > s.max) {
+            s.max = s.current;
+            s.endGW = gw;
+            s.startGW = gw - s.max + 1;
+          }
+          losingStreaks.get(entry1)!.current = 0;
+        } else if (winner === entry2) {
+          // entry1 loses
+          const s = losingStreaks.get(entry1)!;
+          s.current++;
+          if (s.current > s.max) {
+            s.max = s.current;
+            s.endGW = gw;
+            s.startGW = gw - s.max + 1;
+          }
+          losingStreaks.get(entry2)!.current = 0;
+        } else {
+          // Draw - reset both streaks
+          losingStreaks.get(entry1)!.current = 0;
+          losingStreaks.get(entry2)!.current = 0;
+        }
+      });
+    }
+
+    const worstLoseStreak = Array.from(losingStreaks.entries())
+      .sort((a, b) => b[1].max - a[1].max)
+      .slice(0, 2);
+
+    if (worstLoseStreak.length > 0 && worstLoseStreak[0][1].max > 0) {
+      h2hAwards.push({
+        title: 'Longest Losing Streak',
+        winner: {
+          entry_id: worstLoseStreak[0][0],
+          player_name: worstLoseStreak[0][1].player_name,
+          team_name: worstLoseStreak[0][1].team_name
+        },
+        winner_value: worstLoseStreak[0][1].max,
+        runner_up: worstLoseStreak[1] && worstLoseStreak[1][1].max > 0 ? {
+          entry_id: worstLoseStreak[1][0],
+          player_name: worstLoseStreak[1][1].player_name,
+          team_name: worstLoseStreak[1][1].team_name
+        } : undefined,
+        runner_up_value: worstLoseStreak[1] && worstLoseStreak[1][1].max > 0 ? worstLoseStreak[1][1].max : undefined,
+        unit: 'losses',
+        description: `GW${worstLoseStreak[0][1].startGW}-${worstLoseStreak[0][1].endGW}`
+      });
+    }
+
     categories.push({
       category: 'H2H Battle',
       icon: '⚔️',
       awards: h2hAwards
     });
 
-    // ==========================================
-    // 🎭 FUN
-    // ==========================================
-    const funAwards: Award[] = [];
-
-    // Get all rank history for Fun awards
-    const allRankHistory = await db.query(
-      `SELECT entry_id, event, rank
-       FROM manager_gw_history
-       WHERE league_id = $1 AND event <= 19
-       ORDER BY entry_id, event`,
-      [leagueId]
-    );
-
-    // Fetch manager names for all entry_ids in Fun section (reuse allManagers from Performance)
-    const funManagerIds = Array.from(new Set(allRankHistory.rows.map((h: any) => h.entry_id)));
-    const funManagers = await db.query(
-      `SELECT entry_id, player_name, team_name
-       FROM managers
-       WHERE entry_id = ANY($1)`,
-      [funManagerIds]
-    );
-
-    // 1. The Phoenix (greatest recovery from worst rank)
-    const phoenixResults = allManagers.rows.map((manager: any) => {
-      const rankHistory = allRankHistory.rows
-        .filter((h: any) => h.entry_id === manager.entry_id)
-        .sort((a: any, b: any) => a.event - b.event);
-
-      if (rankHistory.length < 5) return null;
-
-      let worstRank = 1;
-      let worstGW = 0;
-      rankHistory.forEach((gw: any) => {
-        if (gw.rank > worstRank) {
-          worstRank = gw.rank;
-          worstGW = gw.event;
-        }
-      });
-
-      const finalRank = rankHistory[rankHistory.length - 1]?.rank || worstRank;
-      const recovery = worstRank - finalRank;
-
-      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
-      return {
-        entry_id: manager.entry_id,
-        recovery,
-        worst_rank: worstRank,
-        final_rank: finalRank,
-        worst_gw: worstGW,
-        player_name: managerInfo?.player_name || 'Unknown',
-        team_name: managerInfo?.team_name || 'Unknown'
-      };
-    }).filter(Boolean).sort((a: any, b: any) => b.recovery - a.recovery);
-
-    if (phoenixResults.length > 0 && phoenixResults[0]! && phoenixResults[0]!.recovery > 0) {
-      const winner = phoenixResults[0]!;
-      const runnerUp = phoenixResults[1];
-      funAwards.push({
-        title: 'The Phoenix',
-        winner: {
-          entry_id: winner.entry_id,
-          player_name: winner.player_name,
-          team_name: winner.team_name
-        },
-        winner_value: winner.recovery,
-        runner_up: runnerUp ? {
-          entry_id: runnerUp.entry_id,
-          player_name: runnerUp.player_name,
-          team_name: runnerUp.team_name
-        } : undefined,
-        runner_up_value: runnerUp?.recovery,
-        unit: 'places',
-        description: `Rose from ${winner.worst_rank} to ${winner.final_rank}`
-      });
-    }
-
-    // 2. The Underachiever (biggest decline from best rank)
-    const underachieverResults = allManagers.rows.map((manager: any) => {
-      const rankHistory = allRankHistory.rows
-        .filter((h: any) => h.entry_id === manager.entry_id)
-        .sort((a: any, b: any) => a.event - b.event);
-
-      if (rankHistory.length < 5) return null;
-
-      let bestRank = 999;
-      let bestGW = 0;
-      rankHistory.forEach((gw: any) => {
-        if (gw.rank < bestRank) {
-          bestRank = gw.rank;
-          bestGW = gw.event;
-        }
-      });
-
-      const finalRank = rankHistory[rankHistory.length - 1]?.rank || bestRank;
-      const decline = finalRank - bestRank;
-
-      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
-      return {
-        entry_id: manager.entry_id,
-        decline,
-        best_rank: bestRank,
-        final_rank: finalRank,
-        best_gw: bestGW,
-        player_name: managerInfo?.player_name || 'Unknown',
-        team_name: managerInfo?.team_name || 'Unknown'
-      };
-    }).filter(Boolean).sort((a: any, b: any) => b.decline - a.decline);
-
-    if (underachieverResults.length > 0 && underachieverResults[0]! && underachieverResults[0]!.decline > 0) {
-      const winner = underachieverResults[0]!;
-      const runnerUp = underachieverResults[1];
-      funAwards.push({
-        title: 'The Underachiever',
-        winner: {
-          entry_id: winner.entry_id,
-          player_name: winner.player_name,
-          team_name: winner.team_name
-        },
-        winner_value: winner.decline,
-        runner_up: runnerUp ? {
-          entry_id: runnerUp.entry_id,
-          player_name: runnerUp.player_name,
-          team_name: runnerUp.team_name
-        } : undefined,
-        runner_up_value: runnerUp?.decline,
-        unit: 'places',
-        description: `Dropped from ${winner.best_rank} to ${winner.final_rank}`
-      });
-    }
-
-    // 3. The Wildcard (biggest week-to-week swing)
-    const wildcardCandidates = allManagers.rows.map((manager: any) => {
-      const history = allHistory.rows
-        .filter((h: any) => h.entry_id === manager.entry_id)
-        .sort((a: any, b: any) => a.event - b.event);
-
-      if (history.length < 2) return null;
-
-      let maxSwing = 0;
-      for (let i = 1; i < history.length; i++) {
-        const swing = Math.abs(history[i].points - history[i - 1].points);
-        maxSwing = Math.max(maxSwing, swing);
-      }
-
-      const managerInfo = funManagers.rows.find((m: any) => m.entry_id === manager.entry_id);
-      return {
-        entry_id: manager.entry_id,
-        max_swing: maxSwing,
-        player_name: managerInfo?.player_name || 'Unknown',
-        team_name: managerInfo?.team_name || 'Unknown'
-      };
-    }).filter(Boolean).sort((a: any, b: any) => b.max_swing - a.max_swing);
-
-    if (wildcardCandidates.length > 0 && wildcardCandidates[0]! && wildcardCandidates[0]!.max_swing > 0) {
-      const winner = wildcardCandidates[0]!;
-      const runnerUp = wildcardCandidates[1];
-
-      funAwards.push({
-        title: 'The Wildcard',
-        winner: {
-          entry_id: winner.entry_id,
-          player_name: winner.player_name,
-          team_name: winner.team_name
-        },
-        winner_value: winner.max_swing,
-        runner_up: runnerUp ? {
-          entry_id: runnerUp.entry_id,
-          player_name: runnerUp.player_name,
-          team_name: runnerUp.team_name
-        } : undefined,
-        runner_up_value: runnerUp?.max_swing,
-        unit: 'pts swing',
-        description: 'Biggest week-to-week points swing'
-      });
-    }
-
-    categories.push({
-      category: 'Fun',
-      icon: '🎭',
-      awards: funAwards
-    });
+    // Fun section removed - awards based on FPL overall rank not meaningful for H2H league
 
     return NextResponse.json({
       success: true,
