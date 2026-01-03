@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.10** (January 3, 2026)
+**v4.7.13** (January 3, 2026)
 
-**K-201c: 7 New Awards + Podium Format + Fixes** - Added 7 new awards (Best Captain Picks, Slow Starter, Second Half Surge, Bench Warmer, Mr. Average, Heartbreaker). All awards now show 1st, 2nd, and 3rd place with podium format. Fixed Best Average to use NET points. Total awards: 29 (was 22).
+**K-203: Classic League Waitlist** - Added waitlist banner on Setup and Settings pages to collect emails from users interested in Classic League support (coming soon). Users can sign up to be notified when Classic Leagues launch. Simple, privacy-focused design with email validation and success confirmation.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

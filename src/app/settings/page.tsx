@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { loadState, clearState, getRecentLeagues, clearRecentLeagues } from '@/lib/storage';
 import { useVersionCheck } from '@/hooks/useVersionCheck';
 import { InstallButton } from '@/components/InstallButton/InstallButton';
+import ClassicWaitlistBanner from '@/components/ClassicWaitlist/ClassicWaitlistBanner';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
@@ -309,6 +310,8 @@ export default function SettingsPage() {
         <button onClick={handleChangeLeague} className={styles.dangerButton}>
           Clear All Data & Reset
         </button>
+
+        <ClassicWaitlistBanner />
       </div>
     </main>
   );

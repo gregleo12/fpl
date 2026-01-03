@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveState, loadState } from '@/lib/storage';
+import ClassicWaitlistBanner from '@/components/ClassicWaitlist/ClassicWaitlistBanner';
 import styles from './team.module.css';
 
 export default function TeamSelectionPage() {
@@ -264,6 +265,8 @@ export default function TeamSelectionPage() {
         >
           Continue to Dashboard
         </button>
+
+        <ClassicWaitlistBanner />
       </div>
     </main>
   );

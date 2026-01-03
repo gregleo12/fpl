@@ -2,7 +2,48 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.10 (January 3, 2026)
+**Current Version:** v4.7.13 (January 3, 2026)
+
+---
+
+## v4.7.13 - K-203: Classic League Waitlist Banner (Jan 3, 2026)
+
+**FEATURE:** Classic League waitlist signup banner
+
+### Overview
+Added waitlist signup form to collect emails from users interested in Classic League support (not yet available).
+
+**Banner Locations:**
+- Setup page (`/setup/team`) - Below Continue button
+- Settings page (`/settings`) - Below logout/reset section
+
+**Features:**
+- Email validation and collection
+- Success state with confirmation message
+- Privacy-focused (duplicates silently ignored, no spam)
+- Simple, subtle design that doesn't distract from H2H flow
+
+**Technical Implementation:**
+- New database table: `classic_waitlist` (email, created_at)
+- New API endpoint: POST `/api/waitlist/classic`
+- New component: `ClassicWaitlistBanner`
+- Email regex validation
+- ON CONFLICT DO NOTHING for duplicate emails
+
+**Files Added:**
+- `src/db/migrations/create-classic-waitlist.sql` - Database table
+- `src/app/api/waitlist/classic/route.ts` - API endpoint
+- `src/components/ClassicWaitlist/ClassicWaitlistBanner.tsx` - Component
+- `src/components/ClassicWaitlist/ClassicWaitlistBanner.module.css` - Styles
+
+**Files Modified:**
+- `src/app/setup/team/page.tsx` - Added banner below Continue button
+- `src/app/settings/page.tsx` - Added banner at bottom
+
+**UI Flow:**
+1. User sees banner: "🏆 Got a Classic League?"
+2. Enters email and clicks "Notify Me"
+3. Success: "✅ Thanks! We'll notify you when Classic Leagues launch."
 
 ---
 
