@@ -149,20 +149,22 @@ export async function GET(
       return { ...m, rankChange, gw1Rank, gw19Rank };
     }).filter(Boolean);
 
-    const biggestClimber = climbers.reduce((max: any, current: any) =>
-      current.rankChange > max.rankChange ? current : max
-    );
-    bigOnesAwards.push({
-      title: 'Biggest Climber',
-      winner: {
-        entry_id: biggestClimber.entry_id,
-        player_name: biggestClimber.player_name,
-        team_name: biggestClimber.team_name
-      },
-      value: biggestClimber.rankChange,
-      unit: 'places',
-      description: `Climbed from ${biggestClimber.gw1Rank} to ${biggestClimber.gw19Rank}`
-    });
+    if (climbers.length > 0) {
+      const biggestClimber = climbers.reduce((max: any, current: any) =>
+        current.rankChange > max.rankChange ? current : max
+      );
+      bigOnesAwards.push({
+        title: 'Biggest Climber',
+        winner: {
+          entry_id: biggestClimber.entry_id,
+          player_name: biggestClimber.player_name,
+          team_name: biggestClimber.team_name
+        },
+        value: biggestClimber.rankChange,
+        unit: 'places',
+        description: `Climbed from ${biggestClimber.gw1Rank} to ${biggestClimber.gw19Rank}`
+      });
+    }
 
     // 4. Best Gameweek
     let bestGW = { entry_id: 0, player_name: '', team_name: '', points: 0, event: 0 };
@@ -212,20 +214,22 @@ export async function GET(
       return { ...m, stdDev, mean };
     }).filter(Boolean);
 
-    const mostConsistent = consistencyScores.reduce((min: any, current: any) =>
-      current.stdDev < min.stdDev ? current : min
-    );
-    performanceAwards.push({
-      title: 'Most Consistent',
-      winner: {
-        entry_id: mostConsistent.entry_id,
-        player_name: mostConsistent.player_name,
-        team_name: mostConsistent.team_name
-      },
-      value: parseFloat(mostConsistent.stdDev.toFixed(1)),
-      unit: 'std dev',
-      description: 'Lowest standard deviation in GW scores'
-    });
+    if (consistencyScores.length > 0) {
+      const mostConsistent = consistencyScores.reduce((min: any, current: any) =>
+        current.stdDev < min.stdDev ? current : min
+      );
+      performanceAwards.push({
+        title: 'Most Consistent',
+        winner: {
+          entry_id: mostConsistent.entry_id,
+          player_name: mostConsistent.player_name,
+          team_name: mostConsistent.team_name
+        },
+        value: parseFloat(mostConsistent.stdDev.toFixed(1)),
+        unit: 'std dev',
+        description: 'Lowest standard deviation in GW scores'
+      });
+    }
 
     // 2. Best Average
     const averages = managersData.map((m: any) => {
@@ -235,20 +239,22 @@ export async function GET(
       return { ...m, avg };
     }).filter(Boolean);
 
-    const bestAverage = averages.reduce((max: any, current: any) =>
-      current.avg > max.avg ? current : max
-    );
-    performanceAwards.push({
-      title: 'Best Average',
-      winner: {
-        entry_id: bestAverage.entry_id,
-        player_name: bestAverage.player_name,
-        team_name: bestAverage.team_name
-      },
-      value: parseFloat(bestAverage.avg.toFixed(1)),
-      unit: 'pts/GW',
-      description: 'Highest average points per gameweek'
-    });
+    if (averages.length > 0) {
+      const bestAverage = averages.reduce((max: any, current: any) =>
+        current.avg > max.avg ? current : max
+      );
+      performanceAwards.push({
+        title: 'Best Average',
+        winner: {
+          entry_id: bestAverage.entry_id,
+          player_name: bestAverage.player_name,
+          team_name: bestAverage.team_name
+        },
+        value: parseFloat(bestAverage.avg.toFixed(1)),
+        unit: 'pts/GW',
+        description: 'Highest average points per gameweek'
+      });
+    }
 
     // 3. Hot Streak
     const streaks = managersData.map((m: any) => {
@@ -320,20 +326,22 @@ export async function GET(
       return { ...m, rankChange, gw1Rank, gw19Rank };
     }).filter(Boolean);
 
-    const biggestFaller = fallers.reduce((max: any, current: any) =>
-      current.rankChange > max.rankChange ? current : max
-    );
-    performanceAwards.push({
-      title: 'Biggest Faller',
-      winner: {
-        entry_id: biggestFaller.entry_id,
-        player_name: biggestFaller.player_name,
-        team_name: biggestFaller.team_name
-      },
-      value: biggestFaller.rankChange,
-      unit: 'places',
-      description: `Fell from ${biggestFaller.gw1Rank} to ${biggestFaller.gw19Rank}`
-    });
+    if (fallers.length > 0) {
+      const biggestFaller = fallers.reduce((max: any, current: any) =>
+        current.rankChange > max.rankChange ? current : max
+      );
+      performanceAwards.push({
+        title: 'Biggest Faller',
+        winner: {
+          entry_id: biggestFaller.entry_id,
+          player_name: biggestFaller.player_name,
+          team_name: biggestFaller.team_name
+        },
+        value: biggestFaller.rankChange,
+        unit: 'places',
+        description: `Fell from ${biggestFaller.gw1Rank} to ${biggestFaller.gw19Rank}`
+      });
+    }
 
     // 6. Rollercoaster
     const volatility = managersData.map((m: any) => {
@@ -737,20 +745,22 @@ export async function GET(
       return { ...m, recovery, worstRank, finalRank, worstGW };
     }).filter(Boolean);
 
-    const phoenixWinner = phoenix.reduce((max: any, current: any) =>
-      current.recovery > max.recovery ? current : max
-    );
-    funAwards.push({
-      title: 'The Phoenix',
-      winner: {
-        entry_id: phoenixWinner.entry_id,
-        player_name: phoenixWinner.player_name,
-        team_name: phoenixWinner.team_name
-      },
-      value: phoenixWinner.recovery,
-      unit: 'places',
-      description: `Rose from ${phoenixWinner.worstRank} to ${phoenixWinner.finalRank}`
-    });
+    if (phoenix.length > 0) {
+      const phoenixWinner = phoenix.reduce((max: any, current: any) =>
+        current.recovery > max.recovery ? current : max
+      );
+      funAwards.push({
+        title: 'The Phoenix',
+        winner: {
+          entry_id: phoenixWinner.entry_id,
+          player_name: phoenixWinner.player_name,
+          team_name: phoenixWinner.team_name
+        },
+        value: phoenixWinner.recovery,
+        unit: 'places',
+        description: `Rose from ${phoenixWinner.worstRank} to ${phoenixWinner.finalRank}`
+      });
+    }
 
     // 2. The Underachiever
     const underachievers = managersData.map((m: any) => {
@@ -772,20 +782,22 @@ export async function GET(
       return { ...m, decline, bestRank, finalRank, bestGW };
     }).filter(Boolean);
 
-    const underachiever = underachievers.reduce((max: any, current: any) =>
-      current.decline > max.decline ? current : max
-    );
-    funAwards.push({
-      title: 'The Underachiever',
-      winner: {
-        entry_id: underachiever.entry_id,
-        player_name: underachiever.player_name,
-        team_name: underachiever.team_name
-      },
-      value: underachiever.decline,
-      unit: 'places',
-      description: `Dropped from ${underachiever.bestRank} to ${underachiever.finalRank}`
-    });
+    if (underachievers.length > 0) {
+      const underachiever = underachievers.reduce((max: any, current: any) =>
+        current.decline > max.decline ? current : max
+      );
+      funAwards.push({
+        title: 'The Underachiever',
+        winner: {
+          entry_id: underachiever.entry_id,
+          player_name: underachiever.player_name,
+          team_name: underachiever.team_name
+        },
+        value: underachiever.decline,
+        unit: 'places',
+        description: `Dropped from ${underachiever.bestRank} to ${underachiever.finalRank}`
+      });
+    }
 
     // 3. The Wildcard
     const wildcards = managersData.map((m: any) => {
@@ -801,20 +813,22 @@ export async function GET(
       return { ...m, maxSwing };
     }).filter(Boolean);
 
-    const wildcard = wildcards.reduce((max: any, current: any) =>
-      current.maxSwing > max.maxSwing ? current : max
-    );
-    funAwards.push({
-      title: 'The Wildcard',
-      winner: {
-        entry_id: wildcard.entry_id,
-        player_name: wildcard.player_name,
-        team_name: wildcard.team_name
-      },
-      value: wildcard.maxSwing,
-      unit: 'pts swing',
-      description: 'Biggest week-to-week points swing'
-    });
+    if (wildcards.length > 0) {
+      const wildcard = wildcards.reduce((max: any, current: any) =>
+        current.maxSwing > max.maxSwing ? current : max
+      );
+      funAwards.push({
+        title: 'The Wildcard',
+        winner: {
+          entry_id: wildcard.entry_id,
+          player_name: wildcard.player_name,
+          team_name: wildcard.team_name
+        },
+        value: wildcard.maxSwing,
+        unit: 'pts swing',
+        description: 'Biggest week-to-week points swing'
+      });
+    }
 
     // 4. The Survivor
     const survivors = managersData.map((m: any) => {
