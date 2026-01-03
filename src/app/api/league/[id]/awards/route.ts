@@ -1043,7 +1043,7 @@ export async function GET(
     const winningStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
 
     allLeagueManagers.rows.forEach((m: any) => {
-      winningStreaks.set(m.entry_id, { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
+      winningStreaks.set(parseInt(m.entry_id), { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
     });
 
     for (let gw = 1; gw <= 19; gw++) {
@@ -1108,7 +1108,7 @@ export async function GET(
     const losingStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
 
     allLeagueManagers.rows.forEach((m: any) => {
-      losingStreaks.set(m.entry_id, { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
+      losingStreaks.set(parseInt(m.entry_id), { current: 0, max: 0, startGW: 0, endGW: 0, player_name: m.player_name, team_name: m.team_name });
     });
 
     for (let gw = 1; gw <= 19; gw++) {
