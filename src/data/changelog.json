@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.7.7",
+    "date": "2026-01-03",
+    "title": "CRITICAL FIX - GW20 Live Status Detection",
+    "changes": [
+      "FIXED: Rivals H2H section now correctly detects live gameweeks (was showing GW20 as 'upcoming')",
+      "FIXED: Live match modals now appear when clicking matches during live GWs (was showing forecast modals)",
+      "Root cause: Frontend checked for 'in_progress' but API returns 'live' - status mismatch",
+      "Changed all status checks from 'in_progress' → 'live' to match API",
+      "Live GW indicator (glowing GW number) now works correctly",
+      "Auto-refresh every 30 seconds now triggers properly for live GWs",
+      "Real-time player game data now displays correctly in live modals"
+    ]
+  },
+  {
     "version": "4.7.6",
     "date": "2026-01-03",
     "title": "K-201b v2 - Hot Streak Fixed & Award Restructure",

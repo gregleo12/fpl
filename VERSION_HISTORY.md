@@ -2,7 +2,97 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.6 (January 3, 2026)
+**Current Version:** v4.7.7 (January 3, 2026)
+
+---
+
+## v4.7.7 - CRITICAL FIX: GW20 Live Status Detection (Jan 3, 2026)
+
+**PRODUCTION HOTFIX:** Fixed critical bug preventing live gameweek detection in Rivals H2H section
+
+### The Bug
+
+**User Report:**
+> "GW20 is live and Rival H2H section doesn't recognize GW20 as being live. Scores seem to update but we're still looking at forecast modals not live modals when clicking on players games."
+
+**Impact:**
+- ❌ H2H fixtures showed GW20 as "upcoming" instead of "live"
+- ❌ Clicking matches opened forecast modals instead of live match modals
+- ❌ No live score updates or player game data
+- ✅ Scores updated correctly in background (API was working)
+- ❌ Frontend failed to recognize live status
+
+### Root Cause
+
+**Status Naming Mismatch:**
+```typescript
+// API returns (correct):
+status: 'completed' | 'live' | 'upcoming'
+
+// Frontend checked for (wrong):
+if (fixturesData.status === 'in_progress') {
+  // Show live modal
+}
+```
+
+**Result:** API returned `status: 'live'` for GW20, but frontend checked for `'in_progress'`, so the condition always failed and showed forecast modals.
+
+### Files Changed
+
+**1. FixturesTab.tsx**
+- Changed interface: `status: 'completed' | 'live' | 'upcoming'` (was 'in_progress')
+- Updated 4 conditionals from `'in_progress'` → `'live'`:
+  - Auto-refresh check (line 295)
+  - Modal type selection (line 425)
+  - GW number glow effect (line 529, 538)
+  - Initial GW finder (line 257)
+
+**2. StateBadge.tsx**
+- Updated type: `FixtureStatus = 'upcoming' | 'live' | 'completed'`
+- Changed switch case from `'in_progress'` → `'live'`
+
+**3. StateBadge.module.css**
+- Updated animation class: `.badge.live` (was `.badge.in_progress`)
+
+### Verification
+
+**FPL API Status (GW20):**
+```json
+{
+  "id": 20,
+  "is_current": true,
+  "finished": false,
+  "data_checked": false
+}
+```
+
+**API Response (Correct):**
+```json
+{
+  "event": 20,
+  "status": "live",
+  "matches": [...]
+}
+```
+
+**Frontend Behavior:**
+- ✅ Now correctly detects `status: 'live'`
+- ✅ Shows live match modals with real-time data
+- ✅ GW number glows to indicate live status
+- ✅ Auto-refreshes every 30 seconds
+- ✅ Displays live player game data
+
+### Impact
+
+**Before Fix:**
+- All live GWs showed as "upcoming"
+- Forecast modals instead of live data
+- No real-time updates
+
+**After Fix:**
+- Live GWs correctly recognized
+- Live modals with player game data
+- Proper auto-refresh behavior
 
 ---
 

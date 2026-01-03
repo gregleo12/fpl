@@ -15,7 +15,7 @@
 }
 
 /* Pulsing animation for live badges */
-.badge.in_progress {
+.badge.live {
   animation: pulse 2s ease-in-out infinite;
 }
 

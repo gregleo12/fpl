@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.5** (January 3, 2026)
+**v4.7.7** (January 3, 2026)
 
-**K-201b: Awards Fixes & New Feature** - FINALLY fixed manager names for 4 awards (Hot Streak, Phoenix, Underachiever, Wildcard). Corrected Biggest Climber/Faller to use H2H league rank (GW5→GW19) instead of FPL overall rank. Added new "Best Non-Chip Week" award to Strategy section showing highest score without using a chip.
+**CRITICAL FIX: GW20 Live Status Detection** - Fixed critical bug where Rivals H2H section didn't recognize live gameweeks. Changed status checks from 'in_progress' to 'live' to match API response. Now correctly shows live modals with real-time player data during live gameweeks instead of forecast modals.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

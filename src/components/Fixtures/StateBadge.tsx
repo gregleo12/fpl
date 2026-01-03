@@ -1,6 +1,6 @@
 import styles from './StateBadge.module.css';
 
-export type FixtureStatus = 'upcoming' | 'in_progress' | 'completed';
+export type FixtureStatus = 'upcoming' | 'live' | 'completed';
 
 interface StateBadgeProps {
   status: FixtureStatus;
@@ -24,7 +24,7 @@ export function StateBadge({ status }: StateBadgeProps) {
 
 function getStatusConfig(status: FixtureStatus) {
   switch (status) {
-    case 'in_progress':
+    case 'live':
       return {
         label: 'LIVE',
         color: '#ff0066',

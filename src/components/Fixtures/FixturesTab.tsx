@@ -43,7 +43,7 @@ interface Match {
 
 interface FixturesData {
   event: number;
-  status: 'completed' | 'in_progress' | 'upcoming';
+  status: 'completed' | 'live' | 'upcoming';
   matches: Match[];
 }
 
@@ -254,7 +254,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
         const validResults = results.filter(r => r !== null) as Array<{ gw: number; status: string }>;
 
         // Priority 1: Find live GW
-        const liveGW = validResults.find(r => r.status === 'in_progress');
+        const liveGW = validResults.find(r => r.status === 'live');
         if (liveGW) {
           setH2HGameweek(liveGW.gw);
           setFixturesGameweek(liveGW.gw);
@@ -292,7 +292,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
 
   // Auto-refresh for live gameweeks every 30 seconds
   useEffect(() => {
-    if (fixturesData?.status === 'in_progress') {
+    if (fixturesData?.status === 'live') {
       const interval = setInterval(() => {
         fetchFixtures();
       }, 30000); // 30 seconds
@@ -422,7 +422,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
     }
 
     // Check if this is a live or completed match - use same modal for both
-    if (fixturesData?.status === 'in_progress' || fixturesData?.status === 'completed') {
+    if (fixturesData?.status === 'live' || fixturesData?.status === 'completed') {
       // Fetch live match data (works for both live and completed)
       setLoadingLiveData(true);
       try {
@@ -526,7 +526,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
           {/* Gameweek display - glowing when live */}
           <div className={styles.gwInfo}>
             <span
-              className={`${styles.gwNumber} ${fixturesData.status === 'in_progress' ? styles.gwNumberLive : ''}`}
+              className={`${styles.gwNumber} ${fixturesData.status === 'live' ? styles.gwNumberLive : ''}`}
               onClick={handleGWInfoPress}
               onMouseDown={handleGWInfoMouseDown}
               onMouseUp={handleGWInfoMouseUp}
@@ -535,7 +535,7 @@ export default function FixturesTab({ leagueId, myTeamId, maxGW, defaultGW }: Pr
               onTouchEnd={handleGWInfoMouseUp}
               style={{ cursor: 'pointer' }}
               aria-label="Select gameweek"
-              title={fixturesData.status === 'in_progress' ? "Live match" : undefined}
+              title={fixturesData.status === 'live' ? "Live match" : undefined}
             >
               GW {currentGW}
             </span>
