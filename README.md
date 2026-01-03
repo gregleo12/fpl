@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.16** (January 3, 2026)
+**v4.7.17** (January 3, 2026)
 
-**K-201i: Fun Award Names & Icons** - Renamed all 29 awards with fun, memorable names (e.g., "League Winner" → "King of the Hill", "Best Average" → "Steady Eddie") and added colorful Lucide icons to every award for enhanced visual appeal.
+**Rocket Man Moved to H2H Battle** - Moved the Rocket Man award from "The Big Ones" section to "H2H Battle" section where it belongs, as it tracks the biggest climb in H2H league standings.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

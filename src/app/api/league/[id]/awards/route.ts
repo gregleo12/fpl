@@ -291,32 +291,6 @@ export async function GET(
       }
     });
 
-    if (bestClimb.climb > 0) {
-      bigOnesAwards.push({
-        title: 'Rocket Man',
-        winner: {
-          entry_id: bestClimb.entry_id,
-          player_name: bestClimb.player_name,
-          team_name: bestClimb.team_name
-        },
-        winner_value: bestClimb.climb,
-        runner_up: runnerUpClimb.climb > 0 ? {
-          entry_id: runnerUpClimb.entry_id,
-          player_name: runnerUpClimb.player_name,
-          team_name: runnerUpClimb.team_name
-        } : undefined,
-        runner_up_value: runnerUpClimb.climb > 0 ? runnerUpClimb.climb : undefined,
-        third_place: thirdPlaceClimb.climb > 0 ? {
-          entry_id: thirdPlaceClimb.entry_id,
-          player_name: thirdPlaceClimb.player_name,
-          team_name: thirdPlaceClimb.team_name
-        } : undefined,
-        third_place_value: thirdPlaceClimb.climb > 0 ? thirdPlaceClimb.climb : undefined,
-        unit: 'places',
-        description: `${bestClimb.fromRank}${getSuffix(bestClimb.fromRank)} → ${bestClimb.toRank}${getSuffix(bestClimb.toRank)} (GW${bestClimb.fromGW}-${bestClimb.toGW})`
-      });
-    }
-
     categories.push({
       category: 'The Big Ones',
       icon: '🏆',
@@ -1339,7 +1313,34 @@ export async function GET(
     // ==========================================
     const h2hAwards: Award[] = [];
 
-    // 1. Win Streak
+    // 1. Rocket Man - Biggest H2H League Position Climber
+    if (bestClimb.climb > 0) {
+      h2hAwards.push({
+        title: 'Rocket Man',
+        winner: {
+          entry_id: bestClimb.entry_id,
+          player_name: bestClimb.player_name,
+          team_name: bestClimb.team_name
+        },
+        winner_value: bestClimb.climb,
+        runner_up: runnerUpClimb.climb > 0 ? {
+          entry_id: runnerUpClimb.entry_id,
+          player_name: runnerUpClimb.player_name,
+          team_name: runnerUpClimb.team_name
+        } : undefined,
+        runner_up_value: runnerUpClimb.climb > 0 ? runnerUpClimb.climb : undefined,
+        third_place: thirdPlaceClimb.climb > 0 ? {
+          entry_id: thirdPlaceClimb.entry_id,
+          player_name: thirdPlaceClimb.player_name,
+          team_name: thirdPlaceClimb.team_name
+        } : undefined,
+        third_place_value: thirdPlaceClimb.climb > 0 ? thirdPlaceClimb.climb : undefined,
+        unit: 'places',
+        description: `${bestClimb.fromRank}${getSuffix(bestClimb.fromRank)} → ${bestClimb.toRank}${getSuffix(bestClimb.toRank)} (GW${bestClimb.fromGW}-${bestClimb.toGW})`
+      });
+    }
+
+    // 2. Win Streak
     const allH2HMatches = await db.query(
       `SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, event, winner
        FROM h2h_matches
@@ -1394,7 +1395,7 @@ export async function GET(
       });
     }
 
-    // 2. Giant Slayer - CLARIFIED (wins vs opponents with more cumulative points)
+    // 3. Giant Slayer - CLARIFIED (wins vs opponents with more cumulative points)
     const cumulativePoints = new Map<number, Map<number, number>>();
     allHistory.rows.forEach((h: any) => {
       if (!cumulativePoints.has(h.entry_id)) {
@@ -1459,7 +1460,7 @@ export async function GET(
       });
     }
 
-    // 3. Biggest Victory
+    // 4. Biggest Victory
     let biggestVictory: any = null;
     let secondBiggest: any = null;
     let thirdBiggest: any = null;
@@ -1541,7 +1542,7 @@ export async function GET(
       });
     }
 
-    // 4. Close Call King
+    // 5. Close Call King
     const closeCallCounts = allLeagueManagers.rows.map((manager: any) => {
       const matches = allH2HMatches.rows.filter(
         (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
@@ -1589,7 +1590,7 @@ export async function GET(
       });
     }
 
-    // 5. Longest Winning Streak
+    // 6. Longest Winning Streak
     const allH2HManagerIds = allLeagueManagers.rows.map((m: any) => m.entry_id);
     const winningStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
 
@@ -1661,7 +1662,7 @@ export async function GET(
       });
     }
 
-    // 6. Longest Losing Streak
+    // 7. Longest Losing Streak
     const losingStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
 
     allLeagueManagers.rows.forEach((m: any) => {
@@ -1734,7 +1735,7 @@ export async function GET(
       });
     }
 
-    // 7. Heartbreaker (NEW)
+    // 8. Heartbreaker (NEW)
     const heartbreakers = allLeagueManagers.rows.map((manager: any) => {
       const matches = allH2HMatches.rows.filter(
         (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
