@@ -1,5 +1,22 @@
 [
   {
+    "version": "4.7.8",
+    "date": "2026-01-03",
+    "title": "K-201c - Awards Layout Reorder + Climber/Faller Logic Fix",
+    "changes": [
+      "MOVED: Best Gameweek from Big Ones to Performance section (position 3)",
+      "MOVED: Most Consistent from position 1 to position 8 (before Rollercoaster)",
+      "The Big Ones now has 3 awards (was 4): League Winner, Top Scorer, Biggest Climber",
+      "Performance now has 9 awards (was 8) in new order",
+      "FIXED: Biggest Climber now finds peak upward swing across ANY two GWs (GW5-19)",
+      "Example: 17th→5th (+12) captured instead of just GW5→GW19 comparison",
+      "FIXED: Biggest Faller now finds peak downward swing across ANY two GWs (GW5-19)",
+      "Example: 3rd→15th (-12) captured instead of just GW5→GW19 comparison",
+      "Awards now display GW range for peak swings (e.g., '17th → 5th (GW9-14)')",
+      "More accurate and meaningful Climber/Faller awards capturing mid-season drama"
+    ]
+  },
+  {
     "version": "4.7.7",
     "date": "2026-01-03",
     "title": "CRITICAL FIX - GW20 Live Status Detection",

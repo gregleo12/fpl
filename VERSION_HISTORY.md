@@ -2,7 +2,82 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.7 (January 3, 2026)
+**Current Version:** v4.7.8 (January 3, 2026)
+
+---
+
+## v4.7.8 - K-201c: Awards Layout Reorder + Climber/Faller Logic Fix (Jan 3, 2026)
+
+**MAJOR UPDATE:** Reordered awards layout and fixed Biggest Climber/Faller to use peak swing analysis
+
+### Layout Changes
+
+**The Big Ones (3 awards - was 4):**
+1. League Winner
+2. Top Scorer
+3. Biggest Climber
+- **Removed:** Best Gameweek (moved to Performance)
+
+**Performance (9 awards - was 8):**
+1. Best Average
+2. Hot Streak
+3. **Best Gameweek** ← moved from Big Ones
+4. Worst Gameweek
+5. Biggest Faller
+6. Best GW Rank
+7. Worst GW Rank
+8. **Most Consistent** ← moved from position 1
+9. Rollercoaster
+
+### Logic Fixes
+
+**Biggest Climber - NEW ALGORITHM:**
+- ❌ **Old:** Compared GW5 rank → GW19 rank only
+- ✅ **New:** Finds biggest upward swing across ANY two GWs (GW5-19)
+- **Example:** Manager goes 8th (GW5) → 17th (GW9) → 5th (GW14)
+  - Old logic: 8th → 5th = +3 places (GW5-19)
+  - New logic: 17th → 5th = **+12 places** (GW9-14) ✓
+- **Display:** "+12 places" with subtitle "17th → 5th (GW9-14)"
+
+**Biggest Faller - NEW ALGORITHM:**
+- ❌ **Old:** Compared GW5 rank → GW19 rank only
+- ✅ **New:** Finds biggest downward swing across ANY two GWs (GW5-19)
+- **Example:** Manager goes 3rd (GW7) → 8th (GW12) → 15th (GW16) → 12th (GW19)
+  - Old logic: 3rd → 12th = -9 places (GW5-19)
+  - New logic: 3rd → 15th = **-12 places** (GW7-16) ✓
+- **Display:** "-12 places" with subtitle "3rd → 15th (GW7-16)"
+
+### Technical Implementation
+
+**Peak Swing Algorithm:**
+```typescript
+// Calculate H2H rank at each GW from 5-19
+for (let gw = 5; gw <= 19; gw++) {
+  const gwRanks = await calculateH2HRank(gw);
+  // Store in rankHistory Map
+}
+
+// Find biggest climb: worst rank → best rank AFTER
+for (let i = 0; i < ranks.length; i++) {
+  for (let j = i + 1; j < ranks.length; j++) {
+    const climb = ranks[i].rank - ranks[j].rank;
+    // Track best climb with GW range
+  }
+}
+```
+
+### Impact
+
+**Before (v4.7.7):**
+- Big Ones had 4 awards
+- Biggest Climber/Faller only looked at GW5 vs GW19
+- Missed dramatic mid-season swings
+
+**After (v4.7.8):**
+- Big Ones has 3 awards (cleaner hierarchy)
+- Best Gameweek now in Performance (better category fit)
+- Climber/Faller capture true peak swings across 15 gameweeks
+- More accurate and meaningful awards
 
 ---
 

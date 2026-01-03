@@ -115,8 +115,8 @@ export async function GET(
       });
     }
 
-    // 3. Biggest Climber (H2H League Rank: GW5 → GW19)
-    // Calculate H2H league standings at GW5 and GW19
+    // 3. Biggest Climber (NEW: Peak upward swing GW5-19)
+    // Calculate H2H league standings at each GW from 5-19
     const calculateH2HRank = async (upToGW: number) => {
       const standings = await db.query(
         `SELECT ls.entry_id, ls.total
@@ -161,10 +161,7 @@ export async function GET(
       return new Map(ranked.map(r => [r.entry_id, r.rank]));
     };
 
-    const gw5Ranks = await calculateH2HRank(5);
-    const gw19Ranks = await calculateH2HRank(19);
-
-    // Get all managers and calculate rank change
+    // Get all managers
     const allLeagueManagers = await db.query(
       `SELECT m.entry_id, m.player_name, m.team_name
        FROM managers m
@@ -173,70 +170,100 @@ export async function GET(
       [leagueId]
     );
 
-    const climbers = allLeagueManagers.rows
-      .map((m: any) => {
-        const gw5Rank = gw5Ranks.get(m.entry_id) || 999;
-        const gw19Rank = gw19Ranks.get(m.entry_id) || 999;
-        const climb = gw5Rank - gw19Rank; // Positive = improved (lower rank number is better)
-        return {
-          entry_id: m.entry_id,
-          player_name: m.player_name,
-          team_name: m.team_name,
-          gw5Rank,
-          gw19Rank,
-          climb
-        };
-      })
-      .sort((a, b) => b.climb - a.climb);
-
-    if (climbers.length > 0 && climbers[0].climb > 0) {
-      bigOnesAwards.push({
-        title: 'Biggest Climber',
-        winner: {
-          entry_id: climbers[0].entry_id,
-          player_name: climbers[0].player_name,
-          team_name: climbers[0].team_name
-        },
-        winner_value: climbers[0].climb,
-        runner_up: climbers[1] && climbers[1].climb > 0 ? {
-          entry_id: climbers[1].entry_id,
-          player_name: climbers[1].player_name,
-          team_name: climbers[1].team_name
-        } : undefined,
-        runner_up_value: climbers[1] && climbers[1].climb > 0 ? climbers[1].climb : undefined,
-        unit: 'places',
-        description: `${climbers[0].gw5Rank}${getSuffix(climbers[0].gw5Rank)} → ${climbers[0].gw19Rank}${getSuffix(climbers[0].gw19Rank)} (GW5-19)`
+    // Calculate rank history for each GW (5-19)
+    const rankHistory = new Map<number, Array<{ gw: number; rank: number }>>();
+    for (let gw = 5; gw <= 19; gw++) {
+      const gwRanks = await calculateH2HRank(gw);
+      allLeagueManagers.rows.forEach((m: any) => {
+        const rank = gwRanks.get(m.entry_id) || 999;
+        if (!rankHistory.has(m.entry_id)) {
+          rankHistory.set(m.entry_id, []);
+        }
+        rankHistory.get(m.entry_id)!.push({ gw, rank });
       });
     }
 
-    // 4. Best Gameweek - FIXED (add manager name)
-    const bestGW = await db.query(
-      `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
-       FROM manager_gw_history h
-       JOIN managers m ON m.entry_id = h.entry_id
-       WHERE h.league_id = $1 AND h.event <= 19
-       ORDER BY h.points DESC
-       LIMIT 2`,
-      [leagueId]
-    );
+    // Find biggest climber (peak upward swing)
+    let bestClimb = { entry_id: 0, climb: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
 
-    if (bestGW.rows.length > 0) {
+    allLeagueManagers.rows.forEach((manager: any) => {
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      // For each position, find the worst rank up to that point
+      for (let i = 0; i < ranks.length; i++) {
+        const lowPoint = ranks[i]; // potential worst rank
+
+        // Look for best rank AFTER this point
+        for (let j = i + 1; j < ranks.length; j++) {
+          const highPoint = ranks[j];
+
+          // Climb = went from lowPoint.rank to highPoint.rank
+          // Example: 17th → 5th = climb of 12 (17 - 5 = 12)
+          const climb = lowPoint.rank - highPoint.rank;
+
+          if (climb > bestClimb.climb) {
+            bestClimb = {
+              entry_id: manager.entry_id,
+              climb: climb,
+              fromRank: lowPoint.rank,
+              toRank: highPoint.rank,
+              fromGW: lowPoint.gw,
+              toGW: highPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
+    // Find runner-up climber
+    let runnerUpClimb = { entry_id: 0, climb: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
+
+    allLeagueManagers.rows.forEach((manager: any) => {
+      if (manager.entry_id === bestClimb.entry_id) return; // Skip winner
+
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      for (let i = 0; i < ranks.length; i++) {
+        const lowPoint = ranks[i];
+        for (let j = i + 1; j < ranks.length; j++) {
+          const highPoint = ranks[j];
+          const climb = lowPoint.rank - highPoint.rank;
+
+          if (climb > runnerUpClimb.climb) {
+            runnerUpClimb = {
+              entry_id: manager.entry_id,
+              climb: climb,
+              fromRank: lowPoint.rank,
+              toRank: highPoint.rank,
+              fromGW: lowPoint.gw,
+              toGW: highPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
+    if (bestClimb.climb > 0) {
       bigOnesAwards.push({
-        title: 'Best Gameweek',
+        title: 'Biggest Climber',
         winner: {
-          entry_id: bestGW.rows[0].entry_id,
-          player_name: bestGW.rows[0].player_name,
-          team_name: bestGW.rows[0].team_name
+          entry_id: bestClimb.entry_id,
+          player_name: bestClimb.player_name,
+          team_name: bestClimb.team_name
         },
-        winner_value: bestGW.rows[0].points,
-        runner_up: bestGW.rows[1] ? {
-          entry_id: bestGW.rows[1].entry_id,
-          player_name: bestGW.rows[1].player_name,
-          team_name: bestGW.rows[1].team_name
+        winner_value: bestClimb.climb,
+        runner_up: runnerUpClimb.climb > 0 ? {
+          entry_id: runnerUpClimb.entry_id,
+          player_name: runnerUpClimb.player_name,
+          team_name: runnerUpClimb.team_name
         } : undefined,
-        runner_up_value: bestGW.rows[1]?.points,
-        unit: `pts in GW${bestGW.rows[0].event}`,
-        description: 'Highest single gameweek score'
+        runner_up_value: runnerUpClimb.climb > 0 ? runnerUpClimb.climb : undefined,
+        unit: 'places',
+        description: `${bestClimb.fromRank}${getSuffix(bestClimb.fromRank)} → ${bestClimb.toRank}${getSuffix(bestClimb.toRank)} (GW${bestClimb.fromGW}-${bestClimb.toGW})`
       });
     }
 
@@ -251,44 +278,7 @@ export async function GET(
     // ==========================================
     const performanceAwards: Award[] = [];
 
-    // 1. Most Consistent (Lowest std dev)
-    const consistency = await db.query(
-      `SELECT h.entry_id,
-              AVG(h.points) as avg_points,
-              STDDEV(h.points) as std_dev,
-              m.player_name,
-              m.team_name
-       FROM manager_gw_history h
-       JOIN managers m ON m.entry_id = h.entry_id
-       WHERE h.league_id = $1 AND h.event <= 19
-       GROUP BY h.entry_id, m.player_name, m.team_name
-       HAVING COUNT(*) >= 5
-       ORDER BY std_dev ASC
-       LIMIT 2`,
-      [leagueId]
-    );
-
-    if (consistency.rows.length > 0) {
-      performanceAwards.push({
-        title: 'Most Consistent',
-        winner: {
-          entry_id: consistency.rows[0].entry_id,
-          player_name: consistency.rows[0].player_name,
-          team_name: consistency.rows[0].team_name
-        },
-        winner_value: parseFloat(parseFloat(consistency.rows[0].std_dev).toFixed(1)),
-        runner_up: consistency.rows[1] ? {
-          entry_id: consistency.rows[1].entry_id,
-          player_name: consistency.rows[1].player_name,
-          team_name: consistency.rows[1].team_name
-        } : undefined,
-        runner_up_value: consistency.rows[1] ? parseFloat(parseFloat(consistency.rows[1].std_dev).toFixed(1)) : undefined,
-        unit: 'σ std dev',
-        description: 'Lowest standard deviation in GW scores'
-      });
-    }
-
-    // 2. Best Average
+    // 1. Best Average
     const bestAverage = await db.query(
       `SELECT h.entry_id,
               AVG(h.points) as avg_points,
@@ -397,6 +387,37 @@ export async function GET(
       });
     }
 
+    // 3. Best Gameweek (moved from Big Ones)
+    const bestGW = await db.query(
+      `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       ORDER BY h.points DESC
+       LIMIT 2`,
+      [leagueId]
+    );
+
+    if (bestGW.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Best Gameweek',
+        winner: {
+          entry_id: bestGW.rows[0].entry_id,
+          player_name: bestGW.rows[0].player_name,
+          team_name: bestGW.rows[0].team_name
+        },
+        winner_value: bestGW.rows[0].points,
+        runner_up: bestGW.rows[1] ? {
+          entry_id: bestGW.rows[1].entry_id,
+          player_name: bestGW.rows[1].player_name,
+          team_name: bestGW.rows[1].team_name
+        } : undefined,
+        runner_up_value: bestGW.rows[1]?.points,
+        unit: `pts in GW${bestGW.rows[0].event}`,
+        description: 'Highest single gameweek score'
+      });
+    }
+
     // 4. Worst Gameweek - FIXED (add manager name)
     const worstGW = await db.query(
       `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
@@ -428,72 +449,92 @@ export async function GET(
       });
     }
 
-    // 5. Biggest Faller (H2H League Rank: GW5 → GW19)
-    // Reuse gw5Ranks and gw19Ranks from Biggest Climber calculation
-    const fallers = climbers
-      .map((m) => ({
-        ...m,
-        fall: m.gw19Rank - m.gw5Rank // Positive = dropped (higher rank number is worse)
-      }))
-      .sort((a, b) => b.fall - a.fall);
+    // 5. Biggest Faller (NEW: Peak downward swing GW5-19)
+    // Reuse rankHistory from Biggest Climber calculation
+    let biggestFall = { entry_id: 0, fall: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
 
-    if (fallers.length > 0 && fallers[0].fall > 0) {
+    allLeagueManagers.rows.forEach((manager: any) => {
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      // For each position, find the best rank up to that point
+      for (let i = 0; i < ranks.length; i++) {
+        const highPoint = ranks[i]; // potential best rank (low number)
+
+        // Look for worst rank AFTER this point
+        for (let j = i + 1; j < ranks.length; j++) {
+          const lowPoint = ranks[j];
+
+          // Fall = went from highPoint.rank to lowPoint.rank
+          // Example: 3rd → 15th = fall of 12 (15 - 3 = 12)
+          const fall = lowPoint.rank - highPoint.rank;
+
+          if (fall > biggestFall.fall) {
+            biggestFall = {
+              entry_id: manager.entry_id,
+              fall: fall,
+              fromRank: highPoint.rank,
+              toRank: lowPoint.rank,
+              fromGW: highPoint.gw,
+              toGW: lowPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
+    // Find runner-up faller
+    let runnerUpFall = { entry_id: 0, fall: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
+
+    allLeagueManagers.rows.forEach((manager: any) => {
+      if (manager.entry_id === biggestFall.entry_id) return; // Skip winner
+
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      for (let i = 0; i < ranks.length; i++) {
+        const highPoint = ranks[i];
+        for (let j = i + 1; j < ranks.length; j++) {
+          const lowPoint = ranks[j];
+          const fall = lowPoint.rank - highPoint.rank;
+
+          if (fall > runnerUpFall.fall) {
+            runnerUpFall = {
+              entry_id: manager.entry_id,
+              fall: fall,
+              fromRank: highPoint.rank,
+              toRank: lowPoint.rank,
+              fromGW: highPoint.gw,
+              toGW: lowPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
+    if (biggestFall.fall > 0) {
       performanceAwards.push({
         title: 'Biggest Faller',
         winner: {
-          entry_id: fallers[0].entry_id,
-          player_name: fallers[0].player_name,
-          team_name: fallers[0].team_name
+          entry_id: biggestFall.entry_id,
+          player_name: biggestFall.player_name,
+          team_name: biggestFall.team_name
         },
-        winner_value: fallers[0].fall,
-        runner_up: fallers[1] && fallers[1].fall > 0 ? {
-          entry_id: fallers[1].entry_id,
-          player_name: fallers[1].player_name,
-          team_name: fallers[1].team_name
+        winner_value: biggestFall.fall,
+        runner_up: runnerUpFall.fall > 0 ? {
+          entry_id: runnerUpFall.entry_id,
+          player_name: runnerUpFall.player_name,
+          team_name: runnerUpFall.team_name
         } : undefined,
-        runner_up_value: fallers[1] && fallers[1].fall > 0 ? fallers[1].fall : undefined,
+        runner_up_value: runnerUpFall.fall > 0 ? runnerUpFall.fall : undefined,
         unit: 'places',
-        description: `${fallers[0].gw5Rank}${getSuffix(fallers[0].gw5Rank)} → ${fallers[0].gw19Rank}${getSuffix(fallers[0].gw19Rank)} (GW5-19)`
+        description: `${biggestFall.fromRank}${getSuffix(biggestFall.fromRank)} → ${biggestFall.toRank}${getSuffix(biggestFall.toRank)} (GW${biggestFall.fromGW}-${biggestFall.toGW})`
       });
     }
 
-    // 6. Rollercoaster - FIXED (use std dev)
-    const volatility = await db.query(
-      `SELECT h.entry_id,
-              STDDEV(h.points) as std_dev,
-              m.player_name,
-              m.team_name
-       FROM manager_gw_history h
-       JOIN managers m ON m.entry_id = h.entry_id
-       WHERE h.league_id = $1 AND h.event <= 19
-       GROUP BY h.entry_id, m.player_name, m.team_name
-       HAVING COUNT(*) >= 5
-       ORDER BY std_dev DESC
-       LIMIT 2`,
-      [leagueId]
-    );
-
-    if (volatility.rows.length > 0) {
-      performanceAwards.push({
-        title: 'Rollercoaster',
-        winner: {
-          entry_id: volatility.rows[0].entry_id,
-          player_name: volatility.rows[0].player_name,
-          team_name: volatility.rows[0].team_name
-        },
-        winner_value: parseFloat(parseFloat(volatility.rows[0].std_dev).toFixed(1)),
-        runner_up: volatility.rows[1] ? {
-          entry_id: volatility.rows[1].entry_id,
-          player_name: volatility.rows[1].player_name,
-          team_name: volatility.rows[1].team_name
-        } : undefined,
-        runner_up_value: volatility.rows[1] ? parseFloat(parseFloat(volatility.rows[1].std_dev).toFixed(1)) : undefined,
-        unit: 'σ variance',
-        description: 'Most volatile weekly scores'
-      });
-    }
-
-    // 7. Best GW Rank (Best FPL overall GW rank achieved)
+    // 6. Best GW Rank (Best FPL overall GW rank achieved)
     const bestGWRank = await db.query(
       `SELECT h.entry_id, h.event, h.rank, m.player_name, m.team_name
        FROM manager_gw_history h
@@ -552,6 +593,79 @@ export async function GET(
         runner_up_value: worstGWRank.rows[1]?.rank,
         unit: `in GW${worstGWRank.rows[0].event}`,
         description: 'Worst FPL rank in a single GW'
+      });
+    }
+
+    // 8. Most Consistent (moved from position 1)
+    const consistency = await db.query(
+      `SELECT h.entry_id,
+              AVG(h.points) as avg_points,
+              STDDEV(h.points) as std_dev,
+              m.player_name,
+              m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       GROUP BY h.entry_id, m.player_name, m.team_name
+       HAVING COUNT(*) >= 5
+       ORDER BY std_dev ASC
+       LIMIT 2`,
+      [leagueId]
+    );
+
+    if (consistency.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Most Consistent',
+        winner: {
+          entry_id: consistency.rows[0].entry_id,
+          player_name: consistency.rows[0].player_name,
+          team_name: consistency.rows[0].team_name
+        },
+        winner_value: parseFloat(parseFloat(consistency.rows[0].std_dev).toFixed(1)),
+        runner_up: consistency.rows[1] ? {
+          entry_id: consistency.rows[1].entry_id,
+          player_name: consistency.rows[1].player_name,
+          team_name: consistency.rows[1].team_name
+        } : undefined,
+        runner_up_value: consistency.rows[1] ? parseFloat(parseFloat(consistency.rows[1].std_dev).toFixed(1)) : undefined,
+        unit: 'σ std dev',
+        description: 'Lowest standard deviation in GW scores'
+      });
+    }
+
+    // 9. Rollercoaster (moved to after Most Consistent)
+    const volatility = await db.query(
+      `SELECT h.entry_id,
+              STDDEV(h.points) as std_dev,
+              m.player_name,
+              m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       GROUP BY h.entry_id, m.player_name, m.team_name
+       HAVING COUNT(*) >= 5
+       ORDER BY std_dev DESC
+       LIMIT 2`,
+      [leagueId]
+    );
+
+    if (volatility.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Rollercoaster',
+        winner: {
+          entry_id: volatility.rows[0].entry_id,
+          player_name: volatility.rows[0].player_name,
+          team_name: volatility.rows[0].team_name
+        },
+        winner_value: parseFloat(parseFloat(volatility.rows[0].std_dev).toFixed(1)),
+        runner_up: volatility.rows[1] ? {
+          entry_id: volatility.rows[1].entry_id,
+          player_name: volatility.rows[1].player_name,
+          team_name: volatility.rows[1].team_name
+        } : undefined,
+        runner_up_value: volatility.rows[1] ? parseFloat(parseFloat(volatility.rows[1].std_dev).toFixed(1)) : undefined,
+        unit: 'σ variance',
+        description: 'Most volatile weekly scores'
       });
     }
 
