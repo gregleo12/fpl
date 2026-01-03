@@ -465,7 +465,7 @@ export async function GET(
        JOIN managers m ON m.entry_id = h.entry_id
        WHERE h.league_id = $1 AND h.event <= 19
        ORDER BY h.points DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -484,19 +484,25 @@ export async function GET(
           team_name: bestGW.rows[1].team_name
         } : undefined,
         runner_up_value: bestGW.rows[1]?.points,
+        third_place: bestGW.rows[2] ? {
+          entry_id: bestGW.rows[2].entry_id,
+          player_name: bestGW.rows[2].player_name,
+          team_name: bestGW.rows[2].team_name
+        } : undefined,
+        third_place_value: bestGW.rows[2]?.points,
         unit: `pts in GW${bestGW.rows[0].event}`,
         description: 'Highest single gameweek score'
       });
     }
 
-    // 4. Worst Gameweek - FIXED (add manager name)
+    // 5. Worst Gameweek
     const worstGW = await db.query(
       `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
        FROM manager_gw_history h
        JOIN managers m ON m.entry_id = h.entry_id
        WHERE h.league_id = $1 AND h.event <= 19
        ORDER BY h.points ASC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -515,6 +521,12 @@ export async function GET(
           team_name: worstGW.rows[1].team_name
         } : undefined,
         runner_up_value: worstGW.rows[1]?.points,
+        third_place: worstGW.rows[2] ? {
+          entry_id: worstGW.rows[2].entry_id,
+          player_name: worstGW.rows[2].player_name,
+          team_name: worstGW.rows[2].team_name
+        } : undefined,
+        third_place_value: worstGW.rows[2]?.points,
         unit: `pts in GW${worstGW.rows[0].event}`,
         description: 'Lowest single gameweek score'
       });
@@ -704,7 +716,7 @@ export async function GET(
        JOIN managers m ON m.entry_id = h.entry_id
        WHERE h.league_id = $1 AND h.rank IS NOT NULL AND h.rank > 0 AND h.event <= 19
        ORDER BY h.rank ASC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -723,19 +735,25 @@ export async function GET(
           team_name: bestGWRank.rows[1].team_name
         } : undefined,
         runner_up_value: bestGWRank.rows[1]?.rank,
+        third_place: bestGWRank.rows[2] ? {
+          entry_id: bestGWRank.rows[2].entry_id,
+          player_name: bestGWRank.rows[2].player_name,
+          team_name: bestGWRank.rows[2].team_name
+        } : undefined,
+        third_place_value: bestGWRank.rows[2]?.rank,
         unit: `in GW${bestGWRank.rows[0].event}`,
         description: 'Best FPL rank in a single GW'
       });
     }
 
-    // 8. Worst GW Rank (Worst FPL overall GW rank achieved)
+    // 9. Worst GW Rank (Worst FPL overall GW rank achieved)
     const worstGWRank = await db.query(
       `SELECT h.entry_id, h.event, h.rank, m.player_name, m.team_name
        FROM manager_gw_history h
        JOIN managers m ON m.entry_id = h.entry_id
        WHERE h.league_id = $1 AND h.rank IS NOT NULL AND h.rank > 0 AND h.event <= 19
        ORDER BY h.rank DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -754,12 +772,18 @@ export async function GET(
           team_name: worstGWRank.rows[1].team_name
         } : undefined,
         runner_up_value: worstGWRank.rows[1]?.rank,
+        third_place: worstGWRank.rows[2] ? {
+          entry_id: worstGWRank.rows[2].entry_id,
+          player_name: worstGWRank.rows[2].player_name,
+          team_name: worstGWRank.rows[2].team_name
+        } : undefined,
+        third_place_value: worstGWRank.rows[2]?.rank,
         unit: `in GW${worstGWRank.rows[0].event}`,
         description: 'Worst FPL rank in a single GW'
       });
     }
 
-    // 8. Most Consistent (moved from position 1)
+    // 10. Most Consistent
     const consistency = await db.query(
       `SELECT h.entry_id,
               AVG(h.points) as avg_points,
@@ -772,7 +796,7 @@ export async function GET(
        GROUP BY h.entry_id, m.player_name, m.team_name
        HAVING COUNT(*) >= 5
        ORDER BY std_dev ASC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -791,6 +815,12 @@ export async function GET(
           team_name: consistency.rows[1].team_name
         } : undefined,
         runner_up_value: consistency.rows[1] ? parseFloat(parseFloat(consistency.rows[1].std_dev).toFixed(1)) : undefined,
+        third_place: consistency.rows[2] ? {
+          entry_id: consistency.rows[2].entry_id,
+          player_name: consistency.rows[2].player_name,
+          team_name: consistency.rows[2].team_name
+        } : undefined,
+        third_place_value: consistency.rows[2] ? parseFloat(parseFloat(consistency.rows[2].std_dev).toFixed(1)) : undefined,
         unit: 'σ std dev',
         description: 'Lowest standard deviation in GW scores'
       });
@@ -889,7 +919,7 @@ export async function GET(
       });
     }
 
-    // 13. Rollercoaster (moved to after Most Consistent)
+    // 11. Rollercoaster
     const volatility = await db.query(
       `SELECT h.entry_id,
               STDDEV(h.points) as std_dev,
@@ -901,7 +931,7 @@ export async function GET(
        GROUP BY h.entry_id, m.player_name, m.team_name
        HAVING COUNT(*) >= 5
        ORDER BY std_dev DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -920,6 +950,12 @@ export async function GET(
           team_name: volatility.rows[1].team_name
         } : undefined,
         runner_up_value: volatility.rows[1] ? parseFloat(parseFloat(volatility.rows[1].std_dev).toFixed(1)) : undefined,
+        third_place: volatility.rows[2] ? {
+          entry_id: volatility.rows[2].entry_id,
+          player_name: volatility.rows[2].player_name,
+          team_name: volatility.rows[2].team_name
+        } : undefined,
+        third_place_value: volatility.rows[2] ? parseFloat(parseFloat(volatility.rows[2].std_dev).toFixed(1)) : undefined,
         unit: 'σ variance',
         description: 'Most volatile weekly scores'
       });
