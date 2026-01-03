@@ -261,6 +261,36 @@ export async function GET(
       }
     });
 
+    // Find third place climber
+    let thirdPlaceClimb = { entry_id: 0, climb: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
+
+    allLeagueManagers.rows.forEach((manager: any) => {
+      if (manager.entry_id === bestClimb.entry_id || manager.entry_id === runnerUpClimb.entry_id) return; // Skip winner and runner-up
+
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      for (let i = 0; i < ranks.length; i++) {
+        const lowPoint = ranks[i];
+        for (let j = i + 1; j < ranks.length; j++) {
+          const highPoint = ranks[j];
+          const climb = lowPoint.rank - highPoint.rank;
+
+          if (climb > thirdPlaceClimb.climb) {
+            thirdPlaceClimb = {
+              entry_id: manager.entry_id,
+              climb: climb,
+              fromRank: lowPoint.rank,
+              toRank: highPoint.rank,
+              fromGW: lowPoint.gw,
+              toGW: highPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
     if (bestClimb.climb > 0) {
       bigOnesAwards.push({
         title: 'Biggest Climber',
@@ -276,6 +306,12 @@ export async function GET(
           team_name: runnerUpClimb.team_name
         } : undefined,
         runner_up_value: runnerUpClimb.climb > 0 ? runnerUpClimb.climb : undefined,
+        third_place: thirdPlaceClimb.climb > 0 ? {
+          entry_id: thirdPlaceClimb.entry_id,
+          player_name: thirdPlaceClimb.player_name,
+          team_name: thirdPlaceClimb.team_name
+        } : undefined,
+        third_place_value: thirdPlaceClimb.climb > 0 ? thirdPlaceClimb.climb : undefined,
         unit: 'places',
         description: `${bestClimb.fromRank}${getSuffix(bestClimb.fromRank)} → ${bestClimb.toRank}${getSuffix(bestClimb.toRank)} (GW${bestClimb.fromGW}-${bestClimb.toGW})`
       });
@@ -291,6 +327,7 @@ export async function GET(
     // 📊 PERFORMANCE
     // ==========================================
     const performanceAwards: Award[] = [];
+    const funAwards: Award[] = [];
 
     // 1. Best Average (FIXED: use NET points)
     const bestAverage = await db.query(
@@ -597,6 +634,36 @@ export async function GET(
       }
     });
 
+    // Find third place faller
+    let thirdPlaceFall = { entry_id: 0, fall: 0, fromRank: 0, toRank: 0, fromGW: 0, toGW: 0, player_name: '', team_name: '' };
+
+    allLeagueManagers.rows.forEach((manager: any) => {
+      if (manager.entry_id === biggestFall.entry_id || manager.entry_id === runnerUpFall.entry_id) return; // Skip winner and runner-up
+
+      const ranks = rankHistory.get(manager.entry_id) || [];
+
+      for (let i = 0; i < ranks.length; i++) {
+        const highPoint = ranks[i];
+        for (let j = i + 1; j < ranks.length; j++) {
+          const lowPoint = ranks[j];
+          const fall = lowPoint.rank - highPoint.rank;
+
+          if (fall > thirdPlaceFall.fall) {
+            thirdPlaceFall = {
+              entry_id: manager.entry_id,
+              fall: fall,
+              fromRank: highPoint.rank,
+              toRank: lowPoint.rank,
+              fromGW: highPoint.gw,
+              toGW: lowPoint.gw,
+              player_name: manager.player_name,
+              team_name: manager.team_name
+            };
+          }
+        }
+      }
+    });
+
     if (biggestFall.fall > 0) {
       performanceAwards.push({
         title: 'Biggest Faller',
@@ -612,6 +679,12 @@ export async function GET(
           team_name: runnerUpFall.team_name
         } : undefined,
         runner_up_value: runnerUpFall.fall > 0 ? runnerUpFall.fall : undefined,
+        third_place: thirdPlaceFall.fall > 0 ? {
+          entry_id: thirdPlaceFall.entry_id,
+          player_name: thirdPlaceFall.player_name,
+          team_name: thirdPlaceFall.team_name
+        } : undefined,
+        third_place_value: thirdPlaceFall.fall > 0 ? thirdPlaceFall.fall : undefined,
         unit: 'places',
         description: `${biggestFall.fromRank}${getSuffix(biggestFall.fromRank)} → ${biggestFall.toRank}${getSuffix(biggestFall.toRank)} (GW${biggestFall.fromGW}-${biggestFall.toGW})`
       });
@@ -642,7 +715,7 @@ export async function GET(
     );
 
     if (slowStarters.rows.length > 0) {
-      performanceAwards.push({
+      funAwards.push({
         title: 'Slow Starter',
         winner: {
           entry_id: slowStarters.rows[0].entry_id,
@@ -684,7 +757,7 @@ export async function GET(
     );
 
     if (secondHalfSurge.rows.length > 0) {
-      performanceAwards.push({
+      funAwards.push({
         title: 'Second Half Surge',
         winner: {
           entry_id: secondHalfSurge.rows[0].entry_id,
@@ -843,7 +916,7 @@ export async function GET(
     );
 
     if (benchWarmer.rows.length > 0) {
-      performanceAwards.push({
+      funAwards.push({
         title: 'Bench Warmer',
         winner: {
           entry_id: benchWarmer.rows[0].entry_id,
@@ -894,7 +967,7 @@ export async function GET(
       .slice(0, 3);
 
     if (mrAverageList.length > 0) {
-      performanceAwards.push({
+      funAwards.push({
         title: 'Mr. Average',
         winner: {
           entry_id: mrAverageList[0].entry_id,
@@ -965,6 +1038,15 @@ export async function GET(
       category: 'Performance',
       icon: '📊',
       awards: performanceAwards
+    });
+
+    // ==========================================
+    // 🎉 FUN
+    // ==========================================
+    categories.push({
+      category: 'Fun',
+      icon: '🎉',
+      awards: funAwards
     });
 
     // ==========================================
@@ -1506,6 +1588,12 @@ export async function GET(
           team_name: closeCallCounts[1].team_name
         } : undefined,
         runner_up_value: closeCallCounts[1]?.close_calls,
+        third_place: closeCallCounts[2] ? {
+          entry_id: closeCallCounts[2].entry_id,
+          player_name: closeCallCounts[2].player_name,
+          team_name: closeCallCounts[2].team_name
+        } : undefined,
+        third_place_value: closeCallCounts[2]?.close_calls,
         unit: 'narrow wins',
         description: 'Most wins by ≤5 points'
       });
