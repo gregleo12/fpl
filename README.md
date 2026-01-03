@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.5.11** (January 3, 2026)
+**v4.5.12** (January 3, 2026)
 
-Minor fix: League Rankings now displays luck values with 1 decimal place precision (e.g., +1.8, +38.8, -10.8) instead of rounding to whole numbers, matching the exact format shown in Luck Leaderboard and Luck Modal.
+UX improvement: Removed luck column from GW Points Rankings modal. The modal now focuses purely on points scored, displaying only rank, manager info, and points for a cleaner, more focused view.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

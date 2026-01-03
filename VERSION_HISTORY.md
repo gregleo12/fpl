@@ -2,7 +2,27 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.5.11 (January 3, 2026)
+**Current Version:** v4.5.12 (January 3, 2026)
+
+---
+
+## v4.5.12 - Removed Luck from GW Points Rankings Modal (Jan 3, 2026)
+
+**UX Improvement:** Removed luck column from GW XX Points Rankings modal
+
+### Rationale
+
+The GW Points Rankings modal is focused on showing who scored the most points in a specific gameweek. The luck metric doesn't add value in this context and clutters the display.
+
+### Changes
+
+Removed the luck column from the GW Points Rankings modal. Now displays only:
+- Rank (with medals for top 3)
+- Manager name and team
+- Points scored
+
+**Files Modified:**
+- `/src/components/Stats/GWRankingsModal.tsx` (removed luck column)
 
 ---
 
