@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.6.0",
+    "date": "2026-01-03",
+    "title": "Revamped Luck System - Single Source of Truth",
+    "changes": [
+      "MAJOR: All luck displays now show identical values across the entire app",
+      "Fixed League Rankings showing +17 when it should be +4.0 (now matches Stats > Luck)",
+      "Fixed Luck Modal showing +20 when it should be +4.0 (was using wrong formula)",
+      "Consolidated 3 different luck calculations into 1 shared function for guaranteed consistency",
+      "All luck values now display with 1 decimal precision (+1.8, +38.8, -10.8)",
+      "Removed luck column from GW Points Rankings modal for cleaner focus on points",
+      "Removed 500+ lines of duplicated/buggy calculation code"
+    ]
+  },
+  {
     "version": "4.5.0",
     "date": "2026-01-02",
     "title": "Stats Navigation Redesign & Modal Fixes",
