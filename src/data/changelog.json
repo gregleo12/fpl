@@ -1,127 +1,87 @@
 [
   {
     "version": "4.7.8",
-    "date": "2026-01-03",
-    "title": "K-201c - Awards Layout Reorder + Climber/Faller Logic Fix",
+    "date": "Jan 3, 2026",
+    "title": "Awards Organization Update",
     "changes": [
-      "MOVED: Best Gameweek from Big Ones to Performance section (position 3)",
-      "MOVED: Most Consistent from position 1 to position 8 (before Rollercoaster)",
-      "The Big Ones now has 3 awards (was 4): League Winner, Top Scorer, Biggest Climber",
-      "Performance now has 9 awards (was 8) in new order",
-      "FIXED: Biggest Climber now finds peak upward swing across ANY two GWs (GW5-19)",
-      "Example: 17th→5th (+12) captured instead of just GW5→GW19 comparison",
-      "FIXED: Biggest Faller now finds peak downward swing across ANY two GWs (GW5-19)",
-      "Example: 3rd→15th (-12) captured instead of just GW5→GW19 comparison",
-      "Awards now display GW range for peak swings (e.g., '17th → 5th (GW9-14)')",
-      "More accurate and meaningful Climber/Faller awards capturing mid-season drama"
+      "Reorganized awards for better flow and clarity",
+      "Biggest Climber & Faller now capture your most dramatic rank swings",
+      "See exactly when you peaked or dipped (e.g., '17th → 5th from GW9-14')",
+      "Awards better reflect the true story of your season"
     ]
   },
   {
     "version": "4.7.7",
-    "date": "2026-01-03",
-    "title": "CRITICAL FIX - GW20 Live Status Detection",
+    "date": "Jan 3, 2026",
+    "title": "Live Match Updates",
     "changes": [
-      "FIXED: Rivals H2H section now correctly detects live gameweeks (was showing GW20 as 'upcoming')",
-      "FIXED: Live match modals now appear when clicking matches during live GWs (was showing forecast modals)",
-      "Root cause: Frontend checked for 'in_progress' but API returns 'live' - status mismatch",
-      "Changed all status checks from 'in_progress' → 'live' to match API",
-      "Live GW indicator (glowing GW number) now works correctly",
-      "Auto-refresh every 30 seconds now triggers properly for live GWs",
-      "Real-time player game data now displays correctly in live modals"
+      "Live gameweeks now properly detected and highlighted",
+      "Real-time player stats now show during active matches",
+      "Auto-refresh keeps scores updated every 30 seconds",
+      "Get the full live experience during gameweeks"
     ]
   },
   {
     "version": "4.7.6",
-    "date": "2026-01-03",
-    "title": "K-201b v2 - Hot Streak Fixed & Award Restructure",
+    "date": "Jan 3, 2026",
+    "title": "New Awards & Refinements",
     "changes": [
-      "FIXED: Hot Streak now shows manager names correctly (was still showing 'Unknown' in v4.7.5)",
-      "Root cause: Type mismatch in entry_id comparison (string vs number) - added parseInt() conversion",
-      "REMOVED: Fun section completely (Phoenix, Underachiever, Wildcard) - FPL overall rank not meaningful for H2H leagues",
-      "NEW AWARD: Best GW Rank - shows best FPL overall GW rank achieved (e.g., '3,422nd in GW7')",
-      "NEW AWARD: Worst GW Rank - shows worst FPL overall GW rank achieved",
-      "NEW AWARD: Longest Winning Streak - most consecutive H2H wins with GW range (e.g., '5 wins (GW3-7)')",
-      "NEW AWARD: Longest Losing Streak - most consecutive H2H losses with GW range",
-      "Performance section now has 8 awards (was 6): added Best/Worst GW Rank",
-      "H2H Battle section now has 6 awards (was 4): added Winning/Losing Streak",
-      "Streak tracking algorithm iterates GW-by-GW to find longest consecutive runs"
+      "Added Best/Worst GW Rank awards to track your FPL peaks",
+      "Added Longest Winning/Losing Streak for H2H battles",
+      "Streamlined awards to focus on H2H league achievements",
+      "All names now display correctly across awards"
     ]
   },
   {
     "version": "4.7.5",
-    "date": "2026-01-03",
-    "title": "K-201b - Awards Calculations Fixed & New Award",
+    "date": "Jan 3, 2026",
+    "title": "Awards Improvements",
     "changes": [
-      "FIXED: Manager names now display correctly for Hot Streak, Phoenix, Underachiever, Wildcard (was showing 'Unknown')",
-      "Changed manager lookups to use 'WHERE entry_id = ANY($1)' instead of JOIN with league_standings",
-      "CORRECTED: Biggest Climber now uses H2H league rank (GW5→GW19) instead of FPL overall rank",
-      "Example: '15th → 3rd (+12 places)' instead of '3,050,299 places'",
-      "CORRECTED: Biggest Faller now uses H2H league rank (GW5→GW19) instead of FPL overall rank",
-      "Example: '3rd → 12th (-9 places)' instead of '10,488,659 places'",
-      "NEW AWARD: Best Non-Chip Week - highest single GW score WITHOUT using a chip",
-      "Best Non-Chip Week appears in Strategy section after Best Chip Week",
-      "Added getSuffix() helper for ordinal numbers (1st, 2nd, 3rd, etc.)",
-      "H2H rank calculation based on match wins/draws/losses (3/1/0 points)"
+      "Biggest Climber & Faller now track your H2H league position journey",
+      "Added 'Best Non-Chip Week' award for pure skill moments",
+      "All manager names display correctly throughout"
     ]
   },
   {
     "version": "4.7.4",
-    "date": "2026-01-03",
-    "title": "K-201 Final Fixes - Missing Names & Visual Hierarchy",
+    "date": "Jan 3, 2026",
+    "title": "Awards Visual Polish",
     "changes": [
-      "FIXED: Hot Streak, The Phoenix, The Underachiever, The Wildcard now show actual manager names (were showing 'Unknown')",
-      "Added dedicated manager queries with JOIN to league_standings for all sections",
-      "IMPROVED: Runner-up (2nd place) now visually smaller and less prominent than winner",
-      "Smaller fonts for 2nd place: names 13px vs 15px, values 16px vs 20px",
-      "Reduced padding and opacity for runner-up row (70% opacity)",
-      "Lighter background and font weight for 2nd place",
-      "Winner now clearly stands out, runner-up provides supporting context",
-      "Better visual hierarchy makes awards easier to scan at a glance"
+      "Winners now stand out more clearly from runners-up",
+      "Cleaner card design with better visual hierarchy",
+      "Fixed display issues with some award names"
     ]
   },
   {
     "version": "4.7.3",
-    "date": "2026-01-03",
-    "title": "K-201 Awards Bug Fixes - All Calculations Fixed",
+    "date": "Jan 3, 2026",
+    "title": "Awards Calculation Fixes",
     "changes": [
-      "FIXED: All awards now show winner + runner-up (2 managers per award)",
-      "FIXED: Top Scorer now uses classic FPL total points (~1,066) instead of H2H points (45)",
-      "FIXED: Best/Worst Gameweek now show actual manager names instead of 'Unknown'",
-      "FIXED: Hot Streak calculates consecutive GWs above league average (was showing 0)",
-      "FIXED: Rollercoaster uses STDDEV for volatility calculation (was showing 0)",
-      "FIXED: All Strategy awards now have real values (Transfer King, Chip Master, Hit Taker, Set & Forget)",
-      "SIMPLIFIED: Luck awards reduced from 4 to 2 (Luckiest/Unluckiest only)",
-      "CLARIFIED: Giant Slayer = wins vs opponents with more cumulative points",
-      "REMOVED: Differential Master, Template Team, The Survivor (unclear definitions)",
-      "Award cards redesigned with dual display: 🥇 1st and 🥈 2nd places"
+      "Top Scorer now uses your actual FPL points total",
+      "Hot Streak correctly counts consecutive above-average weeks",
+      "All strategy awards now calculate properly",
+      "Simplified luck awards to Luckiest and Unluckiest"
     ]
   },
   {
     "version": "4.7.0",
-    "date": "2026-01-03",
-    "title": "Mid-Season Awards Page (K-201)",
+    "date": "Jan 3, 2026",
+    "title": "🏆 Mid-Season Awards",
     "changes": [
-      "NEW: Full-page Mid-Season Awards celebrating GW1-19 achievements",
-      "26 different awards across 6 categories (Big Ones, Performance, Strategy, Luck, H2H, Fun)",
-      "Beautiful purple gradient design with smooth animations",
-      "Your awards highlighted with special 'You!' badge",
-      "Mobile-first responsive layout (1-3 column grid)",
-      "Accessible via prominent banner in Stats > Awards tab",
-      "Awards include: League Winner, Best GW, Hot Streak, Transfer King, Giant Slayer, The Phoenix, and 20 more"
+      "NEW: Celebrate the first half with 22+ awards across 5 categories",
+      "See who's leading in points, streaks, transfers, and luck",
+      "Your awards highlighted with a special 'You!' badge",
+      "Find it in Stats → Awards tab"
     ]
   },
   {
     "version": "4.6.0",
-    "date": "2026-01-03",
-    "title": "Revamped Luck System - Single Source of Truth",
+    "date": "Jan 3, 2026",
+    "title": "Improved Luck Scores",
     "changes": [
-      "MAJOR: All luck displays now show identical values across the entire app",
-      "Fixed League Rankings showing +17 when it should be +4.0 (now matches Stats > Luck)",
-      "Fixed Luck Modal showing +20 when it should be +4.0 (was using wrong formula)",
-      "Consolidated 3 different luck calculations into 1 shared function for guaranteed consistency",
-      "All luck values now display with 1 decimal precision (+1.8, +38.8, -10.8)",
-      "Removed luck column from GW Points Rankings modal for cleaner focus on points",
-      "Removed 500+ lines of duplicated/buggy calculation code"
+      "Luck values now consistent across the entire app",
+      "More accurate calculations for fairer comparisons",
+      "Cleaner display format"
     ]
   },
   {
