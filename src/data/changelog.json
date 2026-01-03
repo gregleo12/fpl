@@ -1,5 +1,15 @@
 [
   {
+    "version": "4.7.14",
+    "date": "Jan 3, 2026",
+    "title": "Awards Podium Alignment",
+    "changes": [
+      "Fixed alignment of manager names across all podium places",
+      "2nd and 3rd place now properly indented to match 1st place",
+      "Cleaner visual hierarchy in award cards"
+    ]
+  },
+  {
     "version": "4.7.10",
     "date": "Jan 3, 2026",
     "title": "🏆 Expanded Awards with Podium Rankings",

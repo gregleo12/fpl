@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.13** (January 3, 2026)
+**v4.7.14** (January 3, 2026)
 
-**K-203: Classic League Waitlist** - Added waitlist banner on Setup and Settings pages to collect emails from users interested in Classic League support (coming soon). Users can sign up to be notified when Classic Leagues launch. Simple, privacy-focused design with email validation and success confirmation.
+**K-201g: Awards Podium Alignment** - Fixed visual alignment of manager names across all podium places in award cards. 2nd and 3rd place rows now properly indented to match 1st place, creating cleaner visual hierarchy.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
