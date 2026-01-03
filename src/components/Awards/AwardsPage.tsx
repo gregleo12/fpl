@@ -19,6 +19,12 @@ interface Award {
     team_name: string;
   };
   runner_up_value?: number;
+  third_place?: {
+    entry_id: number;
+    player_name: string;
+    team_name: string;
+  };
+  third_place_value?: number;
   unit: string;
   description: string;
 }
