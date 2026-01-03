@@ -16,6 +16,8 @@ interface Award {
   winner_value: number;
   runner_up?: Manager;
   runner_up_value?: number;
+  third_place?: Manager;
+  third_place_value?: number;
   unit: string;
   description: string;
 }
@@ -58,7 +60,7 @@ export async function GET(
        JOIN managers m ON m.entry_id = ls.entry_id
        WHERE ls.league_id = $1
        ORDER BY ls.rank ASC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -77,6 +79,12 @@ export async function GET(
           team_name: leagueWinner.rows[1].team_name
         } : undefined,
         runner_up_value: leagueWinner.rows[1]?.total,
+        third_place: leagueWinner.rows[2] ? {
+          entry_id: leagueWinner.rows[2].entry_id,
+          player_name: leagueWinner.rows[2].player_name,
+          team_name: leagueWinner.rows[2].team_name
+        } : undefined,
+        third_place_value: leagueWinner.rows[2]?.total,
         unit: 'H2H pts',
         description: 'Most points in head-to-head standings'
       });
@@ -91,7 +99,7 @@ export async function GET(
        WHERE h.league_id = $1 AND h.event <= 19
        GROUP BY h.entry_id, m.player_name, m.team_name
        ORDER BY total_points DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -110,6 +118,12 @@ export async function GET(
           team_name: topScorer.rows[1].team_name
         } : undefined,
         runner_up_value: topScorer.rows[1] ? parseInt(topScorer.rows[1].total_points) : undefined,
+        third_place: topScorer.rows[2] ? {
+          entry_id: topScorer.rows[2].entry_id,
+          player_name: topScorer.rows[2].player_name,
+          team_name: topScorer.rows[2].team_name
+        } : undefined,
+        third_place_value: topScorer.rows[2] ? parseInt(topScorer.rows[2].total_points) : undefined,
         unit: 'pts',
         description: 'Highest total FPL points (GW1-19)'
       });
@@ -278,10 +292,10 @@ export async function GET(
     // ==========================================
     const performanceAwards: Award[] = [];
 
-    // 1. Best Average
+    // 1. Best Average (FIXED: use NET points)
     const bestAverage = await db.query(
       `SELECT h.entry_id,
-              AVG(h.points) as avg_points,
+              AVG(h.points - h.event_transfers_cost) as avg_points,
               m.player_name,
               m.team_name
        FROM manager_gw_history h
@@ -289,7 +303,7 @@ export async function GET(
        WHERE h.league_id = $1 AND h.event <= 19
        GROUP BY h.entry_id, m.player_name, m.team_name
        ORDER BY avg_points DESC
-       LIMIT 2`,
+       LIMIT 3`,
       [leagueId]
     );
 
@@ -308,6 +322,12 @@ export async function GET(
           team_name: bestAverage.rows[1].team_name
         } : undefined,
         runner_up_value: bestAverage.rows[1] ? parseFloat(parseFloat(bestAverage.rows[1].avg_points).toFixed(1)) : undefined,
+        third_place: bestAverage.rows[2] ? {
+          entry_id: bestAverage.rows[2].entry_id,
+          player_name: bestAverage.rows[2].player_name,
+          team_name: bestAverage.rows[2].team_name
+        } : undefined,
+        third_place_value: bestAverage.rows[2] ? parseFloat(parseFloat(bestAverage.rows[2].avg_points).toFixed(1)) : undefined,
         unit: 'pts/GW',
         description: 'Highest average points per gameweek'
       });
@@ -382,12 +402,63 @@ export async function GET(
           team_name: hotStreaks[1].team_name
         } : undefined,
         runner_up_value: hotStreaks[1]?.max_streak,
+        third_place: hotStreaks[2] ? {
+          entry_id: hotStreaks[2].entry_id,
+          player_name: hotStreaks[2].player_name,
+          team_name: hotStreaks[2].team_name
+        } : undefined,
+        third_place_value: hotStreaks[2]?.max_streak,
         unit: 'consecutive GWs',
         description: 'Longest streak above league average'
       });
     }
 
-    // 3. Best Gameweek (moved from Big Ones)
+    // 3. Best Captain Picks (NEW)
+    const bestCaptainPicks = await db.query(
+      `SELECT
+        mp.entry_id,
+        SUM(pgs.calculated_points * (mp.multiplier - 1)) as captain_bonus_points,
+        m.player_name,
+        m.team_name
+      FROM manager_picks mp
+      JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.gameweek
+      JOIN managers m ON m.entry_id = mp.entry_id
+      WHERE mp.league_id = $1
+        AND mp.gameweek <= 19
+        AND mp.is_captain = true
+      GROUP BY mp.entry_id, m.player_name, m.team_name
+      ORDER BY captain_bonus_points DESC
+      LIMIT 3`,
+      [leagueId]
+    );
+
+    if (bestCaptainPicks.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Best Captain Picks',
+        winner: {
+          entry_id: bestCaptainPicks.rows[0].entry_id,
+          player_name: bestCaptainPicks.rows[0].player_name,
+          team_name: bestCaptainPicks.rows[0].team_name
+        },
+        winner_value: parseInt(bestCaptainPicks.rows[0].captain_bonus_points),
+        runner_up: bestCaptainPicks.rows[1] ? {
+          entry_id: bestCaptainPicks.rows[1].entry_id,
+          player_name: bestCaptainPicks.rows[1].player_name,
+          team_name: bestCaptainPicks.rows[1].team_name
+        } : undefined,
+        runner_up_value: bestCaptainPicks.rows[1] ? parseInt(bestCaptainPicks.rows[1].captain_bonus_points) : undefined,
+        third_place: bestCaptainPicks.rows[2] ? {
+          entry_id: bestCaptainPicks.rows[2].entry_id,
+          player_name: bestCaptainPicks.rows[2].player_name,
+          team_name: bestCaptainPicks.rows[2].team_name
+        } : undefined,
+        third_place_value: bestCaptainPicks.rows[2] ? parseInt(bestCaptainPicks.rows[2].captain_bonus_points) : undefined,
+        unit: 'pts',
+        description: 'Most points from captain choices'
+      });
+    }
+
+    // 4. Best Gameweek (moved from Big Ones)
     const bestGW = await db.query(
       `SELECT h.entry_id, h.event, h.points, m.player_name, m.team_name
        FROM manager_gw_history h
@@ -534,7 +605,99 @@ export async function GET(
       });
     }
 
-    // 6. Best GW Rank (Best FPL overall GW rank achieved)
+    // 6. Slow Starter (NEW)
+    const currentStandings = await db.query(
+      `SELECT entry_id, rank FROM league_standings WHERE league_id = $1`,
+      [leagueId]
+    );
+    const topHalfIds = currentStandings.rows.filter((s: any) => s.rank <= 10).map((s: any) => s.entry_id);
+
+    const slowStarters = await db.query(
+      `SELECT
+        h.entry_id,
+        SUM(h.points - h.event_transfers_cost) as early_points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history h
+      JOIN managers m ON m.entry_id = h.entry_id
+      WHERE h.league_id = $1
+        AND h.event <= 5
+        AND h.entry_id = ANY($2)
+      GROUP BY h.entry_id, m.player_name, m.team_name
+      ORDER BY early_points ASC
+      LIMIT 3`,
+      [leagueId, topHalfIds]
+    );
+
+    if (slowStarters.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Slow Starter',
+        winner: {
+          entry_id: slowStarters.rows[0].entry_id,
+          player_name: slowStarters.rows[0].player_name,
+          team_name: slowStarters.rows[0].team_name
+        },
+        winner_value: parseInt(slowStarters.rows[0].early_points),
+        runner_up: slowStarters.rows[1] ? {
+          entry_id: slowStarters.rows[1].entry_id,
+          player_name: slowStarters.rows[1].player_name,
+          team_name: slowStarters.rows[1].team_name
+        } : undefined,
+        runner_up_value: slowStarters.rows[1] ? parseInt(slowStarters.rows[1].early_points) : undefined,
+        third_place: slowStarters.rows[2] ? {
+          entry_id: slowStarters.rows[2].entry_id,
+          player_name: slowStarters.rows[2].player_name,
+          team_name: slowStarters.rows[2].team_name
+        } : undefined,
+        third_place_value: slowStarters.rows[2] ? parseInt(slowStarters.rows[2].early_points) : undefined,
+        unit: 'pts (GW1-5)',
+        description: 'Worst start, now top 10'
+      });
+    }
+
+    // 7. Second Half Surge (NEW)
+    const secondHalfSurge = await db.query(
+      `SELECT
+        h.entry_id,
+        SUM(h.points - h.event_transfers_cost) as second_half_points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history h
+      JOIN managers m ON m.entry_id = h.entry_id
+      WHERE h.league_id = $1 AND h.event >= 10 AND h.event <= 19
+      GROUP BY h.entry_id, m.player_name, m.team_name
+      ORDER BY second_half_points DESC
+      LIMIT 3`,
+      [leagueId]
+    );
+
+    if (secondHalfSurge.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Second Half Surge',
+        winner: {
+          entry_id: secondHalfSurge.rows[0].entry_id,
+          player_name: secondHalfSurge.rows[0].player_name,
+          team_name: secondHalfSurge.rows[0].team_name
+        },
+        winner_value: parseInt(secondHalfSurge.rows[0].second_half_points),
+        runner_up: secondHalfSurge.rows[1] ? {
+          entry_id: secondHalfSurge.rows[1].entry_id,
+          player_name: secondHalfSurge.rows[1].player_name,
+          team_name: secondHalfSurge.rows[1].team_name
+        } : undefined,
+        runner_up_value: secondHalfSurge.rows[1] ? parseInt(secondHalfSurge.rows[1].second_half_points) : undefined,
+        third_place: secondHalfSurge.rows[2] ? {
+          entry_id: secondHalfSurge.rows[2].entry_id,
+          player_name: secondHalfSurge.rows[2].player_name,
+          team_name: secondHalfSurge.rows[2].team_name
+        } : undefined,
+        third_place_value: secondHalfSurge.rows[2] ? parseInt(secondHalfSurge.rows[2].second_half_points) : undefined,
+        unit: 'pts',
+        description: 'Best record GW10-19'
+      });
+    }
+
+    // 8. Best GW Rank (Best FPL overall GW rank achieved)
     const bestGWRank = await db.query(
       `SELECT h.entry_id, h.event, h.rank, m.player_name, m.team_name
        FROM manager_gw_history h
@@ -633,7 +796,100 @@ export async function GET(
       });
     }
 
-    // 9. Rollercoaster (moved to after Most Consistent)
+    // 11. Bench Warmer (NEW)
+    const benchWarmer = await db.query(
+      `SELECT
+        h.entry_id,
+        SUM(h.points_on_bench) as total_bench_points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history h
+      JOIN managers m ON m.entry_id = h.entry_id
+      WHERE h.league_id = $1 AND h.event <= 19
+      GROUP BY h.entry_id, m.player_name, m.team_name
+      ORDER BY total_bench_points DESC
+      LIMIT 3`,
+      [leagueId]
+    );
+
+    if (benchWarmer.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Bench Warmer',
+        winner: {
+          entry_id: benchWarmer.rows[0].entry_id,
+          player_name: benchWarmer.rows[0].player_name,
+          team_name: benchWarmer.rows[0].team_name
+        },
+        winner_value: parseInt(benchWarmer.rows[0].total_bench_points),
+        runner_up: benchWarmer.rows[1] ? {
+          entry_id: benchWarmer.rows[1].entry_id,
+          player_name: benchWarmer.rows[1].player_name,
+          team_name: benchWarmer.rows[1].team_name
+        } : undefined,
+        runner_up_value: benchWarmer.rows[1] ? parseInt(benchWarmer.rows[1].total_bench_points) : undefined,
+        third_place: benchWarmer.rows[2] ? {
+          entry_id: benchWarmer.rows[2].entry_id,
+          player_name: benchWarmer.rows[2].player_name,
+          team_name: benchWarmer.rows[2].team_name
+        } : undefined,
+        third_place_value: benchWarmer.rows[2] ? parseInt(benchWarmer.rows[2].total_bench_points) : undefined,
+        unit: 'pts',
+        description: 'Most points left on bench'
+      });
+    }
+
+    // 12. Mr. Average (NEW)
+    const allTotals = await db.query(
+      `SELECT
+        h.entry_id,
+        SUM(h.points - h.event_transfers_cost) as total_points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history h
+      JOIN managers m ON m.entry_id = h.entry_id
+      WHERE h.league_id = $1 AND h.event <= 19
+      GROUP BY h.entry_id, m.player_name, m.team_name`,
+      [leagueId]
+    );
+
+    const leagueAverage = allTotals.rows.reduce((sum: number, m: any) => sum + parseInt(m.total_points), 0) / allTotals.rows.length;
+
+    const mrAverageList = allTotals.rows
+      .map((m: any) => ({
+        ...m,
+        deviation: Math.abs(parseInt(m.total_points) - leagueAverage),
+        total_points: parseInt(m.total_points)
+      }))
+      .sort((a: any, b: any) => a.deviation - b.deviation)
+      .slice(0, 3);
+
+    if (mrAverageList.length > 0) {
+      performanceAwards.push({
+        title: 'Mr. Average',
+        winner: {
+          entry_id: mrAverageList[0].entry_id,
+          player_name: mrAverageList[0].player_name,
+          team_name: mrAverageList[0].team_name
+        },
+        winner_value: mrAverageList[0].total_points,
+        runner_up: mrAverageList[1] ? {
+          entry_id: mrAverageList[1].entry_id,
+          player_name: mrAverageList[1].player_name,
+          team_name: mrAverageList[1].team_name
+        } : undefined,
+        runner_up_value: mrAverageList[1]?.total_points,
+        third_place: mrAverageList[2] ? {
+          entry_id: mrAverageList[2].entry_id,
+          player_name: mrAverageList[2].player_name,
+          team_name: mrAverageList[2].team_name
+        } : undefined,
+        third_place_value: mrAverageList[2]?.total_points,
+        unit: 'pts',
+        description: 'Closest to league average'
+      });
+    }
+
+    // 13. Rollercoaster (moved to after Most Consistent)
     const volatility = await db.query(
       `SELECT h.entry_id,
               STDDEV(h.points) as std_dev,
@@ -1282,6 +1538,55 @@ export async function GET(
         runner_up_value: worstLoseStreak[1] && worstLoseStreak[1][1].max > 0 ? worstLoseStreak[1][1].max : undefined,
         unit: 'losses',
         description: `GW${worstLoseStreak[0][1].startGW}-${worstLoseStreak[0][1].endGW}`
+      });
+    }
+
+    // 7. Heartbreaker (NEW)
+    const heartbreakers = allManagers.rows.map((manager: any) => {
+      const matches = allH2HMatches.rows.filter(
+        (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
+      );
+
+      const narrowLosses = matches.filter((match: any) => {
+        const isEntry1 = match.entry_1_id === manager.entry_id;
+        const myPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
+        const oppPoints = isEntry1 ? match.entry_2_points : match.entry_1_points;
+        const margin = Math.abs(myPoints - oppPoints);
+        return margin <= 5 && match.winner !== manager.entry_id && match.winner !== null;
+      }).length;
+
+      const managerInfo = managers.rows.find((m: any) => m.entry_id === manager.entry_id);
+      return {
+        entry_id: manager.entry_id,
+        narrow_losses: narrowLosses,
+        player_name: managerInfo?.player_name || 'Unknown',
+        team_name: managerInfo?.team_name || 'Unknown'
+      };
+    }).sort((a: any, b: any) => b.narrow_losses - a.narrow_losses);
+
+    if (heartbreakers.length > 0 && heartbreakers[0].narrow_losses > 0) {
+      h2hAwards.push({
+        title: 'Heartbreaker',
+        winner: {
+          entry_id: heartbreakers[0].entry_id,
+          player_name: heartbreakers[0].player_name,
+          team_name: heartbreakers[0].team_name
+        },
+        winner_value: heartbreakers[0].narrow_losses,
+        runner_up: heartbreakers[1] ? {
+          entry_id: heartbreakers[1].entry_id,
+          player_name: heartbreakers[1].player_name,
+          team_name: heartbreakers[1].team_name
+        } : undefined,
+        runner_up_value: heartbreakers[1]?.narrow_losses,
+        third_place: heartbreakers[2] ? {
+          entry_id: heartbreakers[2].entry_id,
+          player_name: heartbreakers[2].player_name,
+          team_name: heartbreakers[2].team_name
+        } : undefined,
+        third_place_value: heartbreakers[2]?.narrow_losses,
+        unit: 'narrow losses',
+        description: 'Most H2H losses by ≤5 pts'
       });
     }
 

@@ -2,7 +2,54 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.8 (January 3, 2026)
+**Current Version:** v4.7.10 (January 3, 2026)
+
+---
+
+## v4.7.10 - K-201c: 7 New Awards + Podium Format + Fixes (Jan 3, 2026)
+
+**MAJOR UPDATE:** Added 7 new awards, podium format (1st, 2nd, 3rd), fixed Best Average calculation
+
+### New Awards (7)
+
+**Performance Section:**
+1. **Best Captain Picks** - Total captain bonus points across all GWs
+2. **Slow Starter** - Worst GW1-5 total among current top 10 managers
+3. **Second Half Surge** - Best total points GW10-19
+4. **Bench Warmer** - Most points left on bench
+5. **Mr. Average** - Manager closest to league average total points
+
+**H2H Battle Section:**
+6. **Heartbreaker** - Most H2H losses by ≤5 points
+
+### Podium Format
+- All awards now display 1st 🥇, 2nd 🥈, and 3rd 🥉 place
+- Visual hierarchy: Winner (bold, 100% opacity) → Runner-up (70%) → Third (50%)
+- Bronze medal styling for 3rd place
+
+### Bug Fixes
+- **Best Average:** Now uses NET points (subtracting transfer costs)
+  - **Before:** Jean Boes showed 61.3 pts/GW
+  - **After:** Correctly shows 60.6 pts/GW (1152 total ÷ 19 GWs)
+
+### Total Award Count
+- **Was:** 22 awards across 5 categories
+- **Now:** 29 awards across 5 categories
+
+**Files Modified:**
+- `src/app/api/league/[id]/awards/route.ts` - Added 7 awards, fixed Best Average
+- `src/components/Awards/AwardCard.tsx` - Added 3rd place display
+- `src/components/Awards/AwardCard.module.css` - Bronze medal styling
+
+---
+
+## v4.7.9 - K-202: User-Friendly Changelog Copy (Jan 3, 2026)
+
+**User Experience:** Rewrote 8 changelog entries with user-friendly language
+
+- Removed K-codes and technical jargon from changelog
+- Focused on user benefits instead of implementation details
+- Simplified language for "What's New" page
 
 ---
 

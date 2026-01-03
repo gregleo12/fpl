@@ -1,5 +1,26 @@
 [
   {
+    "version": "4.7.10",
+    "date": "Jan 3, 2026",
+    "title": "🏆 Expanded Awards with Podium Rankings",
+    "changes": [
+      "NEW: 7 additional awards including Best Captain Picks, Slow Starter, and Heartbreaker",
+      "All awards now show 1st, 2nd, AND 3rd place with bronze medals",
+      "More chances to appear on the leaderboards (29 awards total)",
+      "Fixed Best Average calculation for accurate stats"
+    ]
+  },
+  {
+    "version": "4.7.9",
+    "date": "Jan 3, 2026",
+    "title": "Improved What's New Page",
+    "changes": [
+      "Rewrote update notes in simpler, friendlier language",
+      "Focused on what's new rather than technical details",
+      "Easier to understand what each update brings"
+    ]
+  },
+  {
     "version": "4.7.8",
     "date": "Jan 3, 2026",
     "title": "Awards Organization Update",

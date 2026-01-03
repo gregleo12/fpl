@@ -75,6 +75,18 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.thirdPlace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.02);
+  margin-bottom: 8px;
+  opacity: 0.5;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
 .place {
   font-size: 18px;
   font-weight: 600;
@@ -87,6 +99,13 @@
   font-weight: 400;
   min-width: 50px;
   opacity: 0.7;
+}
+
+.thirdPlace .place {
+  font-size: 12px;
+  font-weight: 400;
+  min-width: 45px;
+  opacity: 0.5;
 }
 
 .managerInfo {
@@ -125,6 +144,18 @@
   opacity: 0.6;
 }
 
+.thirdPlace .playerName {
+  font-size: 12px;
+  font-weight: 400;
+  color: #a78bfa;
+}
+
+.thirdPlace .teamName {
+  font-size: 10px;
+  color: #9333ea;
+  opacity: 0.5;
+}
+
 .valueCompact {
   display: flex;
   align-items: baseline;
@@ -154,6 +185,17 @@
 .runnerUp .valueCompact .unit {
   font-size: 10px;
   opacity: 0.7;
+}
+
+.thirdPlace .valueCompact .number {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+.thirdPlace .valueCompact .unit {
+  font-size: 9px;
+  opacity: 0.5;
 }
 
 .description {

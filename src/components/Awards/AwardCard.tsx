@@ -14,6 +14,8 @@ interface Award {
   winner_value: number;
   runner_up?: Manager;
   runner_up_value?: number;
+  third_place?: Manager;
+  third_place_value?: number;
   unit: string;
   description: string;
 }
@@ -26,12 +28,13 @@ interface Props {
 export function AwardCard({ award, myTeamId }: Props) {
   const isWinnerMe = award.winner.entry_id.toString() === myTeamId;
   const isRunnerUpMe = award.runner_up?.entry_id.toString() === myTeamId;
+  const isThirdPlaceMe = award.third_place?.entry_id.toString() === myTeamId;
 
   return (
-    <div className={`${styles.card} ${(isWinnerMe || isRunnerUpMe) ? styles.myTeam : ''}`}>
+    <div className={`${styles.card} ${(isWinnerMe || isRunnerUpMe || isThirdPlaceMe) ? styles.myTeam : ''}`}>
       <div className={styles.header}>
         <h3 className={styles.title}>{award.title}</h3>
-        {(isWinnerMe || isRunnerUpMe) && <span className={styles.badge}>You!</span>}
+        {(isWinnerMe || isRunnerUpMe || isThirdPlaceMe) && <span className={styles.badge}>You!</span>}
       </div>
 
       {/* Winner */}
@@ -57,6 +60,21 @@ export function AwardCard({ award, myTeamId }: Props) {
           </div>
           <div className={styles.valueCompact}>
             <span className={styles.number}>{award.runner_up_value?.toLocaleString()}</span>
+            <span className={styles.unit}>{award.unit}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Third place */}
+      {award.third_place && (
+        <div className={styles.thirdPlace}>
+          <div className={styles.place}>🥉 3rd</div>
+          <div className={styles.managerInfo}>
+            <div className={styles.playerName}>{award.third_place.player_name}</div>
+            <div className={styles.teamName}>{award.third_place.team_name}</div>
+          </div>
+          <div className={styles.valueCompact}>
+            <span className={styles.number}>{award.third_place_value?.toLocaleString()}</span>
             <span className={styles.unit}>{award.unit}</span>
           </div>
         </div>

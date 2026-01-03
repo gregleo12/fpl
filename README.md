@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.8** (January 3, 2026)
+**v4.7.10** (January 3, 2026)
 
-**K-201c: Awards Layout Reorder + Climber/Faller Logic Fix** - Moved Best Gameweek from Big Ones to Performance section. Reordered Performance awards (Most Consistent now before Rollercoaster). Fixed Biggest Climber/Faller to find peak swings across any two GWs (GW5-19) instead of just GW5→GW19, capturing dramatic mid-season rank changes.
+**K-201c: 7 New Awards + Podium Format + Fixes** - Added 7 new awards (Best Captain Picks, Slow Starter, Second Half Surge, Bench Warmer, Mr. Average, Heartbreaker). All awards now show 1st, 2nd, and 3rd place with podium format. Fixed Best Average to use NET points. Total awards: 29 (was 22).
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
