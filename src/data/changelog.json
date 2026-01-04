@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.21",
+    "date": "Jan 4, 2026",
+    "title": "POC: Toggle Awards (The Big Ones)",
+    "changes": [
+      "NEW: Basement Dweller award (least H2H points)",
+      "NEW: Points Poverty award (lowest total FPL points)",
+      "NEW: Toggle UI to switch between Fame and Shame awards",
+      "The Big Ones section now features 2 toggle pairs: King↔Basement, Machine↔Poverty"
+    ]
+  },
+  {
     "version": "4.7.20",
     "date": "Jan 4, 2026",
     "title": "Award Optimizations",

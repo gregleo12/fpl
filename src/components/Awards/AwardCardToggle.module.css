@@ -1,0 +1,275 @@
+.card {
+  background: linear-gradient(135deg, #2d1b4e 0%, #1a0f2e 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+.myTeam {
+  border: 2px solid #8b5cf6;
+  background: linear-gradient(135deg, #3d2b5e 0%, #2a1f3e 100%);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.titleWithIcon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  color: #00ff87;
+  flex-shrink: 0;
+}
+
+.icon.shame {
+  color: #ff4444;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.toggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.toggle button {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toggle button:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toggle button.active {
+  background: #00ff87;
+  color: #1a0f2e;
+}
+
+.badge {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: pulse 2s ease-in-out infinite;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(139, 92, 246, 0);
+  }
+}
+
+.winner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(139, 92, 246, 0.1);
+  margin-bottom: 8px;
+}
+
+.runnerUp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  padding-left: 24px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.03);
+  margin-bottom: 8px;
+  opacity: 0.7;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.thirdPlace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  padding-left: 24px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.02);
+  margin-bottom: 8px;
+  opacity: 0.5;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.place {
+  font-size: 18px;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.runnerUp .place {
+  font-size: 14px;
+  font-weight: 400;
+  min-width: 50px;
+  opacity: 0.7;
+}
+
+.thirdPlace .place {
+  font-size: 14px;
+  font-weight: 400;
+  min-width: 50px;
+  opacity: 0.7;
+}
+
+.managerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e9d5ff;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teamName {
+  font-size: 13px;
+  color: #c4b5fd;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.runnerUp .playerName {
+  font-size: 13px;
+  font-weight: 400;
+  color: #c4b5fd;
+}
+
+.runnerUp .teamName {
+  font-size: 11px;
+  color: #a78bfa;
+  opacity: 0.6;
+}
+
+.thirdPlace .playerName {
+  font-size: 13px;
+  font-weight: 400;
+  color: #a78bfa;
+}
+
+.thirdPlace .teamName {
+  font-size: 11px;
+  color: #9333ea;
+  opacity: 0.6;
+}
+
+.valueCompact {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.valueCompact .number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #8b5cf6;
+  line-height: 1;
+}
+
+.valueCompact .unit {
+  font-size: 12px;
+  color: #a78bfa;
+  font-weight: 500;
+}
+
+.runnerUp .valueCompact .number {
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.runnerUp .valueCompact .unit {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.thirdPlace .valueCompact .number {
+  font-size: 16px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.thirdPlace .valueCompact .unit {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.description {
+  font-size: 13px;
+  color: #d8b4fe;
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  .toggle button {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+}

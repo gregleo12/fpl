@@ -142,6 +142,82 @@ export async function GET(
       });
     }
 
+    // SHAME AWARD 1: Basement Dweller (opposite of King of the Hill)
+    const basementDweller = await db.query(
+      `SELECT ls.entry_id, ls.rank, ls.total, m.player_name, m.team_name
+       FROM league_standings ls
+       JOIN managers m ON m.entry_id = ls.entry_id
+       WHERE ls.league_id = $1
+       ORDER BY ls.rank DESC
+       LIMIT 3`,
+      [leagueId]
+    );
+
+    if (basementDweller.rows.length > 0) {
+      bigOnesAwards.push({
+        title: 'Basement Dweller',
+        winner: {
+          entry_id: basementDweller.rows[0].entry_id,
+          player_name: basementDweller.rows[0].player_name,
+          team_name: basementDweller.rows[0].team_name
+        },
+        winner_value: basementDweller.rows[0].total,
+        runner_up: basementDweller.rows[1] ? {
+          entry_id: basementDweller.rows[1].entry_id,
+          player_name: basementDweller.rows[1].player_name,
+          team_name: basementDweller.rows[1].team_name
+        } : undefined,
+        runner_up_value: basementDweller.rows[1]?.total,
+        third_place: basementDweller.rows[2] ? {
+          entry_id: basementDweller.rows[2].entry_id,
+          player_name: basementDweller.rows[2].player_name,
+          team_name: basementDweller.rows[2].team_name
+        } : undefined,
+        third_place_value: basementDweller.rows[2]?.total,
+        unit: 'H2H pts',
+        description: 'Least points in head-to-head standings'
+      });
+    }
+
+    // SHAME AWARD 2: Points Poverty (opposite of Points Machine)
+    const pointsPoverty = await db.query(
+      `SELECT h.entry_id, SUM(h.points - h.event_transfers_cost) as total_points,
+              m.player_name, m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       GROUP BY h.entry_id, m.player_name, m.team_name
+       ORDER BY total_points ASC
+       LIMIT 3`,
+      [leagueId]
+    );
+
+    if (pointsPoverty.rows.length > 0) {
+      bigOnesAwards.push({
+        title: 'Points Poverty',
+        winner: {
+          entry_id: pointsPoverty.rows[0].entry_id,
+          player_name: pointsPoverty.rows[0].player_name,
+          team_name: pointsPoverty.rows[0].team_name
+        },
+        winner_value: parseInt(pointsPoverty.rows[0].total_points),
+        runner_up: pointsPoverty.rows[1] ? {
+          entry_id: pointsPoverty.rows[1].entry_id,
+          player_name: pointsPoverty.rows[1].player_name,
+          team_name: pointsPoverty.rows[1].team_name
+        } : undefined,
+        runner_up_value: pointsPoverty.rows[1] ? parseInt(pointsPoverty.rows[1].total_points) : undefined,
+        third_place: pointsPoverty.rows[2] ? {
+          entry_id: pointsPoverty.rows[2].entry_id,
+          player_name: pointsPoverty.rows[2].player_name,
+          team_name: pointsPoverty.rows[2].team_name
+        } : undefined,
+        third_place_value: pointsPoverty.rows[2] ? parseInt(pointsPoverty.rows[2].total_points) : undefined,
+        unit: 'pts',
+        description: 'Lowest total FPL points (GW1-19)'
+      });
+    }
+
     // 3. Biggest Climber (NEW: Peak upward swing GW5-19)
     // Calculate H2H league standings at each GW from 5-19
     const calculateH2HRank = async (upToGW: number) => {
@@ -1819,8 +1895,10 @@ export async function GET(
     // ==========================================
 
     // Define which awards are "shame" awards (negative achievements)
-    // Only the 7 clear shame awards (excluding neutral/fun ones)
+    // Only the 7 clear shame awards (excluding neutral/fun ones) + 2 new from POC
     const SHAME_AWARDS = new Set([
+      'Basement Dweller',      // NEW - POC
+      'Points Poverty',        // NEW - POC
       'Nightmare Week',
       'Rock Bottom',
       'Falling Star',

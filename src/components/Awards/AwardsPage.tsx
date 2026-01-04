@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AwardCard } from './AwardCard';
+import { AwardCardToggle } from './AwardCardToggle';
 import styles from './AwardsPage.module.css';
 import {
-  Crown, Target, Rocket,
+  Crown, Target, Rocket, Home,
   TrendingUp, Flame, Shield, Zap, CloudLightning, Globe, ArrowDownCircle, Cog, Activity, TrendingDown,
   RefreshCw, Moon, Gem, Dumbbell, AlertTriangle,
   Star, Skull,
@@ -75,7 +76,9 @@ function getAwardIcon(title: string) {
   const iconMap: { [key: string]: JSX.Element } = {
     // The Big Ones
     'King of the Hill': <Crown size={20} />,
+    'Basement Dweller': <Home size={20} />,
     'Points Machine': <Target size={20} />,
+    'Points Poverty': <TrendingDown size={20} />,
     'Rocket Man': <Rocket size={20} />,
 
     // Performance
@@ -225,25 +228,66 @@ export function AwardsPage({ leagueId }: Props) {
       )}
 
       <div className={styles.categories}>
-        {awardsData.categories.map((category) => (
-          <div key={category.category} className={styles.category}>
-            <h2 className={styles.categoryTitle}>
-              <span className={styles.categoryIcon}>{category.icon}</span>
-              {category.category}
-            </h2>
-            <div className={styles.awardsGrid}>
-              {category.awards.map((award) => (
-                <AwardCard
-                  key={award.title}
-                  award={award}
-                  myTeamId={myTeamId}
-                  icon={getAwardIcon(award.title)}
-                  isShame={award.isShame}
-                />
-              ))}
+        {awardsData.categories.map((category) => {
+          // Special handling for "The Big Ones" - use toggle pairs
+          if (category.category === 'The Big Ones') {
+            // Pair up awards: King/Basement, Points Machine/Poverty
+            const kingAward = category.awards.find(a => a.title === 'King of the Hill');
+            const basementAward = category.awards.find(a => a.title === 'Basement Dweller');
+            const machineAward = category.awards.find(a => a.title === 'Points Machine');
+            const povertyAward = category.awards.find(a => a.title === 'Points Poverty');
+
+            return (
+              <div key={category.category} className={styles.category}>
+                <h2 className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  {category.category}
+                </h2>
+                <div className={styles.awardsGrid}>
+                  {kingAward && basementAward && (
+                    <AwardCardToggle
+                      fameAward={kingAward}
+                      shameAward={basementAward}
+                      myTeamId={myTeamId}
+                      fameIcon={getAwardIcon('King of the Hill')}
+                      shameIcon={getAwardIcon('Basement Dweller')}
+                    />
+                  )}
+                  {machineAward && povertyAward && (
+                    <AwardCardToggle
+                      fameAward={machineAward}
+                      shameAward={povertyAward}
+                      myTeamId={myTeamId}
+                      fameIcon={getAwardIcon('Points Machine')}
+                      shameIcon={getAwardIcon('Points Poverty')}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // Default rendering for other categories
+          return (
+            <div key={category.category} className={styles.category}>
+              <h2 className={styles.categoryTitle}>
+                <span className={styles.categoryIcon}>{category.icon}</span>
+                {category.category}
+              </h2>
+              <div className={styles.awardsGrid}>
+                {category.awards.map((award) => (
+                  <AwardCard
+                    key={award.title}
+                    award={award}
+                    myTeamId={myTeamId}
+                    icon={getAwardIcon(award.title)}
+                    isShame={award.isShame}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Walk of Fame & Shame Tables (Full Rankings) */}
