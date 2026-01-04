@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.8.1** (January 4, 2026)
+**v4.8.2** (January 4, 2026)
 
-**K-201L Final: Complete Toggle Awards System** - Added Roller Coaster (most inconsistent points) and Bench Boss (best bench management) awards. Complete toggle system with 10 pairs across all sections: The Big Ones (2), Performance (3), Strategy (2), Luck (1), H2H (2). Flip between Fame 🏆 and Shame 💀 to see both sides!
+**K-201L: Add Toggle Buttons to 5 More Award Pairs** - Added toggle UI to 5 more award pairs. Complete system with 14 pairs: The Big Ones (2), Performance (6), Strategy (2), Luck (1), H2H (4). All award pairs now have toggle buttons to flip between Fame 🏆 and Shame 💀!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

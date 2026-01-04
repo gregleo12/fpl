@@ -2217,6 +2217,7 @@ export async function GET(
       'Roller Coaster',        // v4.8.1 K-201L Final
       'Nightmare Week',
       'Rock Bottom',
+      'Wild Ride',             // v4.8.2 K-201L
       'Falling Star',
       'Point Chaser',
       'Cursed Soul',

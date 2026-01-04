@@ -1,5 +1,17 @@
 [
   {
+    "version": "4.8.2",
+    "date": "Jan 4, 2026",
+    "title": "K-201L: Add Toggle Buttons to 5 More Award Pairs",
+    "changes": [
+      "Performance section expanded: Gameweek God↔Nightmare Week, World Beater↔Rock Bottom, Mr. Reliable↔Wild Ride toggles added (6 pairs total)",
+      "H2H Battle section expanded: Nail Biter↔Close But No Cigar, Unstoppable Force↔The Struggle Bus toggles added (4 pairs total)",
+      "Complete toggle system: 14 toggle pairs across all award sections",
+      "Added Wild Ride to Walk of Shame tracking",
+      "All award pairs now have toggle UI"
+    ]
+  },
+  {
     "version": "4.8.1",
     "date": "Jan 4, 2026",
     "title": "K-201L Final: Complete Toggle Awards System",

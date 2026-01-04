@@ -281,6 +281,9 @@ export function AwardsPage({ leagueId }: Props) {
               { fame: 'Steady Eddie', shame: 'Roller Coaster' },
               { fame: 'On Fire', shame: 'Ice Cold' },
               { fame: 'Captain Fantastic', shame: 'Captain Calamity' },
+              { fame: 'Gameweek God', shame: 'Nightmare Week' },
+              { fame: 'World Beater', shame: 'Rock Bottom' },
+              { fame: 'Mr. Reliable', shame: 'Wild Ride' },
             ];
 
             const toggleAwards: JSX.Element[] = [];
@@ -402,6 +405,8 @@ export function AwardsPage({ leagueId }: Props) {
             const togglePairs = [
               { fame: 'Rocket Man', shame: 'Falling Star' },
               { fame: 'Demolition Expert', shame: 'Demolished' },
+              { fame: 'Nail Biter', shame: 'Close But No Cigar' },
+              { fame: 'Unstoppable Force', shame: 'The Struggle Bus' },
             ];
 
             const toggleAwards: JSX.Element[] = [];
