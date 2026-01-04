@@ -12,7 +12,8 @@ import {
   Star, Skull,
   Bomb, Trophy, Frown, HeartCrack, Timer,
   Coffee, FastForward, Armchair, Meh,
-  Snowflake, AlertCircle, ThumbsDown
+  Snowflake, AlertCircle, ThumbsDown,
+  Wind, Award
 } from 'lucide-react';
 import WalkPreview from './WalkPreview';
 import WalkTables from './WalkTables';
@@ -84,6 +85,7 @@ function getAwardIcon(title: string) {
 
     // Performance
     'Steady Eddie': <TrendingUp size={20} />,
+    'Roller Coaster': <Wind size={20} />,
     'On Fire': <Flame size={20} />,
     'Ice Cold': <Snowflake size={20} />,
     'Captain Fantastic': <Shield size={20} />,
@@ -107,6 +109,7 @@ function getAwardIcon(title: string) {
     // Luck
     'Lucky Charm': <Star size={20} />,
     'Cursed Soul': <Skull size={20} />,
+    'Bench Boss': <Award size={20} />,
 
     // H2H Battle
     'Early Dominator': <Trophy size={20} />,
@@ -275,6 +278,7 @@ export function AwardsPage({ leagueId }: Props) {
           // Special handling for Performance section
           if (category.category === 'Performance') {
             const togglePairs = [
+              { fame: 'Steady Eddie', shame: 'Roller Coaster' },
               { fame: 'On Fire', shame: 'Ice Cold' },
               { fame: 'Captain Fantastic', shame: 'Captain Calamity' },
             ];
@@ -396,7 +400,68 @@ export function AwardsPage({ leagueId }: Props) {
           // Special handling for H2H Battle section
           if (category.category === 'H2H Battle') {
             const togglePairs = [
+              { fame: 'Rocket Man', shame: 'Falling Star' },
               { fame: 'Demolition Expert', shame: 'Demolished' },
+            ];
+
+            const toggleAwards: JSX.Element[] = [];
+            const standaloneAwards: Award[] = [];
+
+            const usedTitles = new Set<string>();
+
+            // Find toggle pairs
+            togglePairs.forEach(pair => {
+              const fameAward = category.awards.find(a => a.title === pair.fame);
+              const shameAward = category.awards.find(a => a.title === pair.shame);
+              if (fameAward && shameAward) {
+                toggleAwards.push(
+                  <AwardCardToggle
+                    key={pair.fame}
+                    fameAward={fameAward}
+                    shameAward={shameAward}
+                    myTeamId={myTeamId}
+                    fameIcon={getAwardIcon(pair.fame)}
+                    shameIcon={getAwardIcon(pair.shame)}
+                  />
+                );
+                usedTitles.add(pair.fame);
+                usedTitles.add(pair.shame);
+              }
+            });
+
+            // Collect standalone awards
+            category.awards.forEach(award => {
+              if (!usedTitles.has(award.title)) {
+                standaloneAwards.push(award);
+              }
+            });
+
+            return (
+              <div key={category.category} className={styles.category}>
+                <h2 className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  {category.category}
+                </h2>
+                <div className={styles.awardsGrid}>
+                  {toggleAwards}
+                  {standaloneAwards.map((award) => (
+                    <AwardCard
+                      key={award.title}
+                      award={award}
+                      myTeamId={myTeamId}
+                      icon={getAwardIcon(award.title)}
+                      isShame={award.isShame}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          // Special handling for Luck section
+          if (category.category === 'Luck') {
+            const togglePairs = [
+              { fame: 'Lucky Charm', shame: 'Cursed Soul' },
             ];
 
             const toggleAwards: JSX.Element[] = [];

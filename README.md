@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.8.0** (January 4, 2026)
+**v4.8.1** (January 4, 2026)
 
-**K-201L: Complete Toggle Awards System** - Added 4 new shame awards (Ice Cold, Captain Calamity, Demolished, Chip Flop) with toggle UI across Performance, Strategy, and H2H sections. Flip between Fame 🏆 and Shame 💀 awards to see both sides of the story!
+**K-201L Final: Complete Toggle Awards System** - Added Roller Coaster (most inconsistent points) and Bench Boss (best bench management) awards. Complete toggle system with 10 pairs across all sections: The Big Ones (2), Performance (3), Strategy (2), Luck (1), H2H (2). Flip between Fame 🏆 and Shame 💀 to see both sides!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.8.1",
+    "date": "Jan 4, 2026",
+    "title": "K-201L Final: Complete Toggle Awards System",
+    "changes": [
+      "NEW: Roller Coaster award (most inconsistent points - highest variance)",
+      "NEW: Bench Boss award (least points left on bench - best bench management)",
+      "Performance section expanded: Steady Eddie↔Roller Coaster toggle added (3 pairs total)",
+      "H2H Battle section expanded: Rocket Man↔Falling Star toggle added (2 pairs total)",
+      "Luck section now features Lucky Charm↔Cursed Soul toggle",
+      "Complete toggle system: 10 toggle pairs across all award sections",
+      "All awards now properly paired as Fame/Shame counterparts"
+    ]
+  },
+  {
     "version": "4.8.0",
     "date": "Jan 4, 2026",
     "title": "K-201L: Complete Toggle Awards System",

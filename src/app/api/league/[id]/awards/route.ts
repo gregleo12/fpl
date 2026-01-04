@@ -433,6 +433,49 @@ export async function GET(
       });
     }
 
+    // SHAME AWARD 7: Roller Coaster (opposite of Steady Eddie) - Most inconsistent (highest variance)
+    const mostInconsistent = await db.query(
+      `SELECT h.entry_id,
+              STDDEV_SAMP(h.points - h.event_transfers_cost) as variance,
+              AVG(h.points - h.event_transfers_cost) as avg_points,
+              m.player_name,
+              m.team_name
+       FROM manager_gw_history h
+       JOIN managers m ON m.entry_id = h.entry_id
+       WHERE h.league_id = $1 AND h.event <= 19
+       GROUP BY h.entry_id, m.player_name, m.team_name
+       HAVING COUNT(*) >= 10
+       ORDER BY variance DESC
+       LIMIT 3`,
+      [leagueId]
+    );
+
+    if (mostInconsistent.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Roller Coaster',
+        winner: {
+          entry_id: mostInconsistent.rows[0].entry_id,
+          player_name: mostInconsistent.rows[0].player_name,
+          team_name: mostInconsistent.rows[0].team_name
+        },
+        winner_value: parseFloat(parseFloat(mostInconsistent.rows[0].variance).toFixed(1)),
+        runner_up: mostInconsistent.rows[1] ? {
+          entry_id: mostInconsistent.rows[1].entry_id,
+          player_name: mostInconsistent.rows[1].player_name,
+          team_name: mostInconsistent.rows[1].team_name
+        } : undefined,
+        runner_up_value: mostInconsistent.rows[1] ? parseFloat(parseFloat(mostInconsistent.rows[1].variance).toFixed(1)) : undefined,
+        third_place: mostInconsistent.rows[2] ? {
+          entry_id: mostInconsistent.rows[2].entry_id,
+          player_name: mostInconsistent.rows[2].player_name,
+          team_name: mostInconsistent.rows[2].team_name
+        } : undefined,
+        third_place_value: mostInconsistent.rows[2] ? parseFloat(parseFloat(mostInconsistent.rows[2].variance).toFixed(1)) : undefined,
+        unit: 'σ',
+        description: 'Most inconsistent points (biggest swings)'
+      });
+    }
+
     // 3. Hot Streak - FIXED (consecutive GWs above average)
     const allManagers = await db.query(
       `SELECT DISTINCT entry_id FROM manager_gw_history WHERE league_id = $1`,
@@ -1508,6 +1551,48 @@ export async function GET(
       });
     }
 
+    // 3. Bench Boss (NEW - FAME AWARD) - Least points on bench (good bench management)
+    const benchBoss = await db.query(
+      `SELECT
+        h.entry_id,
+        SUM(h.points_on_bench) as total_bench_points,
+        m.player_name,
+        m.team_name
+      FROM manager_gw_history h
+      JOIN managers m ON m.entry_id = h.entry_id
+      WHERE h.league_id = $1 AND h.event <= 19
+      GROUP BY h.entry_id, m.player_name, m.team_name
+      ORDER BY total_bench_points ASC
+      LIMIT 3`,
+      [leagueId]
+    );
+
+    if (benchBoss.rows.length > 0) {
+      luckAwards.push({
+        title: 'Bench Boss',
+        winner: {
+          entry_id: benchBoss.rows[0].entry_id,
+          player_name: benchBoss.rows[0].player_name,
+          team_name: benchBoss.rows[0].team_name
+        },
+        winner_value: parseInt(benchBoss.rows[0].total_bench_points),
+        runner_up: benchBoss.rows[1] ? {
+          entry_id: benchBoss.rows[1].entry_id,
+          player_name: benchBoss.rows[1].player_name,
+          team_name: benchBoss.rows[1].team_name
+        } : undefined,
+        runner_up_value: benchBoss.rows[1] ? parseInt(benchBoss.rows[1].total_bench_points) : undefined,
+        third_place: benchBoss.rows[2] ? {
+          entry_id: benchBoss.rows[2].entry_id,
+          player_name: benchBoss.rows[2].player_name,
+          team_name: benchBoss.rows[2].team_name
+        } : undefined,
+        third_place_value: benchBoss.rows[2] ? parseInt(benchBoss.rows[2].total_bench_points) : undefined,
+        unit: 'pts',
+        description: 'Least points left on bench (best bench management)'
+      });
+    }
+
     categories.push({
       category: 'Luck',
       icon: '🍀',
@@ -2125,15 +2210,17 @@ export async function GET(
     const SHAME_AWARDS = new Set([
       'Basement Dweller',      // POC v4.7.21
       'Points Poverty',        // POC v4.7.21
-      'Ice Cold',              // NEW K-201L
-      'Captain Calamity',      // NEW K-201L
-      'Demolished',            // NEW K-201L
-      'Chip Flop',             // NEW K-201L
+      'Ice Cold',              // v4.8.0 K-201L
+      'Captain Calamity',      // v4.8.0 K-201L
+      'Demolished',            // v4.8.0 K-201L
+      'Chip Flop',             // v4.8.0 K-201L
+      'Roller Coaster',        // v4.8.1 K-201L Final
       'Nightmare Week',
       'Rock Bottom',
       'Falling Star',
       'Point Chaser',
       'Cursed Soul',
+      'Bench Warmer',          // v4.8.1 K-201L Final
       'The Struggle Bus',
       'Close But No Cigar'
     ]);
