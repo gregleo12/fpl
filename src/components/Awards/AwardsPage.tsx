@@ -100,9 +100,39 @@ Object.entries(AWARD_PAIRS).forEach(([fame, shame]) => {
   SHAME_TO_FAME[shame].push(fame);
 });
 
-// Fame and Shame award names
-const FAME_AWARDS = new Set(Object.keys(AWARD_PAIRS));
-const SHAME_AWARDS = new Set(Object.values(AWARD_PAIRS));
+// Standalone awards that appear in only one mode (not paired)
+const STANDALONE_FAME_AWARDS = new Set([
+  'Raw Talent',  // Strategy section - Highest score without using a chip (achievement)
+]);
+
+const STANDALONE_SHAME_AWARDS = new Set([
+  'Point Chaser',  // Strategy section - Most points lost to transfer hits (negative)
+]);
+
+// Standalone awards that appear in BOTH modes (Fun section)
+const STANDALONE_BOTH_AWARDS = new Set([
+  'Transfer Addict',
+  'The Sleeper',
+  'Bench Boss',
+  'Bench Warmer',
+  'Mr. Average',
+  'Slow Starter',
+  'Second Half Surge',
+  'Early Dominator',  // H2H section
+  'The Underdog',     // H2H section
+]);
+
+// All Fame awards (paired + standalone fame)
+const FAME_AWARDS = new Set([
+  ...Object.keys(AWARD_PAIRS),
+  ...Array.from(STANDALONE_FAME_AWARDS)
+]);
+
+// All Shame awards (paired + standalone shame)
+const SHAME_AWARDS = new Set([
+  ...Object.values(AWARD_PAIRS),
+  ...Array.from(STANDALONE_SHAME_AWARDS)
+]);
 
 // Icon mapping function
 function getAwardIcon(title: string) {
@@ -116,7 +146,6 @@ function getAwardIcon(title: string) {
 
     // Performance
     'Steady Eddie': <TrendingUp size={20} />,
-    'Roller Coaster': <Wind size={20} />,
     'On Fire': <Flame size={20} />,
     'Ice Cold': <Snowflake size={20} />,
     'Captain Fantastic': <Shield size={20} />,
@@ -172,21 +201,22 @@ function getVisibleAwards(awards: Award[], mode: 'fame' | 'shame'): Award[] {
       return false;
     }
 
-    const isFame = FAME_AWARDS.has(award.title);
-    const isShame = SHAME_AWARDS.has(award.title);
-
-    // Standalone awards (not in any pair): always show
-    if (!isFame && !isShame) {
+    // Awards that appear in both modes (Fun section awards)
+    if (STANDALONE_BOTH_AWARDS.has(award.title)) {
       seenTitles.add(award.title);
       return true;
     }
 
-    // Paired awards: show based on mode
+    const isFame = FAME_AWARDS.has(award.title);
+    const isShame = SHAME_AWARDS.has(award.title);
+
+    // Fame mode: show all fame awards (paired + standalone fame)
     if (mode === 'fame' && isFame) {
       seenTitles.add(award.title);
       return true;
     }
 
+    // Shame mode: show all shame awards (paired + standalone shame)
     if (mode === 'shame' && isShame) {
       seenTitles.add(award.title);
       return true;
@@ -336,13 +366,24 @@ export function AwardsPage({ leagueId }: Props) {
         })}
       </div>
 
-      {/* Walk of Fame & Shame Tables (Full Rankings) - Always Visible */}
-      {awardsData.walkOfFame && awardsData.walkOfShame && (
-        <WalkTables
-          fame={awardsData.walkOfFame}
-          shame={awardsData.walkOfShame}
-          myTeamId={myTeamId}
-        />
+      {/* Walk of Fame & Shame Tables (Full Rankings) - Toggle Dependent */}
+      {mode === 'fame' && awardsData.walkOfFame && (
+        <div className={styles.fullTableWrapper}>
+          <WalkTables
+            fame={awardsData.walkOfFame}
+            shame={[]}
+            myTeamId={myTeamId}
+          />
+        </div>
+      )}
+      {mode === 'shame' && awardsData.walkOfShame && (
+        <div className={styles.fullTableWrapper}>
+          <WalkTables
+            fame={[]}
+            shame={awardsData.walkOfShame}
+            myTeamId={myTeamId}
+          />
+        </div>
       )}
     </div>
   );

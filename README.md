@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.9.0** (January 4, 2026)
+**v4.9.1** (January 4, 2026)
 
-**K-201m: Global Fame/Shame Toggle** - Major UX improvement! Single global toggle replaces 14 individual card toggles. Switch between Achievements 🏆 and Dubious Honors 💀 modes with one click. Cleaner interface, all paired awards switch simultaneously!
+**K-201n: Awards Classification Fixes & Toggle Tables** - Removed duplicate Roller Coaster award. Fixed award classifications: Point Chaser (Shame only), Raw Talent (Fame only). Moved Transfer Addict, The Sleeper, and Bench Boss to Fun section. Full Walk tables now toggle-dependent!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.9.1",
+    "date": "Jan 4, 2026",
+    "title": "K-201n: Awards Classification Fixes & Toggle Tables",
+    "changes": [
+      "REMOVED: Roller Coaster award (duplicate of Wild Ride)",
+      "FIXED: Point Chaser now appears only in Shame mode (Strategy section)",
+      "FIXED: Raw Talent now appears only in Fame mode (Strategy section)",
+      "MOVED: Transfer Addict, The Sleeper, Bench Boss to Fun section (visible in both modes)",
+      "CHANGED: Fun section icon from 🎉 to 📊 for neutral appearance",
+      "Walk of Fame/Shame full tables now toggle-dependent (show only relevant table based on mode)",
+      "Summary tables (top 3) remain visible in both modes"
+    ]
+  },
+  {
     "version": "4.9.0",
     "date": "Jan 4, 2026",
     "title": "K-201m: Global Fame/Shame Toggle",

@@ -433,49 +433,6 @@ export async function GET(
       });
     }
 
-    // SHAME AWARD 7: Roller Coaster (opposite of Steady Eddie) - Most inconsistent (highest variance)
-    const mostInconsistent = await db.query(
-      `SELECT h.entry_id,
-              STDDEV_SAMP(h.points - h.event_transfers_cost) as variance,
-              AVG(h.points - h.event_transfers_cost) as avg_points,
-              m.player_name,
-              m.team_name
-       FROM manager_gw_history h
-       JOIN managers m ON m.entry_id = h.entry_id
-       WHERE h.league_id = $1 AND h.event <= 19
-       GROUP BY h.entry_id, m.player_name, m.team_name
-       HAVING COUNT(*) >= 10
-       ORDER BY variance DESC
-       LIMIT 3`,
-      [leagueId]
-    );
-
-    if (mostInconsistent.rows.length > 0) {
-      performanceAwards.push({
-        title: 'Roller Coaster',
-        winner: {
-          entry_id: mostInconsistent.rows[0].entry_id,
-          player_name: mostInconsistent.rows[0].player_name,
-          team_name: mostInconsistent.rows[0].team_name
-        },
-        winner_value: parseFloat(parseFloat(mostInconsistent.rows[0].variance).toFixed(1)),
-        runner_up: mostInconsistent.rows[1] ? {
-          entry_id: mostInconsistent.rows[1].entry_id,
-          player_name: mostInconsistent.rows[1].player_name,
-          team_name: mostInconsistent.rows[1].team_name
-        } : undefined,
-        runner_up_value: mostInconsistent.rows[1] ? parseFloat(parseFloat(mostInconsistent.rows[1].variance).toFixed(1)) : undefined,
-        third_place: mostInconsistent.rows[2] ? {
-          entry_id: mostInconsistent.rows[2].entry_id,
-          player_name: mostInconsistent.rows[2].player_name,
-          team_name: mostInconsistent.rows[2].team_name
-        } : undefined,
-        third_place_value: mostInconsistent.rows[2] ? parseFloat(parseFloat(mostInconsistent.rows[2].variance).toFixed(1)) : undefined,
-        unit: 'σ',
-        description: 'Most inconsistent points (biggest swings)'
-      });
-    }
-
     // 3. Hot Streak - FIXED (consecutive GWs above average)
     const allManagers = await db.query(
       `SELECT DISTINCT entry_id FROM manager_gw_history WHERE league_id = $1`,
@@ -2193,11 +2150,11 @@ export async function GET(
     });
 
     // ==========================================
-    // 🎉 FUN
+    // 📊 FUN
     // ==========================================
     categories.push({
       category: 'Fun',
-      icon: '🎉',
+      icon: '📊',
       awards: funAwards
     });
 
@@ -2214,14 +2171,13 @@ export async function GET(
       'Captain Calamity',      // v4.8.0 K-201L
       'Demolished',            // v4.8.0 K-201L
       'Chip Flop',             // v4.8.0 K-201L
-      'Roller Coaster',        // v4.8.1 K-201L Final
       'Nightmare Week',
       'Rock Bottom',
       'Wild Ride',             // v4.8.2 K-201L
       'Falling Star',
-      'Point Chaser',
+      'Point Chaser',          // v4.9.1 K-201n - Most points lost to transfer hits (shame)
       'Cursed Soul',
-      'Bench Warmer',          // v4.8.1 K-201L Final
+      'Bench Warmer',
       'The Struggle Bus',
       'Close But No Cigar'
     ]);

@@ -85,20 +85,24 @@ function TallyTable({
 export default function WalkTables({ fame, shame, myTeamId }: WalkTablesProps) {
   return (
     <div className={styles.wrapper}>
-      <TallyTable
-        entries={fame}
-        title="🏆 Walk of Fame"
-        subtitle="Podium finishes in achievement awards"
-        variant="fame"
-        myTeamId={myTeamId}
-      />
-      <TallyTable
-        entries={shame}
-        title="💀 Walk of Shame"
-        subtitle="Podium finishes in dubious honor awards"
-        variant="shame"
-        myTeamId={myTeamId}
-      />
+      {fame.length > 0 && (
+        <TallyTable
+          entries={fame}
+          title="🏆 Walk of Fame"
+          subtitle="Podium finishes in achievement awards"
+          variant="fame"
+          myTeamId={myTeamId}
+        />
+      )}
+      {shame.length > 0 && (
+        <TallyTable
+          entries={shame}
+          title="💀 Walk of Shame"
+          subtitle="Podium finishes in dubious honor awards"
+          variant="shame"
+          myTeamId={myTeamId}
+        />
+      )}
     </div>
   );
 }
