@@ -1,0 +1,68 @@
+.modeToggleContainer {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+  padding: 0 1rem;
+}
+
+.modeToggle {
+  display: flex;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 4px;
+  width: fit-content;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.modeButton {
+  padding: 0.875rem 2rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.modeButton:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.modeButton.active {
+  background: linear-gradient(135deg, #00ff87 0%, #00d46e 100%);
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(0, 255, 135, 0.3);
+}
+
+.modeButton.active.shame {
+  background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .modeToggleContainer {
+    margin: 1.5rem 0;
+  }
+
+  .modeButton {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modeButton {
+    padding: 0.625rem 1rem;
+    font-size: 0.85rem;
+  }
+}

@@ -1,5 +1,19 @@
 [
   {
+    "version": "4.9.0",
+    "date": "Jan 4, 2026",
+    "title": "K-201m: Global Fame/Shame Toggle",
+    "changes": [
+      "NEW: Single global toggle replaces 14 individual card toggles",
+      "Toggle between Achievements 🏆 and Dubious Honors 💀 modes with one click",
+      "Cleaner UI: removed 28 small toggle icons from award cards",
+      "All paired awards now switch simultaneously",
+      "Standalone awards (Transfer Addict, Bench Boss, etc.) visible in both modes",
+      "Walk of Fame/Shame summary tables always visible",
+      "Updated award pairings: Steady Eddie and On Fire both pair with Ice Cold (shared shame award)"
+    ]
+  },
+  {
     "version": "4.8.2",
     "date": "Jan 4, 2026",
     "title": "K-201L: Add Toggle Buttons to 5 More Award Pairs",

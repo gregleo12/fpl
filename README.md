@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.8.2** (January 4, 2026)
+**v4.9.0** (January 4, 2026)
 
-**K-201L: Add Toggle Buttons to 5 More Award Pairs** - Added toggle UI to 5 more award pairs. Complete system with 14 pairs: The Big Ones (2), Performance (6), Strategy (2), Luck (1), H2H (4). All award pairs now have toggle buttons to flip between Fame 🏆 and Shame 💀!
+**K-201m: Global Fame/Shame Toggle** - Major UX improvement! Single global toggle replaces 14 individual card toggles. Switch between Achievements 🏆 and Dubious Honors 💀 modes with one click. Cleaner interface, all paired awards switch simultaneously!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

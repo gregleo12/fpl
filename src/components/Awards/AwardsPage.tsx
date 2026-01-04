@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AwardCard } from './AwardCard';
-import { AwardCardToggle } from './AwardCardToggle';
+import { ModeToggle } from './ModeToggle';
 import styles from './AwardsPage.module.css';
 import {
   Crown, Target, Rocket, Home,
@@ -73,6 +73,37 @@ interface Props {
   leagueId: string;
 }
 
+// Award pair mappings (Fame → Shame)
+const AWARD_PAIRS: Record<string, string> = {
+  'King of the Hill': 'Basement Dweller',
+  'Points Machine': 'Points Poverty',
+  'Steady Eddie': 'Ice Cold',
+  'On Fire': 'Ice Cold', // Ice Cold is shared by both Steady Eddie and On Fire
+  'Captain Fantastic': 'Captain Calamity',
+  'Gameweek God': 'Nightmare Week',
+  'World Beater': 'Rock Bottom',
+  'Mr. Reliable': 'Wild Ride',
+  'Chip Wizard': 'Chip Flop',
+  'Lucky Charm': 'Cursed Soul',
+  'Rocket Man': 'Falling Star',
+  'Demolition Expert': 'Demolished',
+  'Nail Biter': 'Close But No Cigar',
+  'Unstoppable Force': 'The Struggle Bus',
+};
+
+// Reverse mapping (Shame → Fame) - for filtering
+const SHAME_TO_FAME: Record<string, string[]> = {};
+Object.entries(AWARD_PAIRS).forEach(([fame, shame]) => {
+  if (!SHAME_TO_FAME[shame]) {
+    SHAME_TO_FAME[shame] = [];
+  }
+  SHAME_TO_FAME[shame].push(fame);
+});
+
+// Fame and Shame award names
+const FAME_AWARDS = new Set(Object.keys(AWARD_PAIRS));
+const SHAME_AWARDS = new Set(Object.values(AWARD_PAIRS));
+
 // Icon mapping function
 function getAwardIcon(title: string) {
   const iconMap: { [key: string]: JSX.Element } = {
@@ -131,11 +162,46 @@ function getAwardIcon(title: string) {
   return iconMap[title] || null;
 }
 
+// Filter awards based on mode
+function getVisibleAwards(awards: Award[], mode: 'fame' | 'shame'): Award[] {
+  const seenTitles = new Set<string>();
+
+  return awards.filter(award => {
+    // Skip duplicates (e.g., Ice Cold appears only once in shame mode)
+    if (seenTitles.has(award.title)) {
+      return false;
+    }
+
+    const isFame = FAME_AWARDS.has(award.title);
+    const isShame = SHAME_AWARDS.has(award.title);
+
+    // Standalone awards (not in any pair): always show
+    if (!isFame && !isShame) {
+      seenTitles.add(award.title);
+      return true;
+    }
+
+    // Paired awards: show based on mode
+    if (mode === 'fame' && isFame) {
+      seenTitles.add(award.title);
+      return true;
+    }
+
+    if (mode === 'shame' && isShame) {
+      seenTitles.add(award.title);
+      return true;
+    }
+
+    return false;
+  });
+}
+
 export function AwardsPage({ leagueId }: Props) {
   const router = useRouter();
   const [awardsData, setAwardsData] = useState<AwardsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'fame' | 'shame'>('fame');
 
   const myTeamId = typeof window !== 'undefined'
     ? localStorage.getItem('myTeamId') || ''
@@ -226,7 +292,7 @@ export function AwardsPage({ leagueId }: Props) {
         <p>Celebrating the best (and most entertaining) performances of the first half of the season!</p>
       </div>
 
-      {/* Walk of Fame & Shame Preview (Top 3) */}
+      {/* Walk of Fame & Shame Preview (Top 3) - Always Visible */}
       {awardsData.walkOfFame && awardsData.walkOfShame && (
         <WalkPreview
           fame={awardsData.walkOfFame}
@@ -235,295 +301,19 @@ export function AwardsPage({ leagueId }: Props) {
         />
       )}
 
+      {/* Global Mode Toggle */}
+      <ModeToggle mode={mode} onChange={setMode} />
+
+      {/* Award Categories - Filtered by Mode */}
       <div className={styles.categories}>
         {awardsData.categories.map((category) => {
-          // Special handling for "The Big Ones" - use toggle pairs
-          if (category.category === 'The Big Ones') {
-            // Pair up awards: King/Basement, Points Machine/Poverty
-            const kingAward = category.awards.find(a => a.title === 'King of the Hill');
-            const basementAward = category.awards.find(a => a.title === 'Basement Dweller');
-            const machineAward = category.awards.find(a => a.title === 'Points Machine');
-            const povertyAward = category.awards.find(a => a.title === 'Points Poverty');
+          const visibleAwards = getVisibleAwards(category.awards, mode);
 
-            return (
-              <div key={category.category} className={styles.category}>
-                <h2 className={styles.categoryTitle}>
-                  <span className={styles.categoryIcon}>{category.icon}</span>
-                  {category.category}
-                </h2>
-                <div className={styles.awardsGrid}>
-                  {kingAward && basementAward && (
-                    <AwardCardToggle
-                      fameAward={kingAward}
-                      shameAward={basementAward}
-                      myTeamId={myTeamId}
-                      fameIcon={getAwardIcon('King of the Hill')}
-                      shameIcon={getAwardIcon('Basement Dweller')}
-                    />
-                  )}
-                  {machineAward && povertyAward && (
-                    <AwardCardToggle
-                      fameAward={machineAward}
-                      shameAward={povertyAward}
-                      myTeamId={myTeamId}
-                      fameIcon={getAwardIcon('Points Machine')}
-                      shameIcon={getAwardIcon('Points Poverty')}
-                    />
-                  )}
-                </div>
-              </div>
-            );
+          // Skip empty categories
+          if (visibleAwards.length === 0) {
+            return null;
           }
 
-          // Special handling for Performance section
-          if (category.category === 'Performance') {
-            const togglePairs = [
-              { fame: 'Steady Eddie', shame: 'Roller Coaster' },
-              { fame: 'On Fire', shame: 'Ice Cold' },
-              { fame: 'Captain Fantastic', shame: 'Captain Calamity' },
-              { fame: 'Gameweek God', shame: 'Nightmare Week' },
-              { fame: 'World Beater', shame: 'Rock Bottom' },
-              { fame: 'Mr. Reliable', shame: 'Wild Ride' },
-            ];
-
-            const toggleAwards: JSX.Element[] = [];
-            const standaloneAwards: Award[] = [];
-
-            const usedTitles = new Set<string>();
-
-            // Find toggle pairs
-            togglePairs.forEach(pair => {
-              const fameAward = category.awards.find(a => a.title === pair.fame);
-              const shameAward = category.awards.find(a => a.title === pair.shame);
-              if (fameAward && shameAward) {
-                toggleAwards.push(
-                  <AwardCardToggle
-                    key={pair.fame}
-                    fameAward={fameAward}
-                    shameAward={shameAward}
-                    myTeamId={myTeamId}
-                    fameIcon={getAwardIcon(pair.fame)}
-                    shameIcon={getAwardIcon(pair.shame)}
-                  />
-                );
-                usedTitles.add(pair.fame);
-                usedTitles.add(pair.shame);
-              }
-            });
-
-            // Collect standalone awards
-            category.awards.forEach(award => {
-              if (!usedTitles.has(award.title)) {
-                standaloneAwards.push(award);
-              }
-            });
-
-            return (
-              <div key={category.category} className={styles.category}>
-                <h2 className={styles.categoryTitle}>
-                  <span className={styles.categoryIcon}>{category.icon}</span>
-                  {category.category}
-                </h2>
-                <div className={styles.awardsGrid}>
-                  {toggleAwards}
-                  {standaloneAwards.map((award) => (
-                    <AwardCard
-                      key={award.title}
-                      award={award}
-                      myTeamId={myTeamId}
-                      icon={getAwardIcon(award.title)}
-                      isShame={award.isShame}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
-          // Special handling for Strategy section
-          if (category.category === 'Strategy') {
-            const togglePairs = [
-              { fame: 'Chip Wizard', shame: 'Chip Flop' },
-            ];
-
-            const toggleAwards: JSX.Element[] = [];
-            const standaloneAwards: Award[] = [];
-
-            const usedTitles = new Set<string>();
-
-            // Find toggle pairs
-            togglePairs.forEach(pair => {
-              const fameAward = category.awards.find(a => a.title === pair.fame);
-              const shameAward = category.awards.find(a => a.title === pair.shame);
-              if (fameAward && shameAward) {
-                toggleAwards.push(
-                  <AwardCardToggle
-                    key={pair.fame}
-                    fameAward={fameAward}
-                    shameAward={shameAward}
-                    myTeamId={myTeamId}
-                    fameIcon={getAwardIcon(pair.fame)}
-                    shameIcon={getAwardIcon(pair.shame)}
-                  />
-                );
-                usedTitles.add(pair.fame);
-                usedTitles.add(pair.shame);
-              }
-            });
-
-            // Collect standalone awards
-            category.awards.forEach(award => {
-              if (!usedTitles.has(award.title)) {
-                standaloneAwards.push(award);
-              }
-            });
-
-            return (
-              <div key={category.category} className={styles.category}>
-                <h2 className={styles.categoryTitle}>
-                  <span className={styles.categoryIcon}>{category.icon}</span>
-                  {category.category}
-                </h2>
-                <div className={styles.awardsGrid}>
-                  {toggleAwards}
-                  {standaloneAwards.map((award) => (
-                    <AwardCard
-                      key={award.title}
-                      award={award}
-                      myTeamId={myTeamId}
-                      icon={getAwardIcon(award.title)}
-                      isShame={award.isShame}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
-          // Special handling for H2H Battle section
-          if (category.category === 'H2H Battle') {
-            const togglePairs = [
-              { fame: 'Rocket Man', shame: 'Falling Star' },
-              { fame: 'Demolition Expert', shame: 'Demolished' },
-              { fame: 'Nail Biter', shame: 'Close But No Cigar' },
-              { fame: 'Unstoppable Force', shame: 'The Struggle Bus' },
-            ];
-
-            const toggleAwards: JSX.Element[] = [];
-            const standaloneAwards: Award[] = [];
-
-            const usedTitles = new Set<string>();
-
-            // Find toggle pairs
-            togglePairs.forEach(pair => {
-              const fameAward = category.awards.find(a => a.title === pair.fame);
-              const shameAward = category.awards.find(a => a.title === pair.shame);
-              if (fameAward && shameAward) {
-                toggleAwards.push(
-                  <AwardCardToggle
-                    key={pair.fame}
-                    fameAward={fameAward}
-                    shameAward={shameAward}
-                    myTeamId={myTeamId}
-                    fameIcon={getAwardIcon(pair.fame)}
-                    shameIcon={getAwardIcon(pair.shame)}
-                  />
-                );
-                usedTitles.add(pair.fame);
-                usedTitles.add(pair.shame);
-              }
-            });
-
-            // Collect standalone awards
-            category.awards.forEach(award => {
-              if (!usedTitles.has(award.title)) {
-                standaloneAwards.push(award);
-              }
-            });
-
-            return (
-              <div key={category.category} className={styles.category}>
-                <h2 className={styles.categoryTitle}>
-                  <span className={styles.categoryIcon}>{category.icon}</span>
-                  {category.category}
-                </h2>
-                <div className={styles.awardsGrid}>
-                  {toggleAwards}
-                  {standaloneAwards.map((award) => (
-                    <AwardCard
-                      key={award.title}
-                      award={award}
-                      myTeamId={myTeamId}
-                      icon={getAwardIcon(award.title)}
-                      isShame={award.isShame}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
-          // Special handling for Luck section
-          if (category.category === 'Luck') {
-            const togglePairs = [
-              { fame: 'Lucky Charm', shame: 'Cursed Soul' },
-            ];
-
-            const toggleAwards: JSX.Element[] = [];
-            const standaloneAwards: Award[] = [];
-
-            const usedTitles = new Set<string>();
-
-            // Find toggle pairs
-            togglePairs.forEach(pair => {
-              const fameAward = category.awards.find(a => a.title === pair.fame);
-              const shameAward = category.awards.find(a => a.title === pair.shame);
-              if (fameAward && shameAward) {
-                toggleAwards.push(
-                  <AwardCardToggle
-                    key={pair.fame}
-                    fameAward={fameAward}
-                    shameAward={shameAward}
-                    myTeamId={myTeamId}
-                    fameIcon={getAwardIcon(pair.fame)}
-                    shameIcon={getAwardIcon(pair.shame)}
-                  />
-                );
-                usedTitles.add(pair.fame);
-                usedTitles.add(pair.shame);
-              }
-            });
-
-            // Collect standalone awards
-            category.awards.forEach(award => {
-              if (!usedTitles.has(award.title)) {
-                standaloneAwards.push(award);
-              }
-            });
-
-            return (
-              <div key={category.category} className={styles.category}>
-                <h2 className={styles.categoryTitle}>
-                  <span className={styles.categoryIcon}>{category.icon}</span>
-                  {category.category}
-                </h2>
-                <div className={styles.awardsGrid}>
-                  {toggleAwards}
-                  {standaloneAwards.map((award) => (
-                    <AwardCard
-                      key={award.title}
-                      award={award}
-                      myTeamId={myTeamId}
-                      icon={getAwardIcon(award.title)}
-                      isShame={award.isShame}
-                    />
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
-          // Default rendering for other categories
           return (
             <div key={category.category} className={styles.category}>
               <h2 className={styles.categoryTitle}>
@@ -531,7 +321,7 @@ export function AwardsPage({ leagueId }: Props) {
                 {category.category}
               </h2>
               <div className={styles.awardsGrid}>
-                {category.awards.map((award) => (
+                {visibleAwards.map((award) => (
                   <AwardCard
                     key={award.title}
                     award={award}
@@ -546,7 +336,7 @@ export function AwardsPage({ leagueId }: Props) {
         })}
       </div>
 
-      {/* Walk of Fame & Shame Tables (Full Rankings) */}
+      {/* Walk of Fame & Shame Tables (Full Rankings) - Always Visible */}
       {awardsData.walkOfFame && awardsData.walkOfShame && (
         <WalkTables
           fame={awardsData.walkOfFame}
