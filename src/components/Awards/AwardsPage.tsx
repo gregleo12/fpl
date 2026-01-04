@@ -11,7 +11,8 @@ import {
   RefreshCw, Moon, Gem, Dumbbell, AlertTriangle,
   Star, Skull,
   Bomb, Trophy, Frown, HeartCrack, Timer,
-  Coffee, FastForward, Armchair, Meh
+  Coffee, FastForward, Armchair, Meh,
+  Snowflake, AlertCircle, ThumbsDown
 } from 'lucide-react';
 import WalkPreview from './WalkPreview';
 import WalkTables from './WalkTables';
@@ -84,7 +85,9 @@ function getAwardIcon(title: string) {
     // Performance
     'Steady Eddie': <TrendingUp size={20} />,
     'On Fire': <Flame size={20} />,
+    'Ice Cold': <Snowflake size={20} />,
     'Captain Fantastic': <Shield size={20} />,
+    'Captain Calamity': <AlertCircle size={20} />,
     'Gameweek God': <Zap size={20} />,
     'Nightmare Week': <CloudLightning size={20} />,
     'Falling Star': <TrendingDown size={20} />,
@@ -97,6 +100,7 @@ function getAwardIcon(title: string) {
     'Transfer Addict': <RefreshCw size={20} />,
     'The Sleeper': <Moon size={20} />,
     'Chip Wizard': <Gem size={20} />,
+    'Chip Flop': <ThumbsDown size={20} />,
     'Raw Talent': <Dumbbell size={20} />,
     'Point Chaser': <Cog size={20} />,
 
@@ -108,6 +112,7 @@ function getAwardIcon(title: string) {
     'Early Dominator': <Trophy size={20} />,
     'The Underdog': <Star size={20} />,
     'Demolition Expert': <Bomb size={20} />,
+    'Demolished': <Skull size={20} />,
     'Nail Biter': <Timer size={20} />,
     'Unstoppable Force': <Trophy size={20} />,
     'The Struggle Bus': <Frown size={20} />,
@@ -262,6 +267,187 @@ export function AwardsPage({ leagueId }: Props) {
                       shameIcon={getAwardIcon('Points Poverty')}
                     />
                   )}
+                </div>
+              </div>
+            );
+          }
+
+          // Special handling for Performance section
+          if (category.category === 'Performance') {
+            const togglePairs = [
+              { fame: 'On Fire', shame: 'Ice Cold' },
+              { fame: 'Captain Fantastic', shame: 'Captain Calamity' },
+            ];
+
+            const toggleAwards: JSX.Element[] = [];
+            const standaloneAwards: Award[] = [];
+
+            const usedTitles = new Set<string>();
+
+            // Find toggle pairs
+            togglePairs.forEach(pair => {
+              const fameAward = category.awards.find(a => a.title === pair.fame);
+              const shameAward = category.awards.find(a => a.title === pair.shame);
+              if (fameAward && shameAward) {
+                toggleAwards.push(
+                  <AwardCardToggle
+                    key={pair.fame}
+                    fameAward={fameAward}
+                    shameAward={shameAward}
+                    myTeamId={myTeamId}
+                    fameIcon={getAwardIcon(pair.fame)}
+                    shameIcon={getAwardIcon(pair.shame)}
+                  />
+                );
+                usedTitles.add(pair.fame);
+                usedTitles.add(pair.shame);
+              }
+            });
+
+            // Collect standalone awards
+            category.awards.forEach(award => {
+              if (!usedTitles.has(award.title)) {
+                standaloneAwards.push(award);
+              }
+            });
+
+            return (
+              <div key={category.category} className={styles.category}>
+                <h2 className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  {category.category}
+                </h2>
+                <div className={styles.awardsGrid}>
+                  {toggleAwards}
+                  {standaloneAwards.map((award) => (
+                    <AwardCard
+                      key={award.title}
+                      award={award}
+                      myTeamId={myTeamId}
+                      icon={getAwardIcon(award.title)}
+                      isShame={award.isShame}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          // Special handling for Strategy section
+          if (category.category === 'Strategy') {
+            const togglePairs = [
+              { fame: 'Chip Wizard', shame: 'Chip Flop' },
+            ];
+
+            const toggleAwards: JSX.Element[] = [];
+            const standaloneAwards: Award[] = [];
+
+            const usedTitles = new Set<string>();
+
+            // Find toggle pairs
+            togglePairs.forEach(pair => {
+              const fameAward = category.awards.find(a => a.title === pair.fame);
+              const shameAward = category.awards.find(a => a.title === pair.shame);
+              if (fameAward && shameAward) {
+                toggleAwards.push(
+                  <AwardCardToggle
+                    key={pair.fame}
+                    fameAward={fameAward}
+                    shameAward={shameAward}
+                    myTeamId={myTeamId}
+                    fameIcon={getAwardIcon(pair.fame)}
+                    shameIcon={getAwardIcon(pair.shame)}
+                  />
+                );
+                usedTitles.add(pair.fame);
+                usedTitles.add(pair.shame);
+              }
+            });
+
+            // Collect standalone awards
+            category.awards.forEach(award => {
+              if (!usedTitles.has(award.title)) {
+                standaloneAwards.push(award);
+              }
+            });
+
+            return (
+              <div key={category.category} className={styles.category}>
+                <h2 className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  {category.category}
+                </h2>
+                <div className={styles.awardsGrid}>
+                  {toggleAwards}
+                  {standaloneAwards.map((award) => (
+                    <AwardCard
+                      key={award.title}
+                      award={award}
+                      myTeamId={myTeamId}
+                      icon={getAwardIcon(award.title)}
+                      isShame={award.isShame}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          // Special handling for H2H Battle section
+          if (category.category === 'H2H Battle') {
+            const togglePairs = [
+              { fame: 'Demolition Expert', shame: 'Demolished' },
+            ];
+
+            const toggleAwards: JSX.Element[] = [];
+            const standaloneAwards: Award[] = [];
+
+            const usedTitles = new Set<string>();
+
+            // Find toggle pairs
+            togglePairs.forEach(pair => {
+              const fameAward = category.awards.find(a => a.title === pair.fame);
+              const shameAward = category.awards.find(a => a.title === pair.shame);
+              if (fameAward && shameAward) {
+                toggleAwards.push(
+                  <AwardCardToggle
+                    key={pair.fame}
+                    fameAward={fameAward}
+                    shameAward={shameAward}
+                    myTeamId={myTeamId}
+                    fameIcon={getAwardIcon(pair.fame)}
+                    shameIcon={getAwardIcon(pair.shame)}
+                  />
+                );
+                usedTitles.add(pair.fame);
+                usedTitles.add(pair.shame);
+              }
+            });
+
+            // Collect standalone awards
+            category.awards.forEach(award => {
+              if (!usedTitles.has(award.title)) {
+                standaloneAwards.push(award);
+              }
+            });
+
+            return (
+              <div key={category.category} className={styles.category}>
+                <h2 className={styles.categoryTitle}>
+                  <span className={styles.categoryIcon}>{category.icon}</span>
+                  {category.category}
+                </h2>
+                <div className={styles.awardsGrid}>
+                  {toggleAwards}
+                  {standaloneAwards.map((award) => (
+                    <AwardCard
+                      key={award.title}
+                      award={award}
+                      myTeamId={myTeamId}
+                      icon={getAwardIcon(award.title)}
+                      isShame={award.isShame}
+                    />
+                  ))}
                 </div>
               </div>
             );

@@ -1,5 +1,20 @@
 [
   {
+    "version": "4.8.0",
+    "date": "Jan 4, 2026",
+    "title": "K-201L: Complete Toggle Awards System",
+    "changes": [
+      "NEW: Ice Cold award (longest streak below league average)",
+      "NEW: Captain Calamity award (least captain points)",
+      "NEW: Demolished award (biggest loss margin in H2H)",
+      "NEW: Chip Flop award (worst chip performance)",
+      "Performance section now features 2 toggle pairs: On Fire↔Ice Cold, Captain Fantastic↔Captain Calamity",
+      "Strategy section features Chip Wizard↔Chip Flop toggle",
+      "H2H Battle section features Demolition Expert↔Demolished toggle",
+      "All shame awards now contribute to Walk of Shame rankings"
+    ]
+  },
+  {
     "version": "4.7.23",
     "date": "Jan 4, 2026",
     "title": "Color-Coded Toggle Icons",

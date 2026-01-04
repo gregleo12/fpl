@@ -513,6 +513,57 @@ export async function GET(
       });
     }
 
+    // SHAME AWARD 3: Ice Cold (opposite of On Fire) - Longest streak BELOW league average
+    const coldStreaks = allManagers.rows.map((manager: any) => {
+      const history = allHistory.rows.filter((h: any) => h.entry_id === manager.entry_id).sort((a: any, b: any) => a.event - b.event);
+      let maxStreak = 0;
+      let currentStreak = 0;
+
+      history.forEach((gw: any) => {
+        const avg = gwAverages.get(gw.event) || 0;
+        if (gw.points < avg) {
+          currentStreak++;
+          maxStreak = Math.max(maxStreak, currentStreak);
+        } else {
+          currentStreak = 0;
+        }
+      });
+
+      const managerInfo = managers.rows.find((m: any) => parseInt(m.entry_id) === parseInt(manager.entry_id));
+      return {
+        entry_id: manager.entry_id,
+        max_streak: maxStreak,
+        player_name: managerInfo?.player_name || 'Unknown',
+        team_name: managerInfo?.team_name || 'Unknown'
+      };
+    }).sort((a: any, b: any) => b.max_streak - a.max_streak);
+
+    if (coldStreaks.length > 0 && coldStreaks[0].max_streak > 0) {
+      performanceAwards.push({
+        title: 'Ice Cold',
+        winner: {
+          entry_id: coldStreaks[0].entry_id,
+          player_name: coldStreaks[0].player_name,
+          team_name: coldStreaks[0].team_name
+        },
+        winner_value: coldStreaks[0].max_streak,
+        runner_up: coldStreaks[1] ? {
+          entry_id: coldStreaks[1].entry_id,
+          player_name: coldStreaks[1].player_name,
+          team_name: coldStreaks[1].team_name
+        } : undefined,
+        runner_up_value: coldStreaks[1]?.max_streak,
+        third_place: coldStreaks[2] ? {
+          entry_id: coldStreaks[2].entry_id,
+          player_name: coldStreaks[2].player_name,
+          team_name: coldStreaks[2].team_name
+        } : undefined,
+        third_place_value: coldStreaks[2]?.max_streak,
+        unit: 'consecutive GWs',
+        description: 'Longest streak below league average'
+      });
+    }
+
     // 3. Best Captain Picks (NEW)
     const bestCaptainPicks = await db.query(
       `SELECT
@@ -555,6 +606,51 @@ export async function GET(
         third_place_value: bestCaptainPicks.rows[2] ? parseInt(bestCaptainPicks.rows[2].captain_bonus_points) : undefined,
         unit: 'pts',
         description: 'Most points from captain choices'
+      });
+    }
+
+    // SHAME AWARD 4: Captain Calamity (opposite of Captain Fantastic) - LEAST captain bonus points
+    const worstCaptainPicks = await db.query(
+      `SELECT
+        mp.entry_id,
+        SUM(pgs.calculated_points * (mp.multiplier - 1)) as captain_bonus_points,
+        m.player_name,
+        m.team_name
+      FROM manager_picks mp
+      JOIN player_gameweek_stats pgs ON pgs.player_id = mp.player_id AND pgs.gameweek = mp.event
+      JOIN managers m ON m.entry_id = mp.entry_id
+      WHERE mp.league_id = $1
+        AND mp.event <= 19
+        AND mp.is_captain = true
+      GROUP BY mp.entry_id, m.player_name, m.team_name
+      ORDER BY captain_bonus_points ASC
+      LIMIT 3`,
+      [leagueId]
+    );
+
+    if (worstCaptainPicks.rows.length > 0) {
+      performanceAwards.push({
+        title: 'Captain Calamity',
+        winner: {
+          entry_id: worstCaptainPicks.rows[0].entry_id,
+          player_name: worstCaptainPicks.rows[0].player_name,
+          team_name: worstCaptainPicks.rows[0].team_name
+        },
+        winner_value: parseInt(worstCaptainPicks.rows[0].captain_bonus_points),
+        runner_up: worstCaptainPicks.rows[1] ? {
+          entry_id: worstCaptainPicks.rows[1].entry_id,
+          player_name: worstCaptainPicks.rows[1].player_name,
+          team_name: worstCaptainPicks.rows[1].team_name
+        } : undefined,
+        runner_up_value: worstCaptainPicks.rows[1] ? parseInt(worstCaptainPicks.rows[1].captain_bonus_points) : undefined,
+        third_place: worstCaptainPicks.rows[2] ? {
+          entry_id: worstCaptainPicks.rows[2].entry_id,
+          player_name: worstCaptainPicks.rows[2].player_name,
+          team_name: worstCaptainPicks.rows[2].team_name
+        } : undefined,
+        third_place_value: worstCaptainPicks.rows[2] ? parseInt(worstCaptainPicks.rows[2].captain_bonus_points) : undefined,
+        unit: 'pts',
+        description: 'Least points from captain choices'
       });
     }
 
@@ -1205,6 +1301,51 @@ export async function GET(
       });
     }
 
+    // SHAME AWARD 5: Chip Flop (opposite of Chip Wizard) - WORST chip performance
+    const worstChipWeek = await db.query(
+      `SELECT c.entry_id, c.chip_name, c.event, h.points, m.player_name, m.team_name
+       FROM manager_chips c
+       JOIN manager_gw_history h ON h.entry_id = c.entry_id AND h.event = c.event AND h.league_id = c.league_id
+       JOIN managers m ON m.entry_id = c.entry_id
+       WHERE c.league_id = $1 AND c.event <= 19
+       ORDER BY h.points ASC
+       LIMIT 3`,
+      [leagueId]
+    );
+
+    if (worstChipWeek.rows.length > 0) {
+      const chipNames: any = {
+        'bboost': 'Bench Boost',
+        '3xc': 'Triple Captain',
+        'freehit': 'Free Hit',
+        'wildcard': 'Wildcard'
+      };
+
+      strategyAwards.push({
+        title: 'Chip Flop',
+        winner: {
+          entry_id: worstChipWeek.rows[0].entry_id,
+          player_name: worstChipWeek.rows[0].player_name,
+          team_name: worstChipWeek.rows[0].team_name
+        },
+        winner_value: worstChipWeek.rows[0].points,
+        runner_up: worstChipWeek.rows[1] ? {
+          entry_id: worstChipWeek.rows[1].entry_id,
+          player_name: worstChipWeek.rows[1].player_name,
+          team_name: worstChipWeek.rows[1].team_name
+        } : undefined,
+        runner_up_value: worstChipWeek.rows[1]?.points,
+        third_place: worstChipWeek.rows[2] ? {
+          entry_id: worstChipWeek.rows[2].entry_id,
+          player_name: worstChipWeek.rows[2].player_name,
+          team_name: worstChipWeek.rows[2].team_name
+        } : undefined,
+        third_place_value: worstChipWeek.rows[2]?.points,
+        unit: `pts (${chipNames[worstChipWeek.rows[0].chip_name]} GW${worstChipWeek.rows[0].event})`,
+        description: 'Lowest score in a chip gameweek'
+      });
+    }
+
     // 4. Best Non-Chip Week - NEW AWARD
     // Get all chip usage
     const allChips = await db.query(
@@ -1634,6 +1775,91 @@ export async function GET(
       });
     }
 
+    // SHAME AWARD 6: Demolished (opposite of Demolition Expert) - Biggest LOSS margin
+    let biggestLoss: any = null;
+    let secondBiggestLoss: any = null;
+    let thirdBiggestLoss: any = null;
+    let maxLossMargin = 0;
+    let secondLossMargin = 0;
+    let thirdLossMargin = 0;
+
+    allH2HMatches.rows.forEach((match: any) => {
+      if (match.winner === null) return; // Skip draws
+
+      const loserId = match.winner === match.entry_1_id ? match.entry_2_id : match.entry_1_id;
+      const winnerId = match.winner;
+      const loserPoints = match.winner === match.entry_1_id ? match.entry_2_points : match.entry_1_points;
+      const winnerPoints = match.winner === match.entry_1_id ? match.entry_1_points : match.entry_2_points;
+      const margin = winnerPoints - loserPoints;
+
+      const loser = managers.rows.find((m: any) => m.entry_id === loserId);
+      const winner = managers.rows.find((m: any) => m.entry_id === winnerId);
+
+      if (margin > maxLossMargin) {
+        thirdLossMargin = secondLossMargin;
+        thirdBiggestLoss = secondBiggestLoss;
+        secondLossMargin = maxLossMargin;
+        secondBiggestLoss = biggestLoss;
+        maxLossMargin = margin;
+        biggestLoss = {
+          entry_id: loserId,
+          player_name: loser?.player_name || 'Unknown',
+          team_name: loser?.team_name || 'Unknown',
+          margin,
+          opponent: winner?.team_name || 'Unknown',
+          event: match.event
+        };
+      } else if (margin > secondLossMargin) {
+        thirdLossMargin = secondLossMargin;
+        thirdBiggestLoss = secondBiggestLoss;
+        secondLossMargin = margin;
+        secondBiggestLoss = {
+          entry_id: loserId,
+          player_name: loser?.player_name || 'Unknown',
+          team_name: loser?.team_name || 'Unknown',
+          margin,
+          opponent: winner?.team_name || 'Unknown',
+          event: match.event
+        };
+      } else if (margin > thirdLossMargin) {
+        thirdLossMargin = margin;
+        thirdBiggestLoss = {
+          entry_id: loserId,
+          player_name: loser?.player_name || 'Unknown',
+          team_name: loser?.team_name || 'Unknown',
+          margin,
+          opponent: winner?.team_name || 'Unknown',
+          event: match.event
+        };
+      }
+    });
+
+    if (biggestLoss) {
+      h2hAwards.push({
+        title: 'Demolished',
+        winner: {
+          entry_id: biggestLoss.entry_id,
+          player_name: biggestLoss.player_name,
+          team_name: biggestLoss.team_name
+        },
+        winner_value: biggestLoss.margin,
+        runner_up: secondBiggestLoss ? {
+          entry_id: secondBiggestLoss.entry_id,
+          player_name: secondBiggestLoss.player_name,
+          team_name: secondBiggestLoss.team_name
+        } : undefined,
+        runner_up_value: secondBiggestLoss?.margin,
+        third_place: thirdBiggestLoss ? {
+          entry_id: thirdBiggestLoss.entry_id,
+          player_name: thirdBiggestLoss.player_name,
+          team_name: thirdBiggestLoss.team_name
+        } : undefined,
+        third_place_value: thirdBiggestLoss?.margin,
+        unit: `pts by ${biggestLoss.opponent}`,
+        description: `GW${biggestLoss.event} massacre`
+      });
+    }
+
     // 5. Close Call King
     const closeCallCounts = allLeagueManagers.rows.map((manager: any) => {
       const matches = allH2HMatches.rows.filter(
@@ -1895,10 +2121,14 @@ export async function GET(
     // ==========================================
 
     // Define which awards are "shame" awards (negative achievements)
-    // Only the 7 clear shame awards (excluding neutral/fun ones) + 2 new from POC
+    // Full set of shame awards for Walk of Shame tracking
     const SHAME_AWARDS = new Set([
-      'Basement Dweller',      // NEW - POC
-      'Points Poverty',        // NEW - POC
+      'Basement Dweller',      // POC v4.7.21
+      'Points Poverty',        // POC v4.7.21
+      'Ice Cold',              // NEW K-201L
+      'Captain Calamity',      // NEW K-201L
+      'Demolished',            // NEW K-201L
+      'Chip Flop',             // NEW K-201L
       'Nightmare Week',
       'Rock Bottom',
       'Falling Star',

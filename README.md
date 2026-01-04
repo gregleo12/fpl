@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.23** (January 4, 2026)
+**v4.8.0** (January 4, 2026)
 
-**K-201m: Color-Coded Toggle Icons** - Upgraded toggle UI with Lucide icons and color-coded active states. Fame awards glow green 🟢, Shame awards glow red 🔴. Clear visual distinction!
+**K-201L: Complete Toggle Awards System** - Added 4 new shame awards (Ice Cold, Captain Calamity, Demolished, Chip Flop) with toggle UI across Performance, Strategy, and H2H sections. Flip between Fame 🏆 and Shame 💀 awards to see both sides of the story!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
