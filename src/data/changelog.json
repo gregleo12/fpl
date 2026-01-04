@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.20",
+    "date": "Jan 4, 2026",
+    "title": "Award Optimizations",
+    "changes": [
+      "Shame awards now display with red icons for better clarity",
+      "Steady Eddie excluded from Walk of Fame (duplicate ranking with Points Machine)",
+      "Falling Star moved to H2H Battle section (tracks league position)",
+      "Narrow wins and losses now grouped together in H2H Battle"
+    ]
+  },
+  {
     "version": "4.7.19",
     "date": "Jan 3, 2026",
     "title": "🏆 Walk of Fame & 💀 Walk of Shame",

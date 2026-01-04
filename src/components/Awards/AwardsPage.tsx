@@ -37,6 +37,7 @@ interface Award {
   third_place_value?: number;
   unit: string;
   description: string;
+  isShame?: boolean;
 }
 
 interface AwardCategory {
@@ -237,6 +238,7 @@ export function AwardsPage({ leagueId }: Props) {
                   award={award}
                   myTeamId={myTeamId}
                   icon={getAwardIcon(award.title)}
+                  isShame={award.isShame}
                 />
               ))}
             </div>

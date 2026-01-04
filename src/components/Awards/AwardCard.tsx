@@ -24,6 +24,7 @@ interface Props {
   award: Award;
   myTeamId: string;
   icon?: React.ReactNode;
+  isShame?: boolean;
 }
 
 function formatCompactNumber(value: number | undefined, unit: string): string {
@@ -43,7 +44,7 @@ function formatCompactNumber(value: number | undefined, unit: string): string {
   return value.toString();
 }
 
-export function AwardCard({ award, myTeamId, icon }: Props) {
+export function AwardCard({ award, myTeamId, icon, isShame }: Props) {
   const isWinnerMe = award.winner.entry_id.toString() === myTeamId;
   const isRunnerUpMe = award.runner_up?.entry_id.toString() === myTeamId;
   const isThirdPlaceMe = award.third_place?.entry_id.toString() === myTeamId;
@@ -52,7 +53,7 @@ export function AwardCard({ award, myTeamId, icon }: Props) {
     <div className={`${styles.card} ${(isWinnerMe || isRunnerUpMe || isThirdPlaceMe) ? styles.myTeam : ''}`}>
       <div className={styles.header}>
         <div className={styles.titleWithIcon}>
-          {icon && <span className={styles.icon}>{icon}</span>}
+          {icon && <span className={`${styles.icon} ${isShame ? styles.shame : ''}`}>{icon}</span>}
           <h3 className={styles.title}>{award.title}</h3>
         </div>
         {(isWinnerMe || isRunnerUpMe || isThirdPlaceMe) && <span className={styles.badge}>You!</span>}

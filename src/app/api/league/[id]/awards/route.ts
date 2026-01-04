@@ -20,6 +20,7 @@ interface Award {
   third_place_value?: number;
   unit: string;
   description: string;
+  isShame?: boolean;
 }
 
 interface AwardCategory {
@@ -650,31 +651,7 @@ export async function GET(
       }
     });
 
-    if (biggestFall.fall > 0) {
-      performanceAwards.push({
-        title: 'Falling Star',
-        winner: {
-          entry_id: biggestFall.entry_id,
-          player_name: biggestFall.player_name,
-          team_name: biggestFall.team_name
-        },
-        winner_value: biggestFall.fall,
-        runner_up: runnerUpFall.fall > 0 ? {
-          entry_id: runnerUpFall.entry_id,
-          player_name: runnerUpFall.player_name,
-          team_name: runnerUpFall.team_name
-        } : undefined,
-        runner_up_value: runnerUpFall.fall > 0 ? runnerUpFall.fall : undefined,
-        third_place: thirdPlaceFall.fall > 0 ? {
-          entry_id: thirdPlaceFall.entry_id,
-          player_name: thirdPlaceFall.player_name,
-          team_name: thirdPlaceFall.team_name
-        } : undefined,
-        third_place_value: thirdPlaceFall.fall > 0 ? thirdPlaceFall.fall : undefined,
-        unit: 'places',
-        description: `${biggestFall.fromRank}${getSuffix(biggestFall.fromRank)} → ${biggestFall.toRank}${getSuffix(biggestFall.toRank)} (GW${biggestFall.fromGW}-${biggestFall.toGW})`
-      });
-    }
+    // NOTE: Falling Star moved to H2H Battle section (it tracks H2H league position drop)
 
     // 6. Slow Starter (NEW)
     const currentStandings = await db.query(
@@ -1352,7 +1329,34 @@ export async function GET(
       });
     }
 
-    // 2. Win Streak
+    // 2. Falling Star - Biggest H2H League Position Drop (MOVED from Performance section)
+    if (biggestFall.fall > 0) {
+      h2hAwards.push({
+        title: 'Falling Star',
+        winner: {
+          entry_id: biggestFall.entry_id,
+          player_name: biggestFall.player_name,
+          team_name: biggestFall.team_name
+        },
+        winner_value: biggestFall.fall,
+        runner_up: runnerUpFall.fall > 0 ? {
+          entry_id: runnerUpFall.entry_id,
+          player_name: runnerUpFall.player_name,
+          team_name: runnerUpFall.team_name
+        } : undefined,
+        runner_up_value: runnerUpFall.fall > 0 ? runnerUpFall.fall : undefined,
+        third_place: thirdPlaceFall.fall > 0 ? {
+          entry_id: thirdPlaceFall.entry_id,
+          player_name: thirdPlaceFall.player_name,
+          team_name: thirdPlaceFall.team_name
+        } : undefined,
+        third_place_value: thirdPlaceFall.fall > 0 ? thirdPlaceFall.fall : undefined,
+        unit: 'places',
+        description: `${biggestFall.fromRank}${getSuffix(biggestFall.fromRank)} → ${biggestFall.toRank}${getSuffix(biggestFall.toRank)} (GW${biggestFall.fromGW}-${biggestFall.toGW})`
+      });
+    }
+
+    // 3. Win Streak
     const allH2HMatches = await db.query(
       `SELECT entry_1_id, entry_2_id, entry_1_points, entry_2_points, event, winner
        FROM h2h_matches
@@ -1602,7 +1606,55 @@ export async function GET(
       });
     }
 
-    // 6. Longest Winning Streak
+    // 6. Close But No Cigar (MOVED UP to be with Nail Biter)
+    const heartbreakers = allLeagueManagers.rows.map((manager: any) => {
+      const matches = allH2HMatches.rows.filter(
+        (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
+      );
+
+      const narrowLosses = matches.filter((match: any) => {
+        const isEntry1 = match.entry_1_id === manager.entry_id;
+        const myPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
+        const oppPoints = isEntry1 ? match.entry_2_points : match.entry_1_points;
+        const margin = Math.abs(myPoints - oppPoints);
+        return margin <= 5 && match.winner !== manager.entry_id && match.winner !== null;
+      }).length;
+
+      return {
+        entry_id: manager.entry_id,
+        narrow_losses: narrowLosses,
+        player_name: manager.player_name,
+        team_name: manager.team_name
+      };
+    }).sort((a: any, b: any) => b.narrow_losses - a.narrow_losses);
+
+    if (heartbreakers.length > 0 && heartbreakers[0].narrow_losses > 0) {
+      h2hAwards.push({
+        title: 'Close But No Cigar',
+        winner: {
+          entry_id: heartbreakers[0].entry_id,
+          player_name: heartbreakers[0].player_name,
+          team_name: heartbreakers[0].team_name
+        },
+        winner_value: heartbreakers[0].narrow_losses,
+        runner_up: heartbreakers[1] ? {
+          entry_id: heartbreakers[1].entry_id,
+          player_name: heartbreakers[1].player_name,
+          team_name: heartbreakers[1].team_name
+        } : undefined,
+        runner_up_value: heartbreakers[1]?.narrow_losses,
+        third_place: heartbreakers[2] ? {
+          entry_id: heartbreakers[2].entry_id,
+          player_name: heartbreakers[2].player_name,
+          team_name: heartbreakers[2].team_name
+        } : undefined,
+        third_place_value: heartbreakers[2]?.narrow_losses,
+        unit: 'narrow losses',
+        description: 'Most H2H losses by ≤5 pts'
+      });
+    }
+
+    // 7. Longest Winning Streak
     const allH2HManagerIds = allLeagueManagers.rows.map((m: any) => m.entry_id);
     const winningStreaks = new Map<number, { current: number; max: number; startGW: number; endGW: number; player_name: string; team_name: string }>();
 
@@ -1747,54 +1799,6 @@ export async function GET(
       });
     }
 
-    // 8. Heartbreaker (NEW)
-    const heartbreakers = allLeagueManagers.rows.map((manager: any) => {
-      const matches = allH2HMatches.rows.filter(
-        (m: any) => m.entry_1_id === manager.entry_id || m.entry_2_id === manager.entry_id
-      );
-
-      const narrowLosses = matches.filter((match: any) => {
-        const isEntry1 = match.entry_1_id === manager.entry_id;
-        const myPoints = isEntry1 ? match.entry_1_points : match.entry_2_points;
-        const oppPoints = isEntry1 ? match.entry_2_points : match.entry_1_points;
-        const margin = Math.abs(myPoints - oppPoints);
-        return margin <= 5 && match.winner !== manager.entry_id && match.winner !== null;
-      }).length;
-
-      return {
-        entry_id: manager.entry_id,
-        narrow_losses: narrowLosses,
-        player_name: manager.player_name,
-        team_name: manager.team_name
-      };
-    }).sort((a: any, b: any) => b.narrow_losses - a.narrow_losses);
-
-    if (heartbreakers.length > 0 && heartbreakers[0].narrow_losses > 0) {
-      h2hAwards.push({
-        title: 'Close But No Cigar',
-        winner: {
-          entry_id: heartbreakers[0].entry_id,
-          player_name: heartbreakers[0].player_name,
-          team_name: heartbreakers[0].team_name
-        },
-        winner_value: heartbreakers[0].narrow_losses,
-        runner_up: heartbreakers[1] ? {
-          entry_id: heartbreakers[1].entry_id,
-          player_name: heartbreakers[1].player_name,
-          team_name: heartbreakers[1].team_name
-        } : undefined,
-        runner_up_value: heartbreakers[1]?.narrow_losses,
-        third_place: heartbreakers[2] ? {
-          entry_id: heartbreakers[2].entry_id,
-          player_name: heartbreakers[2].player_name,
-          team_name: heartbreakers[2].team_name
-        } : undefined,
-        third_place_value: heartbreakers[2]?.narrow_losses,
-        unit: 'narrow losses',
-        description: 'Most H2H losses by ≤5 pts'
-      });
-    }
-
     categories.push({
       category: 'H2H Battle',
       icon: '⚔️',
@@ -1815,19 +1819,23 @@ export async function GET(
     // ==========================================
 
     // Define which awards are "shame" awards (negative achievements)
+    // Only the 7 clear shame awards (excluding neutral/fun ones)
     const SHAME_AWARDS = new Set([
       'Nightmare Week',
       'Rock Bottom',
       'Falling Star',
-      'Wild Ride',
       'Point Chaser',
       'Cursed Soul',
       'The Struggle Bus',
-      'Close But No Cigar',
-      'Slow Starter',
-      'Bench Warmer',
-      'Mr. Average'
+      'Close But No Cigar'
     ]);
+
+    // Add isShame property to all awards
+    categories.forEach(category => {
+      category.awards.forEach(award => {
+        award.isShame = SHAME_AWARDS.has(award.title);
+      });
+    });
 
     // Initialize tallies for all managers
     const walkOfFame: Record<number, Omit<MedalCount, 'total' | 'score' | 'rank'>> = {};
@@ -1847,8 +1855,16 @@ export async function GET(
     });
 
     // Count medals for all awards
+    // Exclude 'Steady Eddie' from Walk of Fame - identical ranking to Points Machine
+    const EXCLUDED_FROM_WALK = new Set(['Steady Eddie']);
+
     categories.forEach(category => {
       category.awards.forEach(award => {
+        // Skip awards excluded from Walk of Fame/Shame
+        if (EXCLUDED_FROM_WALK.has(award.title)) {
+          return;
+        }
+
         const isShame = SHAME_AWARDS.has(award.title);
         const tally = isShame ? walkOfShame : walkOfFame;
 

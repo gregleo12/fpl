@@ -38,6 +38,10 @@
   flex-shrink: 0;
 }
 
+.icon.shame {
+  color: #ff4444;
+}
+
 .title {
   font-size: 18px;
   font-weight: 600;

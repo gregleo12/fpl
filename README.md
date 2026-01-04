@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.19** (January 3, 2026)
+**v4.7.20** (January 4, 2026)
 
-**K-201j: Walk of Fame & Walk of Shame** - Added top-3 preview cards at the top of Awards page plus complete leaderboard tables at the bottom. Features Walk of Fame (positive awards) and Walk of Shame (dubious honors) with weighted scoring (🥇×3 + 🥈×2 + 🥉×1) for all 20 managers.
+**K-201k: Award Optimizations** - Red icons for shame awards, Steady Eddie excluded from Walk of Fame (duplicate ranking), Falling Star moved to H2H Battle section, and narrow wins/losses grouped together in H2H awards.
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 
