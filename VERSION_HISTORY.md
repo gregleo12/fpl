@@ -2,7 +2,173 @@
 
 **Project Start:** October 23, 2024
 **Total Releases:** 300+ versions
-**Current Version:** v4.7.13 (January 3, 2026)
+**Current Version:** v4.9.0 (January 4, 2026)
+
+---
+
+## v4.9.0 - K-201m: Global Fame/Shame Toggle (Jan 4, 2026)
+
+**MAJOR UX IMPROVEMENT:** Single global toggle replaces 14 individual card toggles
+
+### Overview
+Completely redesigned the awards toggle system with a single global control that switches ALL paired awards between Achievements (Fame) and Dubious Honors (Shame) modes with one click.
+
+**Key Improvements:**
+- ✅ **Simpler UX:** One toggle controls all 14 award pairs simultaneously
+- ✅ **Cleaner Interface:** Removed 28 small toggle icons from individual cards
+- ✅ **Faster Navigation:** See all shame awards with one click
+- ✅ **Better Mobile:** Less UI complexity on small screens
+- ✅ **Code Simplification:** -97 lines of code removed
+
+**Global Toggle Design:**
+- Segmented control (iOS-style) between WalkPreview and award sections
+- Two buttons: "🏆 Achievements" (Fame) and "💀 Dubious Honors" (Shame)
+- Active state with gradient backgrounds (green for fame, red for shame)
+- Smooth transitions and mobile-responsive
+
+**14 Award Pairs:**
+- The Big Ones (2): King of the Hill ↔ Basement Dweller, Points Machine ↔ Points Poverty
+- Performance (6): Steady Eddie/On Fire ↔ Ice Cold (shared), Captain Fantastic ↔ Captain Calamity, Gameweek God ↔ Nightmare Week, World Beater ↔ Rock Bottom, Mr. Reliable ↔ Wild Ride
+- Strategy (1): Chip Wizard ↔ Chip Flop
+- Luck (1): Lucky Charm ↔ Cursed Soul
+- H2H Battle (4): Rocket Man ↔ Falling Star, Demolition Expert ↔ Demolished, Nail Biter ↔ Close But No Cigar, Unstoppable Force ↔ The Struggle Bus
+
+**Standalone Awards** (visible in both modes):
+- Transfer Addict, The Sleeper, Raw Talent, Point Chaser, Bench Boss, Bench Warmer, Slow Starter, Second Half Surge, Mr. Average, Early Dominator, The Underdog
+
+**Technical Implementation:**
+- New component: `ModeToggle.tsx` with `useState<'fame' | 'shame'>('fame')`
+- Award pair mappings: `AWARD_PAIRS` constant (Fame → Shame)
+- Filtering logic: `getVisibleAwards()` with deduplication for Ice Cold
+- Simplified AwardsPage.tsx: removed all category-specific toggle handling
+
+**Files Added:**
+- `src/components/Awards/ModeToggle.tsx` - Global toggle component
+- `src/components/Awards/ModeToggle.module.css` - Toggle styling
+
+**Files Modified:**
+- `src/components/Awards/AwardsPage.tsx` - Complete rewrite (-97 lines)
+
+**Bundle Impact:**
+- Awards page: 9.12 kB → 8.58 kB (-540 bytes)
+
+---
+
+## v4.8.2 - K-201L: Add Toggle Buttons to 5 More Award Pairs (Jan 4, 2026)
+
+**FEATURE:** Extended toggle UI to 5 additional award pairs
+
+### New Toggle Pairs (5)
+
+**Performance Section (3 pairs):**
+1. **Gameweek God ↔ Nightmare Week** - Best/worst single GW performance
+2. **World Beater ↔ Rock Bottom** - Best/worst overall rank achieved
+3. **Mr. Reliable ↔ Wild Ride** - Most consistent/volatile points
+
+**H2H Battle Section (2 pairs):**
+4. **Nail Biter ↔ Close But No Cigar** - Most close wins/losses
+5. **Unstoppable Force ↔ The Struggle Bus** - Best/worst H2H win rate
+
+**Total Toggle Pairs:**
+- The Big Ones: 2 pairs
+- Performance: 6 pairs (expanded from 3)
+- Strategy: 2 pairs
+- Luck: 1 pair
+- H2H Battle: 4 pairs (expanded from 2)
+- **Total: 14 toggle pairs**
+
+**Walk of Shame Tracking:**
+- Added **Wild Ride** to SHAME_AWARDS set for Walk of Shame rankings
+
+**Files Modified:**
+- `src/components/Awards/AwardsPage.tsx` - Added 5 new toggle pairs
+- `src/app/api/league/[id]/awards/route.ts` - Added Wild Ride to SHAME_AWARDS set
+
+---
+
+## v4.8.1 - K-201L Final: Complete Toggle Awards System (Jan 4, 2026)
+
+**FEATURE:** Added 2 new awards to complete the toggle awards system
+
+### New Awards (2)
+
+**Performance Section:**
+1. **Roller Coaster** (Shame) - Most inconsistent points (highest variance)
+   - Calculation: `STDDEV_SAMP(points - event_transfers_cost)` with `ORDER BY variance DESC`
+   - Unit: σ (sigma)
+   - Icon: Wind
+   - Opposite of Steady Eddie (consistent performance)
+
+**Luck Section:**
+2. **Bench Boss** (Fame) - Least points left on bench (best bench management)
+   - Calculation: `SUM(points_on_bench)` with `ORDER BY total_bench_points ASC`
+   - Unit: pts
+   - Icon: Award
+   - Opposite of Bench Warmer (kept as standalone in different category)
+
+**Toggle System:**
+- Performance section: 3 toggle pairs (Steady Eddie ↔ Roller Coaster, On Fire ↔ Ice Cold, Captain Fantastic ↔ Captain Calamity)
+- H2H Battle section: 2 toggle pairs (Rocket Man ↔ Falling Star, Demolition Expert ↔ Demolished)
+- Luck section: 1 toggle pair (Lucky Charm ↔ Cursed Soul)
+- **Total: 10 toggle pairs** (expanded from 6)
+
+**Walk of Shame Tracking:**
+- Added **Roller Coaster** and **Bench Warmer** to SHAME_AWARDS set
+
+**Files Modified:**
+- `src/app/api/league/[id]/awards/route.ts` - Added 2 new awards, updated SHAME_AWARDS
+- `src/components/Awards/AwardsPage.tsx` - Added icons and toggle pairs
+
+---
+
+## v4.8.0 - K-201L: Complete Toggle Awards System (Jan 4, 2026)
+
+**MAJOR FEATURE:** Added 4 new shame awards with toggle UI
+
+### New Shame Awards (4)
+
+**Performance Section:**
+1. **Ice Cold** - Longest streak of gameweeks scoring below league average
+   - Calculation: Longest consecutive streak where points < avg
+   - Unit: GWs
+   - Icon: Snowflake
+   - Opposite of both Steady Eddie and On Fire
+
+2. **Captain Calamity** - Least total captain points across all GWs
+   - Calculation: `SUM(captain_points)` with `ORDER BY total_captain_points ASC`
+   - Unit: pts
+   - Icon: AlertCircle
+   - Opposite of Captain Fantastic
+
+**H2H Battle Section:**
+3. **Demolished** - Biggest loss margin in a single H2H match
+   - Calculation: `MIN(points_for - points_against)` for losses
+   - Unit: pts
+   - Icon: Skull
+   - Opposite of Demolition Expert
+
+**Strategy Section:**
+4. **Chip Flop** - Worst chip performance (lowest points scored when chip active)
+   - Calculation: Identifies worst chip usage by points scored
+   - Unit: pts
+   - Icon: ThumbsDown
+   - Opposite of Chip Wizard
+
+**Toggle System:**
+- Performance section: 2 toggle pairs (On Fire ↔ Ice Cold, Captain Fantastic ↔ Captain Calamity)
+- Strategy section: 1 toggle pair (Chip Wizard ↔ Chip Flop)
+- H2H Battle section: 1 toggle pair (Demolition Expert ↔ Demolished)
+- The Big Ones: 2 toggle pairs (King ↔ Basement, Machine ↔ Poverty)
+- **Total: 6 toggle pairs**
+
+**Walk of Shame Rankings:**
+- All shame awards now contribute to Walk of Shame leaderboard
+- Gold/Silver/Bronze medals tallied for shame achievements
+- Proper `isShame` property added to all shame awards
+
+**Files Modified:**
+- `src/app/api/league/[id]/awards/route.ts` - Added 4 new awards, SHAME_AWARDS set
+- `src/components/Awards/AwardsPage.tsx` - Added toggle UI for 4 sections
 
 ---
 
