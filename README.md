@@ -47,9 +47,9 @@ npm run build
 
 ## Current Version
 
-**v4.7.21** (January 4, 2026)
+**v4.7.22** (January 4, 2026)
 
-**K-201L POC: Toggle Awards** - New toggle UI for award pairs! The Big Ones section now features Basement Dweller and Points Poverty shame awards, with toggles to switch between Fame (King/Machine) and Shame (Basement/Poverty) versions.
+**K-201m: Toggle Icons** - Replaced text toggles with trophy 🏆 and skull 💀 emoji icons for a cleaner, more compact UI. Hover for tooltips!
 
 See [VERSION_HISTORY.md](./VERSION_HISTORY.md) for full details.
 

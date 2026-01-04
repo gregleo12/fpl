@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.22",
+    "date": "Jan 4, 2026",
+    "title": "Toggle Icons (🏆/💀)",
+    "changes": [
+      "Replaced 'Fame'/'Shame' text with trophy/skull emoji icons",
+      "More compact and cleaner toggle UI",
+      "Added hover tooltips for accessibility",
+      "Icons scale and brighten when active"
+    ]
+  },
+  {
     "version": "4.7.21",
     "date": "Jan 4, 2026",
     "title": "POC: Toggle Awards (The Big Ones)",

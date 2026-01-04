@@ -71,14 +71,18 @@ export function AwardCardToggle({ fameAward, shameAward, myTeamId, fameIcon, sha
           <button
             className={!showShame ? styles.active : ''}
             onClick={() => setShowShame(false)}
+            title="View Fame award"
+            aria-label="Fame"
           >
-            Fame
+            🏆
           </button>
           <button
             className={showShame ? styles.active : ''}
             onClick={() => setShowShame(true)}
+            title="View Shame award"
+            aria-label="Shame"
           >
-            Shame
+            💀
           </button>
         </div>
       </div>
