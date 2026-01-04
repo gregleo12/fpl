@@ -1,5 +1,16 @@
 [
   {
+    "version": "4.7.23",
+    "date": "Jan 4, 2026",
+    "title": "Color-Coded Toggle Icons",
+    "changes": [
+      "Replaced emoji icons with Lucide icons (Trophy/Skull)",
+      "Fame active state now shows green background (#00ff87)",
+      "Shame active state now shows red background (#ff4444)",
+      "Better visual distinction between Fame and Shame awards"
+    ]
+  },
+  {
     "version": "4.7.22",
     "date": "Jan 4, 2026",
     "title": "Toggle Icons (🏆/💀)",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Trophy, Skull } from 'lucide-react';
 import styles from './AwardCardToggle.module.css';
 
 interface Manager {
@@ -69,20 +70,20 @@ export function AwardCardToggle({ fameAward, shameAward, myTeamId, fameIcon, sha
         </div>
         <div className={styles.toggle}>
           <button
-            className={!showShame ? styles.active : ''}
+            className={`${styles.toggleButton} ${!showShame ? styles.activeFame : ''}`}
             onClick={() => setShowShame(false)}
             title="View Fame award"
             aria-label="Fame"
           >
-            🏆
+            <Trophy size={16} />
           </button>
           <button
-            className={showShame ? styles.active : ''}
+            className={`${styles.toggleButton} ${showShame ? styles.activeShame : ''}`}
             onClick={() => setShowShame(true)}
             title="View Shame award"
             aria-label="Shame"
           >
-            💀
+            <Skull size={16} />
           </button>
         </div>
       </div>
